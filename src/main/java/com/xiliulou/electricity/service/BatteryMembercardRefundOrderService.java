@@ -55,7 +55,7 @@ public interface BatteryMembercardRefundOrderService {
 
     Integer selectPageCount(BatteryMembercardRefundOrderQuery query);
 
-    BatteryMembercardRefundOrder selectByOrderNo(String orderNo);
+    BatteryMembercardRefundOrder selectByRefundOrderNo(String orderNo);
 
     BatteryMembercardRefundOrder selectByMembercardOrderNo(String orderNo);
 
@@ -68,4 +68,6 @@ public interface BatteryMembercardRefundOrderService {
     Integer insert(BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert);
 
     Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request);
+
+    WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException;
 }

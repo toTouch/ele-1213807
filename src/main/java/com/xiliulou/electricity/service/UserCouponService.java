@@ -19,7 +19,7 @@ public interface UserCouponService {
      * @param orderId 订单编码
      * @param orderIdType 订单编码对应的类型
      * @param status 状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status);
 

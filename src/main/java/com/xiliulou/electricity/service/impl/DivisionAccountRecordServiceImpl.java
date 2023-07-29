@@ -506,7 +506,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Transactional(rollbackFor = Exception.class)
     public void handleRefundDivisionAccountByPackage(String orderNo, Integer type){
         if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByOrderNo(orderNo);
+            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(orderNo);
 
             if(Objects.isNull(batteryMembercardRefundOrder)) {
                 log.error("Refund Division Account error, Not found for battery member card refund order, refund order number = {}", orderNo);

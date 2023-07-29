@@ -153,8 +153,6 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     @Log(title = "电池租金退款审核")
     public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
                                           @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
-
-
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, status, request));
     }
 
@@ -169,8 +167,6 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
     public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, HttpServletRequest request) {
-
-
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, request));
     }
 

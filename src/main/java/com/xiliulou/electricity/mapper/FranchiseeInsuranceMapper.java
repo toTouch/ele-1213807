@@ -30,7 +30,7 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
 
     List<FranchiseeInsuranceVo> queryInsuranceList( @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("batteryType") String batteryType);
 
-    FranchiseeInsurance selectByFranchiseeIdAndType(@Param("franchiseeId") Long franchiseeId, @Param("insuranceType") int insuranceType, @Param("batteryV") String batteryV);
+    FranchiseeInsurance selectByFranchiseeIdAndType(@Param("franchiseeId") Long franchiseeId, @Param("insuranceType") int insuranceType, @Param("simpleBatteryType") String simpleBatteryType);
 
     Integer checkInsuranceExist(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate);
 

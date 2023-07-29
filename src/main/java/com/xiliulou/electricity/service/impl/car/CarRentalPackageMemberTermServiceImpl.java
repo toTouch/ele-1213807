@@ -63,7 +63,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean rentRefundByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
-        if (ObjectUtils.allNotNull(uid, packageOrderNo, optUid)) {
+        if (!ObjectUtils.allNotNull(uid, packageOrderNo, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -85,7 +85,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Slave
     @Override
     public CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo) {
-        if (ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         return carRentalPackageMemberTermMapper.selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);

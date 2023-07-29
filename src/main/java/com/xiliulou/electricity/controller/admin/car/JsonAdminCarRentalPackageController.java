@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
@@ -205,7 +206,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         // 数据权校验
         Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
-            return R.ok(0);
+            return R.ok(NumberConstant.ZERO);
         }
 
         // 转换请求体

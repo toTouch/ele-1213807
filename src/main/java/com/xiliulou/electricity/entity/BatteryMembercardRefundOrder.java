@@ -47,12 +47,16 @@ public class BatteryMembercardRefundOrder {
      * 支付金额,单位元
      */
     private BigDecimal payAmount;
+
+    private Integer payType;
     /**
      * 退款金额,单位元
      */
     private BigDecimal refundAmount;
 
-    private Long capacity;
+    private Long remainingNumber;
+
+    private Long remainingTime;
     /**
      * 订单状态
      */
@@ -95,4 +99,6 @@ public class BatteryMembercardRefundOrder {
     public static final Integer STATUS_SUCCESS = 4;
     //退款失败
     public static final Integer STATUS_FAIL = 5;
+    //审核中
+    public static final Integer STATUS_AUDIT = 6;
 }

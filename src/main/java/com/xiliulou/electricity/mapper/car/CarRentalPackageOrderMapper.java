@@ -53,7 +53,7 @@ public interface CarRentalPackageOrderMapper {
      * @param useBeginTime 开始使用时间
      * @return 操作总条数
      */
-    Integer updateStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("useState") Integer useState, @Param("useState") Long useBeginTime);
+    Integer updateStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("useState") Integer useState, @Param("useBeginTime") Long useBeginTime);
 
     /**
      * 根据用户ID查询未使用的订单总数

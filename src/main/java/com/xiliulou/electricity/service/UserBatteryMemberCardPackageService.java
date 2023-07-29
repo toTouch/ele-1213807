@@ -52,4 +52,6 @@ public interface UserBatteryMemberCardPackageService {
     Integer deleteByUid(Long uid);
 
     UserBatteryMemberCardPackage selectByOrderNo(String orderId);
+
+    Integer checkUserBatteryMemberCardPackageByUid(Long uid);
 }

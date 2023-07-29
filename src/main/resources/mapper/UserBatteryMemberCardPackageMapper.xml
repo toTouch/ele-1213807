@@ -22,6 +22,10 @@
         where id = #{id}
     </select>
 
+    <select id="checkUserBatteryMemberCardPackageByUid" resultType="Integer">
+       select 1 from t_user_battery_member_card_package where uid = #{uid} LIMIT 1
+    </select>
+
     <select id="selectByUid" resultMap="UserBatteryMemberCardPackageMap">
         select
           id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status

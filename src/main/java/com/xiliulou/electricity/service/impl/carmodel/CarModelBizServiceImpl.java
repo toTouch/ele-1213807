@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.carmodel;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
@@ -134,11 +135,15 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             throw new BizException("300000", "数据有误");
         }
 
-        // 2. 查询是否存在可租的车辆
-        boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
-        if (!unleasedCarFlag) {
-            log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
-            return false;
+        // 用户名下没有绑定车辆的时候
+        ElectricityCar electricityCar = carService.queryInfoByUid(uid);
+        if (ObjectUtils.isEmpty(electricityCar)) {
+            // 2. 查询是否存在可租的车辆
+            boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
+            if (!unleasedCarFlag) {
+                log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
+                return false;
+            }
         }
 
         // 3. 查询租车会员信息

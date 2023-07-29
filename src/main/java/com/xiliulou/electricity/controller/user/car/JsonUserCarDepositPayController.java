@@ -41,6 +41,13 @@ public class JsonUserCarDepositPayController extends BasicController {
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     /**
+     * 创建免押订单
+     */
+    public void createFreeDeposit(Long rentalPackageId) {
+
+    }
+
+    /**
      * 分页查询
      * @param offset 偏移量
      * @param size 取值数量

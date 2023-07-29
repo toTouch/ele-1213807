@@ -151,7 +151,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Slave
     @Override
     public CarInfoDO queryByCarId(Integer tenantId, Long carId) {
-        if (ObjectUtils.allNotNull(tenantId, carId)) {
+        if (!ObjectUtils.allNotNull(tenantId, carId)) {
             return null;
         }
 
