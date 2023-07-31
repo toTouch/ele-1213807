@@ -104,8 +104,8 @@ public class BasicController {
         if (CollectionUtils.isEmpty(rentRefundEntityList)) {
             return Collections.emptyMap();
         }
-
-        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getRentalPackageOrderNo, Function.identity(), (k1, k2) -> k1));
+        // 此处有一个及其不易注意的坑点，k1, k2 的取值，目前取值k2，注意点在于数据库的数据，要按照主键ID正序排列
+        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getRentalPackageOrderNo, Function.identity(), (k1, k2) -> k2));
 
     }
 

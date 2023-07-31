@@ -148,8 +148,9 @@ public class CarModelBizServiceImpl implements CarModelBizService {
 
         // 3. 查询租车会员信息
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(memberTermEntity) && !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.info("CarModelBizService.checkBuyByCarModelId, The Car_rental_package_member_term abnormal status. uid is {}", uid);
+        if (ObjectUtils.isNotEmpty(memberTermEntity) &&
+                !(MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus()) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus()))) {
+            log.info("CarModelBizService.checkBuyByCarModelId, The t_car_rental_package_member_term abnormal status. uid is {}", uid);
             return false;
         }
 

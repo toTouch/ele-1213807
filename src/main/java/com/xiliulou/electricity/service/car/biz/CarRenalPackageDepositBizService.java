@@ -14,6 +14,14 @@ import java.math.BigDecimal;
 public interface CarRenalPackageDepositBizService {
 
     /**
+     * 查询免押状态
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return true(成功)、false(失败)
+     */
+    boolean queryFreeDepositStatus(Integer tenantId, Long uid);
+
+    /**
      * 创建免押订单，生成二维码<br />
      * 创建押金缴纳订单、生成免押记录
      * @param tenantId 租户ID

@@ -93,6 +93,35 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     /**
+     * 查询免押状态
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean queryFreeDepositStatus(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(userInfo)) {
+            log.error("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_user_info. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+
+        /*UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("FREE DEPOSIT ERROR! not found userCarDeposit,uid={}", uid);
+            return Triple.of(true, "", "");
+        }*/
+        return false;
+    }
+
+    /**
      * 创建免押订单，生成二维码<br />
      * 创建押金缴纳订单、生成免押记录
      *
@@ -173,7 +202,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPO memberTermInsertEntity = null;
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             // 生成租车套餐会员期限表信息，准备 Insert
-            memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage);
+            memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayInsert.getOrderNo());
         }
 
         // 调用第三方
@@ -241,14 +270,16 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageEntity 租车套餐信息
+     * @param depositPayOrderNo 押金缴纳订单编码
      * @return 将要新增的租车会员期限信息
      */
-    private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity) {
+    private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity, String depositPayOrderNo) {
         CarRentalPackageMemberTermPO carRentalPackageMemberTermEntity = new CarRentalPackageMemberTermPO();
         carRentalPackageMemberTermEntity.setUid(uid);
         carRentalPackageMemberTermEntity.setRentalPackageType(packageEntity.getType());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(packageEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageMemberTermEntity.setTenantId(tenantId);
         carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
         carRentalPackageMemberTermEntity.setStoreId(packageEntity.getStoreId());

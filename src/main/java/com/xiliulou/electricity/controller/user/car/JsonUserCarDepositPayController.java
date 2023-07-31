@@ -40,7 +40,33 @@ public class JsonUserCarDepositPayController extends BasicController {
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
+
+
+    /**
+     * 查询车辆免押是否成功
+     */
+    @GetMapping("/user/free/carDeposit/order/status")
+    public R freeCarDepositOrderStatus() {
+       /* return returnTripleResult(freeDepositOrderService.acquireFreeCarDepositStatus());*/
+        return null;
+    }
+
     // TODO 回调查询检测更新接口
+
+    /**
+     * 查询免押状态
+     * @return true(成功)、false(失败)
+     */
+    @GetMapping("/queryFreeDepositStatus")
+    public R<Boolean> queryFreeDepositStatus() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(carRenalPackageDepositBizService.queryFreeDepositStatus(tenantId, user.getUid()));
+    }
 
     /**
      * 创建免押订单
