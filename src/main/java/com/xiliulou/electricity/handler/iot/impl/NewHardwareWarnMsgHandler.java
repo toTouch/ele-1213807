@@ -51,6 +51,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
             msg.setSnType(HardwareFailureMqMsg.CABINET_TYPE);
             msg.setSn(electricityCabinet.getSn());
         }
+        msg.setAddress(electricityCabinet.getAddress());
         msg.setErrorCode(String.valueOf(hardwareWarnMsg.getErrorCode()));
         msg.setWarnTime(hardwareWarnMsg.getCreateTime());
         msg.setErrorDesc("格挡号:" + hardwareWarnMsg.getCellNo());
@@ -98,6 +99,7 @@ class HardwareFailureMqMsg {
     private String errorCode;
     private String errorDesc;
     private String data;
+    private String address;
 
     /**
      * 电池
