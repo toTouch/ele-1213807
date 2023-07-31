@@ -27,14 +27,14 @@ public class JsonUserBatteryMembercardRefundOrderController extends BaseControll
      * 退租申请
      */
     @PostMapping("/user/batteryMembercardRefund/{orderNo}")
-    public R batteryMembercardRefund(String orderNo) {
+    public R batteryMembercardRefund(@PathVariable("orderNo") String orderNo) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefund(orderNo));
     }
 
     /**
      * 可退租订单详情
      */
-    @GetMapping("/user/batteryMembercardRefund/{orderNo}")
+    @GetMapping("/user/batteryMembercardRefund/detail/{orderNo}")
     public R batteryMembercardRefundOrderDetail(@PathVariable("orderNo") String orderNo) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo, NumberConstant.ONE));
     }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -151,7 +152,8 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
 
     @PostMapping("/admin/battery/membercard/refund/audit")
     @Log(title = "电池租金退款审核")
-    public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
+    public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
+                                          @RequestParam("status") Integer status,
                                           @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, status, request));
     }
