@@ -646,7 +646,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
-        if (ObjectUtils.notEqual(YesNoEnum.NO.getCode(), packageOrderEntity.getRentRebate())) {
+        if (ObjectUtils.notEqual(YesNoEnum.YES.getCode(), packageOrderEntity.getRentRebate())) {
             throw new BizException("300012", "订单不允许退租");
         } else {
             if (System.currentTimeMillis() >= packageOrderEntity.getRentRebateEndTime()) {
