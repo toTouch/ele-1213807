@@ -205,7 +205,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             if (YesNoEnum.YES.getCode().equals(carRentalPackageOrder.getRentRebate())) {
                 // 判定可退截止时间
-                carRentalPackageOrderVO.setRentRebate(carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.NO.getCode() : YesNoEnum.YES.getCode());
+                carRentalPackageOrderVO.setRentRebate(carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode());
             }
 
             // 赋值业务属性信息
