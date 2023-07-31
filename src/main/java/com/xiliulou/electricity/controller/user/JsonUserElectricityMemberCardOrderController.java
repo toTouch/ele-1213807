@@ -78,6 +78,37 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
         
         return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderList(orderQuery));
     }
+
+    @GetMapping("user/memberCardOrder/listV3")
+    public R selectElectricityMemberCardOrderList(@RequestParam("offset") long offset, @RequestParam("size") long size,
+                           @RequestParam(value = "status", required = false) Integer status,
+                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        ElectricityMemberCardOrderQuery orderQuery = new ElectricityMemberCardOrderQuery();
+        orderQuery.setSize(size);
+        orderQuery.setOffset(offset);
+        orderQuery.setUid(uid);
+        orderQuery.setStatus(status);
+        orderQuery.setTenantId(TenantContextHolder.getTenantId());
+        orderQuery.setQueryStartTime(queryStartTime);
+        orderQuery.setQueryEndTime(queryEndTime);
+
+        return R.ok(electricityMemberCardOrderService.selectElectricityMemberCardOrderList(orderQuery));
+    }
     
     @GetMapping("user/memberCardOrder/count")
     public R getMemberCardOrderCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
