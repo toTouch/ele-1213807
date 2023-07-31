@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.query.car;
+package com.xiliulou.electricity.reqparam.opt.carpackage;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author xiaohui.song
  **/
 @Data
-public class FreezeRentOrderoptReq implements Serializable {
+public class FreezeRentOrderOptReq implements Serializable {
 
     private static final long serialVersionUID = -5249695230292571002L;
 
