@@ -5,11 +5,12 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
-import com.xiliulou.electricity.query.car.FreezeRentOrderoptReq;
+import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -97,7 +98,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
      * @return true(成功)、false(失败)
      */
     @PostMapping("/freezeRentOrder")
-    public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderoptReq freezeRentOrderoptReq) {
+    public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderOptReq freezeRentOrderoptReq) {
         if (!ObjectUtils.allNotNull(freezeRentOrderoptReq, freezeRentOrderoptReq.getApplyReason(), freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyTerm())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -133,7 +134,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid());
+        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid(), SystemDefinitionEnum.WX_APPLET);
 
         return R.ok(refundFlag);
     }

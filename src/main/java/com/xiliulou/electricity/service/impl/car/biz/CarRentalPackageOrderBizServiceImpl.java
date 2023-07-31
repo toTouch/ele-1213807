@@ -632,10 +632,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param uid      用户ID
      * @param packageOrderNo  套餐购买订单编号
      * @param optUid  操作人ID
+     * @param systemDefinitionEnum  操作系统
      * @return
      */
     @Override
-    public Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
+    public Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid, SystemDefinitionEnum systemDefinitionEnum) {
         if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -694,7 +695,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         Pair<BigDecimal, Long> refundAmountPair = calculateRefundAmount(packageOrderEntity, tenantId, uid);
 
         // 生成租金退款审核订单
-        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = buildRentRefundOrder(packageOrderEntity, refundAmountPair.getLeft(), uid, refundAmountPair.getRight(), optUid);
+        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = buildRentRefundOrder(packageOrderEntity, refundAmountPair.getLeft(), uid, refundAmountPair.getRight(), optUid, systemDefinitionEnum);
 
         // TX 事务管理
         saveRentRefundOrderInfoTx(rentRefundOrderEntity, memberTermUpdateEntity);
@@ -872,10 +873,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param uid 用户ID
      * @param residue 余量
      * @param optUid 操作人ID
+     * @param systemDefinitionEnum 操作系统
      * @return com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO
      * @author xiaohui.song
      **/
-    private CarRentalPackageOrderRentRefundPO buildRentRefundOrder(CarRentalPackageOrderPO packageOrderEntity, BigDecimal refundAmount, Long uid, Long residue, Long optUid) {
+    private CarRentalPackageOrderRentRefundPO buildRentRefundOrder(CarRentalPackageOrderPO packageOrderEntity, BigDecimal refundAmount, Long uid, Long residue, Long optUid,
+                                                                   SystemDefinitionEnum systemDefinitionEnum) {
         CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = new CarRentalPackageOrderRentRefundPO();
         rentRefundOrderEntity.setUid(uid);
         rentRefundOrderEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
@@ -898,6 +901,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (RenalPackageConfineEnum.NO.getCode().equals(packageOrderEntity.getConfine())) {
             rentRefundOrderEntity.setResidueUnit(packageOrderEntity.getTenancyUnit());
         }
+        // 设置交易方式
+        rentRefundOrderEntity.setPayType(PayTypeEnum.ON_LINE.getCode());
+        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode())) {
+            rentRefundOrderEntity.setPayType(PayTypeEnum.OFF_LINE.getCode());
+        }
+
         return rentRefundOrderEntity;
     }
 
