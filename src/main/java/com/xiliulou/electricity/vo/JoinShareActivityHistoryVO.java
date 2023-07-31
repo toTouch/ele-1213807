@@ -37,6 +37,26 @@ public class JoinShareActivityHistoryVO {
      * 参与人姓名
      */
     private String joinName;
+
+    /**
+     * 邀请人UID
+     */
+    private Long inviterUid;
+
+    /**
+     * 邀请人姓名
+     */
+    private String inviterName;
+
+    /**
+     * 邀请人电话
+     */
+    private String inviterPhone;
+
+    /**
+     * 活动名称
+     */
+    private String activityName;
     
     /**
      * 参与开始时间

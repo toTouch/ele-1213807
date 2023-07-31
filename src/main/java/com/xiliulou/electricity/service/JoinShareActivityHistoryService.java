@@ -55,4 +55,8 @@ public interface JoinShareActivityHistoryService {
     R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
     
     void queryExportExcel(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery, HttpServletResponse response);
+
+    R queryParticipants(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+    R queryParticipantsCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }
