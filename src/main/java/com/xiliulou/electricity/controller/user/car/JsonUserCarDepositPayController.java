@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
+import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -14,11 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -42,9 +42,18 @@ public class JsonUserCarDepositPayController extends BasicController {
 
     /**
      * 创建免押订单
+     * @param freeDepositOptReq 免押订单申请数据模型
+     * @return 生成二维码的网址
      */
-    public void createFreeDeposit(Long rentalPackageId) {
-
+    @PostMapping("/createFreeDeposit")
+    public R<String> createFreeDeposit(@RequestBody @Valid FreeDepositOptReq freeDepositOptReq) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(carRenalPackageDepositBizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq));
     }
 
     /**
