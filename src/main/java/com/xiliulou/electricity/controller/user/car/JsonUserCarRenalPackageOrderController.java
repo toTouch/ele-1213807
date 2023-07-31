@@ -3,13 +3,16 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
-import com.xiliulou.electricity.query.car.FreezeRentOrderoptReq;
+import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -97,7 +100,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
      * @return true(成功)、false(失败)
      */
     @PostMapping("/freezeRentOrder")
-    public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderoptReq freezeRentOrderoptReq) {
+    public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderOptReq freezeRentOrderoptReq) {
         if (!ObjectUtils.allNotNull(freezeRentOrderoptReq, freezeRentOrderoptReq.getApplyReason(), freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyTerm())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -133,7 +136,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid());
+        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid(), SystemDefinitionEnum.WX_APPLET);
 
         return R.ok(refundFlag);
     }
@@ -170,11 +173,13 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        // 获取辅助业务信息（套餐信息，车辆型号信息、电池型号信息）
+        // 获取辅助业务信息
         Set<Long> rentalPackageIds = new HashSet<>();
+        Set<String> rentalPackageOrderNos = new HashSet<>();
 
         carRentalPackageOrderEntityList.forEach(carRentalPackageOrderEntity -> {
             rentalPackageIds.add(carRentalPackageOrderEntity.getRentalPackageId());
+            rentalPackageOrderNos.add(carRentalPackageOrderEntity.getOrderNo());
         });
 
         // 套餐名称信息
@@ -185,6 +190,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
         // 车辆型号名称信息
         Map<Integer, String> carModelNameMap = getCarModelNameByIdsForMap(carModelIds);
+
+        // 查询套餐购买订单对应的退款订单信息
+        Map<String, CarRentalPackageOrderRentRefundPO> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
 
         long nowTime = System.currentTimeMillis();
 
@@ -205,7 +213,20 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             if (YesNoEnum.YES.getCode().equals(carRentalPackageOrder.getRentRebate())) {
                 // 判定可退截止时间
-                carRentalPackageOrderVO.setRentRebate(carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.NO.getCode() : YesNoEnum.YES.getCode());
+                Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
+
+                // 集成退款订单的状态，综合判定
+                CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+                if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
+                    Integer refundState = rentRefundOrderEntity.getRefundState();
+                    if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
+                        rentRebate = YesNoEnum.YES.getCode();
+                    } else {
+                        rentRebate = YesNoEnum.NO.getCode();
+                    }
+                }
+
+                carRentalPackageOrderVO.setRentRebate(rentRebate);
             }
 
             // 赋值业务属性信息

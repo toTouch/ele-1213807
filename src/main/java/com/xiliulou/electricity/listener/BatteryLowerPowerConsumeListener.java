@@ -35,7 +35,8 @@ import java.util.Objects;
  */
 @Component
 @Slf4j
-@RocketMQMessageListener(topic = MqProducerConstant.TOPIC_BATTERY_POWER, consumerGroup = MqConsumerConstant.BATTERY_CONSUMER)
+@RocketMQMessageListener(topic = MqProducerConstant.TOPIC_BATTERY_POWER, consumerGroup = MqConsumerConstant.BATTERY_CONSUMER,
+        consumeThreadMax = 2)
 public class BatteryLowerPowerConsumeListener implements RocketMQListener<String> {
     XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("LOWER_POWER_CONSUMER_POOL", 4, "lower_power_thread");
     @Autowired
@@ -79,7 +80,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
         }
 
         Long uid = electricityBattery.getUid();
-        if(Objects.isNull(uid)) {
+        if (Objects.isNull(uid)) {
             return;
         }
 

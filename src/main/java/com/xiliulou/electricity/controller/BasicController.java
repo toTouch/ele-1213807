@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -30,6 +33,9 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 public class BasicController {
+
+    @Resource
+    private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     @Resource
     private CouponService couponService;
@@ -54,6 +60,54 @@ public class BasicController {
 
     @Resource
     private UserDataScopeService userDataScopeService;
+
+    /**
+     * 根据套餐退租订单编码集获取对应退租订单信息<br />
+     * K：套餐购买订单编码<br />
+     * V：退租订单信息
+     * @param orderNos 退租订单编码集
+     * @return K：套餐退租订单编码，V：退租订单信息
+     */
+    protected Map<String, CarRentalPackageOrderRentRefundPO> queryCarRentalRentRefundOrderByOrderNos(Set<String> orderNos) {
+        if (CollectionUtils.isEmpty(orderNos)) {
+            return Collections.emptyMap();
+        }
+
+        CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
+        qryModel.setOrderNoList(new ArrayList<>(orderNos));
+        List<CarRentalPackageOrderRentRefundPO> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
+
+        if (CollectionUtils.isEmpty(rentRefundEntityList)) {
+            return Collections.emptyMap();
+        }
+
+        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getOrderNo, Function.identity(), (k1, k2) -> k1));
+
+    }
+
+    /**
+     * 根据套餐购买订单编码集获取对应退租订单信息<br />
+     * K：套餐购买订单编码<br />
+     * V：退租订单信息
+     * @param rentalPackageOrderNos 套餐购买订单编码集
+     * @return K：套餐购买订单编码，V：退租订单信息
+     */
+    protected Map<String, CarRentalPackageOrderRentRefundPO> queryCarRentalRentRefundOrderByRentalOrderNos(Set<String> rentalPackageOrderNos) {
+        if (CollectionUtils.isEmpty(rentalPackageOrderNos)) {
+            return Collections.emptyMap();
+        }
+
+        CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
+        qryModel.setRentalPackageOrderNoList(new ArrayList<>(rentalPackageOrderNos));
+        List<CarRentalPackageOrderRentRefundPO> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
+
+        if (CollectionUtils.isEmpty(rentRefundEntityList)) {
+            return Collections.emptyMap();
+        }
+        // 此处有一个及其不易注意的坑点，k1, k2 的取值，目前取值k2，注意点在于数据库的数据，要按照主键ID正序排列
+        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getRentalPackageOrderNo, Function.identity(), (k1, k2) -> k2));
+
+    }
 
     /**
      * 根据优惠券ID集获取优惠券信息<br />

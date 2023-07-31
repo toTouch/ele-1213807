@@ -96,6 +96,11 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     private BigDecimal deposit;
 
     /**
+     * 押金缴纳订单编码
+     */
+    private String depositPayOrderNo;
+
+    /**
      * 当前使用的保险订单号
      */
     private String insuranceOrderId;

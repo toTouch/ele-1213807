@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -144,4 +145,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid);
 
     Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo();
+
+    List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
 }

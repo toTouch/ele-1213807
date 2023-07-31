@@ -825,6 +825,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery) {
+        List<ElectricityMemberCardOrder> orderList = this.baseMapper.selectUserMemberCardOrderList(orderQuery);
+        if (CollectionUtils.isEmpty(orderList)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return orderList.parallelStream().map(item -> {
+            ElectricityMemberCardOrderVO vo = new ElectricityMemberCardOrderVO();
+            BeanUtils.copyProperties(item, vo);
+
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+            vo.setLimitCount(batteryMemberCard.getLimitCount());
+            vo.setRentType(batteryMemberCard.getRentType());
+            vo.setRentUnit(batteryMemberCard.getRentUnit());
+            vo.setValidDays(batteryMemberCard.getValidDays());
+            vo.setUseCount(batteryMemberCard.getUseCount());
+            vo.setBatteryTypes(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId()));
+
+            return vo;
+        }).collect(Collectors.toList());
+
+    }
+
+    @Override
     public Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery) {
         return this.baseMapper.selectUserMemberCardOrderCount(orderQuery);
     }
@@ -3139,7 +3163,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
         userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
-        userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+        } else {
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        }
 
         ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
         serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));

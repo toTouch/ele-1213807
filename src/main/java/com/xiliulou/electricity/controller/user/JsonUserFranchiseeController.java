@@ -39,6 +39,11 @@ public class JsonUserFranchiseeController extends BaseController {
 
     }
 
+    @GetMapping(value = "/user/franchisee/selectById/{id}")
+    public R selectById(@PathVariable("id") Long id) {
+        return returnTripleResult(franchiseeService.selectById(id));
+    }
+
     //根据三元组查询加盟商
     @GetMapping(value = "/user/franchisee/getFranchisee")
     public R getFranchisee(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {

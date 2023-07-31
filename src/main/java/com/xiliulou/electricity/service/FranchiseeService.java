@@ -78,4 +78,6 @@ public interface FranchiseeService {
     List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery);
 
     Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
+
+    Triple<Boolean, String, Object> selectById(Long id);
 }
