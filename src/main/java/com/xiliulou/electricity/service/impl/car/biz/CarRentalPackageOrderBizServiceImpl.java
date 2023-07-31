@@ -246,14 +246,36 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 退租申请单
         CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(refundRentOrderNo);
         if (ObjectUtils.isEmpty(rentRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(rentRefundEntity.getRefundState())) {
             log.error("approveRefundRentOrder faild. not find car_rental_package_order_rent_refund or status error. refundRentOrderNo is {}", refundRentOrderNo);
             throw new BizException("300000", "数据有误");
         }
 
+        // 租车会员信息
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.APPLY_RENT_REFUND.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("approveRefundRentOrder faild. not find t_car_rental_package_member_term or status error. uid is {}", rentRefundEntity.getUid());
+            throw new BizException("300000", "数据有误");
+        }
+
+        // 购买套餐信息
+        String orderNo = rentRefundEntity.getOrderNo();
+        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode().equals(packageOrderEntity.getUseState())) {
+            log.error("approveRefundRentOrder faild. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
+            throw new BizException("300000", "数据有误");
+        }
+
+        // 是否退掉最后一个订单
+        boolean isLastOrder = false;
+        if (orderNo.equals(memberTermEntity.getRentalPackageOrderNo())) {
+            isLastOrder = true;
+        }
+
         // TX 事务落库
-        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity);
+        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, isLastOrder, memberTermEntity, packageOrderEntity);
 
         if (approveFlag) {
             // 非 0 元退租
@@ -275,11 +297,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param apploveDesc       审批意见
      * @param apploveUid        审批人
      * @param rentRefundEntity  退租申请单DB数据
+     * @param isLastOrder  是否是最后一个订单退租(使用中的退租)
      * @return void
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
-    public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageOrderRentRefundPO rentRefundEntity) {
+    public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageOrderRentRefundPO rentRefundEntity,
+                                             boolean isLastOrder, CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderPO packageOrderEntity) {
 
         CarRentalPackageOrderRentRefundPO rentRefundUpdateEntity = new CarRentalPackageOrderRentRefundPO();
         rentRefundUpdateEntity.setOrderNo(refundRentOrderNo);
@@ -297,7 +321,31 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
 
             // 2. 更新会员期限
-            carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), refundRentOrderNo, apploveUid);
+            if (isLastOrder) {
+                carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), refundRentOrderNo, apploveUid);
+            } else {
+                // 计算总到期时间
+                Integer tenancy = packageOrderEntity.getTenancy();
+                Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
+                long dueTimeTotal = memberTermEntity.getDueTimeTotal();
+                if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                    dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.DAY_MILLISECOND);
+                }
+                if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                    dueTimeTotal = dueTimeTotal - (tenancy * 1000);
+                }
+
+                // 更新数据
+                CarRentalPackageMemberTermPO entityModify = new CarRentalPackageMemberTermPO();
+                entityModify.setDueTimeTotal(dueTimeTotal);
+                entityModify.setId(memberTermEntity.getId());
+                entityModify.setUpdateUid(apploveUid);
+                entityModify.setUpdateTime(System.currentTimeMillis());
+                carRentalPackageMemberTermService.updateById(entityModify);
+            }
+
+            // 3. 更新购买订单状态
+            carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), apploveUid);
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());

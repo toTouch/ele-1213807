@@ -69,7 +69,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         int num = carRentalPackageMemberTermMapper.rentRefundByUidAndPackageOrderNo(uid, packageOrderNo, optUid, System.currentTimeMillis());
 
-        selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);
+        selectByTenantIdAndUid(tenantId, uid);
 
         return num >= 0;
     }
