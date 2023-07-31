@@ -44,7 +44,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
         if (hardwareWarnMsg.getErrorType().equals(HardwareWarnMsg.BATTERY_TYPE)) {
             msg.setSnType(HardwareFailureMqMsg.BATTERY_TYPE);
             msg.setSn(hardwareWarnMsg.getBatteryName());
-        } else if(hardwareWarnMsg.getErrorType().equals(HardwareWarnMsg.BUSINESS_TYPE)) {
+        } else if (hardwareWarnMsg.getErrorType().equals(HardwareWarnMsg.BUSINESS_TYPE)) {
             msg.setSnType(HardwareFailureMqMsg.BUSINESS_TYPE);
             msg.setSn(electricityCabinet.getSn());
         } else {
@@ -54,7 +54,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
         msg.setAddress(electricityCabinet.getAddress());
         msg.setErrorCode(String.valueOf(hardwareWarnMsg.getErrorCode()));
         msg.setWarnTime(hardwareWarnMsg.getCreateTime());
-        msg.setErrorDesc("格挡号:" + hardwareWarnMsg.getCellNo());
+        msg.setCellNo(hardwareWarnMsg.getCellNo());
 
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_HARDWARE_FAILURE, JsonUtil.toJson(msg));
 
@@ -96,6 +96,7 @@ class HardwareFailureMqMsg {
     private String sn;
     private String snType;
     private Long warnTime;
+    private Integer cellNo;
     private String errorCode;
     private String errorDesc;
     private String data;
