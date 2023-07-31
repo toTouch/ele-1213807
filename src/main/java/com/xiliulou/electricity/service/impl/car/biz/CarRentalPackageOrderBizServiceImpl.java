@@ -494,11 +494,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
-        if(PayStateEnum.SUCCESS.getCode().equals(packageOrderEntity.getPayState())) {
+        if(!PayStateEnum.SUCCESS.getCode().equals(packageOrderEntity.getPayState())) {
             throw new BizException("300014", "订单支付异常");
         }
 
-        if(UseStateEnum.UN_USED.getCode().equals(packageOrderEntity.getUseState())) {
+        if(!UseStateEnum.UN_USED.getCode().equals(packageOrderEntity.getUseState())) {
             throw new BizException("300015", "订单状态异常");
         }
 
