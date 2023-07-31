@@ -62,8 +62,10 @@
         <if test=" storeId != null"> AND `store_id` = #{storeId} </if>
         <if test=" name != null and name != '' "> AND `name` LIKE CONCAT('%', #{name}, '%') </if>
         <if test=" type != null "> AND `type` = #{type} </if>
+        <if test=" tenancyUnit != null "> AND `tenancy_unit` = #{tenancyUnit} </if>
         <if test=" status != null "> AND `status` = #{status} </if>
         <if test=" carModelId != null "> AND `car_model_id` = #{carModelId} </if>
+        <if test=" applicableType != null "> AND `applicable_type` = #{applicableType} </if>
         <if test=" rentRebate != null "> AND `rent_rebate` = #{rentRebate} </if>
         <if test=" deposit != null "> AND `deposit` = #{deposit} </if>
         <if test=" idList != null and idList.size > 0">
@@ -82,6 +84,12 @@
             AND `store_id` IN
             <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
                 #{storeId}
+            </foreach>
+        </if>
+        <if test=" applicableTypeList != null and applicableTypeList.size > 0 ">
+            AND `applicable_type` IN
+            <foreach collection="applicableTypeList" item="applicableType" open="(" close=")" separator=",">
+                #{applicableType}
             </foreach>
         </if>
     </sql>

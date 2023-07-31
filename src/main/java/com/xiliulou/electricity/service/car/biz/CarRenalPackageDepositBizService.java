@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
+import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 
 import java.math.BigDecimal;
 
@@ -17,9 +18,9 @@ public interface CarRenalPackageDepositBizService {
      * 创建押金缴纳订单、生成免押记录
      * @param tenantId 租户ID
      * @param uid C端用户ID
-     * @param rentalPackageId 套餐ID
+     * @param freeDepositOptReq 免押申请数据
      */
-    String createFreeDeposit(Integer tenantId, Long uid, Long rentalPackageId);
+    String createFreeDeposit(Integer tenantId, Long uid, FreeDepositOptReq freeDepositOptReq);
 
     /**
      * 用户名下的押金信息(单车、车电一体)
