@@ -281,9 +281,29 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 非 0 元退租
             if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) > 0) {
                 // TODO 异步处理
+                // TODO 微信支付相关的逻辑
+                /*try {
+                    RefundOrder refundOrder = RefundOrder.builder()
+                            .orderId(eleRefundOrder.getOrderId())
+                            .refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                            .payAmount(eleRefundOrder.getPayAmount())
+                            .refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+
+                    eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+
+                    eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+                    eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleRefundOrderService.update(eleRefundOrderUpdate);
+
+                    return Triple.of(true, "", null);
+                } catch (WechatPayException e) {
+                    log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
+                }*/
                 // TODO 该订单赠送的优惠券，直接置为已失效
                 // TODO 分账数据，分账金额需要撤回
                 // TODO 活动相关的数据
+            } else {
+                // 0 元退租
             }
         }
 
@@ -322,7 +342,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 2. 更新会员期限
             if (isLastOrder) {
-                carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), refundRentOrderNo, apploveUid);
+                carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermEntity.getRentalPackageOrderNo(), apploveUid);
             } else {
                 // 计算总到期时间
                 Integer tenancy = packageOrderEntity.getTenancy();
