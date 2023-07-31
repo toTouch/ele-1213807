@@ -1,19 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
@@ -28,8 +14,19 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVO;
 import com.xiliulou.security.bean.TokenUser;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单冻结表 Controller
@@ -137,25 +134,25 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderFreezeVO> freezeVOList = freezeEntityList.stream().map(freezePO -> {
+        List<CarRentalPackageOrderFreezeVO> freezeVoList = freezeEntityList.stream().map(freezeEntity -> {
 
             CarRentalPackageOrderFreezeVO freezeVO = new CarRentalPackageOrderFreezeVO();
-            BeanUtils.copyProperties(freezePO, freezeVO);
+            BeanUtils.copyProperties(freezeEntity, freezeVO);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(freezePO.getUid(), new UserInfo());
+                UserInfo userInfo = userInfoMap.getOrDefault(freezeEntity.getUid(), new UserInfo());
                 freezeVO.setUserRelName(userInfo.getName());
                 freezeVO.setUserPhone(userInfo.getPhone());
             }
 
             if (!packageNameMap.isEmpty()) {
-                freezeVO.setCarRentalPackageName(packageNameMap.getOrDefault(Long.valueOf(freezePO.getStoreId()), ""));
+                freezeVO.setCarRentalPackageName(packageNameMap.getOrDefault(freezeEntity.getRentalPackageId(), ""));
             }
 
             return freezeVO;
         }).collect(Collectors.toList());
 
-        return R.ok(freezeVOList);
+        return R.ok(freezeVoList);
     }
 
     /**

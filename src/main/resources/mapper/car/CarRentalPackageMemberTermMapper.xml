@@ -24,6 +24,7 @@
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
         <result property="deposit" column="deposit" jdbcType="DECIMAL" />
+        <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
         <result property="insuranceOrderId" column="insurance_order_id" jdbcType="VARCHAR" />
         <result property="payCount" column="pay_count" jdbcType="VARCHAR" />
     </resultMap>
@@ -38,7 +39,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `insurance_order_id`, `pay_count`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `insurance_order_id`, `pay_count`
     </sql>
 
     <!-- 全部字段 -->
@@ -73,6 +74,7 @@
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
             <if test=" deposit != null "> `deposit`, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> `insurance_order_id`, </if>
             <if test=" payCount != null "> `pay_count`, </if>
         </trim>
@@ -98,6 +100,7 @@
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" deposit != null "> #{deposit}, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> #{insuranceOrderId}, </if>
             <if test=" payCount != null "> #{payCount}, </if>
         </trim>
@@ -183,6 +186,7 @@
             <if test=" status != null "> , `status` = #{status} </if>
             <if test=" deposit != null "> , `deposit` = #{deposit} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> , `deposit_pay_order_no` = #{depositPayOrderNo} </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> , `insurance_order_id` = #{insuranceOrderId} </if>
             <if test=" payCount != null "> , `pay_count` = #{payCount} </if>
         </set>

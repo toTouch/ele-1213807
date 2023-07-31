@@ -124,7 +124,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      */
     @Override
     public Boolean updateStatusByUidAndTenantId(Integer tenantId, Long uid, Integer status, Long optId) {
-        if (ObjectUtils.isEmpty(tenantId) || ObjectUtils.isEmpty(uid) || ObjectUtils.isEmpty(status)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, status)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         int num = carRentalPackageMemberTermMapper.updateStatusByUidAndTenantId(tenantId, uid, status, optId, System.currentTimeMillis());

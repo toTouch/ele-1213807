@@ -460,8 +460,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300020", "订单编码不匹配");
         }
 
-        // 撤销冻结申请
-        return carRentalPackageOrderFreezeService.revokeByOrderNo(freezeEntity.getOrderNo(), uid);
+        // 事务处理
+        revokeFreezeRentOrderTx(tenantId, uid, freezeEntity.getOrderNo());
+        
+        return true;
+    }
+
+    /**
+     * 撤销冻结申请事务处理
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param freeOrderNo 冻结申请单编码
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void revokeFreezeRentOrderTx(Integer tenantId, Long uid, String freeOrderNo) {
+        // 1. 撤销冻结申请
+        carRentalPackageOrderFreezeService.revokeByOrderNo(freeOrderNo, uid);
+        // 2. 更改会员期限表数据
+        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), uid);
     }
 
     /**
@@ -1611,6 +1627,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setResidue(packageEntity.getConfineNum());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(carRentalPackageOrderEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setDepositPayOrderNo(carRentalPackageOrderEntity.getDepositPayOrderNo());
         carRentalPackageMemberTermEntity.setTenantId(tenantId);
         carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
         carRentalPackageMemberTermEntity.setStoreId(packageEntity.getStoreId());
