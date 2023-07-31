@@ -147,8 +147,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 查询租车会员信息
-        CarRentalPackageMemberTermPO memberTermPO = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(memberTermPO) && !MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermPO.getStatus())) {
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(memberTermEntity) && !MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. Deposit paid. uid is {}", uid);
             throw new BizException("300028", "已缴纳押金");
         }
@@ -169,6 +169,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageDepositPayPO carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(), PayTypeEnum.EXEMPT.getCode());
         // 创建免押记录
         FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq);
+        // 创建租车会员信息
+        CarRentalPackageMemberTermPO memberTermInsertEntity = null;
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            // 生成租车套餐会员期限表信息，准备 Insert
+            memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage);
+        }
 
         // 调用第三方
         PxzCommonRequest<PxzFreeDepositOrderRequest> query = new PxzCommonRequest<>();
@@ -205,24 +211,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("100401", callPxzRsp.getRespDesc());
         }
 
-        // TODO 问志龙逻辑，为啥要动这个，干啥的？
-       /* UserCarDeposit userCarDeposit = new UserCarDeposit();
-        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
-        userCarDeposit.setUid(userInfo.getUid());
-        userCarDeposit.setDid(carDepositOrder.getId());
-        userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
-        userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_FREE);
-        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
-        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
-        userCarDeposit.setCreateTime(System.currentTimeMillis());
-        userCarDeposit.setUpdateTime(System.currentTimeMillis());
-        userCarDepositService.insertOrUpdate(userCarDeposit);*/
-
         // TX 事务落库
-        saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder);
+        saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertEntity);
 
         return callPxzRsp.getData();
     }
+
 
     /**
      * 免押申请数据落库事务处理
@@ -230,9 +224,40 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param freeDepositOrder
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveFreeDepositTx(CarRentalPackageDepositPayPO carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder) {
+    public void saveFreeDepositTx(CarRentalPackageDepositPayPO carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPO memberTermEntity) {
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);
+        // 此时会员期限表，数据要么为空，要么就是待生效状态
+        if (ObjectUtils.isNotEmpty(carRentalPackageMemberTermService)) {
+            carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
+            carRentalPackageMemberTermService.insert(memberTermEntity);
+        }
+    }
+
+
+    /**
+     * 构建租车套餐会员期限信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageEntity 租车套餐信息
+     * @return 将要新增的租车会员期限信息
+     */
+    private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity) {
+        CarRentalPackageMemberTermPO carRentalPackageMemberTermEntity = new CarRentalPackageMemberTermPO();
+        carRentalPackageMemberTermEntity.setUid(uid);
+        carRentalPackageMemberTermEntity.setRentalPackageType(packageEntity.getType());
+        carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
+        carRentalPackageMemberTermEntity.setDeposit(packageEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setTenantId(tenantId);
+        carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
+        carRentalPackageMemberTermEntity.setStoreId(packageEntity.getStoreId());
+        carRentalPackageMemberTermEntity.setCreateUid(uid);
+        carRentalPackageMemberTermEntity.setUpdateUid(uid);
+        carRentalPackageMemberTermEntity.setCreateTime(System.currentTimeMillis());
+        carRentalPackageMemberTermEntity.setUpdateTime(System.currentTimeMillis());
+        carRentalPackageMemberTermEntity.setDelFlag(DelFlagEnum.OK.getCode());
+
+        return carRentalPackageMemberTermEntity;
     }
 
     /**
