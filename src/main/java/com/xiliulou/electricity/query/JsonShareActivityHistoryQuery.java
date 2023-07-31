@@ -30,4 +30,9 @@ public class JsonShareActivityHistoryQuery {
     private Integer status;
     
     private Long id;
+
+    private String phone;
+
+    private String activityName;
+
 }

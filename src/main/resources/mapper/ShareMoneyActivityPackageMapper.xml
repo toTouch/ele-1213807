@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.CouponActivityPackageMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityPackageMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.CouponActivityPackage" id="CouponActivityPackageMap">
+    <resultMap type="com.xiliulou.electricity.entity.ShareMoneyActivityPackage" id="ShareMoneyActivityPackageMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
         <result property="packageId" column="package_id" jdbcType="INTEGER"/>
         <result property="packageType" column="package_type" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -14,15 +14,15 @@
     </resultMap>
 
     <!-- 基础字段 -->
-    <sql id="selectCouponPackage">
-        select id, coupon_id, package_id, package_type, tenant_id, del_flag, create_time, update_time from t_coupon_activity_package
+    <sql id="selectActivityPackage">
+        select id, activity_id, package_id, package_type, tenant_id, del_flag, create_time, update_time from t_share_money_activity_package
     </sql>
 
     <!-- 新增优惠券关联套餐信息-->
-    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.CouponActivityPackage" useGeneratedKeys="true" keyProperty="id">
-        insert into t_coupon_activity_package
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.ShareMoneyActivityPackage" useGeneratedKeys="true" keyProperty="id">
+        insert into t_share_money_activity_package
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            coupon_id,
+            activity_id,
             package_id,
             package_type,
             tenant_id,
@@ -31,7 +31,7 @@
             update_time,
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{couponId},
+            #{activityId},
             #{packageId},
             #{packageType},
             #{tenantId},
@@ -43,10 +43,10 @@
 
     <!--通过主键修改数据-->
     <update id="updateOne">
-        update t_coupon_activity_package
+        update t_share_money_activity_package
         <set>
-            <if test="couponId != null">
-                coupon_id = #{couponId},
+            <if test="activityId != null">
+                activity_id = #{activityId},
             </if>
             <if test="packageId != null">
                 package_id = #{packageId},
@@ -68,15 +68,15 @@
     </update>
 
     <!--通过主键删除-->
-    <delete id="deleteCouponPackage">
-        delete from t_coupon_activity_package where id = #{id}
+    <delete id="deleteActivityPackage">
+        delete from t_share_money_activity_package where id = #{id}
     </delete>
 
     <!--批量新增优惠券套餐记录-->
-    <insert id="batchInsertCouponPackages" keyProperty="id" useGeneratedKeys="true">
-        insert into t_coupon_activity_package
+    <insert id="batchInsertActivityPackages" keyProperty="id" useGeneratedKeys="true">
+        insert into t_share_money_activity_package
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            coupon_id,
+            activity_id,
             package_id,
             package_type,
             tenant_id,
@@ -87,7 +87,7 @@
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (
-            #{couponId},
+            #{activityId},
             #{packageId},
             #{packageType},
             #{tenantId},
@@ -98,15 +98,15 @@
         </foreach>
     </insert>
 
-    <select id="selectByQuery" resultMap="CouponActivityPackageMap">
-        <include refid="selectCouponPackage"/>
+    <select id="selectByQuery" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
         <where>
             del_flag = 0
             <if test="id != null">
                 and id = #{id}
             </if>
-            <if test="couponId != null">
-                and coupon_id = #{couponId}
+            <if test="activityId != null">
+                and activity_id = #{activityId}
             </if>
             <if test="packageId != null">
                 and package_id = #{packageId}
@@ -127,14 +127,14 @@
         </where>
     </select>
 
-    <select id="selectActivityPackagesByCouponId" resultMap="CouponActivityPackageMap">
-        <include refid="selectCouponPackage"/>
-        where coupon_id = #{couponId}
+    <select id="selectActivityPackagesByActivityId" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
+        where activity_id = #{activityId}
     </select>
 
-    <select id="selectPackagesByCouponIdAndPackageType" resultMap="CouponActivityPackageMap">
-        <include refid="selectCouponPackage"/>
-        where coupon_id = #{couponId}
+    <select id="selectPackagesByActivityIdAndPackageType" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
+        where activity_id = #{activityId}
         and package_type = #{packageType}
     </select>
 

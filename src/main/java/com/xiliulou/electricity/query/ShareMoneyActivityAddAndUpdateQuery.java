@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 活动表(Activity)实体类
@@ -74,8 +76,27 @@ public class ShareMoneyActivityAddAndUpdateQuery {
      */
     private Integer franchiseeId;
 
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    //@NotNull(message = "邀请标准不能为空!", groups = {CreateGroup.class})
+    private Integer invitationCriteria;
 
+    /**
+     * 换电套餐IDs
+     */
+    private List<Long> batteryPackages;
 
+    /**
+     * 租车套餐IDs
+     */
+    private List<Long> carRentalPackages;
+
+    /**
+     * 车电一体套餐IDs
+     */
+    private List<Long> carWithBatteryPackages;
 
 
 }

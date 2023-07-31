@@ -334,7 +334,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
             batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
-            batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
+            batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
             batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());

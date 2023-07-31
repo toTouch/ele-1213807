@@ -69,6 +69,26 @@ public class JoinShareMoneyActivityHistoryVO {
      */
     private BigDecimal money;
 
+    /**
+     * 邀请人UID
+     */
+    private Long inviterUid;
+
+    /**
+     * 邀请人姓名
+     */
+    private String inviterName;
+
+    /**
+     * 邀请人电话
+     */
+    private String inviterPhone;
+
+    /**
+     * 活动名称
+     */
+    private String activityName;
+
 
     //初始化
     public static Integer STATUS_INIT = 1;
