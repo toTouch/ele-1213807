@@ -261,7 +261,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 购买套餐信息
-        String orderNo = rentRefundEntity.getOrderNo();
+        String orderNo = rentRefundEntity.getRentalPackageOrderNo();
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
         if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode().equals(packageOrderEntity.getUseState())) {
             log.error("approveRefundRentOrder faild. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
@@ -1599,6 +1599,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         /*rocketMqService.sendAsyncMsg("topic", "msg");*/
         // 7. TODO 处理保险购买订单
         // 8. TODO 处理分账
+
+
         // 9. TODO 处理活动
         return Pair.of(true, userInfo.getPhone());
     }
