@@ -498,7 +498,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300014", "订单支付异常");
         }
 
-        if(!UseStateEnum.UN_USED.getCode().equals(packageOrderEntity.getUseState())) {
+        if(!UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
             throw new BizException("300015", "订单状态异常");
         }
 
