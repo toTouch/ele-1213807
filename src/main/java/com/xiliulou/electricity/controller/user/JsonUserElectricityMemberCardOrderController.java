@@ -79,7 +79,7 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
         return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderList(orderQuery));
     }
 
-    @GetMapping("user/memberCardOrder/listV3")
+    @GetMapping("/user/memberCardOrder/listV3")
     public R selectElectricityMemberCardOrderList(@RequestParam("offset") long offset, @RequestParam("size") long size,
                            @RequestParam(value = "status", required = false) Integer status,
                            @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,

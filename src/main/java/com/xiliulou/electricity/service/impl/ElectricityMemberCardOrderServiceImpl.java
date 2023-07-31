@@ -826,12 +826,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery) {
+        List<ElectricityMemberCardOrder> orderList = this.baseMapper.selectUserMemberCardOrderList(orderQuery);
+        if (CollectionUtils.isEmpty(orderList)) {
+            return Collections.EMPTY_LIST;
+        }
 
+        return orderList.parallelStream().map(item -> {
+            ElectricityMemberCardOrderVO vo = new ElectricityMemberCardOrderVO();
+            BeanUtils.copyProperties(item, vo);
 
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+            vo.setLimitCount(batteryMemberCard.getLimitCount());
+            vo.setRentType(batteryMemberCard.getRentType());
+            vo.setRentUnit(batteryMemberCard.getRentUnit());
+            vo.setValidDays(batteryMemberCard.getValidDays());
+            vo.setUseCount(batteryMemberCard.getUseCount());
+            vo.setBatteryTypes(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId()));
 
-        return null;
-
-
+            return vo;
+        }).collect(Collectors.toList());
 
     }
 

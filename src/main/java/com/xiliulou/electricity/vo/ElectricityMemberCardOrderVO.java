@@ -3,6 +3,8 @@ package com.xiliulou.electricity.vo;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @program: XILIULOU
  * @description:
@@ -36,5 +38,19 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      * 租赁类型
      */
     private Integer rentType;
+    /**
+     * 0:不限制,1:限制
+     */
+    private Integer limitCount;
+    /**
+     * 租期
+     */
+    private Integer validDays;
+    /**
+     * 使用次数
+     */
+    private Long useCount;
+
+    List<String> batteryTypes;
 
 }
