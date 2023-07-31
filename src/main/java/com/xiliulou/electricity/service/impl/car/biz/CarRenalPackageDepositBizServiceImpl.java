@@ -220,8 +220,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 免押申请数据落库事务处理
-     * @param carRentalPackageDepositPay
-     * @param freeDepositOrder
+     * @param carRentalPackageDepositPay 车辆押金缴纳订单
+     * @param freeDepositOrder 免押记录
+     * @param memberTermEntity 新增的会员期限信息
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveFreeDepositTx(CarRentalPackageDepositPayPO carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPO memberTermEntity) {
