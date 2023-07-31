@@ -43,4 +43,8 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 	
 	List<ElectricityCabinetOrderExcelQuery> queryExportExcel(
 			JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+	List<JoinShareActivityHistoryVO> queryParticipants(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+	Long queryParticipantsCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }

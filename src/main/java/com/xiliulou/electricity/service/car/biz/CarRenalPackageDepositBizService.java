@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
+import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 
 import java.math.BigDecimal;
 
@@ -19,7 +20,7 @@ public interface CarRenalPackageDepositBizService {
      * @param uid 用户ID
      * @return true(成功)、false(失败)
      */
-    boolean queryFreeDepositStatus(Integer tenantId, Long uid);
+    FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid);
 
     /**
      * 创建免押订单，生成二维码<br />

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      * @return true(成功)、false(失败)
      */
     @GetMapping("/queryFreeDepositStatus")
-    public R<Boolean> queryFreeDepositStatus() {
+    public R<FreeDepositUserInfoVo> queryFreeDepositStatus() {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

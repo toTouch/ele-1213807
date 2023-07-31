@@ -4,8 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
@@ -24,16 +23,15 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表控制层
@@ -188,11 +186,13 @@ public class JsonAdminShareActivityController extends BaseController {
                                        @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
                                        @RequestParam(value = "type",  required = true) Integer type) {
 
-        if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+        List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
+        if(!packageTypes.contains(type)){
             return R.fail("000200", "业务类型参数不合法");
         }
+
         //需要获取租金不可退的套餐
-        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .offset(offset)
                     .size(size)
@@ -211,9 +211,9 @@ public class JsonAdminShareActivityController extends BaseController {
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
 
-            if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
             }
 
@@ -226,11 +226,13 @@ public class JsonAdminShareActivityController extends BaseController {
     public R getElectricityUsablePackageCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
                                               @RequestParam(value = "type",  required = true) Integer type) {
 
-        if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+        List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
+        if(!packageTypes.contains(type)){
             return R.fail("000200", "业务类型参数不合法");
         }
+
         //需要获取租金不可退的套餐
-        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .franchiseeId(franchiseeId)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
@@ -245,9 +247,9 @@ public class JsonAdminShareActivityController extends BaseController {
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
 
-            if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
             }
             return R.ok(carRentalPackageService.count(qryModel));

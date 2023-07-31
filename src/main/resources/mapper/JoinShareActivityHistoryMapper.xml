@@ -110,4 +110,97 @@
         order by jsah.update_time desc
         limit #{offset}, #{size}
     </select>
+
+    <!-- 根据条件查询参与记录信息-->
+    <select id="queryParticipants" resultType="com.xiliulou.electricity.vo.JoinShareActivityHistoryVO">
+        select
+            jsah.id as id,
+            jsah.start_time as startTime,
+            jsah.expired_time as expiredTime,
+            jsah.status as status,
+            jsah.create_time as createTime,
+            jsah.update_time as updateTime,
+            jsah.tenant_id as tenantId,
+            tui.phone as joinPhone,
+            jsah.uid as inviterUid,
+            jsah.join_uid as joinUid,
+            tui.name as joinName,
+            jsah.activity_id as activityId,
+            tsa.name as activityName
+        from t_join_share_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.join_uid
+        left join t_share_activity as tsa on tsa.id = jsah.activity_id
+        <where>
+            <if test="uid != null">
+                and jsah.uid = #{uid}
+            </if>
+            <if test="activityId != null">
+                and jsah.activity_id = #{activityId}
+            </if>
+            <if test="tenantId != null">
+                and jsah.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and jsah.status = #{status}
+            </if>
+            <if test="joinName != null and joinName != ''">
+                and tui.name like concat('%', #{joinName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and tsa.name like concat('%', #{activityName}, '%')
+            </if>
+            <if test="startTime != null">
+                and jsah.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and jsah.start_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by jsah.update_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+
+    </select>
+
+    <select id="queryParticipantsCount" resultType="long">
+        select
+            count(1)
+        from t_join_share_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.join_uid
+        left join t_share_activity as tsa on tsa.id = jsah.activity_id
+        <where>
+            <if test="uid != null">
+                and jsah.uid = #{uid}
+            </if>
+            <if test="activityId != null">
+                and jsah.activity_id = #{activityId}
+            </if>
+            <if test="tenantId != null">
+                and jsah.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and jsah.status = #{status}
+            </if>
+            <if test="joinName != null and joinName != ''">
+                and tui.name like concat('%', #{joinName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and tsa.name like concat('%', #{activityName}, '%')
+            </if>
+            <if test="startTime != null">
+                and jsah.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and jsah.start_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
 </mapper>

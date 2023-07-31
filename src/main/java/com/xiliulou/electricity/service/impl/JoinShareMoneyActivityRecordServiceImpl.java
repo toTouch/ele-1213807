@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -203,6 +205,15 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	@Override
 	public void updateByActivityId(JoinShareMoneyActivityRecord joinShareMoneyActivityRecord) {
 		joinShareMoneyActivityRecordMapper.updateByActivityId(joinShareMoneyActivityRecord);
+	}
+
+	@Slave
+	@Override
+	public List<JoinShareMoneyActivityRecord> queryByUidAndActivityId(Long uid, Long activityId) {
+		List<JoinShareMoneyActivityRecord> joinShareMoneyActivityRecords = joinShareMoneyActivityRecordMapper.selectList(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>().eq(JoinShareMoneyActivityRecord::getUid, uid)
+				.eq(JoinShareMoneyActivityRecord::getActivityId, activityId));
+
+		return joinShareMoneyActivityRecords;
 	}
 
 	private Boolean checkUserIsCard(UserInfo userInfo) {

@@ -43,4 +43,8 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 	
 	List<JoinShareMoneyActivityHistoryExcelQuery> queryExportExcel(
 			JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+	List<JoinShareMoneyActivityHistoryVO> queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+	Long queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 }
