@@ -141,7 +141,7 @@ public class JsonUserCarDepositPayController extends BasicController {
         depositPayVo.setPayState(depositPayEntity.getPayState());
         depositPayVo.setPayType(depositPayEntity.getPayType());
 
-        return R.ok();
+        return R.ok(depositPayVo);
     }
 
 }
