@@ -91,7 +91,7 @@ public class DivisionAccountConfigQuery {
     /**
      * 换电套餐IDs
      */
-    private List<Long> electricityPackages;
+    private List<Long> batteryPackages;
 
     /**
      * 租车套餐IDs
@@ -101,6 +101,6 @@ public class DivisionAccountConfigQuery {
     /**
      * 车电一体套餐IDs
      */
-    private List<Long> carElectricityPackages;
+    private List<Long> carWithBatteryPackages;
 
 }

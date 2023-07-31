@@ -44,7 +44,6 @@ public class JsonAdminElectricityMemberCardController {
     UserDataScopeService userDataScopeService;
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
-
     @Autowired
     private CarRentalPackageService carRentalPackageService;
 

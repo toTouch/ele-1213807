@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
@@ -79,9 +80,10 @@ public interface CarRentalPackageOrderBizService {
      * @param uid 用户ID
      * @param packageOrderNo 套餐购买订单编号
      * @param optUid 操作人ID
+     * @param systemDefinitionEnum 操作系统
      * @return
      */
-    Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid);
+    Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid, SystemDefinitionEnum systemDefinitionEnum);
 
     /**
      * 根据用户ID查询正在使用的套餐信息<br />

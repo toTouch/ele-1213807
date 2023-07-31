@@ -20,4 +20,6 @@ public interface CouponActivityPackageService {
 
     List<CouponActivityPackage> findActivityPackagesByCouponId(Long couponId);
 
+    List<CouponActivityPackage> findPackagesByCouponIdAndType(Long couponId, Integer packageType);
+
 }

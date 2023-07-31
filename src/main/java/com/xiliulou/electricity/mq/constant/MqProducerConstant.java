@@ -29,4 +29,9 @@ public interface MqProducerConstant {
 
     /** 运维通知 topic */
     String TOPIC_MAINTENANCE_NOTIFY = "MAINTENANCE_NOTIFY";
+
+    /**
+     * 硬件故障
+     */
+    String TOPIC_HARDWARE_FAILURE = "hardware_failure";
 }

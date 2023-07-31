@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
+import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
@@ -19,6 +21,10 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
@@ -30,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * 租车套餐押金业务聚合 BizServiceImpl
@@ -41,8 +48,13 @@ import java.math.BigDecimal;
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
 
     @Resource
-    private PxzConfigService pxzConfigService;
+    private FreeDepositOrderService freeDepositOrderService;
 
+    @Resource
+    private PxzDepositService pxzDepositService;
+
+    @Resource
+    private PxzConfigService pxzConfigService;
 
     @Resource
     private FreeDepositDataService freeDepositDataService;
@@ -86,26 +98,25 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      *
      * @param tenantId        租户ID
      * @param uid             C端用户ID
-     * @param rentalPackageId 套餐ID
+     * @param freeDepositOptReq 免押数据申请
      */
     @Override
-    public String createFreeDeposit(Integer tenantId, Long uid, Long rentalPackageId) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, rentalPackageId)) {
+    public String createFreeDeposit(Integer tenantId, Long uid, FreeDepositOptReq freeDepositOptReq) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, freeDepositOptReq, freeDepositOptReq.getRentalPackageId(), freeDepositOptReq.getPhoneNumber(), freeDepositOptReq.getRealName(), freeDepositOptReq.getIdCard())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (ObjectUtils.isEmpty(userInfo)) {
-            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. not found t_user_info. uid is {}", uid);
-            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        //检测租户
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. The deposit exemption function is not enabled. tenantId is {}", tenantId);
+            throw new BizException("100418", "押金免押功能未开启,请联系客服处理");
         }
 
-        //获取租户免押次数
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(tenantId);
         if (ObjectUtils.isEmpty(freeDepositData)) {
             log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. not found t_free_deposit_data, tenantId is {}", tenantId);
             throw new BizException("100404", "免押次数未充值，请联系管理员");
-
         }
 
         if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
@@ -119,7 +130,21 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("100400", "免押功能未配置相关信息，请联系客服处理");
         }
 
-        // TODO com.xiliulou.electricity.service.impl.FreeDepositOrderServiceImpl.checkUserCanFreeCarDeposit
+        // 检测用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(userInfo)) {
+            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. not found t_user_info. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. user is disable. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. user not auth. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0041", "未实名认证");
+        }
 
         // 查询租车会员信息
         CarRentalPackageMemberTermPO memberTermPO = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
@@ -129,6 +154,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 查询套餐信息
+        Long rentalPackageId = freeDepositOptReq.getRentalPackageId();
         CarRentalPackagePO carRentalPackage = carRentalPackageService.selectById(rentalPackageId);
         if (ObjectUtils.isEmpty(carRentalPackage) || UpDownEnum.DOWN.getCode().equals(carRentalPackage)) {
             log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. not found t_car_rental_package or status is wrong. rentalPackageId is {}", rentalPackageId);
@@ -142,20 +168,110 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 创建押金缴纳订单
         CarRentalPackageDepositPayPO carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(), PayTypeEnum.EXEMPT.getCode());
         // 创建免押记录
+        FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq);
 
         // 调用第三方
+        PxzCommonRequest<PxzFreeDepositOrderRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(freeDepositOrder.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+
+        PxzFreeDepositOrderRequest request = new PxzFreeDepositOrderRequest();
+        request.setPhone(freeDepositOrder.getPhone());
+        request.setSubject("租车套餐免押");
+        request.setRealName(freeDepositOrder.getRealName());
+        request.setIdNumber(freeDepositOrder.getIdCard());
+        request.setTransId(freeDepositOrder.getOrderId());
+        request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        query.setData(request);
+        PxzCommonRsp<String> callPxzRsp = null;
+        try {
+            log.info("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder params is {}", JsonUtil.toJson(query));
+            callPxzRsp = pxzDepositService.freeDepositOrder(query);
+        } catch (Exception e) {
+            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder failed. ", e);
+            throw new BizException("100401", "免押调用失败");
+        }
+        log.info("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder result is {}", JsonUtil.toJson(callPxzRsp));
+
+        if (ObjectUtils.isEmpty(callPxzRsp)) {
+            log.error("PCarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            throw new BizException("100401", "免押调用失败");
+        }
+
+        if (!callPxzRsp.isSuccess()) {
+            log.error("PCarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            throw new BizException("100401", callPxzRsp.getRespDesc());
+        }
+
+        // TODO 问志龙逻辑，为啥要动这个，干啥的？
+       /* UserCarDeposit userCarDeposit = new UserCarDeposit();
+        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+        userCarDeposit.setUid(userInfo.getUid());
+        userCarDeposit.setDid(carDepositOrder.getId());
+        userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
+        userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_FREE);
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+        userCarDeposit.setCreateTime(System.currentTimeMillis());
+        userCarDeposit.setUpdateTime(System.currentTimeMillis());
+        userCarDepositService.insertOrUpdate(userCarDeposit);*/
 
         // TX 事务落库
+        saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder);
 
-        return null;
+        return callPxzRsp.getData();
+    }
+
+    /**
+     * 免押申请数据落库事务处理
+     * @param carRentalPackageDepositPay
+     * @param freeDepositOrder
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveFreeDepositTx(CarRentalPackageDepositPayPO carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder) {
+        carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
+        freeDepositOrderService.insert(freeDepositOrder);
+    }
+
+    /**
+     * 生成免押记录订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param carRentalPackageDepositPayInsert 租车套餐押金订单
+     * @param freeDepositOptReq 免押申请数据
+     * @return 免押记录订单
+     */
+    private FreeDepositOrder buildFreeDepositOrderEntity(Integer tenantId, Long uid, CarRentalPackageDepositPayPO carRentalPackageDepositPayInsert, FreeDepositOptReq freeDepositOptReq) {
+        Integer depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR;
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
+            depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY;
+        }
+        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder()
+                .uid(uid)
+                .authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
+                .idCard(freeDepositOptReq.getIdCard())
+                .orderId(carRentalPackageDepositPayInsert.getOrderNo())
+                .phone(freeDepositOptReq.getPhoneNumber())
+                .realName(freeDepositOptReq.getRealName())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .payStatus(FreeDepositOrder.PAY_STATUS_INIT)
+                .tenantId(tenantId)
+                .transAmt(carRentalPackageDepositPayInsert.getDeposit().doubleValue())
+                .type(FreeDepositOrder.TYPE_ZHIFUBAO)
+                .depositType(depositType)
+                .build();
+        return freeDepositOrder;
     }
 
     /**
      * 生成押金缴纳订单
-     * @param tenantId
-     * @param uid
-     * @param carRentalPackage
-     * @return
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param carRentalPackage 租车套餐信息
+     * @return 租车套餐押金订单
      */
     private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPayEntity(Integer tenantId, Long uid, CarRentalPackagePO carRentalPackage, Integer freeDeposit, Integer payType) {
         CarRentalPackageDepositPayPO carRentalPackageDepositPay = new CarRentalPackageDepositPayPO();

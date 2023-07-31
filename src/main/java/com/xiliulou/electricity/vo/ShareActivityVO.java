@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import lombok.Data;
 
 import java.util.List;
@@ -97,6 +98,27 @@ public class ShareActivityVO {
      * 领券套餐
      */
     private List<BatteryMemberCard> memberCards;
+
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
+
+    /**
+     * 邀请活动关联的换电套餐列表
+     */
+    private List<BatteryMemberCardVO> batteryPackages;
+
+    /**
+     * 邀请活动关联的租车套餐列表
+     */
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    /**
+     * 邀请活动关联的车电一体套餐列表
+     */
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
 
 
 

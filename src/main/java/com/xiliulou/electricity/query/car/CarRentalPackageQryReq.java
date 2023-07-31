@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.query.car;
 
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
@@ -71,5 +73,26 @@ public class CarRentalPackageQryReq implements Serializable {
      * 车辆型号ID
      */
     private Integer carModelId;
+
+    /**
+     * 租期单位
+     * <pre>
+     *     1-天
+     *     0-分钟
+     * </pre>
+     * @see RentalUnitEnum
+     */
+    private Integer tenancyUnit;
+
+    /**
+     * 适用类型
+     * <pre>
+     *     0-全部
+     *     1-新租套餐
+     *     2-续租套餐
+     * </pre>
+     * @see ApplicableTypeEnum
+     */
+    private Integer applicableType;
 
 }

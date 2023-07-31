@@ -485,9 +485,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         query.setType(BigDecimal.ZERO.intValue());
 
         //检查是否有选择（换电,租车,车电一体）套餐信息
-        if(CollectionUtils.isEmpty(query.getElectricityPackages())
+        if(CollectionUtils.isEmpty(query.getBatteryPackages())
                 && CollectionUtils.isEmpty(query.getCarRentalPackages())
-                && CollectionUtils.isEmpty(query.getCarElectricityPackages())){
+                && CollectionUtils.isEmpty(query.getCarWithBatteryPackages())){
             return Triple.of(false, "000201", "请选择套餐信息");
         }
 
@@ -535,7 +535,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private Triple<Boolean, String, Object> verifyBatteryDivisionAccountParams(DivisionAccountConfigQuery query){
         //检查换电套餐， 以及租车，车电一体套餐是否均可用
         //1.检查换电套餐及分账配置是否存在
-        if(CollectionUtils.isNotEmpty(query.getElectricityPackages())){
+        if(CollectionUtils.isNotEmpty(query.getBatteryPackages())){
             //因换电存在老的流程，所以需要检查是否存在之前设置过的套餐信息。
             Triple<Boolean, String, Object> verifyBatteryMembercardResult = verifyBatteryMembercardParams(query);
             if (Boolean.FALSE.equals(verifyBatteryMembercardResult.getLeft())) {
@@ -543,14 +543,14 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             }
 
             //3.0新流程的检查方式
-            for(Long memberCardId : query.getElectricityPackages()){
+            for(Long memberCardId : query.getBatteryPackages()){
                 ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(memberCardId.intValue());
                 if (Objects.isNull(electricityMemberCard)) {
                     return Triple.of(false, "000202", "换电套餐不存在");
                 }
             }
 
-            Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_BATTERY, query.getElectricityPackages(), query.getFranchiseeId(), query.getTenantId());
+            Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_BATTERY, query.getBatteryPackages(), query.getFranchiseeId(), query.getTenantId());
             if (Boolean.FALSE.equals(existPackagesResult.getLeft())) {
                 throw new CustomBusinessException("换电" + existPackagesResult.getRight());
             }
@@ -573,14 +573,14 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         }
 
         //3.检查车电一体套餐及分账配置是否存在
-        if(CollectionUtils.isNotEmpty(query.getCarElectricityPackages()))
-        for(Long memberCardId : query.getCarElectricityPackages()){
+        if(CollectionUtils.isNotEmpty(query.getCarWithBatteryPackages()))
+        for(Long memberCardId : query.getCarWithBatteryPackages()){
             CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
 
-            Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY, query.getCarElectricityPackages(), query.getFranchiseeId(), query.getTenantId());
+            Triple<Boolean, String, Object> existPackagesResult = isExistDAPackages(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY, query.getCarWithBatteryPackages(), query.getFranchiseeId(), query.getTenantId());
             if (Boolean.FALSE.equals(existPackagesResult.getLeft())) {
                 throw new CustomBusinessException("车电一体" + existPackagesResult.getRight());
             }
@@ -690,9 +690,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         //divisionAccountConfigVO.setMemberCardList(getMemberCardVOListByDA(divisionAccountConfig));
 
-        divisionAccountConfigVO.setElectricityPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_BATTERY));
+        divisionAccountConfigVO.setBatteryPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_BATTERY));
         divisionAccountConfigVO.setCarRentalPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
-        divisionAccountConfigVO.setCarElectricityPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
+        divisionAccountConfigVO.setCarWithBatteryPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
 
         /*if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
             List<Long> memberCardIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
@@ -885,7 +885,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private List<DivisionAccountBatteryMembercard> buildNewDABatteryMembercardList(DivisionAccountConfigQuery query, DivisionAccountConfig accountConfig){
         List<DivisionAccountBatteryMembercard> membercardList = Lists.newArrayList();
 
-        List<Long> electricityPackages = query.getElectricityPackages();
+        List<Long> electricityPackages = query.getBatteryPackages();
         if(CollectionUtils.isNotEmpty(electricityPackages)){
             List<DivisionAccountBatteryMembercard> carElectricityPackagesCards = buildDABatteryMemberCards(electricityPackages, DivisionAccountBatteryMembercard.TYPE_BATTERY, accountConfig.getId(), accountConfig.getTenantId());
             membercardList.addAll(carElectricityPackagesCards);
@@ -897,7 +897,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             membercardList.addAll(carElectricityPackagesCards);
         }
 
-        List<Long> carElectricityPackages = query.getCarElectricityPackages();
+        List<Long> carElectricityPackages = query.getCarWithBatteryPackages();
         if(CollectionUtils.isNotEmpty(carElectricityPackages)){
             List<DivisionAccountBatteryMembercard> carElectricityPackagesCards = buildDABatteryMemberCards(carElectricityPackages, DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY, accountConfig.getId(), accountConfig.getTenantId());
             membercardList.addAll(carElectricityPackagesCards);
@@ -1002,7 +1002,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private List<EleDivisionAccountOperationRecordDTO> buildDAOperationRecordForMemberCards(DivisionAccountConfigQuery query){
         List<EleDivisionAccountOperationRecordDTO> list = Lists.newArrayList();
 
-        List<Long> electricityPackages = query.getElectricityPackages();
+        List<Long> electricityPackages = query.getBatteryPackages();
         if(CollectionUtils.isNotEmpty(electricityPackages)){
             for(Long memberCardId : electricityPackages){
                 EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
@@ -1030,7 +1030,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             }
         }
 
-        List<Long> carElectricityPackages = query.getCarElectricityPackages();
+        List<Long> carElectricityPackages = query.getCarWithBatteryPackages();
         if(CollectionUtils.isNotEmpty(carElectricityPackages)){
             for(Long memberCardId : carElectricityPackages){
                 EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
