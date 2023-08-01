@@ -19,7 +19,7 @@
         where activity_id = #{activityId}
     </select>
 
-    <select id="selectPackagesByActivityIdAndPackageType" resultType="InvitationActivityMemberCardMap">
+    <select id="selectPackagesByActivityIdAndPackageType" resultMap="InvitationActivityMemberCardMap">
         select   mid
         from t_invitation_activity_member_card
         where activity_id = #{activityId}
