@@ -143,7 +143,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      */
     @Override
     public Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
-        if (ObjectUtils.allNotNull(freezeRentOrderNo, approveFlag, apploveUid)) {
+        if (!ObjectUtils.allNotNull(freezeRentOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
