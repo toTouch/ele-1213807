@@ -158,7 +158,7 @@
             <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
         </set>
         <where>
-            `uid` = #{uid} AND `rental_package_order_no` = #{rentalPackageOrderNo} AND `status` = 2 AND `del_flag` = 0
+            `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `status` = 2 AND `del_flag` = 0
         </where>
     </update>
 
