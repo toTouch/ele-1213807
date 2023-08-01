@@ -128,7 +128,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         wechatV3RefundQuery.setRefund(batteryMembercardRefundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setReason("退款");
         wechatV3RefundQuery.setOrderId(tradeOrderNo);
-        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getBatteryRentRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getBatteryRentRefundCallBackUrl() + batteryMembercardRefundOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");
         wechatV3RefundQuery.setRefundId(batteryMembercardRefundOrder.getRefundOrderNo());
 
@@ -517,7 +517,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
         this.update(batteryMembercardRefundOrderUpdate);
 
-        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUND_FAIL);
+        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
         return Triple.of(false, "ELECTRICITY.00100", "退租失败");

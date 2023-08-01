@@ -119,12 +119,11 @@ public class ElectricityMemberCardOrder {
     public static final Integer SOURCE_NOT_SCAN = 2;
     public static final Integer SOURCE_ARTIFICIAL = 3;
 
-    //套餐订单使用状态，1：未使用，2：使用中，3：已使用, 4:已退租, 5:退租中, 6:退租失败, 7:审核中
+    //套餐订单使用状态，1：未使用，2：使用中，3：已使用, 4:已退租, 5:退租中, 7:审核中
     public static final Integer USE_STATUS_NON = 1;
     public static final Integer USE_STATUS_USING = 2;
     public static final Integer USE_STATUS_USED = 3;
     public static final Integer USE_STATUS_REFUND = 4;
     public static final Integer USE_STATUS_REFUNDING = 5;
-    public static final Integer USE_STATUS_REFUND_FAIL = 6;
     public static final Integer USE_STATUS_REFUND_AUDIT = 7;
 }
