@@ -81,6 +81,78 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
     
         joinShareMoneyActivityHistoryService.queryExportExcel(jsonShareMoneyActivityHistoryQuery, response);
     }
+
+    /**
+     * 查询邀请返现参与记录列表信息
+     * @param size
+     * @param offset
+     * @param joinName
+     * @param phone
+     * @param activityName
+     * @param beginTime
+     * @param endTime
+     * @param status
+     * @return
+     */
+    @GetMapping(value = "/admin/joinShareMoneyActivityHistory/participationList")
+    public R participationList(@RequestParam("size") Long size,
+                               @RequestParam("offset") Long offset,
+                               @RequestParam(value = "joinName", required = false) String joinName,
+                               @RequestParam(value = "phone", required = false) String phone,
+                               @RequestParam(value = "activityName", required = false) String activityName,
+                               @RequestParam(value = "beginTime", required = false) Long beginTime,
+                               @RequestParam(value = "endTime", required = false) Long endTime,
+                               @RequestParam(value = "status", required = false) Integer status) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
+                .offset(offset)
+                .size(size)
+                .tenantId(tenantId)
+                .joinName(joinName)
+                .phone(phone)
+                .activityName(activityName)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .build();
+
+        return joinShareMoneyActivityHistoryService.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
+    }
+
+    @GetMapping(value = "/admin/joinShareMoneyActivityHistory/participationCount")
+    public R participationCount(@RequestParam(value = "joinName", required = false) String joinName,
+                                @RequestParam(value = "phone", required = false) String phone,
+                                @RequestParam(value = "activityName", required = false) String activityName,
+                                @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                @RequestParam(value = "endTime", required = false) Long endTime,
+                                @RequestParam(value = "status", required = false) Integer status) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
+                .tenantId(tenantId)
+                .joinName(joinName)
+                .phone(phone)
+                .activityName(activityName)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .build();
+
+        return joinShareMoneyActivityHistoryService.queryParticipantsCount(jsonShareMoneyActivityHistoryQuery);
+    }
+
 }
 
 
