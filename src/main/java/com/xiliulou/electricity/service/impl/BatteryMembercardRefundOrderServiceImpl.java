@@ -448,7 +448,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, Integer status, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
                 .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
-                .in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND, BatteryMembercardRefundOrder.STATUS_FAIL));
+                .in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND, BatteryMembercardRefundOrder.STATUS_FAIL, BatteryMembercardRefundOrder.STATUS_AUDIT));
         if (Objects.isNull(batteryMembercardRefundOrder)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMembercardRefundOrder,refoundOrderNo={}", refundOrderNo);
             return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
