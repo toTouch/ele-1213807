@@ -278,7 +278,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
 
             BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.selectByMembercardOrderNo(orderNo);
-            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_INIT)) {
+            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
                 return Triple.of(false, "100282", "电池套餐退租审核中");
             }
 

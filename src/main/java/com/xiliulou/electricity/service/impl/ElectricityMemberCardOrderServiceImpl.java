@@ -744,6 +744,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
             memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
             memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+            memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
             memberCardOrder.setMemberCardId(batteryMemberCard.getId());
             memberCardOrder.setUid(userInfo.getUid());
             memberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
