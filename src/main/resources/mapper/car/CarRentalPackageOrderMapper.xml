@@ -205,7 +205,7 @@
     <select id="countByUnUseByUid" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `del_flag` = 0
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `pay_state` = 2 AND `del_flag` = 0
         </where>
     </select>
 
