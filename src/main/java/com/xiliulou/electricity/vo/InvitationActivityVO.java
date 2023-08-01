@@ -61,4 +61,19 @@ public class InvitationActivityVO {
     private Long updateTime;
 
     private List<BatteryMemberCard> memberCardList;
+
+    /**
+     * 换电套餐IDs
+     */
+    private List<BatteryMemberCardVO> batteryPackages;
+
+    /**
+     * 租车套餐IDs
+     */
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    /**
+     * 车电一体套餐IDs
+     */
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
 }

@@ -103,6 +103,11 @@ public class InvitationActivityMemberCardServiceImpl implements InvitationActivi
     }
 
     @Override
+    public List<InvitationActivityMemberCard> selectPackagesByActivityIdAndType(Long id, Integer packageType) {
+        return invitationActivityMemberCardMapper.selectPackagesByActivityIdAndPackageType(id, packageType);
+    }
+
+    @Override
     public Integer batchInsert(List<InvitationActivityMemberCard> shareActivityMemberCards) {
         return invitationActivityMemberCardMapper.batchInsert(shareActivityMemberCards);
     }

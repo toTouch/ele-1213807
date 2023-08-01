@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -163,9 +164,18 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//检查所选套餐是否可用
-		Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareActivityAddAndUpdateQuery);
-		if(Boolean.FALSE.equals(verifyResult.getLeft())){
-			return R.fail("000076", (String) verifyResult.getRight());
+		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())){
+			//检查是否有选择（换电,租车,车电一体）套餐信息
+			if(CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getBatteryPackages())
+					&& CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getCarRentalPackages())
+					&& CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getCarWithBatteryPackages())){
+				return R.fail("000201", "请选择套餐信息");
+			}
+
+			Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareActivityAddAndUpdateQuery);
+			if(Boolean.FALSE.equals(verifyResult.getLeft())){
+				return R.fail("000076", (String) verifyResult.getRight());
+			}
 		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();

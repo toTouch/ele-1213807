@@ -69,8 +69,25 @@ public class InvitationActivityQuery {
     /**
      * 可参与活动的套餐
      */
-    @NotEmpty(message = "套餐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    //@NotEmpty(message = "套餐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private List<Long> membercardIds;
 
     private String code;
+
+    /**
+     * 换电套餐IDs
+     */
+    private List<Long> batteryPackages;
+
+    /**
+     * 租车套餐IDs
+     */
+    private List<Long> carRentalPackages;
+
+    /**
+     * 车电一体套餐IDs
+     */
+    private List<Long> carWithBatteryPackages;
+
+
 }

@@ -63,6 +63,7 @@
         iajh.start_time,
         iajh.expired_time,
         iajh.activity_id,
+        tia.name as activityName,
         iajh.status,
         iajh.pay_count,
         iajh.money,
@@ -71,6 +72,7 @@
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
@@ -111,6 +113,11 @@
                     #{id}
                 </foreach>
             </if>
+
+            <if test="activityName != null and activityName != ''">
+                and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
+            </if>
+
         </where>
         order by iajh.id desc
         limit #{offset}, #{size}
@@ -156,6 +163,9 @@
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
             </if>
         </where>
     </select>
