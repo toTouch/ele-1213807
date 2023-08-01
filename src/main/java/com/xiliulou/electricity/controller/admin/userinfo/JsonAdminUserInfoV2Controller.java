@@ -47,7 +47,7 @@ public class JsonAdminUserInfoV2Controller {
      */
     @PostMapping("/queryCanPurchasePackage")
     public R<List<CarRentalPackageVO>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
-        if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId())) {
+        if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), qryReq.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
