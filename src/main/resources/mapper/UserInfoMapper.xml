@@ -2,6 +2,40 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserInfoMapper">
 
+    <!-- 表名 -->
+    <sql id="table_name"> `t_user_info` </sql>
+
+    <!-- 表中所有字段 -->
+    <sql id="all_field">
+        `id`, `uid`, `phone`, `user_name`, `name`, `id_number`, `auth_status`, `usable_status`, `service_status`, `del_flag`, `create_time`, `update_time`, `tenant_id`, `battery_rent_status`,
+        `battery_deposit_status`, `franchisee_id`, `car_rent_status`, `car_deposit_status`, `car_battery_deposit_status`, `pay_count`, `auth_type`, `store_id`
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="where_field">
+        <if test=" tenant_id != null "> AND `tenant_id` = #{tenantId} </if>
+        <if test=" keywords != null and keywords != '' "> AND (`name` LIKE CONCAT('%', #{keywords}, '%') OR `phone` LIKE CONCAT('%', #{keywords}, '%')) </if>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="page" resultType="com.xiliulou.electricity.entity.UserInfo">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="count" resultType="java.lang.Integer">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
 
     <select id="isFranchiseeBindUser" resultType="Integer">
         SELECT 1 FROM t_user_info WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1

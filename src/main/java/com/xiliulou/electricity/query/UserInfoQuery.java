@@ -74,6 +74,11 @@ public class UserInfoQuery {
      */
     private Integer payCount;
 
+    /**
+     * 关键字查询，手机号/真实名字模糊匹配
+     */
+    private String keywords;
+
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     public static final Integer SORT_TYPE_AUTH_TIME = 1;
     public static final Integer SORT_TYPE_CAR_EXPIRE_TIME = 2;
