@@ -1064,11 +1064,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return checkUserMemberCardResult;
             }
 
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if(Objects.isNull(batteryMemberCard)){
+                log.error("ORDER ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
+                return Triple.of(false, "ELECTRICITY.00121","套餐不存在");
+            }
+
             //判断用户电池服务费
-            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-            Triple<Boolean, String, Object> checkUserBatteryServiceFeeResult = checkUserBatteryServiceFee(userBatteryMemberCard, userInfo, user, serviceFeeUserInfo, franchisee);
-            if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
-                return checkUserBatteryServiceFeeResult;
+            Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+            if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                log.warn("ORDER WARN! user exist battery service fee,uid={}", user.getUid());
+                return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
             }
     
             //判断车电关联是否可换电
@@ -1097,12 +1103,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee , electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
             if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
                 return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
-            }
-
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if(Objects.isNull(batteryMemberCard)){
-                log.error("ORDER ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
-                return Triple.of(false, "ELECTRICITY.00121","套餐不存在");
             }
 
             //修改按此套餐的次数
