@@ -70,6 +70,7 @@
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
+        <if test=" useState != null "> AND `use_state` = #{useState} </if>
         <if test=" buyTimeBegin != null and buyTimeEnd != null "> AND `create_time` BETWEEN #{buyTimeBegin} AND #{buyTimeEnd} </if>
         <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
             AND `franchisee_id` IN
