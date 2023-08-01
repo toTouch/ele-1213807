@@ -267,7 +267,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
         electricityTradeOrder.setOrderType(commonOrder.getOrderType());
         electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-        electricityTradeOrder.setTotalFee(commonOrder.getPayAmount());
+        electricityTradeOrder.setTotalFee(commonOrder.getPayAmount().multiply(new BigDecimal(100)));
         electricityTradeOrder.setUid(commonOrder.getUid());
         electricityTradeOrder.setTenantId(commonOrder.getTenantId());
         baseMapper.insert(electricityTradeOrder);
