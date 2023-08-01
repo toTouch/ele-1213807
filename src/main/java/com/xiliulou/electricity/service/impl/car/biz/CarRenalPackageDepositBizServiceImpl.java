@@ -14,10 +14,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
-import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
-import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
-import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -50,6 +47,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
+
+    @Resource
+    private CarRentalPackageOrderService carRentalPackageOrderService;
 
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
@@ -656,7 +656,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
 
-            // 2. 删除会员期限
+            // 2. TODO 作废所有使用中、未使用的套餐购买订单
+            // carRentalPackageOrderService.
+
+            // 3. 删除会员期限
             carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), apploveUid);
         } else {
             // 1. 更新退租申请单状态
@@ -818,7 +821,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 查询设备(车辆)
         UserCar userCar = userCarService.selectByUidFromCache(uid);
-        if (ObjectUtils.isEmpty(userCar) || StringUtils.isNotBlank(userCar.getSn())) {
+        if (ObjectUtils.isNotEmpty(userCar) && StringUtils.isNotBlank(userCar.getSn())) {
             log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are vehicles that have not been returned. uid is {}", uid);
             throw new BizException("300018", "存在未归还的车辆");
         }
