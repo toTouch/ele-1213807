@@ -5,10 +5,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.SystemDefinitionEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
@@ -215,14 +212,19 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                 // 判定可退截止时间
                 Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
 
-                // 集成退款订单的状态，综合判定
-                CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
-                if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
-                    Integer refundState = rentRefundOrderEntity.getRefundState();
-                    if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
-                        rentRebate = YesNoEnum.YES.getCode();
-                    } else {
-                        rentRebate = YesNoEnum.NO.getCode();
+                Integer payState = carRentalPackageOrder.getPayState();
+                if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
+                    rentRebate = YesNoEnum.NO.getCode();
+                } else {
+                    // 集成退款订单的状态，综合判定
+                    CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+                    if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
+                        Integer refundState = rentRefundOrderEntity.getRefundState();
+                        if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
+                            rentRebate = YesNoEnum.YES.getCode();
+                        } else {
+                            rentRebate = YesNoEnum.NO.getCode();
+                        }
                     }
                 }
 

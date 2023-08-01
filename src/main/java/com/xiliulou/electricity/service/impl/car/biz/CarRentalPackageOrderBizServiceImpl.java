@@ -406,6 +406,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                     } catch (WechatPayException e) {
                         log.error("approveRefundRentOrder failed.", e);
+                        throw new BizException(e.getMessage());
                     }
                 }
             } else {
@@ -1542,11 +1543,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userCouponService.batchUpdateUserCoupon(userCouponList);
 
             // 7）支付零元的处理
-            if (BigDecimal.ZERO.compareTo(paymentAmount) == 0) {
+            if (BigDecimal.ZERO.compareTo(paymentAmount) >= 0) {
                 // 无须唤起支付，走支付回调的逻辑，抽取方法，直接调用
                 handBuyRentalPackageOrderSuccess(carRentalPackageOrder.getOrderNo(), tenantId, uid);
                 return R.ok();
             }
+
+            log.info("BuyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 唤起支付
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
