@@ -20,6 +20,7 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="source" column="source" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -28,7 +29,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, type, del_flag, create_time, update_time
         from t_division_account_record
         where id = #{id}
     </select>
@@ -138,6 +139,7 @@
         franchisee_income,
         store_income,status,
         source,
+        type,
         create_time
         from t_division_account_record
         <where>
