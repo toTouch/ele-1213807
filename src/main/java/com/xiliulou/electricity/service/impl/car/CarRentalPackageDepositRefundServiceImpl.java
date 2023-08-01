@@ -160,7 +160,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
 
         // 订单编号
         if (StringUtils.isBlank(entity.getOrderNo())) {
-            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, entity.getId()));
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, entity.getUid()));
         }
 
         // 保存入库
