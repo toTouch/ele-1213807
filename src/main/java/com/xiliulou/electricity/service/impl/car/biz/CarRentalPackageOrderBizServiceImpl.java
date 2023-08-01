@@ -359,7 +359,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             String orderNo = packageOrderEntity.getOrderNo();
 
             // 非 0 元退租
-            if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) > 0) {
+            if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) < 0) {
                 // 默认状态，审核通过
                 rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
                 if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
@@ -398,6 +398,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             } else {
                 // 0 元退租
+                rentRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutTradeNo(refundRentOrderNo);
