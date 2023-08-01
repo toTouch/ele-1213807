@@ -292,7 +292,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // TX 事务落库
-        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, memberTermEntity, packageOrderEntity);
+        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, packageOrderEntity);
 
         return true;
     }
@@ -338,12 +338,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param apploveDesc       审批意见
      * @param apploveUid        审批人
      * @param rentRefundEntity  退租申请单DB数据
+     * @param packageOrderEntity  套餐购买订单信息
      * @return void
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageOrderRentRefundPO rentRefundEntity,
-                                             CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderPO packageOrderEntity) {
+                                             CarRentalPackageOrderPO packageOrderEntity) {
 
         CarRentalPackageOrderRentRefundPO rentRefundUpdateEntity = new CarRentalPackageOrderRentRefundPO();
         rentRefundUpdateEntity.setOrderNo(refundRentOrderNo);
@@ -353,19 +354,30 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 审核通过
         if (approveFlag) {
+            log.info("saveApproveRefundRentOrderTx, 同意退租");
             // 购买订单时的支付方式
             Integer payType = packageOrderEntity.getPayType();
+            log.info("saveApproveRefundRentOrderTx, payType is {}", payType);
+
             // 购买订单时的支付订单号
             String orderNo = packageOrderEntity.getOrderNo();
+            log.info("saveApproveRefundRentOrderTx, orderNo is {}", orderNo);
+
 
             // 非 0 元退租
             if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) < 0) {
+                log.info("saveApproveRefundRentOrderTx, 退款金额大于0元");
+
                 // 默认状态，审核通过
                 rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
                 if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    log.info("saveApproveRefundRentOrderTx, 线下交易方式");
+
                     // 线下，直接设置为退款成功
                     rentRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
                 } else {
+                    log.info("saveApproveRefundRentOrderTx, 线上交易方式");
+
                     try {
                         // 根据购买订单编码获取当初的支付流水
                         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(orderNo);
@@ -397,16 +409,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
                 }
             } else {
+                log.info("saveApproveRefundRentOrderTx, 0元退租");
+
                 // 0 元退租
                 rentRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
 
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutTradeNo(refundRentOrderNo);
+                log.info("saveApproveRefundRentOrderTx, 退租支付回调");
+
                 wxRefundPayService.process(callBackResource);
             }
+            log.info("saveApproveRefundRentOrderTx, 更新退租订单状态");
+
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         } else {
+            log.info("saveApproveRefundRentOrderTx, 拒绝退租");
+
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
