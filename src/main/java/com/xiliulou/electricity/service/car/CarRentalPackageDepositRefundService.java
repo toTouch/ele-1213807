@@ -13,6 +13,13 @@ import java.util.List;
 public interface CarRentalPackageDepositRefundService {
 
     /**
+     * 根据押金缴纳订单编码，查询最后一笔的退押订单信息
+     * @param depositPayOrderNo 押金缴纳编码
+     * @return 押金退款订单编码
+     */
+    CarRentalPackageDepositRefundPO selectLastByDepositPayOrderNo(String depositPayOrderNo);
+
+    /**
      * 根据退押申请单编码进行更新
      * @param entity 实体数据
      * @return

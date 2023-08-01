@@ -3488,7 +3488,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo() {
-        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO=new UserBatteryMemberCardInfoVO();
+        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO = new UserBatteryMemberCardInfoVO();
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
@@ -3511,7 +3511,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),NumberConstant.ZERO_L)) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             log.warn("ELE WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
@@ -3529,7 +3529,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //套餐订单金额
         ElectricityMemberCardOrder electricityMemberCardOrder = this.selectByOrderNo(userBatteryMemberCard.getOrderId());
-        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder)?null:electricityMemberCardOrder.getPayAmount());
+        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder) ? null : electricityMemberCardOrder.getPayAmount());
 
         userBatteryMemberCardInfoVO.setValidDays(batteryMemberCard.getValidDays());
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
@@ -3537,7 +3537,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
 
         //用户电池型号
-        userBatteryMemberCardInfoVO.setUserBatteryTypes(userBatteryTypeService.selectByUid(userInfo.getUid()));
+        userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
     }
@@ -3870,7 +3870,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100241", "当前套餐暂停中，请先启用套餐");
         }
 
-        if (!(Objects.equals(BatteryMemberCard.RENT_TYPE_NEW, batteryMemberCard.getRentType()) || Objects.equals(BatteryMemberCard.RENT_TYPE_UNLIMIT, batteryMemberCard.getRentType()))) {
+        if (!(Objects.equals(BatteryMemberCard.RENT_TYPE_OLD, batteryMemberCard.getRentType()) || Objects.equals(BatteryMemberCard.RENT_TYPE_UNLIMIT, batteryMemberCard.getRentType()))) {
             log.warn("BATTERY MEMBER ORDER WARN! new batteryMemberCard not available,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
             return Triple.of(false, "100275", "换电套餐不可用");
         }
@@ -3881,10 +3881,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
         }
 
-        if (!Objects.equals(userBindBatteryMemberCard.getLimitCount(), batteryMemberCard.getLimitCount())) {
-            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard limitCount inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
-            return Triple.of(false, "100276", "换电套餐类型不一致");
-        }
+//        if (!Objects.equals(userBindBatteryMemberCard.getLimitCount(), batteryMemberCard.getLimitCount())) {
+//            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard limitCount inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+//            return Triple.of(false, "100276", "换电套餐类型不一致");
+//        }
 
         boolean flag = batteryMemberCard.getDeposit().compareTo(userBindBatteryMemberCard.getDeposit()) == 0;
         if (!flag) {
@@ -3950,7 +3950,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         String batteryV = "";
-        if (Objects.equals(Franchisee.OLD_MODEL_TYPE, franchisee.getModelType())) {
+        if (!Objects.equals(Franchisee.OLD_MODEL_TYPE, franchisee.getModelType())) {
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isEmpty(batteryTypeList)) {
                 log.warn("BATTERY MEMBER ORDER WARN! not found batteryTypeList,mid={}", batteryMemberCard.getId());

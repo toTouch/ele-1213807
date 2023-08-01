@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
@@ -507,18 +508,45 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return 押金缴纳信息
      */
     @Override
-    public CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid) {
+    public CarRentalPackageDepositPayVO selectUnRefundCarDeposit(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 租车会员信息
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             log.info("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
             return null;
         }
 
-        return carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+        Integer status = 0;
+        if (MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode().equals(memberTermEntity.getStatus())) {
+            status = 1;
+            // 申请退押，查询退押订单信息
+            CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());
+            if (ObjectUtils.isEmpty(depositRefundEntity)) {
+                log.error("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found t_car_rental_package_order_rent_refund, tenantId is {}, uid is {}", tenantId, uid);
+                throw new BizException("300000", "数据有误");
+            }
+            if (RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
+                status = 2;
+            }
+        }
+
+        // 押金缴纳信息
+        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+
+        // 拼装返回数据
+        CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
+        depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
+        depositPayVo.setDeposit(depositPayEntity.getDeposit());
+        depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
+        depositPayVo.setPayState(depositPayEntity.getPayState());
+        depositPayVo.setPayType(depositPayEntity.getPayType());
+        depositPayVo.setStatus(status);
+
+        return depositPayVo;
     }
 
     /**

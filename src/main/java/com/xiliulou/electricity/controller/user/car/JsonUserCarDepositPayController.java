@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -13,7 +15,6 @@ import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user/car/deposit/pay")
 public class JsonUserCarDepositPayController extends BasicController {
+
+    @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
@@ -156,19 +163,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CarRentalPackageDepositPayPO depositPayEntity = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid());
-        if (ObjectUtils.isEmpty(depositPayEntity)) {
-            return R.ok();
-        }
-
-        CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
-        depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
-        depositPayVo.setDeposit(depositPayEntity.getDeposit());
-        depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
-        depositPayVo.setPayState(depositPayEntity.getPayState());
-        depositPayVo.setPayType(depositPayEntity.getPayType());
-
-        return R.ok(depositPayVo);
+        return R.ok(carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid()));
     }
 
 }

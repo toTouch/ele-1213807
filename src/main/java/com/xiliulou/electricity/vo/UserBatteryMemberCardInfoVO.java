@@ -68,7 +68,7 @@ public class UserBatteryMemberCardInfoVO {
     /**
      * 用户电池型号
      */
-    private List<String> userBatteryTypes;
+    private String userBatterySimpleType;
 
     private Long franchiseeId;
 

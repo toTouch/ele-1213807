@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.electricity.service.EleCabinetSignatureService;
+import com.xiliulou.electricity.service.impl.exrefund.WxRefundPayBatteryRentServiceImpl;
 import com.xiliulou.esign.entity.resp.EsignCallBackResp;
 import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
 import com.xiliulou.electricity.factory.paycallback.WxRefundPayServiceFactory;
@@ -41,6 +42,9 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
     @Autowired
     private EleCabinetSignatureService eleCabinetSignatureService;
 
+    @Autowired
+    private WxRefundPayBatteryRentServiceImpl batteryRentRefundServiceImpl;
+
     /**
      * 微信支付通知
      *
@@ -74,8 +78,7 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
     public WechatV3CallBackResult batteryMembercardRefundNotified(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
         wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
         WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
-        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
-        service.process(callBackParam);
+        batteryRentRefundServiceImpl.process(callBackParam);
         return WechatV3CallBackResult.success();
     }
 
