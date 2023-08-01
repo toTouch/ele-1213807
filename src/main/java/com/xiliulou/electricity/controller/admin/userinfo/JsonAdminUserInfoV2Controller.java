@@ -72,7 +72,7 @@ public class JsonAdminUserInfoV2Controller {
                 builderNameAndPhone.append(userInfo.getName());
             }
             if (StringUtils.isNotBlank(builderNameAndPhone.toString())) {
-                builderNameAndPhone.append(" / ").append(userInfo.getPhone());
+                builderNameAndPhone.append("/");
             }
             if (StringUtils.isNotBlank(userInfo.getPhone())) {
                 builderNameAndPhone.append(userInfo.getPhone());
