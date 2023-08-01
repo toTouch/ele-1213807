@@ -30,5 +30,9 @@ public class DivisionAccountOrderDTO {
      */
     private Integer divisionAccountType;
 
+    /**
+     * 链路ID
+     */
+    private String traceId;
 
 }

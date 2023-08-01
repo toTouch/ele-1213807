@@ -42,7 +42,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
+        entity.setUpdateTime(System.currentTimeMillis());
         int num = carRentalPackageOrderFreezeMapper.updateByOrderNo(entity);
 
         return num >= 0;
