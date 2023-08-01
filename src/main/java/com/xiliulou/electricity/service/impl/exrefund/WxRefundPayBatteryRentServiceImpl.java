@@ -48,6 +48,7 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+
         String refundOrderNo = callBackResource.getOutTradeNo();
         if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + refundOrderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return;
