@@ -271,9 +271,6 @@
         <if test="tenantId != null">
             and dac.tenant_id = #{tenantId}
         </if>
-        <if test="refId != null">
-            and dabm.ref_id = #{refId}
-        </if>
     </select>
 
     <select id="selectDivisionConfigByRefId" resultType="com.xiliulou.electricity.vo.DivisionAccountConfigRefVO">

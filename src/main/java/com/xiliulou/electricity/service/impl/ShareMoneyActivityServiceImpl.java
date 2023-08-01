@@ -121,14 +121,27 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //查询该租户是否有邀请活动，有则不能添加
-        int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>()
-                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
-        if (count > 0) {
-            return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+        // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
+        if (Objects.nonNull(activityResult)) {
+            //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+            //如果存在已上架的活动，则将该活动修改为下架
+            ShareMoneyActivity moneyActivity = new ShareMoneyActivity();
+            moneyActivity.setId(moneyActivity.getId());
+            moneyActivity.setStatus(ShareMoneyActivity.STATUS_OFF);
+            moneyActivity.setUpdateTime(System.currentTimeMillis());
+            shareMoneyActivityMapper.updateActivity(moneyActivity);
         }
 
         //检查选择邀请标准为购买套餐时，当前所选的套餐是否存在
         if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareMoneyActivityAddAndUpdateQuery.getInvitationCriteria())){
+            //检查是否有选择（换电,租车,车电一体）套餐信息
+            if(CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getBatteryPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getCarWithBatteryPackages())){
+                return R.fail("000201", "请选择套餐信息");
+            }
+
             Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareMoneyActivityAddAndUpdateQuery);
             if(Boolean.FALSE.equals(verifyResult.getLeft())){
                 return R.fail("000076", (String) verifyResult.getRight());
@@ -142,6 +155,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setCreateTime(System.currentTimeMillis());
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
+        //新增的邀请返现活动默认为上架状态
+        shareMoneyActivity.setStatus(ShareMoneyActivity.STATUS_ON);
 
         if (Objects.isNull(shareMoneyActivity.getType())) {
             shareMoneyActivity.setType(ShareActivity.SYSTEM);
@@ -428,6 +443,21 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
 
         return R.ok(map);
+    }
+
+    @Override
+    public R checkActivityStatusOn() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //查询该租户是否有邀请活动，有则不能添加
+        int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>()
+                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        if (count > 0) {
+            return R.fail("000205", "已有上架的邀请活动，是否更新替代");
+        }
+
+        return R.ok();
     }
 
 }

@@ -6,6 +6,7 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
         <result property="mid" column="mid" jdbcType="INTEGER"/>
+        <result property="packageType" column="package_type" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -16,6 +17,13 @@
         select   mid
         from t_invitation_activity_member_card
         where activity_id = #{activityId}
+    </select>
+
+    <select id="selectPackagesByActivityIdAndPackageType" resultType="InvitationActivityMemberCardMap">
+        select   mid
+        from t_invitation_activity_member_card
+        where activity_id = #{activityId}
+        and package_type = #{packageType}
     </select>
 
     <!--查询单个-->

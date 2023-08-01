@@ -117,7 +117,7 @@
             jsah.id as id,
             jsah.start_time as startTime,
             jsah.expired_time as expiredTime,
-            jsah.status as status,
+            jsah.status,
             jsah.create_time as createTime,
             jsah.update_time as updateTime,
             jsah.tenant_id as tenantId,
