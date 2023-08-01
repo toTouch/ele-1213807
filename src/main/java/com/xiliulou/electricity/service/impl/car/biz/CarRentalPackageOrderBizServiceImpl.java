@@ -286,7 +286,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 购买订单的交易方式
         Integer payType = packageOrderEntity.getPayType();
-        if (!PayTypeEnum.OFF_LINE.getCode().equals(payType) || !PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+        if (!(PayTypeEnum.OFF_LINE.getCode().equals(payType) || PayTypeEnum.ON_LINE.getCode().equals(payType))) {
             log.error("approveRefundRentOrder faild. t_car_rental_package_order payType error. payType is {}", payType);
             throw new BizException("300000", "数据有误");
         }
