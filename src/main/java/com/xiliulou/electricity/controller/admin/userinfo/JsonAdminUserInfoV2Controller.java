@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin/userInfo/v2")
-public class JsonAdminUserInfoController {
+public class JsonAdminUserInfoV2Controller {
 
     @Resource
     private UserInfoService userInfoService;
