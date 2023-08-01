@@ -13,7 +13,7 @@
 
     <!-- 查询条件 -->
     <sql id="where_field">
-        <if test=" tenant_id != null "> AND `tenant_id` = #{tenantId} </if>
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
         <if test=" keywords != null and keywords != '' "> AND (`name` LIKE CONCAT('%', #{keywords}, '%') OR `phone` LIKE CONCAT('%', #{keywords}, '%')) </if>
     </sql>
 
