@@ -54,14 +54,14 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             return;
         }
 
-        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(refundOrderNo);
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(callBackResource.getOutRefundNo());
         if (Objects.isNull(batteryMembercardRefundOrder)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMembercardRefundOrder,refundOrderNo={}", refundOrderNo);
+            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMembercardRefundOrder,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
         if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", refundOrderNo);
+            log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
