@@ -497,6 +497,7 @@ public class UnionTradeOrderServiceImpl extends
 
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
+        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 

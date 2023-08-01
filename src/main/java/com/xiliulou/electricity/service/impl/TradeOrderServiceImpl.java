@@ -403,6 +403,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
         electricityMemberCardOrder.setMemberCardId(integratedPaymentAdd.getMemberCardId());
         electricityMemberCardOrder.setUid(userInfo.getUid());
         electricityMemberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());

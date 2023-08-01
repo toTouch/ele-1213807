@@ -31,7 +31,7 @@ public class JsonUserBatteryMemberCardController extends BaseController {
     @GetMapping("/user/battery/memberCard/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "franchiseeId") Long franchiseeId,
-                  @RequestParam(value = "batteryV") String batteryV,
+                  @RequestParam(value = "batteryV", required = false) String batteryV,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
                   @RequestParam(value = "name", required = false) String name) {

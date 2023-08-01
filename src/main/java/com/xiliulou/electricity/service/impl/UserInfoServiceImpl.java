@@ -174,6 +174,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
 
+    /**
+     * 分页查询
+     *
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    @Slave
+    @Override
+    public List<UserInfo> page(UserInfoQuery userInfoQuery) {
+        if (ObjectUtil.isEmpty(userInfoQuery)) {
+            userInfoQuery = UserInfoQuery.builder().offset(0L).size(10L).build();
+        }
+        return userInfoMapper.page(userInfoQuery);
+    }
+
+    /**
+     * 查询总数
+     *
+     * @param userInfoQuery 查询条件
+     * @return 总数
+     */
+    @Slave
+    @Override
+    public Integer count(UserInfoQuery userInfoQuery) {
+        return userInfoMapper.count(userInfoQuery);
+    }
 
     /**
      * 通过ID查询单条数据从DB
