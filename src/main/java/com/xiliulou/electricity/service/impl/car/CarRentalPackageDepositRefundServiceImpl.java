@@ -29,6 +29,21 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     private CarRentalPackageDepositRefundMapper carRentalPackageDepositRefundMapper;
 
     /**
+     * 根据押金缴纳订单编码，查询最后一笔的退押订单信息
+     *
+     * @param depositPayOrderNo 押金缴纳编码
+     * @return 押金退款订单编码
+     */
+    @Slave
+    @Override
+    public CarRentalPackageDepositRefundPO selectLastByDepositPayOrderNo(String depositPayOrderNo) {
+        if (StringUtils.isBlank(depositPayOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageDepositRefundMapper.selectLastByDepositPayOrderNo(depositPayOrderNo);
+    }
+
+    /**
      * 根据退押申请单编码进行更新
      *
      * @param entity 实体数据

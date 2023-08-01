@@ -31,7 +31,7 @@ public interface CarRentalPackageMemberTermMapper {
      * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
-     * @param optUid 操作人ID
+     * @param optUid 操作人ID（可为空）
      * @param optTime 操作时间
      * @return 操作总条数
      */
