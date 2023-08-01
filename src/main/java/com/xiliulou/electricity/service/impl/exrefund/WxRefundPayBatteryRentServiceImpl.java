@@ -48,19 +48,20 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+
         String refundOrderNo = callBackResource.getOutTradeNo();
         if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + refundOrderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return;
         }
 
-        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(refundOrderNo);
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(callBackResource.getOutRefundNo());
         if (Objects.isNull(batteryMembercardRefundOrder)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMembercardRefundOrder,refundOrderNo={}", refundOrderNo);
+            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMembercardRefundOrder,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
         if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
-            log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", refundOrderNo);
+            log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
         }
 
