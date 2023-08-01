@@ -3488,7 +3488,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo() {
-        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO=new UserBatteryMemberCardInfoVO();
+        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO = new UserBatteryMemberCardInfoVO();
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
@@ -3511,7 +3511,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),NumberConstant.ZERO_L)) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             log.warn("ELE WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
@@ -3529,7 +3529,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //套餐订单金额
         ElectricityMemberCardOrder electricityMemberCardOrder = this.selectByOrderNo(userBatteryMemberCard.getOrderId());
-        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder)?null:electricityMemberCardOrder.getPayAmount());
+        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder) ? null : electricityMemberCardOrder.getPayAmount());
 
         userBatteryMemberCardInfoVO.setValidDays(batteryMemberCard.getValidDays());
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
@@ -3537,7 +3537,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
 
         //用户电池型号
-        userBatteryMemberCardInfoVO.setUserBatteryTypes(userBatteryTypeService.selectByUid(userInfo.getUid()));
+        userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
     }
