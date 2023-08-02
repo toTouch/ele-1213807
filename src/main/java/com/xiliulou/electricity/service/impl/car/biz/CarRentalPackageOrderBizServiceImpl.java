@@ -67,6 +67,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private ElectricityCarModelService carModelService;
+
+    @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource(name = "wxRefundPayCarRentServiceImpl")
@@ -1068,6 +1071,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
 
+        // 查询车辆型号信息
+        Integer carModelId = carRentalPackage.getCarModelId();
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
+
         // 3. 查询套餐购买订单信息
         String rentalPackageOrderNo = memberTerm.getRentalPackageOrderNo();
         CarRentalPackageOrderPO carRentalPackageOrder = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
@@ -1076,37 +1083,37 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
 
-        // 3. 查询用户车辆信息
+        // 4. 查询用户车辆信息
         CarInfoDO carInfo = null;
         UserCar userCar = userCarService.selectByUidFromCache(uid);
         if (ObjectUtils.isNotEmpty(userCar)) {
-            // 4. 查询车辆相关信息
+            // 5. 查询车辆相关信息
             carInfo = carService.queryByCarId(tenantId, userCar.getCid());
         }
 
 
-        // 5. 查询用户保险信息，志龙
+        // 6. 查询用户保险信息，志龙
         Integer rentalPackageType = memberTerm.getRentalPackageType();
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
 
-        // 6. 电池消息
+        // 7. 电池消息
         ElectricityUserBatteryVo userBatteryVo = null;
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
             userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
 
-        // 7. 滞纳金信息
+        // 8. 滞纳金信息
         BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
         // 构建返回信息
-        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount);
+        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount, carModel);
 
         return R.ok(rentalPackageVO);
     }
 
     private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTerm, CarRentalPackagePO carRentalPackage, CarRentalPackageOrderPO carRentalPackageOrder,
-                                                 InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount) {
+                                                 InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount, ElectricityCarModel carModel) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -1127,6 +1134,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
         carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackage.getName());
         carRentalPackageOrderVO.setDeposit(memberTerm.getDeposit());
+        carRentalPackageOrderVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
         // 赋值套餐订单信息
         rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);
 
