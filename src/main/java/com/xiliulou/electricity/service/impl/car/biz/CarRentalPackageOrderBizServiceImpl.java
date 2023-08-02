@@ -1642,6 +1642,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 套餐购买总次数
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
+            // 退租为退押
+            if (StringUtils.isBlank(memberTermUpdateEntity.getRentalPackageOrderNo())) {
+                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getId());
+                memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
+                memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
+                memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
+                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                // 更改套餐购买订单的使用状态
+                carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+            }
+
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
         }
 
