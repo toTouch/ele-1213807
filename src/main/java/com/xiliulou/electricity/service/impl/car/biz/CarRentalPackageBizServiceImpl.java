@@ -192,6 +192,10 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             // 查询型号关联关系
             List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePO::getId).collect(Collectors.toList());
             List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
+            if (CollectionUtils.isEmpty(carBatteryRelEntityList)) {
+                return packageEntityList;
+            }
+
             Map<Long, List<CarRentalPackageCarBatteryRelPO>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPO::getRentalPackageId));
 
             List<String> batteryModelTypeDbList = null;
@@ -200,7 +204,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             Iterator<CarRentalPackagePO> iterator = packageEntityList.iterator();
             while (iterator.hasNext()) {
                 CarRentalPackagePO carRentalPackage = iterator.next();
-                batteryModelTypeDbList = carBatteryRelMap.get(carRentalPackage.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                List<CarRentalPackageCarBatteryRelPO> carBatteryRels = carBatteryRelMap.get(carRentalPackage.getId());
+                if (CollectionUtils.isEmpty(carBatteryRels)) {
+                    continue;
+                }
+                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
                 if (!batteryModelTypeDbList.containsAll(batteryModelTypeList)) {
                     iterator.remove();
                 }
