@@ -98,4 +98,6 @@ public class BatteryMemberCardQuery {
 
     private Long uid;
 
+    private List<Integer> rentTypes;
+
 }

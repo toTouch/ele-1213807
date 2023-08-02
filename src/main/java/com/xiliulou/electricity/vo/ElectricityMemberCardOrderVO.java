@@ -51,6 +51,8 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      */
     private Long useCount;
 
-    List<String> batteryTypes;
+    private List<String> batteryTypes;
+
+    private String simpleBatteryType;
 
 }
