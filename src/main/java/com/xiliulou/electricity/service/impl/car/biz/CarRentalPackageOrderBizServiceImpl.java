@@ -18,6 +18,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
@@ -64,6 +66,12 @@ import java.util.stream.Collectors;
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
+    @Resource
+    private ElectricityCarModelService carModelService;
+
+    @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
+
     @Resource(name = "wxRefundPayCarRentServiceImpl")
     private WxRefundPayService wxRefundPayService;
 
@@ -72,9 +80,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private WechatV3JsapiService wechatV3JsapiService;
-
-    @Resource
-    private UnionTradeOrderService unionTradeOrderService;
 
     @Resource
     private FranchiseeService franchiseeService;
@@ -1066,6 +1071,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
 
+        // 查询车辆型号信息
+        Integer carModelId = carRentalPackage.getCarModelId();
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
+
         // 3. 查询套餐购买订单信息
         String rentalPackageOrderNo = memberTerm.getRentalPackageOrderNo();
         CarRentalPackageOrderPO carRentalPackageOrder = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
@@ -1074,37 +1083,37 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
 
-        // 3. 查询用户车辆信息
+        // 4. 查询用户车辆信息
         CarInfoDO carInfo = null;
         UserCar userCar = userCarService.selectByUidFromCache(uid);
         if (ObjectUtils.isNotEmpty(userCar)) {
-            // 4. 查询车辆相关信息
+            // 5. 查询车辆相关信息
             carInfo = carService.queryByCarId(tenantId, userCar.getCid());
         }
 
 
-        // 5. 查询用户保险信息，志龙
+        // 6. 查询用户保险信息，志龙
         Integer rentalPackageType = memberTerm.getRentalPackageType();
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
 
-        // 6. 电池消息
+        // 7. 电池消息
         ElectricityUserBatteryVo userBatteryVo = null;
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
             userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
 
-        // 7. 滞纳金信息
+        // 8. 滞纳金信息
         BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
         // 构建返回信息
-        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount);
+        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount, carModel);
 
         return R.ok(rentalPackageVO);
     }
 
     private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTerm, CarRentalPackagePO carRentalPackage, CarRentalPackageOrderPO carRentalPackageOrder,
-                                                 InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount) {
+                                                 InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount, ElectricityCarModel carModel) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -1125,6 +1134,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
         carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackage.getName());
         carRentalPackageOrderVO.setDeposit(memberTerm.getDeposit());
+        carRentalPackageOrderVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
         // 赋值套餐订单信息
         rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);
 
@@ -1297,6 +1307,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         return R.fail("300002", "租车会员状态异常");
                     }
                     // 从会员期限中获取押金金额
+                    log.info("BuyRentalPackageOrder deposit from memberTerm");
                     deposit = memberTermEntity.getDeposit();
                 }
             }
@@ -1359,6 +1370,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             if (ObjectUtils.isEmpty(deposit)) {
+                log.info("BuyRentalPackageOrder deposit from rentalPackage.");
                 deposit = buyPackageEntity.getDeposit();
             }
 
@@ -1391,11 +1403,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
                     // 车电一体，比对电池型号
                     if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
-                        List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                        List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                        if (!buyBatteryList.containsAll(oriBatteryList)) {
-                            log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
-                            return R.fail("300005", "套餐不匹配");
+                        // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
+                        Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
+                        if (ObjectUtils.isEmpty(franchisee)) {
+                            log.error("BuyRentalPackageOrder failed. not found franchisee. franchiseeId is {}", userFranchiseeId);
+                            return R.fail("300000", "数据有误");
+                        }
+                        if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
+                            List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                            List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                            if (!buyBatteryList.containsAll(oriBatteryList)) {
+                                log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
+                                return R.fail("300005", "套餐不匹配");
+                            }
                         }
                     }
                 }
@@ -1450,9 +1470,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageDepositPayPO depositPayInsertEntity = null;
             // 押金缴纳订单编码
             String depositPayOrderNo = null;
-            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+            CarRentalPackageDepositPayVO depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
-            if (ObjectUtils.isEmpty(depositPayEntity) || PayStateEnum.UNPAID.getCode().equals(depositPayEntity.getPayState())) {
+            if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 if (YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType())) {
                     // 免押
                     return R.fail("300006", "未缴纳押金");
@@ -1462,12 +1482,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 // 存在押金信息，但是不匹配
-                if ((YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType()) && !PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()))
-                        || YesNoEnum.NO.getCode().equals(buyOptModel.getDepositType()) && PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
+                if ((YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType()) && !PayTypeEnum.EXEMPT.getCode().equals(depositPayVo.getPayType()))
+                        || YesNoEnum.NO.getCode().equals(buyOptModel.getDepositType()) && PayTypeEnum.EXEMPT.getCode().equals(depositPayVo.getPayType())) {
                     // 免押
                     return R.fail("300007", "请选择对应的押金缴纳方式");
                 }
-                depositPayOrderNo = depositPayEntity.getOrderNo();
+                depositPayOrderNo = depositPayVo.getOrderNo();
+                log.info("BuyRentalPackageOrder deposit paid. depositPayOrderNo is {}", depositPayOrderNo);
                 deposit = BigDecimal.ZERO;
             }
 
@@ -1577,13 +1598,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             return Pair.of(false, "租车套餐购买订单已处理");
         }
 
-        // 若名下只有这一条数据，则及时变为使用中，记录开始使用时间，若不止这一条，则只更新支付状态
-        Integer unUseNum = carRentalPackageOrderService.countByUnUseByUid(tenantId, uid);
-        if (unUseNum.intValue() > 1) {
-            // 更改套餐购买订单的支付状态
-            carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
-        }
-
         // 2. 处理租车套餐押金缴纳订单
         String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
@@ -1619,7 +1633,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 计算总到期时间
             Integer tenancy = carRentalPackageOrderEntity.getTenancy();
             Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-            long dueTime = memberTermEntity.getDueTimeTotal();
+            long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
@@ -1631,12 +1645,26 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 套餐购买总次数
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
+            // 退租未退押
+            if (StringUtils.isBlank(memberTermEntity.getRentalPackageOrderNo())) {
+                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
+                memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
+                memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
+                memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
+                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                // 更改套餐购买订单的使用状态
+                carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+            } else {
+                // 更改套餐购买订单的支付状态
+                carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
+            }
+
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
         }
 
         // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
+        if (ObjectUtils.isEmpty(userInfo)) {
             log.error("NotifyCarRenalPackageOrder failed, not found user_info, uid is {}", uid);
             return Pair.of(false, "未找到用户信息");
         }

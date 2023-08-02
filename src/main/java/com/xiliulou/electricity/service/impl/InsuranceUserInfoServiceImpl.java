@@ -230,6 +230,32 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    public R queryUserInsurance(Long uid,Integer type) {
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
+        if(Objects.isNull(insuranceUserInfo)){
+            log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}",uid,type);
+            return R.ok();
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        BeanUtils.copyProperties(insuranceUserInfo,insuranceUserInfoVo);
+
+        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
+            return R.ok();
+        }
+
+        return R.ok(insuranceUserInfoVo);
+    }
+
+    @Override
     public R queryInsuranceByStatus(Integer status, Long offset, Long size) {
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -313,6 +339,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid() + ":" + insuranceUserInfo.getType());
+            return null;
+        });
+        return delete;
+    }
+
+    @Override
+    public int deleteByUidAndType(Long uid, Integer type) {
+        int delete = this.baseMapper.deleteByUidAndType(uid, type);
+
+        DbUtils.dbOperateSuccessThen(delete, () -> {
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type);
             return null;
         });
         return delete;

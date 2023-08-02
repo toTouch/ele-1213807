@@ -40,9 +40,13 @@ public interface InsuranceUserInfoService {
 
     R queryUserInsurance();
 
+    R queryUserInsurance(Long uid,Integer type);
+
     R queryInsuranceByStatus(Integer status, Long offset, Long size);
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
+
+    int deleteByUidAndType(Long uid,Integer type);
 
     R insertUserBatteryInsurance(InsuranceUserInfoQuery query);
 

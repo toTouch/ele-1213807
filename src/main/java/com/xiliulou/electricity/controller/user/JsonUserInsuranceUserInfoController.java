@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @Slf4j
-public class JsonUserInsuranceUserInfoController {
+public class JsonUserInsuranceUserInfoController extends BaseController {
 
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
@@ -39,6 +41,10 @@ public class JsonUserInsuranceUserInfoController {
         return insuranceUserInfoService.queryUserInsurance();
     }
 
+    @GetMapping(value = "/user/queryUserInsuranceV3")
+    public R queryUserInsuranceV3(@RequestParam("type") Integer type) {
+        return insuranceUserInfoService.queryUserInsurance(SecurityUtils.getUid(),type);
+    }
 
     //用户查询缴纳保险
     @GetMapping(value = "/user/queryInsuranceByStatus")

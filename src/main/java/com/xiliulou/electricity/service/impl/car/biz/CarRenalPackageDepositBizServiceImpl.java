@@ -49,11 +49,11 @@ import java.util.Objects;
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
 
+    @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+
     @Resource(name = "wxRefundPayCarDepositServiceImpl")
     private WxRefundPayService wxRefundPayService;
-
-    @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
 
     @Resource
     private ElectricityTradeOrderService electricityTradeOrderService;
@@ -574,7 +574,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 押金缴纳信息
-        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
 
         // 拼装返回数据
         CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
@@ -756,6 +756,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
                     // 赋值退款单状态：退款成功
                     depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    // 作废所有的套餐购买订单（未使用、使用中）、
+                    carRentalPackageOrderService.refundDepositByUid(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
+                    // 按照人+类型，作废保险
+                    insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType());
+                    // 删除会员期限表信息
+                    carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
                 }
 
                 // 线上，调用微信退款

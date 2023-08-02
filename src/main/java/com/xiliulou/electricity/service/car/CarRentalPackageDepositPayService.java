@@ -39,12 +39,12 @@ public interface CarRentalPackageDepositPayService {
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
 
     /**
-     * 根据用户ID和租户ID查询支付成功且未退的押金信息
+     * 根据用户ID和租户ID查询支付成功的最后一条押金信息
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 押金支付订单
      */
-    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayPO selectLastPaySucessByUid(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />

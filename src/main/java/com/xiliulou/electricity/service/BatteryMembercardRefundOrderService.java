@@ -58,7 +58,7 @@ public interface BatteryMembercardRefundOrderService {
 
     BatteryMembercardRefundOrder selectByRefundOrderNo(String orderNo);
 
-    BatteryMembercardRefundOrder selectByMembercardOrderNo(String orderNo);
+    BatteryMembercardRefundOrder selectLatestByMembercardOrderNo(String orderNo);
 
     Triple<Boolean,String,Object> batteryMembercardRefund(String orderNo);
 

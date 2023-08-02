@@ -3,17 +3,26 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
+import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,6 +41,21 @@ import java.util.Objects;
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+
+    @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
+
+    @Resource
+    private PxzDepositService pxzDepositService;
+
+    @Resource
+    private PxzConfigService pxzConfigService;
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -79,6 +103,14 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 throw new BizException("300000", "数据有误");
             }
 
+            // 押金缴纳订单编码
+            String depositPayOrderNo = depositRefundEntity.getDepositPayOrderNo();
+            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+            if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+                log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_deposit_refund or status error. orderNo is {}", depositPayOrderNo);
+                throw new BizException("300000", "数据有误");
+            }
+
             // 微信退款状态
             Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
 
@@ -86,7 +118,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             CarRentalPackageDepositRefundPO depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);
 
             // 事务处理
-            saveDepositRefundInfoTx(refundState, depositRefundUpdateEntity, memberTermEntity);
+            saveDepositRefundInfoTx(refundState, depositRefundUpdateEntity, memberTermEntity, depositPayEntity);
 
         } catch (Exception e) {
             log.error("WxRefundPayCarDepositService.process failed. ", e);
@@ -126,27 +158,75 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      * @param memberTermUpdateEntity 会员期限信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundInfoTx(Integer refundState, CarRentalPackageDepositRefundPO depositRefundUpdateEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity) {
+    public void saveDepositRefundInfoTx(Integer refundState, CarRentalPackageDepositRefundPO depositRefundUpdateEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity, CarRentalPackageDepositPayPO depositPayEntity) {
         // 更新退款订单的状态
         carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
 
         if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
-            Integer payType = depositRefundUpdateEntity.getPayType();
+            Integer payType = depositPayEntity.getPayType();
             // 免押，调用解除绑定
             if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                String freeDepositOrderNo = depositPayEntity.getOrderNo();
+                FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                    log.error("saveDepositRefundInfoTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
+                    throw new BizException("300000", "数据有误");
+                }
 
+                PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(memberTermUpdateEntity.getTenantId());
+                if(ObjectUtils.isEmpty(pxzConfig)) {
+                    log.error("saveDepositRefundInfoTx failed. not found t_pxz_config. tenantId is {}", memberTermUpdateEntity.getTenantId());
+                    throw new BizException("300000", "数据有误");
+                }
+
+                PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
+                query.setAesSecret(pxzConfig.getAesKey());
+                query.setDateTime(System.currentTimeMillis());
+                query.setSessionId(freeDepositOrderNo);
+                query.setMerchantCode(pxzConfig.getMerchantCode());
+
+                PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+                queryRequest.setRemark("租车套餐免押解冻");
+                queryRequest.setTransId(freeDepositOrderNo);
+                query.setData(queryRequest);
+
+                PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
+                try {
+                    log.info("saveDepositRefundInfoTx, pxzDepositService.unfreezeDeposit params query is {}", JsonUtil.toJson(query));
+                    pxzDepositUnfreezeRspPxzCommonRsp = pxzDepositService.unfreezeDeposit(query);
+                } catch (Exception e) {
+                    log.error("saveDepositRefundInfoTx failed. pxzDepositService.unfreezeDeposit failed.", e);
+                    throw new BizException("100406", "免押解冻失败");
+                }
+                log.info("saveDepositRefundInfoTx, pxzDepositService.unfreezeDeposit result is {}", JsonUtil.toJson(pxzDepositUnfreezeRspPxzCommonRsp));
+
+                if (ObjectUtils.isEmpty(pxzDepositUnfreezeRspPxzCommonRsp) || !pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
+                    throw new BizException("100406", "免押解冻失败");
+                }
+
+                FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+                freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositOrderService.update(freeDepositOrderUpdate);
             }
 
+            // 线上
+            if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                // 作废所有的套餐购买订单（未使用、使用中）、
+                carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+                // 按照人+类型，作废保险
+                insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                // 删除会员期限表信息
+                carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+            }
 
-            // 作废所有的套餐购买订单（未使用、使用中）、
-            carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
-            // TODO 按照人+类型，作废保险
-            // 删除会员期限表信息
-            carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
         } else {
             // 失败，更新会员期限表信息
             carRentalPackageMemberTermService.updateStatusById(memberTermUpdateEntity.getId(), MemberTermStatusEnum.NORMAL.getCode(), null);
         }
 
     }
+
+
 }
