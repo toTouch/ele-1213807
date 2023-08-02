@@ -19,6 +19,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -287,12 +288,23 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
-        List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
-        if (CollectionUtils.isEmpty(list)) {
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
+            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
+            if (CollectionUtils.isEmpty(list)) {
+                return Collections.emptyList();
+            }
+
+            return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        }
+
+        String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid());
+        if(StringUtils.isBlank(batteryType)){
             return Collections.emptyList();
         }
 
-        return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        return Collections.singletonList(batteryType);
     }
 
     @Override
