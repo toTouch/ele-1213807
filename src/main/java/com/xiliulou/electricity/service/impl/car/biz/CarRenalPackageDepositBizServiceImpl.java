@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
@@ -24,6 +25,7 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderReques
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
@@ -46,6 +48,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
+
+    @Resource(name = "wxRefundPayCarDepositServiceImpl")
+    private WxRefundPayService wxRefundPayService;
 
     @Resource
     private ElectricityPayParamsService electricityPayParamsService;
@@ -741,13 +746,15 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (approveFlag) {
             // 交易方式
             Integer payType = depositRefundEntity.getPayType();
+
             // 非零元退押
             if (BigDecimal.ZERO.compareTo(refundAmount) < 0) {
-                // 默认状态，审核通过
+                // 赋值退款单状态：审核通过
                 depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
 
-                // 线下，直接设置为退款成功
+                // 线下
                 if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    // 赋值退款单状态：退款成功
                     depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
                 }
 
@@ -781,7 +788,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
                         log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
 
-                        // 赋值退款单状态及审核时间
+                        // 赋值退款单状态：退款中
                         depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
 
                     } catch (WechatPayException e) {
@@ -791,29 +798,32 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 }
 
                 // 免押
-                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
-                    // 线下，直接设置为退款成功
-                    depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    // 赋值退款单状态：退款中
+                    depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+
+                    // 调用回调逻辑
+                    WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
+                    callBackResource.setRefundStatus("SUCCESS");
+                    callBackResource.setOutTradeNo(refundDepositOrderNo);
+                    wxRefundPayService.process(callBackResource);
                 }
 
-
-
             } else {
+                // 零元退押
+                depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
 
+                // 调用回调逻辑
+                WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
+                callBackResource.setRefundStatus("SUCCESS");
+                callBackResource.setOutTradeNo(refundDepositOrderNo);
+                wxRefundPayService.process(callBackResource);
             }
 
-
-            // 1. 更新退押申请单
-            depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
-
-            // 2. TODO 作废所有使用中、未使用的套餐购买订单
-            // carRentalPackageOrderService.
-
-            // 3. 删除会员期限
-            carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), apploveUid);
         } else {
-            // 1. 更新退租申请单状态
+
+            // 1. 更新退押申请单状态
             depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
 
@@ -842,7 +852,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setTotal(electricityTradeOrder.getTotalFee().intValue());
         wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundQuery.setReason("退款");
+        wechatV3RefundQuery.setReason("押金退款");
         wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");

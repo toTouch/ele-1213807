@@ -317,7 +317,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setTotal(electricityTradeOrder.getTotalFee().intValue());
         wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundQuery.setReason("退款");
+        wechatV3RefundQuery.setReason("租金退款");
         wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarRentRefundCallBackUrl() + electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");

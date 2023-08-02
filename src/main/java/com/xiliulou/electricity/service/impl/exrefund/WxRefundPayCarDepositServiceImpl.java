@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.exrefund;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
@@ -26,7 +27,7 @@ import javax.annotation.Resource;
  * @author xiaohui.song
  **/
 @Slf4j
-@Service("wxRefundPayCarDepositService")
+@Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
     @Resource
@@ -47,9 +48,16 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      */
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+        log.info("WxRefundPayCarDepositServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outTradeNo = callBackResource.getOutTradeNo();
         String outRefundNo = callBackResource.getOutRefundNo();
         String refundStatus = callBackResource.getRefundStatus();
+
+        String cacheKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
+
+        if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return;
+        }
 
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outTradeNo;
 
