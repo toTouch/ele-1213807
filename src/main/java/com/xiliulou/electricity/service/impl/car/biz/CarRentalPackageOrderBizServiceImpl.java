@@ -1588,6 +1588,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 若名下只有这一条数据，则及时变为使用中，记录开始使用时间，若不止这一条，则只更新支付状态
         Integer unUseNum = carRentalPackageOrderService.countByUnUseByUid(tenantId, uid);
         if (unUseNum.intValue() > 1) {
+            // 更改套餐购买订单的支付状态、使用状态
+            carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+        } else {
             // 更改套餐购买订单的支付状态
             carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
         }
