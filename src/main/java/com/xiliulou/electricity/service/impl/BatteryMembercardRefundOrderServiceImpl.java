@@ -666,7 +666,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.YES)) {
                 //限次
-                result = batteryMemberCard.getRentPriceUnit().multiply(BigDecimal.valueOf(electricityMemberCardOrder.getMaxUseCount() - userBatteryMemberCard.getOrderRemainingNumber()));
+                long useCount = electricityMemberCardOrder.getMaxUseCount() - userBatteryMemberCard.getOrderRemainingNumber();
+                result = useCount > 0 ? electricityMemberCardOrder.getPayAmount().subtract(batteryMemberCard.getRentPriceUnit().multiply(BigDecimal.valueOf(useCount))) : electricityMemberCardOrder.getPayAmount();
             } else {
                 //不限次
                 long usedTime = System.currentTimeMillis() - userBatteryMemberCard.getOrderEffectiveTime();
