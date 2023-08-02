@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -163,7 +162,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
      */
     @GetMapping("/admin/batteryMembercardRefund")
     public R batteryMembercardRefundOrderDetail(@RequestParam("orderNo") String orderNo, @RequestParam(value = "confirm", required = false) Integer confirm) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo,confirm));
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo, confirm));
     }
 
     @PostMapping("/admin/battery/membercard/refund")
