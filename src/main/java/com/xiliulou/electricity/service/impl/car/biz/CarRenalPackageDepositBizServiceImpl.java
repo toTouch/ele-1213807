@@ -574,7 +574,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 押金缴纳信息
-        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
 
         // 拼装返回数据
         CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();

@@ -18,6 +18,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
@@ -64,6 +66,9 @@ import java.util.stream.Collectors;
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
+    @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
+
     @Resource(name = "wxRefundPayCarRentServiceImpl")
     private WxRefundPayService wxRefundPayService;
 
@@ -72,9 +77,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private WechatV3JsapiService wechatV3JsapiService;
-
-    @Resource
-    private UnionTradeOrderService unionTradeOrderService;
 
     @Resource
     private FranchiseeService franchiseeService;
@@ -1297,6 +1299,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         return R.fail("300002", "租车会员状态异常");
                     }
                     // 从会员期限中获取押金金额
+                    log.info("BuyRentalPackageOrder deposit from memberTerm");
                     deposit = memberTermEntity.getDeposit();
                 }
             }
@@ -1359,6 +1362,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             if (ObjectUtils.isEmpty(deposit)) {
+                log.info("BuyRentalPackageOrder deposit from rentalPackage.");
                 deposit = buyPackageEntity.getDeposit();
             }
 
@@ -1458,9 +1462,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageDepositPayPO depositPayInsertEntity = null;
             // 押金缴纳订单编码
             String depositPayOrderNo = null;
-            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+            CarRentalPackageDepositPayVO depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
-            if (ObjectUtils.isEmpty(depositPayEntity) || PayStateEnum.UNPAID.getCode().equals(depositPayEntity.getPayState())) {
+            if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 if (YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType())) {
                     // 免押
                     return R.fail("300006", "未缴纳押金");
@@ -1470,12 +1474,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 // 存在押金信息，但是不匹配
-                if ((YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType()) && !PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()))
-                        || YesNoEnum.NO.getCode().equals(buyOptModel.getDepositType()) && PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
+                if ((YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType()) && !PayTypeEnum.EXEMPT.getCode().equals(depositPayVo.getPayType()))
+                        || YesNoEnum.NO.getCode().equals(buyOptModel.getDepositType()) && PayTypeEnum.EXEMPT.getCode().equals(depositPayVo.getPayType())) {
                     // 免押
                     return R.fail("300007", "请选择对应的押金缴纳方式");
                 }
-                depositPayOrderNo = depositPayEntity.getOrderNo();
+                depositPayOrderNo = depositPayVo.getOrderNo();
+                log.info("BuyRentalPackageOrder deposit paid. depositPayOrderNo is {}", depositPayOrderNo);
                 deposit = BigDecimal.ZERO;
             }
 
@@ -1633,7 +1638,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
             // 退租未退押
-            if (StringUtils.isBlank(memberTermUpdateEntity.getRentalPackageOrderNo())) {
+            if (StringUtils.isBlank(memberTermEntity.getRentalPackageOrderNo())) {
                 memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                 memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                 memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
