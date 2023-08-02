@@ -1585,16 +1585,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             return Pair.of(false, "租车套餐购买订单已处理");
         }
 
-        // 若名下只有这一条数据，则及时变为使用中，记录开始使用时间，若不止这一条，则只更新支付状态
-        Integer unUseNum = carRentalPackageOrderService.countByUnUseByUid(tenantId, uid);
-        if (unUseNum.intValue() > 1) {
-            // 更改套餐购买订单的支付状态、使用状态
-            carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
-        } else {
-            // 更改套餐购买订单的支付状态
-            carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
-        }
-
         // 2. 处理租车套餐押金缴纳订单
         String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
@@ -1642,7 +1632,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 套餐购买总次数
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
-            // 退租为退押
+            // 退租未退押
             if (StringUtils.isBlank(memberTermUpdateEntity.getRentalPackageOrderNo())) {
                 memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                 memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
@@ -1651,6 +1641,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
                 // 更改套餐购买订单的使用状态
                 carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+            } else {
+                // 更改套餐购买订单的支付状态
+                carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
             }
 
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
@@ -1658,7 +1651,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
+        if (ObjectUtils.isEmpty(userInfo)) {
             log.error("NotifyCarRenalPackageOrder failed, not found user_info, uid is {}", uid);
             return Pair.of(false, "未找到用户信息");
         }

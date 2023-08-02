@@ -212,7 +212,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             }
 
             // 线上
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+            if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
                 // 作废所有的套餐购买订单（未使用、使用中）、
                 carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
                 // 按照人+类型，作废保险
