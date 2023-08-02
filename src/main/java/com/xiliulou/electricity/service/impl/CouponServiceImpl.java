@@ -54,11 +54,11 @@ public class CouponServiceImpl implements CouponService {
     @Autowired
     private NewUserActivityService newUserActivityService;
     @Autowired
-    private ElectricityMemberCardService memberCardService;
-    @Autowired
     private CarRentalPackageService carRentalPackageService;
     @Autowired
     private CouponActivityPackageService couponActivityPackageService;
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
 
     /**
@@ -240,8 +240,8 @@ public class CouponServiceImpl implements CouponService {
         List<Long> electricityPackages = couponQuery.getBatteryPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-            if (Objects.isNull(electricityMemberCard)) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
 
@@ -377,8 +377,8 @@ public class CouponServiceImpl implements CouponService {
 
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(couponActivityPackage.getPackageId().intValue());
-            BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
+            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
             memberCardVOList.add(batteryMemberCardVO);
         }
 

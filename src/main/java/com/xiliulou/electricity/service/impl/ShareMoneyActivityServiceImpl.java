@@ -74,6 +74,9 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     private ElectricityMemberCardService memberCardService;
 
     @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
     private CarRentalPackageService carRentalPackageService;
 
     /**
@@ -186,8 +189,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         List<Long> electricityPackages = shareMoneyActivityAddAndUpdateQuery.getBatteryPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-            if (Objects.isNull(electricityMemberCard)) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
         }
