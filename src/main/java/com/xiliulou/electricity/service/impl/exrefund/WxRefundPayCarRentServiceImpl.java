@@ -56,7 +56,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
         String outRefundNo = callBackResource.getOutRefundNo();
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
 
-        if (!redisService.setNx(redisLockKey, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+        if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
             return;
         }
 
