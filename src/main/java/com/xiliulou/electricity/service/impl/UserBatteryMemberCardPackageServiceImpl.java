@@ -147,7 +147,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             return Triple.of(true, null, null);
         }
 
-        if (!(userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getOrderRemainingNumber()<=1))) {
+        if (!(userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis() + 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getOrderRemainingNumber() <= 0))) {
             return Triple.of(true, null, null);
         }
 
@@ -186,7 +186,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
 
-                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber()<=1))) {
+                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber() <= 0))) {
                     return;
                 }
 
