@@ -1391,11 +1391,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
                     // 车电一体，比对电池型号
                     if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
-                        List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                        List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                        if (!buyBatteryList.containsAll(oriBatteryList)) {
-                            log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
-                            return R.fail("300005", "套餐不匹配");
+                        // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
+                        Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
+                        if (ObjectUtils.isEmpty(franchisee)) {
+                            log.error("BuyRentalPackageOrder failed. not found franchisee. franchiseeId is {}", userFranchiseeId);
+                            return R.fail("300000", "数据有误");
+                        }
+                        if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
+                            List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                            List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                            if (!buyBatteryList.containsAll(oriBatteryList)) {
+                                log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
+                                return R.fail("300005", "套餐不匹配");
+                            }
                         }
                     }
                 }
@@ -1619,7 +1627,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 计算总到期时间
             Integer tenancy = carRentalPackageOrderEntity.getTenancy();
             Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-            long dueTime = memberTermEntity.getDueTimeTotal();
+            long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : 0L;
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
