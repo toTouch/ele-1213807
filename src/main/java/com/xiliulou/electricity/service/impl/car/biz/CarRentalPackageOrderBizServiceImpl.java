@@ -1624,7 +1624,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * 1000);
+                dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
             memberTermUpdateEntity.setDueTimeTotal(dueTime);
 
@@ -1756,7 +1756,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
         }
         if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-            dueTime = dueTime + (tenancy * 1000);
+            dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
         }
 
         carRentalPackageMemberTermEntity.setDueTime(dueTime);

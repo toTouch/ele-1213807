@@ -115,7 +115,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                     dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.DAY_MILLISECOND);
                 }
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTimeTotal = dueTimeTotal - (tenancy * 1000);
+                    dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.MINUTE_MILLISECOND);
                 }
 
                 // 更新数据
