@@ -194,10 +194,9 @@ public class JsonAdminCouponController extends BaseController {
         return couponService.queryCount(couponQuery);
     }
 
-    @GetMapping(value = "/admin/coupon/queryPackagesByFranchisee")
+    @GetMapping(value = "/admin/coupon/queryPackages")
     public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
                                          @RequestParam(value = "size") Long size,
-                                         @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
                                          @RequestParam(value = "type",  required = true) Integer type) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
@@ -209,7 +208,6 @@ public class JsonAdminCouponController extends BaseController {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .offset(offset)
                     .size(size)
-                    .franchiseeId(franchiseeId)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
                     .tenantId(TenantContextHolder.getTenantId()).build();
@@ -218,7 +216,6 @@ public class JsonAdminCouponController extends BaseController {
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
             qryModel.setOffset(offset.intValue());
             qryModel.setSize(size.intValue());
-            qryModel.setFranchiseeId(franchiseeId.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
@@ -234,8 +231,7 @@ public class JsonAdminCouponController extends BaseController {
     }
 
     @GetMapping(value = "/admin/coupon/queryPackagesCount")
-    public R getElectricityUsablePackageCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
-                                              @RequestParam(value = "type",  required = true) Integer type) {
+    public R getElectricityUsablePackageCount(@RequestParam(value = "type",  required = true) Integer type) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if(!packageTypes.contains(type)){
@@ -244,14 +240,12 @@ public class JsonAdminCouponController extends BaseController {
 
         if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                    .franchiseeId(franchiseeId)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
                     .tenantId(TenantContextHolder.getTenantId()).build();
             return R.ok(batteryMemberCardService.selectByPageCount(query));
         }else{
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-            qryModel.setFranchiseeId(franchiseeId.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
