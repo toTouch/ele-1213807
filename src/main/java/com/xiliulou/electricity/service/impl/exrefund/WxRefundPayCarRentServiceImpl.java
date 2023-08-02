@@ -124,11 +124,10 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 entityModify.setId(memberTermEntity.getId());
                 entityModify.setUpdateTime(System.currentTimeMillis());
                 carRentalPackageMemberTermService.updateById(entityModify);
-
-                // 3. 更新购买订单状态
-                carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
             }
 
+            // 3. 更新购买订单状态
+            carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
             // 4. TODO 异步处理分账、活动
 
         } else {
@@ -138,7 +137,6 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
 
         // 更新退款单信息
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdate);
-
     }
 
     /**
