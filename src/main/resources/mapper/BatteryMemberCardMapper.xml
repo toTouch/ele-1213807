@@ -185,17 +185,19 @@
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
-            <if test="rentType != null and rentType==3">
-                and bmc.rent_type in (0,2)
-            </if>
             <if test="tenantId != null">
                 and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="rentTypes != null">
+                and bmc.rent_type in
+                <foreach collection="rentTypes" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by bmc.id desc
         limit #{offset}, #{size}
     </select>
-
 
     <select id="selectMembercardBatteryV" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
         select

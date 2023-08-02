@@ -841,11 +841,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setRentUnit(batteryMemberCard.getRentUnit());
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
-            vo.setBatteryTypes(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId()));
+            vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
             return vo;
         }).collect(Collectors.toList());
 
+    }
+
+    private String acquireBatteryMembercardOrderSimpleBatteryType(List<String> batteryTypes) {
+        String result = "";
+
+        try {
+            if (CollectionUtils.isEmpty(batteryTypes)) {
+                return result;
+            }
+
+            String batteryModel = batteryTypes.get(0);
+
+            return batteryModel.substring(batteryModel.indexOf("_") + 1).substring(0, batteryModel.substring(batteryModel.indexOf("_") + 1).indexOf("_"));
+        } catch (Exception e) {
+            log.error("ELE ERROR!acquire Battery Membercard Order simpleBatteryType");
+        }
+
+        return result;
     }
 
     @Override
