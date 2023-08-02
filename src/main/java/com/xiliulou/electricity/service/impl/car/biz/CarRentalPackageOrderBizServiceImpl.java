@@ -1630,7 +1630,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 计算总到期时间
             Integer tenancy = carRentalPackageOrderEntity.getTenancy();
             Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-            long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : 0L;
+            long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
