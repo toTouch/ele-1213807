@@ -52,4 +52,8 @@
          where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid} and tiui.del_flag=0
     </select>
 
+    <delete id="deleteByUidAndType">
+        delete from t_insurance_user_info where uid = #{uid} and type=#{type}
+    </delete>
+
 </mapper>

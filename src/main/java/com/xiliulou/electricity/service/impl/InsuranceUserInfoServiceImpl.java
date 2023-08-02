@@ -318,6 +318,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return delete;
     }
 
+    @Override
+    public int deleteByUidAndType(Long uid, Integer type) {
+        int delete = this.baseMapper.deleteByUidAndType(uid, type);
+
+        DbUtils.dbOperateSuccessThen(delete, () -> {
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type);
+            return null;
+        });
+        return delete;
+    }
+
     private void expireInsuranceOrder(InsuranceUserInfo insuranceUserInfo) {
         String insuranceOrderId = insuranceUserInfo.getInsuranceOrderId();
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceOrderId);

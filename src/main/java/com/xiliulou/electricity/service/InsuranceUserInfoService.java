@@ -44,6 +44,8 @@ public interface InsuranceUserInfoService {
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
 
+    int deleteByUidAndType(Long uid,Integer type);
+
     R insertUserBatteryInsurance(InsuranceUserInfoQuery query);
 
     R editUserInsuranceInfo(InsuranceUserInfoQuery query);
