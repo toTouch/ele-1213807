@@ -448,6 +448,9 @@
             <if test="useStatus != null">
                 use_status = #{useStatus},
             </if>
+            <if test="refundStatus != null">
+                refund_status = #{refundStatus},
+            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>

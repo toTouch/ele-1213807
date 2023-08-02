@@ -107,6 +107,7 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
             electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUND);
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_SUCCESS);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
         } else {
@@ -115,6 +116,12 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderService.update(batteryMembercardRefundOrderUpdate);
+
+            ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+            electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
+            electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
         }
     }
 

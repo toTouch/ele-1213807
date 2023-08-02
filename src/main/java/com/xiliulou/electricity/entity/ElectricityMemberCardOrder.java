@@ -62,8 +62,14 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
 
     private Integer payType;
-
+    /**
+     * 套餐订单使用状态 1未使用,2：使用中,3：已失效, 4:已退租
+     */
     private Integer useStatus;
+    /**
+     * 退租状态 1未退租,2：审核中,3：退租中, 4:退租成功, 5:退租失败
+     */
+    private Integer refundStatus;
 
     /**
      * 活动id
@@ -119,11 +125,18 @@ public class ElectricityMemberCardOrder {
     public static final Integer SOURCE_NOT_SCAN = 2;
     public static final Integer SOURCE_ARTIFICIAL = 3;
 
-    //套餐订单使用状态，1：未使用，2：使用中，3：已使用, 4:已退租, 5:退租中, 7:审核中
-    public static final Integer USE_STATUS_NON = 1;
+    //套餐订单使用状态 1未使用,2：使用中,3：已失效, 4:已退租
+    public static final Integer USE_STATUS_NOT_USE = 1;
     public static final Integer USE_STATUS_USING = 2;
-    public static final Integer USE_STATUS_USED = 3;
+    public static final Integer USE_STATUS_EXPIRE = 3;
     public static final Integer USE_STATUS_REFUND = 4;
-    public static final Integer USE_STATUS_REFUNDING = 5;
-    public static final Integer USE_STATUS_REFUND_AUDIT = 7;
+
+    //退租状态 1未退租,2：审核中,3：退租中, 4:退租成功, 5:退租失败, 6:审核拒绝
+    public static final Integer REFUND_STATUS_NON = 1;
+    public static final Integer REFUND_STATUS_AUDIT = 2;
+    public static final Integer REFUND_STATUS_REFUNDING = 3;
+    public static final Integer REFUND_STATUS_SUCCESS = 4;
+    public static final Integer REFUND_STATUS_FAIL = 5;
+    public static final Integer REFUND_STATUS_REFUSED = 6;
+
 }

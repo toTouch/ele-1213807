@@ -744,7 +744,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
             memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
             memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-            memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
             memberCardOrder.setMemberCardId(batteryMemberCard.getId());
             memberCardOrder.setUid(userInfo.getUid());
             memberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
@@ -3371,7 +3370,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setTenantId(userInfo.getTenantId());
         memberCardOrder.setCreateTime(System.currentTimeMillis());
         memberCardOrder.setUpdateTime(System.currentTimeMillis());
-        memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
+        memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NOT_USE);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
