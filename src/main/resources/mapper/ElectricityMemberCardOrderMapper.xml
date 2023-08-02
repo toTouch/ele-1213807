@@ -172,11 +172,9 @@
     
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
-        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id
-        FROM
-        t_electricity_member_card_order
-        WHERE uid =#{uid}
-        and member_card_model=0
+        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status ,refund_status
+        FROM t_electricity_member_card_order
+        WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
@@ -189,9 +187,8 @@
         <if test="queryEndTime != null">
             and create_time &lt;= #{queryEndTime}
         </if>
-        order by create_time desc
+        order by id desc
         limit #{offset},#{size}
-    
     </select>
     
     <select id="selectUserMemberCardOrderCount" resultType="java.lang.Integer">
@@ -447,6 +444,9 @@
         <set>
             <if test="useStatus != null">
                 use_status = #{useStatus},
+            </if>
+            <if test="refundStatus != null">
+                refund_status = #{refundStatus},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

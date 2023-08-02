@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.StoreVO;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarModelBizServiceImpl implements CarModelBizService {
+
+    @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource
     private StoreService storeService;
@@ -159,9 +163,14 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         BigDecimal depositExit = null;
         Integer rentalPackageTypeExit = null;
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
-            CarRentalPackagePO rentalPackage = carRentalPackageService.selectById(memberTermEntity.getRentalPackageId());
+            Long rentalPackageId = memberTermEntity.getRentalPackageId();
+            if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId.longValue() == 0) {
+                String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+                rentalPackageId = carRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo(depositPayOrderNo);
+            }
+            CarRentalPackagePO rentalPackage = carRentalPackageService.selectById(rentalPackageId);
             if (ObjectUtils.isEmpty(rentalPackage)) {
-                log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", memberTermEntity.getRentalPackageId());
+                log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
                 throw new BizException("300000", "数据有误");
             }
             carModelIdExit = rentalPackage.getCarModelId();

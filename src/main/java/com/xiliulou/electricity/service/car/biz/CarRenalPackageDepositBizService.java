@@ -15,6 +15,13 @@ import java.math.BigDecimal;
 public interface CarRenalPackageDepositBizService {
 
     /**
+     * 根据押金缴纳订单编号获取套餐ID
+     * @param depositPayOrderNo 押金缴纳订单编码
+     * @return 套餐ID
+     */
+    Long queryRentalPackageIdByDepositPayOrderNo(String depositPayOrderNo);
+
+    /**
      * 查询免押状态
      * @param tenantId 租户ID
      * @param uid 用户ID

@@ -253,8 +253,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100281", "电池套餐订单不存在");
             }
 
-            if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USED)) {
-                return Triple.of(false, "100285", "电池套餐已使用");
+            if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)) {
+                return Triple.of(false, "100285", "电池套餐已失效");
             }
 
             //如果套餐使用中,判断是否有未使用的套餐
@@ -349,7 +349,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate=new ElectricityMemberCardOrder();
             electricityMemberCardOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
-            electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_AUDIT);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
 
@@ -425,12 +425,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         this.insert(batteryMembercardRefundOrderInsert);
 
-        ElectricityMemberCardOrder electricityMemberCardOrderUpdate=new ElectricityMemberCardOrder();
-        electricityMemberCardOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
-        electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
-        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
-
         //若套餐使用中,发起退租不能再使用
         if (Objects.equals(orderNo, userBatteryMemberCard.getOrderId())) {
             userBatteryMemberCard.setUid(userInfo.getUid());
@@ -483,6 +477,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND);
             this.update(batteryMembercardRefundOrderUpdate);
+
+            ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+            electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUSED);
+            electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             return Triple.of(true, "", null);
         }
 
@@ -509,7 +509,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
             this.update(batteryMembercardRefundOrderUpdate);
 
-            electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
             return Triple.of(true, "", null);
@@ -520,7 +520,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
         this.update(batteryMembercardRefundOrderUpdate);
 
-        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
+        electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
         return Triple.of(false, "ELECTRICITY.00100", "退租失败");
@@ -547,6 +547,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_SUCCESS);
         electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUND);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
@@ -562,7 +563,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100281", "电池套餐订单不存在");
         }
 
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USED)) {
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)) {
             return Triple.of(false, "100285", "电池套餐已使用");
         }
 
@@ -617,7 +618,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     private void assignOtherAttr(BatteryMembercardRefundOrderDetailVO refundOrderDetailVO, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {
         //未使用
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NOT_USE)) {
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = userBatteryMemberCardPackageService.selectByOrderNo(electricityMemberCardOrder.getOrderId());
             if (Objects.isNull(userBatteryMemberCardPackage)) {
                 return;
@@ -636,7 +637,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     private void assignOtherAttr(BatteryMembercardRefundOrder batteryMembercardRefundOrder, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {
         //未使用
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NOT_USE)) {
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = userBatteryMemberCardPackageService.selectByOrderNo(electricityMemberCardOrder.getOrderId());
             if (Objects.isNull(userBatteryMemberCardPackage)) {
                 return;
@@ -657,7 +658,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BigDecimal result = BigDecimal.valueOf(0);
 
         //未使用
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NOT_USE)) {
             result = electricityMemberCardOrder.getPayAmount();
         }
 

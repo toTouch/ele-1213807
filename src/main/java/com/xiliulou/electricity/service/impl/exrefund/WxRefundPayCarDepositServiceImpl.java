@@ -1,13 +1,15 @@
 package com.xiliulou.electricity.service.impl.exrefund;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
-import com.xiliulou.electricity.enums.WxRefundStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -15,10 +17,12 @@ import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * 微信退款-租车押金退款 ServiceImpl
@@ -26,7 +30,7 @@ import javax.annotation.Resource;
  * @author xiaohui.song
  **/
 @Slf4j
-@Service("wxRefundPayCarDepositService")
+@Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
     @Resource
@@ -47,36 +51,42 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      */
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
-        String outTradeNo = callBackResource.getOutTradeNo();
+        log.info("WxRefundPayCarDepositServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
-        String refundStatus = callBackResource.getRefundStatus();
-
-        String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outTradeNo;
+        String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
 
         try {
-            if (!redisService.setNx(redisLockKey, outTradeNo, 10 * 1000L, false)) {
+            if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
                 return;
             }
 
-            // 查询押金退款单信息
+            // 押金退款单信息
             CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
-                log.error("WxRefundPayCarDepositService.process failed. car_rental_package_order_rent_refund not found or status wrong. orderNo is {}", outRefundNo);
+                log.error("WxRefundPayCarDepositService.process failed. t_car_rental_package_order_rent_refund not found or status wrong. orderNo is {}", outRefundNo);
+                return;
+            }
+
+            if (RefundStateEnum.SUCCESS.getCode().equals(depositRefundEntity.getRefundState())) {
+                log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. orderNo is {}", outRefundNo);
                 return;
             }
 
             // 查询会员期限信息
             CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
-
-            RefundStateEnum refundStateEnum = RefundStateEnum.SUCCESS;
-            if (!WxRefundStatusEnum.SUCCESS.getCode().equals(refundStatus)) {
-                refundStateEnum = RefundStateEnum.FAILED;
+            if (ObjectUtils.isEmpty(memberTermEntity)) {
+                log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", depositRefundEntity.getUid());
+                throw new BizException("300000", "数据有误");
             }
 
-            // 构建押金退款订单表更新实体信息
-            CarRentalPackageDepositRefundPO depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundStateEnum);
+            // 微信退款状态
+            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
 
-            saveDepositRefundInfoTx(refundStateEnum, depositRefundUpdateEntity, memberTermEntity);
+            // 构建押金退款订单表更新实体信息
+            CarRentalPackageDepositRefundPO depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);
+
+            // 事务处理
+            saveDepositRefundInfoTx(refundState, depositRefundUpdateEntity, memberTermEntity);
 
         } catch (Exception e) {
             log.error("WxRefundPayCarDepositService.process failed. ", e);
@@ -98,31 +108,40 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
     /**
      * 构建押金退款订单表更新实体信息
      * @param depositRefundEntity 押金退款原始DB信息
-     * @param refundStateEnum 退款状态
+     * @param refundState 退款状态
      * @return
      */
-    private CarRentalPackageDepositRefundPO buildDepositRefundEntity(CarRentalPackageDepositRefundPO depositRefundEntity, RefundStateEnum refundStateEnum) {
+    private CarRentalPackageDepositRefundPO buildDepositRefundEntity(CarRentalPackageDepositRefundPO depositRefundEntity, Integer refundState) {
         CarRentalPackageDepositRefundPO depositRefundUpdateEntity = new CarRentalPackageDepositRefundPO();
         depositRefundUpdateEntity.setOrderNo(depositRefundEntity.getOrderNo());
-        depositRefundUpdateEntity.setRefundState(refundStateEnum.getCode());
+        depositRefundUpdateEntity.setRefundState(refundState);
         depositRefundUpdateEntity.setUpdateTime(System.currentTimeMillis());
         return depositRefundUpdateEntity;
     };
 
     /**
      * 退押之后的事务处理
-     * @param refundStateEnum
-     * @param depositRefundUpdateEntity
-     * @param memberTermUpdateEntity
+     * @param refundState 退款状态
+     * @param depositRefundUpdateEntity 押金退款信息
+     * @param memberTermUpdateEntity 会员期限信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundInfoTx(RefundStateEnum refundStateEnum, CarRentalPackageDepositRefundPO depositRefundUpdateEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity) {
+    public void saveDepositRefundInfoTx(Integer refundState, CarRentalPackageDepositRefundPO depositRefundUpdateEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity) {
         // 更新退款订单的状态
         carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
 
-        if (RefundStateEnum.SUCCESS.getCode().equals(refundStateEnum.getCode())) {
-            // 成功，作废所有的套餐购买订单、删除会员期限表信息
+        if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
+            Integer payType = depositRefundUpdateEntity.getPayType();
+            // 免押，调用解除绑定
+            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+
+            }
+
+
+            // 作废所有的套餐购买订单（未使用、使用中）、
             carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+            // TODO 按照人+类型，作废保险
+            // 删除会员期限表信息
             carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
         } else {
             // 失败，更新会员期限表信息

@@ -220,7 +220,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         //更新原来绑定的套餐订单状态
         ElectricityMemberCardOrder oldMemberCardOrder = new ElectricityMemberCardOrder();
         oldMemberCardOrder.setOrderId(userBatteryMemberCard.getOrderId());
-        oldMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USED);
+        oldMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
         oldMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateStatusByOrderNo(oldMemberCardOrder);
 

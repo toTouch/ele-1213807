@@ -69,7 +69,9 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         int num = carRentalPackageMemberTermMapper.rentRefundByUidAndPackageOrderNo(uid, packageOrderNo, optUid, System.currentTimeMillis());
 
-        selectByTenantIdAndUid(tenantId, uid);
+        // 删除缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
 
         return num >= 0;
     }

@@ -744,7 +744,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
             memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
             memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-            memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
             memberCardOrder.setMemberCardId(batteryMemberCard.getId());
             memberCardOrder.setUid(userInfo.getUid());
             memberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
@@ -842,11 +841,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setRentUnit(batteryMemberCard.getRentUnit());
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
-            vo.setBatteryTypes(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId()));
+            vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
             return vo;
         }).collect(Collectors.toList());
 
+    }
+
+    private String acquireBatteryMembercardOrderSimpleBatteryType(List<String> batteryTypes) {
+        String result = "";
+
+        try {
+            if (CollectionUtils.isEmpty(batteryTypes)) {
+                return result;
+            }
+
+            String batteryModel = batteryTypes.get(0);
+
+            return batteryModel.substring(batteryModel.indexOf("_") + 1).substring(0, batteryModel.substring(batteryModel.indexOf("_") + 1).indexOf("_"));
+        } catch (Exception e) {
+            log.error("ELE ERROR!acquire Battery Membercard Order simpleBatteryType");
+        }
+
+        return result;
     }
 
     @Override
@@ -3371,7 +3388,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setTenantId(userInfo.getTenantId());
         memberCardOrder.setCreateTime(System.currentTimeMillis());
         memberCardOrder.setUpdateTime(System.currentTimeMillis());
-        memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
+        memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NOT_USE);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
