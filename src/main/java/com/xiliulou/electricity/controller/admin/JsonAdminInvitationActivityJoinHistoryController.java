@@ -41,7 +41,8 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "id", required = false) Long id,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "phone", required = false) String phone,
-                  @RequestParam(value = "joinUserName", required = false) String joinUserName) {
+                  @RequestParam(value = "joinUserName", required = false) String joinUserName,
+                  @RequestParam(value = "activityName", required = false) String activityName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -79,6 +80,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .activityId(activityId)
+                .activityName(activityName)
                 .status(status)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
@@ -95,7 +97,8 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                    @RequestParam(value = "endTime", required = false) Long endTime,
                    @RequestParam(value = "status", required = false) Integer status,
                    @RequestParam(value = "phone", required = false) String phone,
-                   @RequestParam(value = "joinUserName", required = false) String joinUserName) {
+                   @RequestParam(value = "joinUserName", required = false) String joinUserName,
+                   @RequestParam(value = "activityName", required = false) String activityName) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -124,6 +127,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .activityId(activityId)
+                .activityName(activityName)
                 .status(status)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)

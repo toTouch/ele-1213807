@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表控制层
@@ -89,14 +88,14 @@ public class JsonAdminJoinShareActivityHistoryController {
 	 * @return
 	 */
 	@GetMapping(value = "/admin/joinShareActivityHistory/participationList")
-	public R joinActivity(@RequestParam("size") Long size,
-						  @RequestParam("offset") Long offset,
-						  @RequestParam(value = "joinName", required = false) String joinName,
-						  @RequestParam(value = "phone", required = false) String phone,
-						  @RequestParam(value = "activityName", required = false) String activityName,
-						  @RequestParam(value = "beginTime", required = false) Long beginTime,
-						  @RequestParam(value = "endTime", required = false) Long endTime,
-						  @RequestParam(value = "status", required = false) Integer status) {
+	public R participationList(@RequestParam("size") Long size,
+								  @RequestParam("offset") Long offset,
+								  @RequestParam(value = "joinName", required = false) String joinName,
+								  @RequestParam(value = "phone", required = false) String phone,
+								  @RequestParam(value = "activityName", required = false) String activityName,
+								  @RequestParam(value = "beginTime", required = false) Long beginTime,
+								  @RequestParam(value = "endTime", required = false) Long endTime,
+								  @RequestParam(value = "status", required = false) Integer status) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -125,12 +124,12 @@ public class JsonAdminJoinShareActivityHistoryController {
 	}
 
 	@GetMapping(value = "/admin/joinShareActivityHistory/participationCount")
-	public R joinActivity(@RequestParam(value = "joinName", required = false) String joinName,
-						  @RequestParam(value = "phone", required = false) String phone,
-						  @RequestParam(value = "activityName", required = false) String activityName,
-						  @RequestParam(value = "beginTime", required = false) Long beginTime,
-						  @RequestParam(value = "endTime", required = false) Long endTime,
-						  @RequestParam(value = "status", required = false) Integer status) {
+	public R participationCount(@RequestParam(value = "joinName", required = false) String joinName,
+								  @RequestParam(value = "phone", required = false) String phone,
+								  @RequestParam(value = "activityName", required = false) String activityName,
+								  @RequestParam(value = "beginTime", required = false) Long beginTime,
+								  @RequestParam(value = "endTime", required = false) Long endTime,
+								  @RequestParam(value = "status", required = false) Integer status) {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 

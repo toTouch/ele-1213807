@@ -51,6 +51,11 @@ public class JsonAdminShareMoneyActivityController {
 	@Autowired
 	private CarRentalPackageService carRentalPackageService;
 
+	@GetMapping(value = "/admin/shareMoneyActivity/checkActivityStatusOn")
+	public R checkActivityStatusOn() {
+		return shareMoneyActivityService.checkActivityStatusOn();
+	}
+
 	//新增
 	@PostMapping(value = "/admin/shareMoneyActivity")
 	public R save(@RequestBody @Validated(value = CreateGroup.class) ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {

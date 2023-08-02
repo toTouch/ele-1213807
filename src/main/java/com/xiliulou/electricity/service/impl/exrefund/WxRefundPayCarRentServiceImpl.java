@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.exrefund;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
@@ -51,6 +52,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+        log.info("WxRefundPayCarRentServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String refundOrderNo = callBackResource.getOutTradeNo();
         String cacheKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + refundOrderNo;
 

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.model.car.query;
 import com.xiliulou.electricity.enums.BuyTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -87,6 +88,18 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * @see BuyTypeEnum
      */
     private Integer buyType;
+
+    /**
+     * 使用状态
+     * <pre>
+     *     1-未使用
+     *     2-使用中
+     *     3-已失效
+     *     4-已退租
+     * </pre>
+     * @see UseStateEnum
+     */
+    private Integer useState;
 
     /**
      * 购买时间开始

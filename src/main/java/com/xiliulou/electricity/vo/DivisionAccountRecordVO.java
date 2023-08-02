@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -55,6 +56,12 @@ public class DivisionAccountRecordVO {
      * 套餐来源
      */
     private Integer source;
+
+    /**
+     * 分账类型  0 - 购买， 1 - 退租
+     * @see DivisionAccountEnum
+     */
+    private Integer type;
 
     private Long createTime;
 

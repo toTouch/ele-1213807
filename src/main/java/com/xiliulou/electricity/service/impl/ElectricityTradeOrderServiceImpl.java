@@ -255,6 +255,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
+        log.info("commonCreateTradeOrderAndGetPayParams paymentAmount is {}", commonOrder.getPayAmount());
 
         //生成支付订单
         String ip = request.getRemoteAddr();
@@ -266,7 +267,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
         electricityTradeOrder.setOrderType(commonOrder.getOrderType());
         electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-        electricityTradeOrder.setTotalFee(commonOrder.getPayAmount());
+        electricityTradeOrder.setTotalFee(commonOrder.getPayAmount().multiply(new BigDecimal(100)));
         electricityTradeOrder.setUid(commonOrder.getUid());
         electricityTradeOrder.setTenantId(commonOrder.getTenantId());
         baseMapper.insert(electricityTradeOrder);
