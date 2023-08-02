@@ -174,11 +174,11 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
         if (ObjectUtils.isEmpty(callBackResource)) {
             log.error("NotifyCarRenalPackageOrder failed, callBackResource is empty");
             return Pair.of(false, "参数为空");
         }
-        log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
 
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
