@@ -48,6 +48,11 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
     private String orderNo;
 
     /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
+
+    /**
      * 用户ID
      */
     private Long uid;
