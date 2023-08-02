@@ -18,8 +18,8 @@ public interface ShareMoneyActivityPackageService {
 
     List<ShareMoneyActivityPackage> findActivityPackages(ShareMoneyActivityPackage shareMoneyActivityPackage);
 
-    List<ShareMoneyActivityPackage> findActivityPackagesByCouponId(Long activityId);
+    List<ShareMoneyActivityPackage> findActivityPackagesByActivityId(Long activityId);
 
-    List<ShareMoneyActivityPackage> findPackagesByCouponIdAndType(Long activityId, Integer packageType);
+    List<ShareMoneyActivityPackage> findPackagesByActivityIdAndType(Long activityId, Integer packageType);
 
 }
