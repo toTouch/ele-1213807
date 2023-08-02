@@ -111,12 +111,12 @@ public class CarRentalPackageVO implements Serializable {
     private Integer freeDeposit;
 
     /**
-     * 租金单价
+     * 租金单价(元)
      */
     private BigDecimal rentUnitPrice;
 
     /**
-     * 滞纳金(天)
+     * 滞纳金(元/天)
      */
     private BigDecimal lateFee;
 
