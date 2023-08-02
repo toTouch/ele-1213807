@@ -20,6 +20,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource
     private FranchiseeService franchiseeService;
@@ -149,10 +153,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     oldUserFlag = true;
                 } else {
                     oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                    rentalPackageId = carRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());
                 }
 
                 // 车电一体且存在订单
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
+                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
                     // 查询电池型号信息
                     List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
                     batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());

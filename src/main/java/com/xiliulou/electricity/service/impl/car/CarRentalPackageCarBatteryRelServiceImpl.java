@@ -78,12 +78,7 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      */
     @Override
     public boolean batchInsert(List<CarRentalPackageCarBatteryRelPO> entityList) {
-        if (CollectionUtils.isEmpty(entityList)) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
         carRentalPackageCarBatteryRelMapper.batchInsert(entityList);
-
         return true;
     }
 }

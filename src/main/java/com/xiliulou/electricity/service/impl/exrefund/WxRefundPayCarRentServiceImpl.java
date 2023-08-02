@@ -54,89 +54,97 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
         log.info("WxRefundPayCarRentServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
-        String cacheKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
+        String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
 
-        if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+        if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
             return;
         }
 
-        // 退租订单信息
-        CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
-        if (ObjectUtils.isEmpty(rentRefundEntity)) {
-            log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
-            return;
-        }
+        try {
 
-        if (RefundStateEnum.SUCCESS.getCode().equals(rentRefundEntity.getRefundState())) {
-            log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", outRefundNo);
-            return;
-        }
-
-        // 租车会员信息
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", rentRefundEntity.getUid());
-            throw new BizException("300000", "数据有误");
-        }
-
-        // 购买套餐编码
-        String orderNo = rentRefundEntity.getRentalPackageOrderNo();
-        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode().equals(packageOrderEntity.getUseState())) {
-            log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
-            throw new BizException("300000", "数据有误");
-        }
-
-        // 微信退款状态
-        Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
-
-        // 更新退款单数据
-        CarRentalPackageOrderRentRefundPO rentRefundUpdate = new CarRentalPackageOrderRentRefundPO();
-        rentRefundUpdate.setOrderNo(outRefundNo);
-        rentRefundUpdate.setRefundState(refundState);
-        rentRefundUpdate.setUpdateTime(System.currentTimeMillis());
-
-        if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
-            // 是否退掉最后一个订单
-            boolean isLastOrder = false;
-            if (orderNo.equals(memberTermEntity.getRentalPackageOrderNo())) {
-                isLastOrder = true;
+            // 退租订单信息
+            CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
+            if (ObjectUtils.isEmpty(rentRefundEntity)) {
+                log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
+                return;
             }
 
-            // 处理租车会员期限信息
-            if (isLastOrder) {
-                carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermEntity.getRentalPackageOrderNo(), null);
+            if (RefundStateEnum.SUCCESS.getCode().equals(rentRefundEntity.getRefundState())) {
+                log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", outRefundNo);
+                return;
+            }
+
+            // 租车会员信息
+            CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
+            if (ObjectUtils.isEmpty(memberTermEntity)) {
+                log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", rentRefundEntity.getUid());
+                throw new BizException("300000", "数据有误");
+            }
+
+            // 购买套餐编码
+            String orderNo = rentRefundEntity.getRentalPackageOrderNo();
+            CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode().equals(packageOrderEntity.getUseState())) {
+                log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
+                throw new BizException("300000", "数据有误");
+            }
+
+            // 微信退款状态
+            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
+
+            // 更新退款单数据
+            CarRentalPackageOrderRentRefundPO rentRefundUpdate = new CarRentalPackageOrderRentRefundPO();
+            rentRefundUpdate.setOrderNo(outRefundNo);
+            rentRefundUpdate.setRefundState(refundState);
+            rentRefundUpdate.setUpdateTime(System.currentTimeMillis());
+
+            if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
+                // 是否退掉最后一个订单
+                boolean isLastOrder = false;
+                if (orderNo.equals(memberTermEntity.getRentalPackageOrderNo())) {
+                    isLastOrder = true;
+                }
+
+                // 处理租车会员期限信息
+                if (isLastOrder) {
+                    carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermEntity.getRentalPackageOrderNo(), null);
+                } else {
+                    // 计算总到期时间
+                    Integer tenancy = packageOrderEntity.getTenancy();
+                    Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
+                    long dueTimeTotal = memberTermEntity.getDueTimeTotal();
+                    if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                        dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.DAY_MILLISECOND);
+                    }
+                    if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                        dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                    }
+
+                    // 更新数据
+                    CarRentalPackageMemberTermPO entityModify = new CarRentalPackageMemberTermPO();
+                    entityModify.setDueTimeTotal(dueTimeTotal);
+                    entityModify.setId(memberTermEntity.getId());
+                    entityModify.setUpdateTime(System.currentTimeMillis());
+                    carRentalPackageMemberTermService.updateById(entityModify);
+                }
+
+                // 3. 更新购买订单状态
+                carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
+                // 4. TODO 异步处理分账、活动
+
             } else {
-                // 计算总到期时间
-                Integer tenancy = packageOrderEntity.getTenancy();
-                Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
-                long dueTimeTotal = memberTermEntity.getDueTimeTotal();
-                if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                    dueTimeTotal = dueTimeTotal - (tenancy * TimeConstant.DAY_MILLISECOND);
-                }
-                if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTimeTotal = dueTimeTotal - (tenancy * 1000);
-                }
-
-                // 更新数据
-                CarRentalPackageMemberTermPO entityModify = new CarRentalPackageMemberTermPO();
-                entityModify.setDueTimeTotal(dueTimeTotal);
-                entityModify.setId(memberTermEntity.getId());
-                entityModify.setUpdateTime(System.currentTimeMillis());
-                carRentalPackageMemberTermService.updateById(entityModify);
+                // 2. 更新会员期限
+                carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), null);
             }
 
-            // 3. 更新购买订单状态
-            carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
-            // 4. TODO 异步处理分账、活动
+            // 更新退款单信息
+            carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdate);
 
-        } else {
-            // 2. 更新会员期限
-            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), null);
+        } catch (Exception e) {
+            log.error("WxRefundPayCarRentServiceImpl.process failed. ", e);
+        } finally {
+            redisService.delete(redisLockKey);
         }
-
-        // 更新退款单信息
-        carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdate);
     }
 
     /**
