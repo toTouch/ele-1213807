@@ -366,12 +366,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         // 根据购买订单编码获取当初的支付流水
                         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(orderNo);
                         if (ObjectUtils.isEmpty(electricityTradeOrder)) {
-                            log.error("approveRefundRentOrder faild. not find t_electricity_trade_order. orderNo is {}", orderNo);
+                            log.error("saveApproveRefundRentOrderTx faild. not find t_electricity_trade_order. orderNo is {}", orderNo);
                             throw new BizException("300000", "数据有误");
                         }
                         Integer status = electricityTradeOrder.getStatus();
                         if (ElectricityTradeOrder.STATUS_INIT.equals(status) || ElectricityTradeOrder.STATUS_FAIL.equals(status)) {
-                            log.error("approveRefundRentOrder faild. t_electricity_trade_order status is wrong. orderNo is {}", orderNo);
+                            log.error("saveApproveRefundRentOrderTx faild. t_electricity_trade_order status is wrong. orderNo is {}", orderNo);
                             throw new BizException("300000", "数据有误");
                         }
 
@@ -381,15 +381,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                                 .payAmount(electricityTradeOrder.getTotalFee())
                                 .refundOrderNo(refundRentOrderNo)
                                 .refundAmount(rentRefundEntity.getRefundAmount()).build();
-                        log.info("approveRefundRentOrder, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
+                        log.info("saveApproveRefundRentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
-                        log.info("approveRefundRentOrder, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+                        log.info("saveApproveRefundRentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
 
                         // 赋值退款单状态及审核时间
                         rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
 
                     } catch (WechatPayException e) {
-                        log.error("approveRefundRentOrder failed.", e);
+                        log.error("saveApproveRefundRentOrderTx failed.", e);
                         throw new BizException(e.getMessage());
                     }
                 }
