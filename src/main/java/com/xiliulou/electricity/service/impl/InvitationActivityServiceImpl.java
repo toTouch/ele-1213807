@@ -52,7 +52,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
     @Autowired
-    private ElectricityMemberCardService memberCardService;
+    BatteryMemberCardService batteryMemberCardService;
 
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;
@@ -149,8 +149,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         List<Long> electricityPackages = invitationActivityQuery.getBatteryPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-            if (Objects.isNull(electricityMemberCard)) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
         }
@@ -384,8 +384,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
         for(InvitationActivityMemberCard invitationActivityMemberCard : invitationActivityMemberCards){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(invitationActivityMemberCard.getMid().intValue());
-            BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(invitationActivityMemberCard.getMid());
+            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
             memberCardVOList.add(batteryMemberCardVO);
         }
 

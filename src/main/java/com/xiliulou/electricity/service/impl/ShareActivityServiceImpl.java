@@ -104,7 +104,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	ShareActivityOperateRecordService shareActivityOperateRecordService;
 	@Autowired
-	private ElectricityMemberCardService memberCardService;
+	BatteryMemberCardService batteryMemberCardService;
 	@Autowired
 	private CarRentalPackageService carRentalPackageService;
 
@@ -242,8 +242,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<Long> electricityPackages = shareActivityAddAndUpdateQuery.getBatteryPackages();
 		for(Long packageId : electricityPackages){
 			//检查所选套餐是否存在，并且可用
-			ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-			if (Objects.isNull(electricityMemberCard)) {
+			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+
+			if (Objects.isNull(batteryMemberCard)) {
 				return Triple.of(false, "000202", "换电套餐不存在");
 			}
 		}
@@ -592,13 +593,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
 
-		//TODO 不在使用老的设置方式，后面需要删除掉
-		List<ShareActivityMemberCard> shareActivityMemberCardList = shareActivityMemberCardService.selectByActivityId(shareActivity.getId());
-		if (CollectionUtils.isNotEmpty(shareActivityMemberCardList)) {
-			List<ElectricityMemberCard> memberCards = shareActivityMemberCardList.parallelStream().map(item -> electricityMemberCardService.queryByCache(item.getMemberCardId().intValue())).collect(Collectors.toList());
-//			shareActivityVO.setMemberCards(memberCards);
-		}
-
 		//重新设置购买的套餐信息,设置换电套餐信息
 		List<BatteryMemberCardVO> batteryPackageList = getBatteryPackages(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(batteryPackageList)) {
@@ -630,8 +624,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<ShareActivityMemberCard> batteryPackageList = shareActivityMemberCardService.selectByActivityIdAndPackageType(activityId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(shareActivityMemberCard.getMemberCardId().intValue());
-			BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareActivityMemberCard.getMemberCardId());
+			BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
 			memberCardVOList.add(batteryMemberCardVO);
 		}
 		return memberCardVOList;

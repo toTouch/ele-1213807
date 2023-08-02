@@ -53,22 +53,22 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
     @Transactional(rollbackFor = Exception.class)
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
         log.info("WxRefundPayCarRentServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
-        String refundOrderNo = callBackResource.getOutTradeNo();
-        String cacheKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + refundOrderNo;
+        String outRefundNo = callBackResource.getOutRefundNo();
+        String cacheKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
 
         if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return;
         }
 
         // 退租订单信息
-        CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(refundOrderNo);
+        CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
         if (ObjectUtils.isEmpty(rentRefundEntity)) {
-            log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", refundOrderNo);
+            log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
             return;
         }
 
         if (RefundStateEnum.SUCCESS.getCode().equals(rentRefundEntity.getRefundState())) {
-            log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", refundOrderNo);
+            log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", outRefundNo);
             return;
         }
 
@@ -92,7 +92,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
 
         // 更新退款单数据
         CarRentalPackageOrderRentRefundPO rentRefundUpdate = new CarRentalPackageOrderRentRefundPO();
-        rentRefundUpdate.setOrderNo(refundOrderNo);
+        rentRefundUpdate.setOrderNo(outRefundNo);
         rentRefundUpdate.setRefundState(refundState);
         rentRefundUpdate.setUpdateTime(System.currentTimeMillis());
 
@@ -124,11 +124,10 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 entityModify.setId(memberTermEntity.getId());
                 entityModify.setUpdateTime(System.currentTimeMillis());
                 carRentalPackageMemberTermService.updateById(entityModify);
-
-                // 3. 更新购买订单状态
-                carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
             }
 
+            // 3. 更新购买订单状态
+            carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
             // 4. TODO 异步处理分账、活动
 
         } else {
@@ -138,7 +137,6 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
 
         // 更新退款单信息
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdate);
-
     }
 
     /**

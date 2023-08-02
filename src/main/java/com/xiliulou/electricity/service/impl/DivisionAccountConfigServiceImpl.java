@@ -61,7 +61,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private DivisionAccountBatteryMembercardService divisionAccountBatteryMembercardService;
     @Autowired
     private DivisionAccountOperationRecordService divisionAccountOperationRecordService;
-
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
     @Autowired
     private CarRentalPackageService carRentalPackageService;
 
@@ -544,8 +545,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
             //3.0新流程的检查方式
             for(Long memberCardId : query.getBatteryPackages()){
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(memberCardId.intValue());
-                if (Objects.isNull(electricityMemberCard)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
+                if (Objects.isNull(batteryMemberCard)) {
                     return Triple.of(false, "000202", "换电套餐不存在");
                 }
             }
@@ -782,9 +783,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards){
             Integer type = accountBatteryMembercard.getType();
             if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(accountBatteryMembercard.getRefId().intValue());
-                if (Objects.nonNull(electricityMemberCard)) {
-                    list.add(electricityMemberCard.getName());
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
+                if (Objects.nonNull(batteryMemberCard)) {
+                    list.add(batteryMemberCard.getName());
                 }
             }else{
                 CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
@@ -813,9 +814,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             //获取换电套餐信息
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(accountBatteryMembercard.getRefId().intValue());
-                batteryMemberCardVO.setId(electricityMemberCard.getId().longValue());
-                batteryMemberCardVO.setName(electricityMemberCard.getName());
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
+                batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
+                batteryMemberCardVO.setName(batteryMemberCard.getName());
                 list.add(batteryMemberCardVO);
             }
         }else{
@@ -847,10 +848,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             batteryMemberCardVO.setId(accountBatteryMembercard.getRefId());
             Integer type = accountBatteryMembercard.getType();
             if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(accountBatteryMembercard.getRefId().intValue());
-
-                if (Objects.nonNull(electricityMemberCard)) {
-                    batteryMemberCardVO.setName(electricityMemberCard.getName());
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
+                if (Objects.nonNull(batteryMemberCard)) {
+                    batteryMemberCardVO.setName(batteryMemberCard.getName());
                     list.add(batteryMemberCardVO);
                 }
             }else{
@@ -1006,11 +1006,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if(CollectionUtils.isNotEmpty(electricityPackages)){
             for(Long memberCardId : electricityPackages){
                 EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(memberCardId.intValue());
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
                 eleDivisionAccountOperationRecordDTO.setId(memberCardId.intValue());
                 eleDivisionAccountOperationRecordDTO.setType(DivisionAccountBatteryMembercard.TYPE_BATTERY);
-                if (Objects.nonNull(electricityMemberCard)){
-                    eleDivisionAccountOperationRecordDTO.setName(electricityMemberCard.getName());
+                if (Objects.nonNull(batteryMemberCard)){
+                    eleDivisionAccountOperationRecordDTO.setName(batteryMemberCard.getName());
                 }
                 list.add(eleDivisionAccountOperationRecordDTO);
             }
