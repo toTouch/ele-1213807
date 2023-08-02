@@ -152,7 +152,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
     @GetMapping(value = "/admin/invitationActivity/queryPackagesByFranchisee")
     public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
                                        @RequestParam(value = "type",  required = true) Integer type) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
@@ -165,7 +164,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .offset(offset)
                     .size(size)
-                    .franchiseeId(franchiseeId)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
                     .isRefund(BatteryMemberCard.NO)
@@ -175,7 +173,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
             qryModel.setOffset(offset.intValue());
             qryModel.setSize(size.intValue());
-            qryModel.setFranchiseeId(franchiseeId.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
@@ -192,8 +189,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     }
 
     @GetMapping(value = "/admin/invitationActivity/queryPackagesCount")
-    public R queryPackagesCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
-                                              @RequestParam(value = "type",  required = true) Integer type) {
+    public R queryPackagesCount(@RequestParam(value = "type",  required = true) Integer type) {
 
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if(!packageTypes.contains(type)){
@@ -203,7 +199,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
         //需要获取租金不可退的套餐
         if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                    .franchiseeId(franchiseeId)
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
                     .isRefund(BatteryMemberCard.NO)
@@ -211,7 +206,6 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok(batteryMemberCardService.selectByPageCount(query));
         }else{
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-            qryModel.setFranchiseeId(franchiseeId.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
