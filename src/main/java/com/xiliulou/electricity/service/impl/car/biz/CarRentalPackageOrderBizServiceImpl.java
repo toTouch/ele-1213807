@@ -1644,7 +1644,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 退租为退押
             if (StringUtils.isBlank(memberTermUpdateEntity.getRentalPackageOrderNo())) {
-                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getId());
+                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                 memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                 memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
                 memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
