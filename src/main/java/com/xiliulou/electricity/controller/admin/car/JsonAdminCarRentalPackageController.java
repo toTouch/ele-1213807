@@ -67,6 +67,45 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     @Resource
     private CarRentalPackageService carRentalPackageService;
 
+
+    /**
+     * 根据名称查询列表
+     * @param qryReq 请求参数类
+     * @return 车辆套餐信息集
+     */
+    @PostMapping("/pageByName")
+    public R<List<CarRentalPackageVO>> pageByName(@RequestBody CarRentalPackageQryReq qryReq) {
+        if (null == qryReq) {
+            qryReq = new CarRentalPackageQryReq();
+        }
+
+        // 赋值租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        qryReq.setTenantId(tenantId);
+
+        // 转换请求体
+        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+        BeanUtils.copyProperties(qryReq, qryModel);
+
+        // 调用服务
+        List<CarRentalPackagePO> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
+        if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
+            return R.ok(Collections.emptyList());
+        }
+
+        // 模型转换，封装返回
+        List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
+
+            CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+            carRentalPackageVo.setId(carRentalPackageEntity.getId());
+            carRentalPackageVo.setName(carRentalPackageEntity.getName());
+
+            return carRentalPackageVo;
+        }).collect(Collectors.toList());
+
+        return R.ok(carRentalPackageVOList);
+    }
+
     /**
      * 检测唯一：租户ID+套餐名称
      * @param name 套餐名称

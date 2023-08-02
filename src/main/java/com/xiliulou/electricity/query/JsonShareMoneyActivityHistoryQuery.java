@@ -29,4 +29,8 @@ public class JsonShareMoneyActivityHistoryQuery {
     
     private Integer status;
     private Long id;
+
+    private String phone;
+
+    private String activityName;
 }

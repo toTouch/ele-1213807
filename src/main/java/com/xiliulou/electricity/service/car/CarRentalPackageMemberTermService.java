@@ -29,7 +29,7 @@ public interface CarRentalPackageMemberTermService {
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
-     * @param optUid 操作人ID
+     * @param optUid 操作人ID （可为空）
      * @return true(成功)、false(失败)
      */
     boolean rentRefundByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo, Long optUid);

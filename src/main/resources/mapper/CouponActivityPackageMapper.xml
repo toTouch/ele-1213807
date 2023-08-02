@@ -45,16 +45,16 @@
     <update id="updateOne">
         update t_coupon_activity_package
         <set>
-            <if test="appId != null and appId != ''">
+            <if test="couponId != null">
                 coupon_id = #{couponId},
             </if>
-            <if test="appSecret != null and appSecret != ''">
+            <if test="packageId != null">
                 package_id = #{packageId},
             </if>
-            <if test="docTemplateId != null and docTemplateId != ''">
+            <if test="packageType != null">
                 package_type = #{packageType},
             </if>
-            <if test="signFileName != null and signFileName != ''">
+            <if test="tenantId != null">
                 tenant_id = #{tenantId},
             </if>
             <if test="delFlag != null">
@@ -64,7 +64,7 @@
                 update_time = #{updateTime},
             </if>
         </set>
-        where id = #{id} and tenant_id = #{tenantId}
+        where id = #{id}
     </update>
 
     <!--通过主键删除-->

@@ -1,8 +1,9 @@
 package com.xiliulou.electricity.service.car.biz;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
+import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 
 import java.math.BigDecimal;
 
@@ -12,6 +13,14 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 public interface CarRenalPackageDepositBizService {
+
+    /**
+     * 查询免押状态
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return true(成功)、false(失败)
+     */
+    FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid);
 
     /**
      * 创建免押订单，生成二维码<br />
@@ -28,7 +37,7 @@ public interface CarRenalPackageDepositBizService {
      * @param uid 用户ID
      * @return 押金缴纳信息
      */
-    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayVO selectUnRefundCarDeposit(Integer tenantId, Long uid);
 
     /**
      * 运营商端创建退押

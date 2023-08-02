@@ -1,12 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.vo.DetailsUserInfoVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
@@ -23,6 +19,19 @@ import java.util.List;
  */
 public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
+    /**
+     * 分页查询
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    List<UserInfo> page(UserInfoQuery userInfoQuery);
+
+    /**
+     * 查询总数
+     * @param userInfoQuery 查询条件
+     * @return 总数
+     */
+    Integer count(UserInfoQuery userInfoQuery);
 
     /**
      * 查询指定行数据

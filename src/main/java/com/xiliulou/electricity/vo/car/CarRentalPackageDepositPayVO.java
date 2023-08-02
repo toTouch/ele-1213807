@@ -95,4 +95,14 @@ public class CarRentalPackageDepositPayVO implements Serializable {
      */
     private String userPhone;
 
+    /**
+     * 业务状态，没有枚举值
+     * <pre>
+     *     0-正常
+     *     1-申请退押
+     *     2-退款中
+     * </pre>
+     */
+    private Integer status;
+
 }

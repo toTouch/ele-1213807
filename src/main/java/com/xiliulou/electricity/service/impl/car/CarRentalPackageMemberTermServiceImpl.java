@@ -57,19 +57,21 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @param tenantId            租户ID
      * @param uid            用户ID
      * @param packageOrderNo 购买订单编码
-     * @param optUid         操作人ID
+     * @param optUid         操作人ID （可为空）
      * @return true(成功)、false(失败)
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean rentRefundByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
-        if (!ObjectUtils.allNotNull(uid, packageOrderNo, optUid)) {
+        if (!ObjectUtils.allNotNull(uid, packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         int num = carRentalPackageMemberTermMapper.rentRefundByUidAndPackageOrderNo(uid, packageOrderNo, optUid, System.currentTimeMillis());
 
-        selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);
+        // 删除缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
 
         return num >= 0;
     }
@@ -124,7 +126,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      */
     @Override
     public Boolean updateStatusByUidAndTenantId(Integer tenantId, Long uid, Integer status, Long optId) {
-        if (ObjectUtils.isEmpty(tenantId) || ObjectUtils.isEmpty(uid) || ObjectUtils.isEmpty(status)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, status)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         int num = carRentalPackageMemberTermMapper.updateStatusByUidAndTenantId(tenantId, uid, status, optId, System.currentTimeMillis());

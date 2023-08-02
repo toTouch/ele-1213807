@@ -44,6 +44,11 @@ public class CarRentalPackageQryReq implements Serializable {
     private Integer storeId;
 
     /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
      * 套餐名称
      */
     private String name;

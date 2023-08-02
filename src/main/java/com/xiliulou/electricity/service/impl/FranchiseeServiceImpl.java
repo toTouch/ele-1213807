@@ -9,13 +9,15 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -23,7 +25,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
-import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -35,13 +36,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -733,6 +728,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId) {
         return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectById(Long id) {
+        Franchisee franchisee = this.queryByIdFromCache(id);
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        return Triple.of(true, null, franchisee);
     }
 
     /**

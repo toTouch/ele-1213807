@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表控制层
@@ -75,8 +74,78 @@ public class JsonAdminJoinShareActivityHistoryController {
                 .startTime(beginTime).endTime(endTime).build();
         return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
     }
-    
-    
+
+	/**
+	 * 邀请活动参与人列表查询
+	 * @param size
+	 * @param offset
+	 * @param joinName
+	 * @param phone
+	 * @param activityName
+	 * @param beginTime
+	 * @param endTime
+	 * @param status
+	 * @return
+	 */
+	@GetMapping(value = "/admin/joinShareActivityHistory/participationList")
+	public R participationList(@RequestParam("size") Long size,
+								  @RequestParam("offset") Long offset,
+								  @RequestParam(value = "joinName", required = false) String joinName,
+								  @RequestParam(value = "phone", required = false) String phone,
+								  @RequestParam(value = "activityName", required = false) String activityName,
+								  @RequestParam(value = "beginTime", required = false) Long beginTime,
+								  @RequestParam(value = "endTime", required = false) Long endTime,
+								  @RequestParam(value = "status", required = false) Integer status) {
+
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
+				.offset(offset)
+				.size(size)
+				.tenantId(tenantId)
+				.joinName(joinName)
+				.phone(phone)
+				.activityName(activityName)
+				.status(status)
+				.startTime(beginTime)
+				.endTime(endTime)
+				.build();
+
+		return joinShareActivityHistoryService.queryParticipants(jsonShareActivityHistoryQuery);
+	}
+
+	@GetMapping(value = "/admin/joinShareActivityHistory/participationCount")
+	public R participationCount(@RequestParam(value = "joinName", required = false) String joinName,
+								  @RequestParam(value = "phone", required = false) String phone,
+								  @RequestParam(value = "activityName", required = false) String activityName,
+								  @RequestParam(value = "beginTime", required = false) Long beginTime,
+								  @RequestParam(value = "endTime", required = false) Long endTime,
+								  @RequestParam(value = "status", required = false) Integer status) {
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
+				.tenantId(tenantId)
+				.joinName(joinName)
+				.phone(phone)
+				.activityName(activityName)
+				.status(status)
+				.startTime(beginTime)
+				.endTime(endTime)
+				.build();
+
+		return joinShareActivityHistoryService.queryParticipantsCount(jsonShareActivityHistoryQuery);
+	}
+
     @GetMapping(value = "/admin/joinShareActivityHistory/exportExcel")
     public void joinActivityExportExcel(@RequestParam("id") Long id,
             @RequestParam(value = "joinName", required = false) String joinName,

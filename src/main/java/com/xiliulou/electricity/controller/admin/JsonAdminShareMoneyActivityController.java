@@ -1,25 +1,31 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表控制层
@@ -38,6 +44,17 @@ public class JsonAdminShareMoneyActivityController {
 
 	@Autowired
 	FranchiseeService franchiseeService;
+
+	@Autowired
+	BatteryMemberCardService batteryMemberCardService;
+
+	@Autowired
+	private CarRentalPackageService carRentalPackageService;
+
+	@GetMapping(value = "/admin/shareMoneyActivity/checkActivityStatusOn")
+	public R checkActivityStatusOn() {
+		return shareMoneyActivityService.checkActivityStatusOn();
+	}
 
 	//新增
 	@PostMapping(value = "/admin/shareMoneyActivity")
@@ -106,4 +123,81 @@ public class JsonAdminShareMoneyActivityController {
 		}
 		return shareMoneyActivityService.queryInfo(id);
 	}
+
+	@GetMapping(value = "/admin/shareMoneyActivity/queryPackagesByFranchisee")
+	public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
+									   @RequestParam(value = "size") Long size,
+									   @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+									   @RequestParam(value = "type",  required = true) Integer type) {
+
+		List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
+		if(!packageTypes.contains(type)){
+			return R.fail("000200", "业务类型参数不合法");
+		}
+
+		//需要获取租金不可退的套餐
+		if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
+			BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+					.offset(offset)
+					.size(size)
+					.franchiseeId(franchiseeId)
+					.delFlag(BatteryMemberCard.DEL_NORMAL)
+					.status(BatteryMemberCard.STATUS_UP)
+					.isRefund(BatteryMemberCard.NO)
+					.tenantId(TenantContextHolder.getTenantId()).build();
+			return R.ok(batteryMemberCardService.selectByQuery(query));
+		}else{
+			CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+			qryModel.setOffset(offset.intValue());
+			qryModel.setSize(size.intValue());
+			qryModel.setFranchiseeId(franchiseeId.intValue());
+			qryModel.setTenantId(TenantContextHolder.getTenantId());
+			qryModel.setStatus(UpDownEnum.UP.getCode());
+			qryModel.setRentRebate(YesNoEnum.NO.getCode());
+
+			if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
+				qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+			}else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
+				qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+			}
+
+			return R.ok(batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel));
+		}
+
+	}
+
+	@GetMapping(value = "/admin/shareMoneyActivity/queryPackagesCount")
+	public R getElectricityUsablePackageCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+											  @RequestParam(value = "type",  required = true) Integer type) {
+
+		List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
+		if(!packageTypes.contains(type)){
+			return R.fail("000200", "业务类型参数不合法");
+		}
+
+		//需要获取租金不可退的套餐
+		if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
+			BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+					.franchiseeId(franchiseeId)
+					.delFlag(BatteryMemberCard.DEL_NORMAL)
+					.status(BatteryMemberCard.STATUS_UP)
+					.isRefund(BatteryMemberCard.NO)
+					.tenantId(TenantContextHolder.getTenantId()).build();
+			return R.ok(batteryMemberCardService.selectByPageCount(query));
+		}else{
+			CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+			qryModel.setFranchiseeId(franchiseeId.intValue());
+			qryModel.setTenantId(TenantContextHolder.getTenantId());
+			qryModel.setStatus(UpDownEnum.UP.getCode());
+			qryModel.setRentRebate(YesNoEnum.NO.getCode());
+
+			if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
+				qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+			}else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
+				qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+			}
+			return R.ok(carRentalPackageService.count(qryModel));
+		}
+	}
+
 }

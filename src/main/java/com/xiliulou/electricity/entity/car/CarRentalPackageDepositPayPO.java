@@ -31,6 +31,11 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     private String orderNo;
 
     /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
+
+    /**
      * 套餐类型
      * <pre>
      *     1-单车

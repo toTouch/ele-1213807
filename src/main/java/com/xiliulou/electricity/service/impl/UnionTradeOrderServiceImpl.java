@@ -458,7 +458,11 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
             userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
-            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+            if(Objects.isNull(userBatteryMemberCard)){
+                userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+            }else{
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            }
 
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
@@ -497,6 +501,7 @@ public class UnionTradeOrderServiceImpl extends
 
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
+        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 

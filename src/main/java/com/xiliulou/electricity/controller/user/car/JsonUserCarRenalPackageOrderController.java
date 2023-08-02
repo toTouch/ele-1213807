@@ -3,10 +3,9 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.SystemDefinitionEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
@@ -171,11 +170,13 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        // 获取辅助业务信息（套餐信息，车辆型号信息、电池型号信息）
+        // 获取辅助业务信息
         Set<Long> rentalPackageIds = new HashSet<>();
+        Set<String> rentalPackageOrderNos = new HashSet<>();
 
         carRentalPackageOrderEntityList.forEach(carRentalPackageOrderEntity -> {
             rentalPackageIds.add(carRentalPackageOrderEntity.getRentalPackageId());
+            rentalPackageOrderNos.add(carRentalPackageOrderEntity.getOrderNo());
         });
 
         // 套餐名称信息
@@ -186,6 +187,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
         // 车辆型号名称信息
         Map<Integer, String> carModelNameMap = getCarModelNameByIdsForMap(carModelIds);
+
+        // 查询套餐购买订单对应的退款订单信息
+        Map<String, CarRentalPackageOrderRentRefundPO> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
 
         long nowTime = System.currentTimeMillis();
 
@@ -206,7 +210,25 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             if (YesNoEnum.YES.getCode().equals(carRentalPackageOrder.getRentRebate())) {
                 // 判定可退截止时间
-                carRentalPackageOrderVO.setRentRebate(carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode());
+                Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
+
+                Integer payState = carRentalPackageOrder.getPayState();
+                if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
+                    rentRebate = YesNoEnum.NO.getCode();
+                } else {
+                    // 集成退款订单的状态，综合判定
+                    CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+                    if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
+                        Integer refundState = rentRefundOrderEntity.getRefundState();
+                        if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
+                            rentRebate = YesNoEnum.YES.getCode();
+                        } else {
+                            rentRebate = YesNoEnum.NO.getCode();
+                        }
+                    }
+                }
+
+                carRentalPackageOrderVO.setRentRebate(rentRebate);
             }
 
             // 赋值业务属性信息

@@ -30,6 +30,8 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Long activityId;
 
+    private String activityName;
+
     private Long beginTime;
 
     private Long endTime;

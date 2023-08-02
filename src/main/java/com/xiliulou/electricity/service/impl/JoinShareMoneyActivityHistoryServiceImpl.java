@@ -242,8 +242,29 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 			log.error("导出报表失败！", e);
 		}
 	}
-    
-    private String queryStatus(Integer status) {
+
+	@Override
+	public R queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
+		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
+			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
+			UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+			if(Objects.nonNull(userInfo)){
+				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
+				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());
+			}
+		}
+
+		return R.ok(Optional.ofNullable(joinShareMoneyActivityHistoryVOS).orElse(new ArrayList<>()));
+	}
+
+	@Override
+	public R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+		Long count = joinShareMoneyActivityHistoryMapper.queryParticipantsCount(jsonShareMoneyActivityHistoryQuery);
+		return R.ok(count);
+	}
+
+	private String queryStatus(Integer status) {
         //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
         String result = "";
         switch (status) {

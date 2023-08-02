@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -103,7 +104,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	ShareActivityOperateRecordService shareActivityOperateRecordService;
 	@Autowired
-	private ElectricityMemberCardService memberCardService;
+	BatteryMemberCardService batteryMemberCardService;
 	@Autowired
 	private CarRentalPackageService carRentalPackageService;
 
@@ -163,9 +164,18 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//检查所选套餐是否可用
-		Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareActivityAddAndUpdateQuery);
-		if(Boolean.FALSE.equals(verifyResult.getLeft())){
-			return R.fail("000076", (String) verifyResult.getRight());
+		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())){
+			//检查是否有选择（换电,租车,车电一体）套餐信息
+			if(CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getBatteryPackages())
+					&& CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getCarRentalPackages())
+					&& CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getCarWithBatteryPackages())){
+				return R.fail("000201", "请选择套餐信息");
+			}
+
+			Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareActivityAddAndUpdateQuery);
+			if(Boolean.FALSE.equals(verifyResult.getLeft())){
+				return R.fail("000076", (String) verifyResult.getRight());
+			}
 		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
@@ -232,8 +242,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<Long> electricityPackages = shareActivityAddAndUpdateQuery.getBatteryPackages();
 		for(Long packageId : electricityPackages){
 			//检查所选套餐是否存在，并且可用
-			ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-			if (Objects.isNull(electricityMemberCard)) {
+			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+
+			if (Objects.isNull(batteryMemberCard)) {
 				return Triple.of(false, "000202", "换电套餐不存在");
 			}
 		}
@@ -582,13 +593,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
 
-		//TODO 不在使用老的设置方式，后面需要删除掉
-		List<ShareActivityMemberCard> shareActivityMemberCardList = shareActivityMemberCardService.selectByActivityId(shareActivity.getId());
-		if (CollectionUtils.isNotEmpty(shareActivityMemberCardList)) {
-			List<ElectricityMemberCard> memberCards = shareActivityMemberCardList.parallelStream().map(item -> electricityMemberCardService.queryByCache(item.getMemberCardId().intValue())).collect(Collectors.toList());
-//			shareActivityVO.setMemberCards(memberCards);
-		}
-
 		//重新设置购买的套餐信息,设置换电套餐信息
 		List<BatteryMemberCardVO> batteryPackageList = getBatteryPackages(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(batteryPackageList)) {
@@ -620,8 +624,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<ShareActivityMemberCard> batteryPackageList = shareActivityMemberCardService.selectByActivityIdAndPackageType(activityId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(shareActivityMemberCard.getMemberCardId().intValue());
-			BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareActivityMemberCard.getMemberCardId());
+			BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
 			memberCardVOList.add(batteryMemberCardVO);
 		}
 		return memberCardVOList;

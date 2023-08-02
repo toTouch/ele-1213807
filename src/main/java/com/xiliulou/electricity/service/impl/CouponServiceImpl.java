@@ -54,11 +54,11 @@ public class CouponServiceImpl implements CouponService {
     @Autowired
     private NewUserActivityService newUserActivityService;
     @Autowired
-    private ElectricityMemberCardService memberCardService;
-    @Autowired
     private CarRentalPackageService carRentalPackageService;
     @Autowired
     private CouponActivityPackageService couponActivityPackageService;
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
 
     /**
@@ -229,11 +229,19 @@ public class CouponServiceImpl implements CouponService {
 
     private Triple<Boolean, String, Object> getPackagesFromCoupon(CouponQuery couponQuery){
         List<CouponActivityPackage> couponActivityPackages = Lists.newArrayList();
+
+        //检查是否有选择（换电,租车,车电一体）套餐信息
+        if(CollectionUtils.isEmpty(couponQuery.getBatteryPackages())
+                && CollectionUtils.isEmpty(couponQuery.getCarRentalPackages())
+                && CollectionUtils.isEmpty(couponQuery.getCarWithBatteryPackages())){
+            return Triple.of(false, "000201", "请选择套餐信息");
+        }
+
         List<Long> electricityPackages = couponQuery.getBatteryPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
-            if (Objects.isNull(electricityMemberCard)) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
 
@@ -369,8 +377,8 @@ public class CouponServiceImpl implements CouponService {
 
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(couponActivityPackage.getPackageId().intValue());
-            BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
+            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
             memberCardVOList.add(batteryMemberCardVO);
         }
 

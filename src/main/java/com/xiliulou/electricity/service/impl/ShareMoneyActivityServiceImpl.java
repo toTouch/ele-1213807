@@ -2,25 +2,30 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ChannelActivity;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
+import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +67,17 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Autowired
     InvitationActivityService invitationActivityService;
 
+    @Autowired
+    ShareMoneyActivityPackageService shareMoneyActivityPackageService;
+
+    @Autowired
+    private ElectricityMemberCardService memberCardService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -108,12 +124,32 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //查询该租户是否有邀请活动，有则不能添加
-        int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>()
-                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
-        if (count > 0) {
-            return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+        // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
+        if (Objects.nonNull(activityResult)) {
+            //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+            //如果存在已上架的活动，则将该活动修改为下架
+            ShareMoneyActivity moneyActivity = new ShareMoneyActivity();
+            moneyActivity.setId(moneyActivity.getId());
+            moneyActivity.setStatus(ShareMoneyActivity.STATUS_OFF);
+            moneyActivity.setUpdateTime(System.currentTimeMillis());
+            shareMoneyActivityMapper.updateActivity(moneyActivity);
         }
 
+        //检查选择邀请标准为购买套餐时，当前所选的套餐是否存在
+        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareMoneyActivityAddAndUpdateQuery.getInvitationCriteria())){
+            //检查是否有选择（换电,租车,车电一体）套餐信息
+            if(CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getBatteryPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getCarWithBatteryPackages())){
+                return R.fail("000201", "请选择套餐信息");
+            }
+
+            Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(shareMoneyActivityAddAndUpdateQuery);
+            if(Boolean.FALSE.equals(verifyResult.getLeft())){
+                return R.fail("000076", (String) verifyResult.getRight());
+            }
+        }
 
         ShareMoneyActivity shareMoneyActivity = new ShareMoneyActivity();
         BeanUtil.copyProperties(shareMoneyActivityAddAndUpdateQuery, shareMoneyActivity);
@@ -122,12 +158,21 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setCreateTime(System.currentTimeMillis());
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
+        //新增的邀请返现活动默认为上架状态
+        shareMoneyActivity.setStatus(ShareMoneyActivity.STATUS_ON);
 
         if (Objects.isNull(shareMoneyActivity.getType())) {
             shareMoneyActivity.setType(ShareActivity.SYSTEM);
         }
 
         int insert = shareMoneyActivityMapper.insert(shareMoneyActivity);
+
+        //保存所选套餐信息
+        List<ShareMoneyActivityPackage> shareMoneyActivityPackages = buildShareMoneyActivityPackages(shareMoneyActivity.getId().longValue(), shareMoneyActivityAddAndUpdateQuery);
+        if(CollectionUtils.isNotEmpty(shareMoneyActivityPackages)){
+            shareMoneyActivityPackageService.addShareMoneyActivityPackages(shareMoneyActivityPackages);
+        }
+
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //放入缓存
             redisService.saveWithHash(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + shareMoneyActivity.getId(), shareMoneyActivity);
@@ -138,6 +183,70 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             return R.ok(shareMoneyActivity.getId());
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
+    }
+
+    private Triple<Boolean, String, Object> verifySelectedPackages(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery){
+        List<Long> electricityPackages = shareMoneyActivityAddAndUpdateQuery.getBatteryPackages();
+        for(Long packageId : electricityPackages){
+            //检查所选套餐是否存在，并且可用
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
+                return Triple.of(false, "000202", "换电套餐不存在");
+            }
+        }
+
+        List<Long> carRentalPackages = shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages();
+        for(Long packageId : carRentalPackages){
+            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            if (Objects.isNull(carRentalPackagePO)) {
+                return Triple.of(false, "000203", "租车套餐不存在");
+            }
+        }
+
+        List<Long> carElectricityPackages = shareMoneyActivityAddAndUpdateQuery.getCarWithBatteryPackages();
+        for(Long packageId : carElectricityPackages){
+            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            if (Objects.isNull(carRentalPackagePO)) {
+                return Triple.of(false, "000204", "车电一体套餐不存在");
+            }
+        }
+        return Triple.of(true, "", null);
+    }
+
+    private List<ShareMoneyActivityPackage> buildShareMoneyActivityPackages(Long shareActivityId, ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
+        List<ShareMoneyActivityPackage> shareMoneyActivityPackages = Lists.newArrayList();
+        List<Long> batteryPackages = shareMoneyActivityAddAndUpdateQuery.getBatteryPackages();
+        for(Long packageId : batteryPackages){
+            ShareMoneyActivityPackage batteryPackage = buildShareMoneyActivityMemberCard(shareActivityId, packageId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            shareMoneyActivityPackages.add(batteryPackage);
+        }
+
+        List<Long> carRentalPackages = shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages();
+        for(Long packageId : carRentalPackages){
+            ShareMoneyActivityPackage carRentalPackage = buildShareMoneyActivityMemberCard(shareActivityId, packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+            shareMoneyActivityPackages.add(carRentalPackage);
+        }
+
+        List<Long> carWithBatteryPackages = shareMoneyActivityAddAndUpdateQuery.getCarWithBatteryPackages();
+        for(Long packageId : carWithBatteryPackages){
+            ShareMoneyActivityPackage carWithBatteryPackage = buildShareMoneyActivityMemberCard(shareActivityId, packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode());
+            shareMoneyActivityPackages.add(carWithBatteryPackage);
+        }
+
+        return shareMoneyActivityPackages;
+    }
+
+    private ShareMoneyActivityPackage buildShareMoneyActivityMemberCard(Long shareActivityId, Long packageId, Integer packageType){
+        ShareMoneyActivityPackage shareMoneyActivityPackage = new ShareMoneyActivityPackage();
+        shareMoneyActivityPackage.setActivityId(shareActivityId);
+        shareMoneyActivityPackage.setPackageId(packageId);
+        shareMoneyActivityPackage.setPackageType(packageType);
+        shareMoneyActivityPackage.setTenantId(TenantContextHolder.getTenantId().longValue());
+        shareMoneyActivityPackage.setDelFlag(CommonConstant.DEL_N);
+        shareMoneyActivityPackage.setCreateTime(System.currentTimeMillis());
+        shareMoneyActivityPackage.setUpdateTime(System.currentTimeMillis());
+
+        return shareMoneyActivityPackage;
     }
 
     /**
@@ -337,6 +446,21 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
 
         return R.ok(map);
+    }
+
+    @Override
+    public R checkActivityStatusOn() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //查询该租户是否有邀请活动，有则不能添加
+        int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>()
+                .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        if (count > 0) {
+            return R.fail("000205", "已有上架的邀请活动，是否更新替代");
+        }
+
+        return R.ok();
     }
 
 }

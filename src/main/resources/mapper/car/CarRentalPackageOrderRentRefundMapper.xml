@@ -74,6 +74,18 @@
                 #{storeId}
             </foreach>
         </if>
+        <if test=" rentalPackageOrderNoList != null and rentalPackageOrderNoList.size > 0 ">
+            AND `rental_package_order_no` IN
+            <foreach collection="rentalPackageOrderNoList" item="rentalPackageOrderNo" open="(" close=")" separator=",">
+                #{rentalPackageOrderNo}
+            </foreach>
+        </if>
+        <if test=" orderNoList != null and orderNoList.size > 0 ">
+            AND `order_no` IN
+            <foreach collection="orderNoList" item="orderNo" open="(" close=")" separator=",">
+                #{orderNo}
+            </foreach>
+        </if>
     </sql>
 
     <!-- 条件新增字段 -->

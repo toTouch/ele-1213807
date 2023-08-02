@@ -70,6 +70,7 @@
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
+        <if test=" useState != null "> AND `use_state` = #{useState} </if>
         <if test=" buyTimeBegin != null and buyTimeEnd != null "> AND `create_time` BETWEEN #{buyTimeBegin} AND #{buyTimeEnd} </if>
         <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
             AND `franchisee_id` IN
@@ -205,7 +206,7 @@
     <select id="countByUnUseByUid" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `del_flag` = 0
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `pay_state` = 2 AND `del_flag` = 0
         </where>
     </select>
 

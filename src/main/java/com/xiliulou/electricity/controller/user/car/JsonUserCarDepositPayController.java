@@ -6,13 +6,15 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -35,10 +37,44 @@ import java.util.stream.Collectors;
 public class JsonUserCarDepositPayController extends BasicController {
 
     @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+
+
+
+    /**
+     * 查询车辆免押是否成功
+     */
+    @GetMapping("/user/free/carDeposit/order/status")
+    public R freeCarDepositOrderStatus() {
+       /* return returnTripleResult(freeDepositOrderService.acquireFreeCarDepositStatus());*/
+        return null;
+    }
+
+    // TODO 回调查询检测更新接口
+
+    /**
+     * 查询免押状态
+     * @return true(成功)、false(失败)
+     */
+    @GetMapping("/queryFreeDepositStatus")
+    public R<FreeDepositUserInfoVo> queryFreeDepositStatus() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(carRenalPackageDepositBizService.queryFreeDepositStatus(tenantId, user.getUid()));
+    }
 
     /**
      * 创建免押订单
@@ -127,19 +163,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CarRentalPackageDepositPayPO depositPayEntity = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid());
-        if (ObjectUtils.isEmpty(depositPayEntity)) {
-            return R.ok();
-        }
-
-        CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
-        depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
-        depositPayVo.setDeposit(depositPayEntity.getDeposit());
-        depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
-        depositPayVo.setPayState(depositPayEntity.getPayState());
-        depositPayVo.setPayType(depositPayEntity.getPayType());
-
-        return R.ok();
+        return R.ok(carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid()));
     }
 
 }

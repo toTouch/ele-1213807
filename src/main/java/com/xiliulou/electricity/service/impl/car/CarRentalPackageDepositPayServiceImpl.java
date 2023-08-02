@@ -189,7 +189,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
 
         // 订单编号
         if (StringUtils.isBlank(entity.getOrderNo())) {
-            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, entity.getId()));
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, entity.getUid()));
         }
 
         // 保存入库
