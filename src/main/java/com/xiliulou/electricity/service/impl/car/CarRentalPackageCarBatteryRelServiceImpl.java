@@ -78,6 +78,9 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      */
     @Override
     public boolean batchInsert(List<CarRentalPackageCarBatteryRelPO> entityList) {
+        if (ObjectUtils.isEmpty(entityList)) {
+            return true;
+        }
         carRentalPackageCarBatteryRelMapper.batchInsert(entityList);
         return true;
     }
