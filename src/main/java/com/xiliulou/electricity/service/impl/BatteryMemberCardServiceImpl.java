@@ -76,6 +76,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private BatteryModelService batteryModelService;
 
+    @Autowired
+    private UserBatteryDepositService userBatteryDepositService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -172,20 +175,21 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("ELE ERROR!not found userBatteryMemberCard,uid={}", userInfo.getUid());
-            return Collections.emptyList();
-        }
-
-        BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.error("ELE ERROR!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
+        if(Objects.isNull(userBatteryDeposit)){
+            log.error("ELE ERROR!not found userBatteryDeposit,uid={}", userInfo.getUid());
             return Collections.emptyList();
         }
 
         query.setFranchiseeId(userInfo.getFranchiseeId());
-        query.setDeposit(batteryMemberCard.getDeposit());
+        query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            query.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+        }
+
         query.setRentType(BatteryMemberCard.RENT_TYPE_UNLIMIT_OLD);
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
@@ -269,6 +273,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
 
             query.setDeposit(batteryMemberCard.getDeposit());
+            query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
         }
