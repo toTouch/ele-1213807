@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,6 +45,7 @@ public class InvitationActivityMemberCard {
 
     /**
      * 套餐类型
+     * @see PackageTypeEnum
      */
     private Integer packageType;
 
