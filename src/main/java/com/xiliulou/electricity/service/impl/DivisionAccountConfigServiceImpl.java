@@ -306,13 +306,13 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
-        //删除原来的配置
-        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(query.getId());
-
         Triple<Boolean, String, Object> verifyBatteryDivisionAccountResult = verifyBatteryDivisionAccountParams(query);
         if (Boolean.FALSE.equals(verifyBatteryDivisionAccountResult.getLeft())) {
             return verifyBatteryDivisionAccountResult;
         }
+
+        //删除原来的配置
+        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(query.getId());
 
         List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList = buildNewDABatteryMembercardList(query, divisionAccountConfig);
         divisionAccountBatteryMembercardService.batchInsertMemberCards(divisionAccountBatteryMembercardList);
@@ -809,7 +809,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
     /**
      * 根据分账配置属性和套餐类型获取对应的套餐信息
-     * @param item
+     * @param daConfigId
      * @param packageType
      * @return
      */
@@ -845,7 +845,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
     /**
      * 根据分账ID 获取关联的套餐信息，包括换电，租车，车店一体套餐
-     * @param item
+     * @param daConfigId
      * @return
      */
     private List<BatteryMemberCardVO> getMemberCardVOListByDA(Long daConfigId) {
