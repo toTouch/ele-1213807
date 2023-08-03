@@ -188,9 +188,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (Objects.nonNull(userBatteryMemberCard)) {
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             query.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            query.setRentTypes(userBatteryMemberCard.getCardPayCount() > 0 ? Arrays.asList(BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_OLD) : Arrays.asList(BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_NEW));
         }
 
-        query.setRentType(BatteryMemberCard.RENT_TYPE_UNLIMIT_OLD);
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
