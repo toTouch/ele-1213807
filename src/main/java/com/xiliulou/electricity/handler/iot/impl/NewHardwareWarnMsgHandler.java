@@ -46,16 +46,17 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
             msg.setSn(hardwareWarnMsg.getBatteryName());
         } else if (hardwareWarnMsg.getErrorType().equals(HardwareWarnMsg.BUSINESS_TYPE)) {
             msg.setSnType(HardwareFailureMqMsg.BUSINESS_TYPE);
-            msg.setSn(electricityCabinet.getSn());
+            msg.setSn(electricityCabinet.getDeviceName());
         } else {
             msg.setSnType(HardwareFailureMqMsg.CABINET_TYPE);
-            msg.setSn(electricityCabinet.getSn());
+            msg.setSn(electricityCabinet.getDeviceName());
         }
         msg.setAddress(electricityCabinet.getAddress());
         msg.setErrorCode(String.valueOf(hardwareWarnMsg.getErrorCode()));
         msg.setWarnTime(hardwareWarnMsg.getCreateTime());
         msg.setCellNo(hardwareWarnMsg.getCellNo());
         msg.setErrorDesc(electricityCabinet.getName());
+        msg.setNum(hardwareWarnMsg.getTriggerCount());
 
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_HARDWARE_FAILURE, JsonUtil.toJson(msg));
 
@@ -103,6 +104,7 @@ class HardwareFailureMqMsg {
     private String errorDesc;
     private String data;
     private String address;
+    private Long num;
 
     /**
      * 电池
