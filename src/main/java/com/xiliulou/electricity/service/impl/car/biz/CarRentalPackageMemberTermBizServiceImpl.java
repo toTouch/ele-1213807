@@ -107,8 +107,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         boolean lookFlag = true;
 
-        // 当前时间 + 24小时
-        long nowTime = System.currentTimeMillis() + TimeConstant.DAY_MILLISECOND;
+        // 当前时间
+        long nowTime = System.currentTimeMillis();
 
         while (lookFlag) {
             // 1. 查询会员套餐表中，套餐购买订单已过期的数据
@@ -126,11 +126,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     CarRentalPackageOrderSlippagePO slippageEntityInsert = null;
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
-                        // 构建逾期订单
-                        slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
-                        if (ObjectUtils.isEmpty(slippageEntityInsert)) {
-                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());
-                            continue;
+                        // 判定构建逾期订单
+                        if (nowTime <= (memberTermEntity.getDueTime().longValue() + TimeConstant.DAY_MILLISECOND)) {
+                            slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
+                            if (ObjectUtils.isEmpty(slippageEntityInsert)) {
+                                log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());
+                                continue;
+                            }
                         }
                     } else {
                         // 二次保底确认
@@ -155,7 +157,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         }
                     }
                     // 数据落库处理
-                    saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity);
+                    saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity, memberTermEntity.getRentalPackageOrderNo());
                 } catch (Exception e) {
                     log.info("CarRentalPackageMemberTermBizService.expirePackageOrder skip. error. ", e);
                     continue;
@@ -167,7 +169,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Transactional(rollbackFor = Exception.class)
     public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePO slippageEntityInsert, CarRentalPackageOrderPO packageOrderEntityNew,
-                                         CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderSlippagePO slippageFreezeEntity) {
+                                         CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderSlippagePO slippageFreezeEntity, String oriRentalPackageOrderNo) {
         // 生成逾期订单
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
@@ -205,7 +207,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
 
             // 更改原订单状态及新订单状态
-            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null);
             carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
         }
     }
