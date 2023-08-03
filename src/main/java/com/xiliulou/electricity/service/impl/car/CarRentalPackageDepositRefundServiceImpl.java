@@ -84,8 +84,8 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     @Slave
     @Override
     public List<CarRentalPackageDepositRefundPO> page(CarRentalPackageDepositRefundQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageDepositRefundQryModel();
         }
 
         return carRentalPackageDepositRefundMapper.page(qryModel);
@@ -100,8 +100,8 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     @Slave
     @Override
     public Integer count(CarRentalPackageDepositRefundQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageDepositRefundQryModel();
         }
 
         return carRentalPackageDepositRefundMapper.count(qryModel);
