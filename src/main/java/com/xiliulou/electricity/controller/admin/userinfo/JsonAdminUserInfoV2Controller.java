@@ -47,6 +47,10 @@ public class JsonAdminUserInfoV2Controller {
     @Resource
     private UserInfoService userInfoService;
 
+/*
+    public void modifyMemberTerm() {
+
+    }*/
 
     /**
      * 给用户绑定套餐

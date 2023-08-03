@@ -668,7 +668,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
-                callBackResource.setOutTradeNo(refundRentOrderNo);
+                callBackResource.setOutRefundNo(refundRentOrderNo);
                 wxRefundPayService.process(callBackResource);
             }
 
