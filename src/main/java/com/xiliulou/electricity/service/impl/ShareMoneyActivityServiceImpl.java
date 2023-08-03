@@ -125,6 +125,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         //查询该租户是否有邀请活动，有则不能添加
         // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+        //3.0后修改为，如果有上架的，先提示确定上架，确定后则直接上架，并将之前的活动下架
         ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
         if (Objects.nonNull(activityResult)) {
             //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");

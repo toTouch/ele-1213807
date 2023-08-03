@@ -121,6 +121,10 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
             List<String> membercardNames = list.stream().map(EleDivisionAccountOperationRecordDTO::getName).collect(Collectors.toList());
             recordVO.setMembercardNames(membercardNames);
 
+            recordVO.setBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_BATTERY));
+            recordVO.setCarRentalPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
+            recordVO.setCarWithBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
+
             return recordVO;
         }).collect(Collectors.toList());
     }

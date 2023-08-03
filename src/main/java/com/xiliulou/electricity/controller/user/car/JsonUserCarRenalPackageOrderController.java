@@ -212,22 +212,26 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                 // 判定可退截止时间
                 Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
 
-                Integer payState = carRentalPackageOrder.getPayState();
-                if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
+                Integer useState = carRentalPackageOrder.getUseState();
+                if (UseStateEnum.EXPIRED.getCode().equals(useState) || UseStateEnum.RETURNED.getCode().equals(useState)) {
                     rentRebate = YesNoEnum.NO.getCode();
                 } else {
-                    // 集成退款订单的状态，综合判定
-                    CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
-                    if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
-                        Integer refundState = rentRefundOrderEntity.getRefundState();
-                        if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
-                            rentRebate = YesNoEnum.YES.getCode();
-                        } else {
-                            rentRebate = YesNoEnum.NO.getCode();
+                    Integer payState = carRentalPackageOrder.getPayState();
+                    if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
+                        rentRebate = YesNoEnum.NO.getCode();
+                    } else {
+                        // 集成退款订单的状态，综合判定
+                        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+                        if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
+                            Integer refundState = rentRefundOrderEntity.getRefundState();
+                            if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
+                                rentRebate = YesNoEnum.YES.getCode();
+                            } else {
+                                rentRebate = YesNoEnum.NO.getCode();
+                            }
                         }
                     }
                 }
-
                 carRentalPackageOrderVO.setRentRebate(rentRebate);
             }
 
@@ -329,7 +333,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     @PostMapping("/buyRentalPackageOrder")
     public R<?> buyRentalPackageOrder(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel, HttpServletRequest request) {
         // 参数基本校验
-        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getRentalPackageId())) {
+        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getRentalPackageId(), buyOptModel.getFranchiseeId(), buyOptModel.getStoreId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
