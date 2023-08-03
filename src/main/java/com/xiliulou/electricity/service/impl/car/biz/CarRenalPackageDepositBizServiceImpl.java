@@ -175,24 +175,37 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     continue;
                 }
 
+                // 未解冻
                 PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.info("freeDepositRefundHandler, pxzDepositService.queryFreeDepositOrder is not unFrozen. orderNo is {}, uid is {}", orderNo, uid);
+                    log.info("freeDepositRefundHandler, pxzDepositService.queryFreeDepositOrder is not auth_un_frozen. orderNo is {}, uid is {}", orderNo, uid);
                     continue;
                 }
-
-
-
-
-                // 更改押金退款状态
-                // 成功作废数据
-                // 数据落库处理
-                /*saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, depositRefundEntity, slippageFreezeEntity);*/
+                saveFreeDepositRefundHandlerTx(depositRefundEntity);
             }
-
 
             offset += size;
         }
+    }
+
+    /**
+     * 免押退押处理逻辑，事务处理
+     * @param depositRefundEntity
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveFreeDepositRefundHandlerTx(CarRentalPackageDepositRefundPO depositRefundEntity) {
+        // 更改押金状态
+        CarRentalPackageDepositRefundPO depositRefundUpdateEntity = new CarRentalPackageDepositRefundPO();
+        depositRefundUpdateEntity.setOrderNo(depositRefundEntity.getOrderNo());
+        depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+        depositRefundUpdateEntity.setUpdateTime(System.currentTimeMillis());
+        carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+        // 作废所有的套餐购买订单（未使用、使用中）、
+        carRentalPackageOrderService.refundDepositByUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
+        // 按照人+类型，作废保险
+        insuranceUserInfoService.deleteByUidAndType(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
+        // 删除会员期限表信息
+        carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
     }
 
     /**
