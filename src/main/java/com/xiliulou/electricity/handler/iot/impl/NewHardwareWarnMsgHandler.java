@@ -60,7 +60,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_HARDWARE_FAILURE, JsonUtil.toJson(msg));
 
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("requestId", receiverMessage.getSessionId());
+        dataMap.put("sessionId", receiverMessage.getSessionId());
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
                         receiverMessage.getSessionId())
