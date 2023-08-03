@@ -97,6 +97,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         BigDecimal deposit = null;
         Integer rentalPackageType = null;
         List<String> batteryModelTypeList = null;
+        Integer confine = null;
 
         // 0. 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -157,7 +158,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 }
 
                 // 车电一体且存在订单
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询电池型号信息
                     List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
                     batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
@@ -165,6 +166,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
                 deposit = memberTermEntity.getDeposit();
                 rentalPackageType = memberTermEntity.getRentalPackageType();
+                confine = memberTermEntity.getRentalPackageConfine();
             }
         } else {
             oldUserFlag = userBizService.isOldUser(tenantId, uid);
@@ -182,6 +184,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setType(rentalPackageType);
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
+        qryModel.setConfine(confine);
         List<CarRentalPackagePO> packageEntityList = carRentalPackageService.page(qryModel);
         if (CollectionUtils.isEmpty(packageEntityList)) {
             return Collections.emptyList();

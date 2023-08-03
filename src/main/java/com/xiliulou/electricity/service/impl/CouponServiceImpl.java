@@ -106,6 +106,7 @@ public class CouponServiceImpl implements CouponService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+        couponQuery.setTenantId(tenantId);
 
 //        //判断参数
 //        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
