@@ -605,7 +605,6 @@ public class UnionTradeOrderServiceImpl extends
      */
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus) {
-log.error("================================manageMemberCardOrderV2");
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
             log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!not found electricityMemberCardOrder,orderNo={}", orderNo);

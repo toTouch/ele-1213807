@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -212,6 +213,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }).collect(Collectors.toList());
     }
 
+    @Slave
     @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
@@ -307,6 +309,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Collections.singletonList(batteryType);
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(BatteryMemberCardQuery query) {
         return this.batteryMemberCardMapper.selectByPageCount(query);

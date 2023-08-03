@@ -240,13 +240,13 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
-        if(Objects.isNull(insuranceUserInfo)){
-            log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}",uid,type);
+        if (Objects.isNull(insuranceUserInfo)) {
+            log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}", uid, type);
             return R.ok();
         }
 
         InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
-        BeanUtils.copyProperties(insuranceUserInfo,insuranceUserInfoVo);
+        BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
 
         if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
             return R.ok();
