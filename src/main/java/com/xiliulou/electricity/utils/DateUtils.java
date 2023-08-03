@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName : DateUtils
@@ -94,8 +95,8 @@ public class DateUtils {
      * @return
      */
     public static long diffMinute(long beginTime, long endTime) {
-        Double diffDayValue = Math.ceil((endTime - beginTime) / (1000 * 60 * 60)) + 1;
-        return diffDayValue.longValue();
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(endTime - beginTime) + 1;
+        return minutes;
     }
 
     /**
@@ -111,7 +112,8 @@ public class DateUtils {
      * @return
      */
     public static long diffDay(long beginTime, long endTime) {
-        Double diffDayValue = Math.ceil((endTime - beginTime) / (1000 * 60 * 60 * 24)) + 1;
-        return diffDayValue.longValue();
+        long days = TimeUnit.MILLISECONDS.toDays(endTime - beginTime) + 1;
+        return days;
     }
+
 }
