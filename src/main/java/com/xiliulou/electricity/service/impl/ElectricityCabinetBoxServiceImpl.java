@@ -4,10 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -144,9 +145,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
 
             //设置电池短型号
-            String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
-            item.setBatteryShortType(batteryShortType);
-
+            if (Objects.nonNull(electricityBatteryVO.getModel())) {
+                String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
+                item.setBatteryShortType(batteryShortType);
+            }
         }).collect(Collectors.toList());
     
         List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
