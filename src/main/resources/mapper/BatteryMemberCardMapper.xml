@@ -182,6 +182,9 @@
             <if test="status != null">
                 and bmc.status = #{status}
             </if>
+            <if test="limitCount != null">
+                and bmc.limit_count = #{limitCount}
+            </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
