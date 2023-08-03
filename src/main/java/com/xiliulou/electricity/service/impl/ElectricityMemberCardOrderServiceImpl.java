@@ -3359,9 +3359,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if(Objects.isNull(userBindbatteryMemberCard)){
-            return Triple.of(false, "ELECTRICITY.00121", "用户电池套餐不存在");
-        }
+//        if(Objects.isNull(userBindbatteryMemberCard)){
+//            return Triple.of(false, "ELECTRICITY.00121", "用户电池套餐不存在");
+//        }
 
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
@@ -3391,7 +3391,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NOT_USE);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() ||Objects.isNull (userBindbatteryMemberCard) || Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0) {
 
             memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
