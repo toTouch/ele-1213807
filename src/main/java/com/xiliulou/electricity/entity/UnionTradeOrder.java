@@ -57,5 +57,7 @@ public class UnionTradeOrder {
 
     public static final String ATTACH_INTEGRATED_PAYMENT = "integratedPayment";
 
+    public static final String ATTACH_MEMBERCARD_INSURANCE = "membercardInsurance";
+
 
 }

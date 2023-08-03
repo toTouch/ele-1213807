@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.UnionTradeOrderAdd;
@@ -41,6 +42,12 @@ public class JsonUserUnionTradeOrderController extends BaseController{
         return returnTripleResult(tradeOrderService.integratedPayment(integratedPaymentAdd, request));
     }
 
-
+    /**
+     * 电池套餐&保险混合支付
+     */
+    @PostMapping("/user/payMemberCardAndInsurance")
+    public R payMemberCardAndInsurance(@RequestBody @Validated(value = CreateGroup.class) BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request) {
+        return returnTripleResult(tradeOrderService.payMemberCardAndInsurance(query, request));
+    }
 }
 
