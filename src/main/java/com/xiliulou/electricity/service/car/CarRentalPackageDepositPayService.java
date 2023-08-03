@@ -13,6 +13,14 @@ import java.util.List;
 public interface CarRentalPackageDepositPayService {
 
     /**
+     * 根据用户ID和租户ID查询最后一条押金信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 押金支付订单
+     */
+    CarRentalPackageDepositPayPO selectLastByUid(Integer tenantId, Long uid);
+
+    /**
      * 同步免押状态
      * @param orderNo 押金缴纳订单编码
      * @param optUid 操作人ID

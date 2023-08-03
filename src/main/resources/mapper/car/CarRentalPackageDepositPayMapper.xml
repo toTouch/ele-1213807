@@ -124,6 +124,15 @@
         </trim>
     </sql>
 
+    <!-- 根据用户ID和租户ID查询最后一条押金信息 -->
+    <select id="selectLastByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+        </where>
+        ORDER BY `create_time` DESC LIMIT 1
+    </select>
+
     <!-- 根据订单编码更新支付状态 -->
     <update id="updatePayStateByOrderNo">
         UPDATE <include refid="table_name" />

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -99,6 +100,8 @@ public class JsonUserCarDepositPayController extends BasicController {
         qryModel.setUid(user.getUid());
         qryModel.setOffset(offset);
         qryModel.setSize(size);
+        qryModel.setPayState(PayStateEnum.SUCCESS.getCode());
+
 
         // 调用服务
         List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
@@ -132,6 +135,8 @@ public class JsonUserCarDepositPayController extends BasicController {
         CarRentalPackageDepositPayQryModel qryModel = new CarRentalPackageDepositPayQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
+        qryModel.setPayState(PayStateEnum.SUCCESS.getCode());
+
 
         // 调用服务
         return R.ok(carRentalPackageDepositPayService.count(qryModel));
