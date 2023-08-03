@@ -46,10 +46,10 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
             msg.setSn(hardwareWarnMsg.getBatteryName());
         } else if (hardwareWarnMsg.getErrorType().equals(HardwareWarnMsg.BUSINESS_TYPE)) {
             msg.setSnType(HardwareFailureMqMsg.BUSINESS_TYPE);
-            msg.setSn(electricityCabinet.getSn());
+            msg.setSn(electricityCabinet.getDeviceName());
         } else {
             msg.setSnType(HardwareFailureMqMsg.CABINET_TYPE);
-            msg.setSn(electricityCabinet.getSn());
+            msg.setSn(electricityCabinet.getDeviceName());
         }
         msg.setAddress(electricityCabinet.getAddress());
         msg.setErrorCode(String.valueOf(hardwareWarnMsg.getErrorCode()));

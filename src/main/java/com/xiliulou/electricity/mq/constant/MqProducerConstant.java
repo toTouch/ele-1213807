@@ -33,5 +33,5 @@ public interface MqProducerConstant {
     /**
      * 硬件故障
      */
-    String TOPIC_HARDWARE_FAILURE = "hardware_failure";
+    String TOPIC_HARDWARE_FAILURE = "WARNING_BREAKDOWN_TOPIC";
 }
