@@ -356,6 +356,10 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
                     //当前分帐配置绑定的套餐
                     List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+
+                    //TODO 检查问题，完成后需要删除
+                    log.error("HIERARCHY_TWO: already used da config package: {}", enableRefIds);
+                    log.error("HIERARCHY_TWO: current change da config package: {}", currentRefIds);
                     if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
                         return Triple.of(false, "", "套餐分帐配置已存在");
                     }
@@ -368,6 +372,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
                     //当前分帐配置绑定的套餐
                     List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+                    //TODO 检查问题，完成后需要删除
+                    log.error("HIERARCHY_THREE: already used da config package: {}", enableRefIds);
+                    log.error("HIERARCHY_THREE: current change da config package: {}", currentRefIds);
                     if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
                         return Triple.of(false, "", "套餐分帐配置已存在");
                     }

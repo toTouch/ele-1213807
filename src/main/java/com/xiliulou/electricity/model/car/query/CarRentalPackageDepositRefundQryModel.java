@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.model.car.query;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
-
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * 租车套餐押金退款表，DB层查询模型
@@ -75,6 +74,7 @@ public class CarRentalPackageDepositRefundQryModel implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
+     *     3-免押
      * </pre>
      * @see PayTypeEnum
      */
