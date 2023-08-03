@@ -64,6 +64,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
                         receiverMessage.getSessionId())
+                .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
                 .data(dataMap)
                 .command(ElectricityIotConstant.NEW_HARDWARE_WARN_MSG_ACK).build();
