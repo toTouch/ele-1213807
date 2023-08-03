@@ -3,6 +3,8 @@ package com.xiliulou.electricity.controller.admin.userinfo;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -53,12 +55,14 @@ public class JsonAdminUserInfoV2Controller {
      */
     @PostMapping("/bindingPackage")
     public R<Boolean> bindingPackage(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel ) {
-        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getUid(), buyOptModel.getRentalPackageId())) {
+        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getUid(), buyOptModel.getFranchiseeId(), buyOptModel.getStoreId(), buyOptModel.getRentalPackageId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         Integer tenantId = TenantContextHolder.getTenantId();
         buyOptModel.setTenantId(tenantId);
+        buyOptModel.setPayType(PayTypeEnum.OFF_LINE.getCode());
+        buyOptModel.setDepositType(YesNoEnum.NO.getCode());
 
         return R.ok(carRentalPackageOrderBizService.bindingPackage(buyOptModel));
     }
