@@ -129,8 +129,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         String rentalPackageOrderNo = depositPayEntity.getRentalPackageOrderNo();
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
         if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            log.error("CarRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo failed. not found t_car_rental_package_order. rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            throw new BizException("300000", "数据有误");
+            log.info("CarRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo failed. not found t_car_rental_package_order. rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            return null;
         }
 
         return packageOrderEntity.getRentalPackageId();
@@ -987,15 +987,19 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             }
             // 免押，退款成功
             if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
             }
         }
 
         if (SystemDefinitionEnum.WX_APPLET.getCode().equals(systemDefinition.getCode())) {
             // 不需要审核，必定是0元退押，所以直接退款成功即可
             if (!depositAuditFlag) {
-                // 线上、线下、免押，退款成功
+                // 线上、线下 退款成功
                 refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                // 免押，退款中
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                }
             }
         }
 
