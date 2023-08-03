@@ -595,6 +595,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         userBatteryVo.setBatteryA(result.getRight().getBatteryA());
         userBatteryVo.setBatteryV(result.getRight().getBatteryV());
         userBatteryVo.setSn(sn);
+        userBatteryVo.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
         userBatteryVo.setLatitude(result.getRight().getLatitude());
         userBatteryVo.setLongitude(result.getRight().getLongitude());
         userBatteryVo.setPower(Double.valueOf(result.getRight().getSoc()));
