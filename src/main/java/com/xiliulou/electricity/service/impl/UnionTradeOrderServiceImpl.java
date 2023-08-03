@@ -689,7 +689,6 @@ log.error("================================manageMemberCardOrderV2");
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                     userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
                     userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
-                    userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
                 } else {
 
                     UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
@@ -707,7 +706,6 @@ log.error("================================manageMemberCardOrderV2");
                     userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
                     userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + electricityMemberCardOrder.getMaxUseCount());
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-                    userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                 }
             }
 
