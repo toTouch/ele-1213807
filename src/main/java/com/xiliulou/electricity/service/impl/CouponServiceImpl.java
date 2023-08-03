@@ -166,14 +166,12 @@ public class CouponServiceImpl implements CouponService {
         }
 
         //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
-        List<CouponActivityPackage> couponActivityPackages = null;
         if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())){
             //获取页面传递进来的套餐信息
-            Triple<Boolean, String, Object> packagesResult = getPackagesFromCoupon(couponQuery);
+            Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
             if (Boolean.FALSE.equals(packagesResult.getLeft())) {
                 return R.fail("000076", (String) packagesResult.getRight());
             }
-            couponActivityPackages = (List<CouponActivityPackage>) packagesResult.getRight();
         }
 
         Coupon coupon = new Coupon();
@@ -197,10 +195,8 @@ public class CouponServiceImpl implements CouponService {
         int insert = couponMapper.insert(coupon);
 
         //将该优惠券对应的套餐信息保存到数据库中
+        List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
         if(!CollectionUtils.isEmpty(couponActivityPackages)){
-            for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
-                couponActivityPackage.setCouponId(coupon.getId().longValue());
-            }
             couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
         }
 
@@ -227,9 +223,7 @@ public class CouponServiceImpl implements CouponService {
         return Boolean.FALSE;
     }
 
-    private Triple<Boolean, String, Object> getPackagesFromCoupon(CouponQuery couponQuery){
-        List<CouponActivityPackage> couponActivityPackages = Lists.newArrayList();
-
+    private Triple<Boolean, String, Object> verifyPackages(CouponQuery couponQuery){
         //检查是否有选择（换电,租车,车电一体）套餐信息
         if(CollectionUtils.isEmpty(couponQuery.getBatteryPackages())
                 && CollectionUtils.isEmpty(couponQuery.getCarRentalPackages())
@@ -244,9 +238,6 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.isNull(batteryMemberCard)) {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
-
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), couponQuery.getTenantId());
-            couponActivityPackages.add(couponActivityPackage);
         }
 
         List<Long> carRentalPackages = couponQuery.getCarRentalPackages();
@@ -255,9 +246,6 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000203", "租车套餐不存在");
             }
-
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode(), couponQuery.getTenantId());
-            couponActivityPackages.add(couponActivityPackage);
         }
 
         List<Long> carElectricityPackages = couponQuery.getCarWithBatteryPackages();
@@ -266,13 +254,31 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
+        }
+        return Triple.of(true, "", null);
+    }
 
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode(), couponQuery.getTenantId());
+    private List<CouponActivityPackage> getPackagesFromCoupon(Long couponId, CouponQuery couponQuery){
+        List<CouponActivityPackage> couponActivityPackages = Lists.newArrayList();
+        List<Long> electricityPackages = couponQuery.getBatteryPackages();
+        for(Long packageId : electricityPackages){
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponId, packageId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), couponQuery.getTenantId());
             couponActivityPackages.add(couponActivityPackage);
         }
 
-        return Triple.of(true, "", couponActivityPackages);
+        List<Long> carRentalPackages = couponQuery.getCarRentalPackages();
+        for(Long packageId : carRentalPackages){
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponId, packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode(), couponQuery.getTenantId());
+            couponActivityPackages.add(couponActivityPackage);
+        }
 
+        List<Long> carElectricityPackages = couponQuery.getCarWithBatteryPackages();
+        for(Long packageId : carElectricityPackages){
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponId, packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode(), couponQuery.getTenantId());
+            couponActivityPackages.add(couponActivityPackage);
+        }
+
+        return couponActivityPackages;
     }
 
     private CouponActivityPackage buildCouponActivityPackage(Long couponId, Long packageId, Integer packageType, Integer tenantId){
