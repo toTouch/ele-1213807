@@ -16,6 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 public interface CarRentalPackageOrderBizService {
 
     /**
+     * 后端给用户绑定套餐
+     * @param buyOptModel 购买套餐数据模型
+     * @return true(成功)、false(失败)
+     */
+    boolean bindingPackage (CarRentalPackageOrderBuyOptModel buyOptModel);
+
+    /**
      * 审批冻结申请单
      * @param freezeRentOrderNo 冻结申请单编码
      * @param approveFlag 审批标识，true(同意)；false(驳回)
