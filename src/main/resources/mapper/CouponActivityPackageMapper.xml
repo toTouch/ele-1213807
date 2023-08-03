@@ -85,7 +85,7 @@
             update_time,
         </trim>
         values
-        <foreach item="item" index="index" collection="couponActivityPackages" separator=",">
+        <foreach item="item" index="index" collection="list" separator=",">
             (
             #{couponId},
             #{packageId},
