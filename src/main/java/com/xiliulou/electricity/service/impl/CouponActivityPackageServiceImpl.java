@@ -42,11 +42,13 @@ public class CouponActivityPackageServiceImpl implements CouponActivityPackageSe
         return couponActivityPackageMapper.selectByQuery(couponActivityPackage);
     }
 
+    @Slave
     @Override
     public List<CouponActivityPackage> findActivityPackagesByCouponId(Long couponId) {
         return couponActivityPackageMapper.selectActivityPackagesByCouponId(couponId);
     }
 
+    @Slave
     @Override
     public List<CouponActivityPackage> findPackagesByCouponIdAndType(Long couponId, Integer packageType) {
         return couponActivityPackageMapper.selectPackagesByCouponIdAndPackageType(couponId, packageType);
