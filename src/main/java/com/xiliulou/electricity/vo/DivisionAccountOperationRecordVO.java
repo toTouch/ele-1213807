@@ -48,6 +48,12 @@ public class DivisionAccountOperationRecordVO {
 
     private List<ElectricityCarModel> carModelList;
 
+    private List<BatteryMemberCardVO> batteryPackages;
+
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
+
     private Long createTime;
 
     private Long updateTime;

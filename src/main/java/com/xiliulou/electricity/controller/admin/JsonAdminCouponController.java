@@ -204,7 +204,7 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("000200", "业务类型参数不合法");
         }
 
-        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
+        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .offset(offset)
                     .size(size)
@@ -219,9 +219,9 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
-            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
+            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
+            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
             }
 
@@ -238,7 +238,7 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("000200", "业务类型参数不合法");
         }
 
-        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.equals(type)){
+        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)){
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                     .delFlag(BatteryMemberCard.DEL_NORMAL)
                     .status(BatteryMemberCard.STATUS_UP)
@@ -249,9 +249,9 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
-            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.equals(type)){
+            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.equals(type)){
+            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
                 qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
             }
             return R.ok(carRentalPackageService.count(qryModel));
