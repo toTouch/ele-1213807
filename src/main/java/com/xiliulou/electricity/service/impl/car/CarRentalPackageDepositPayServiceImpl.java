@@ -31,6 +31,21 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
 
     /**
+     * 根据用户ID和租户ID查询最后一条押金信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 押金支付订单
+     */
+    @Override
+    public CarRentalPackageDepositPayPO selectLastByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageDepositPayMapper.selectLastByUid(tenantId, uid);
+    }
+
+    /**
      * 同步免押状态
      *
      * @param orderNo 押金缴纳订单编码
