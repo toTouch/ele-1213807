@@ -16,6 +16,14 @@ import java.util.List;
 public interface CarRentalPackageDepositPayMapper {
 
     /**
+     * 根据用户ID和租户ID查询最后一条押金信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 押金支付订单
+     */
+    CarRentalPackageDepositPayPO selectLastByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+
+    /**
      * 根据订单编码更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态

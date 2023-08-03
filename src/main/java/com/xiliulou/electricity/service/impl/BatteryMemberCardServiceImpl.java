@@ -188,9 +188,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (Objects.nonNull(userBatteryMemberCard)) {
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             query.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            query.setRentTypes(userBatteryMemberCard.getCardPayCount() > 0 ? Arrays.asList(BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_OLD) : Arrays.asList(BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_NEW));
         }
 
-        query.setRentType(BatteryMemberCard.RENT_TYPE_UNLIMIT_OLD);
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
@@ -295,6 +295,21 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR!not found userInfo,uid={}", SecurityUtils.getUid());
+            return Collections.emptyList();
+        }
+
+        //未缴纳押金
+        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES , userInfo.getBatteryDepositStatus())){
+            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
+            if (CollectionUtils.isEmpty(list)) {
+                return Collections.emptyList();
+            }
+
+            return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {

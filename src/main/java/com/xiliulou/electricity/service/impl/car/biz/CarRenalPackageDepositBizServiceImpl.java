@@ -175,24 +175,37 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     continue;
                 }
 
+                // 未解冻
                 PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.info("freeDepositRefundHandler, pxzDepositService.queryFreeDepositOrder is not unFrozen. orderNo is {}, uid is {}", orderNo, uid);
+                    log.info("freeDepositRefundHandler, pxzDepositService.queryFreeDepositOrder is not auth_un_frozen. orderNo is {}, uid is {}", orderNo, uid);
                     continue;
                 }
-
-
-
-
-                // 更改押金退款状态
-                // 成功作废数据
-                // 数据落库处理
-                /*saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, depositRefundEntity, slippageFreezeEntity);*/
+                saveFreeDepositRefundHandlerTx(depositRefundEntity);
             }
-
 
             offset += size;
         }
+    }
+
+    /**
+     * 免押退押处理逻辑，事务处理
+     * @param depositRefundEntity
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveFreeDepositRefundHandlerTx(CarRentalPackageDepositRefundPO depositRefundEntity) {
+        // 更改押金状态
+        CarRentalPackageDepositRefundPO depositRefundUpdateEntity = new CarRentalPackageDepositRefundPO();
+        depositRefundUpdateEntity.setOrderNo(depositRefundEntity.getOrderNo());
+        depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+        depositRefundUpdateEntity.setUpdateTime(System.currentTimeMillis());
+        carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+        // 作废所有的套餐购买订单（未使用、使用中）、
+        carRentalPackageOrderService.refundDepositByUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
+        // 按照人+类型，作废保险
+        insuranceUserInfoService.deleteByUidAndType(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
+        // 删除会员期限表信息
+        carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
     }
 
     /**
@@ -637,7 +650,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 租车会员信息
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.info("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
+            log.info("selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
             return null;
         }
 
@@ -647,7 +660,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             // 申请退押，查询退押订单信息
             CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());
             if (ObjectUtils.isEmpty(depositRefundEntity)) {
-                log.error("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found t_car_rental_package_order_rent_refund, tenantId is {}, uid is {}", tenantId, uid);
+                log.error("selectUnRefundCarDeposit, not found t_car_rental_package_order_rent_refund, tenantId is {}, uid is {}", tenantId, uid);
                 throw new BizException("300000", "数据有误");
             }
             if (RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
@@ -656,9 +669,63 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 押金缴纳信息
-        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(depositPayEntity)) {
+        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectLastByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
             return null;
+        }
+
+        // 免押、未支付  调用第三方，二次查询
+        if (PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()) && PayStateEnum.UNPAID.getCode().equals(depositPayEntity.getPayState())) {
+            // 调用第三方查询
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
+            if (ObjectUtils.isEmpty(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+                log.info("selectUnRefundCarDeposit, pxzConfig configuration error. tenantId is {}", tenantId);
+                return null;
+            }
+
+            String orderNo = depositPayEntity.getOrderNo();
+
+            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+            query.setAesSecret(pxzConfig.getAesKey());
+            query.setDateTime(System.currentTimeMillis());
+            query.setSessionId(orderNo);
+            query.setMerchantCode(pxzConfig.getMerchantCode());
+
+            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+            request.setTransId(orderNo);
+            query.setData(request);
+
+            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+            try {
+                log.info("selectUnRefundCarDeposit, pxzDepositService.queryFreeDepositOrder params is {}", JsonUtil.toJson(query));
+                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+            } catch (PxzFreeDepositException e) {
+                log.info("selectUnRefundCarDeposit, pxzDepositService.queryFreeDepositOrder error. ", e);
+                return null;
+            }
+            log.info("selectUnRefundCarDeposit, pxzDepositService.queryFreeDepositOrder result is {}", JsonUtil.toJson(pxzQueryOrderRsp));
+
+            if (ObjectUtils.isEmpty(pxzQueryOrderRsp) || !pxzQueryOrderRsp.isSuccess() || ObjectUtils.isEmpty(pxzQueryOrderRsp.getData())) {
+                log.info("selectUnRefundCarDeposit, pxzDepositService.queryFreeDepositOrder failed. orderNo is {}", orderNo);
+                return null;
+            }
+
+            // 未冻结
+            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+            if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+                log.info("selectUnRefundCarDeposit, pxzDepositService.queryFreeDepositOrder is not auth_frozen. orderNo is {}, uid is {}", orderNo, uid);
+                return null;
+            }
+
+            // 查询免押记录信息
+            String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(depositPayOrderNo);
+            if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                log.error("selectUnRefundCarDeposit failed. not found t_free_deposit_order. depositPayOrderNo is {}", depositPayOrderNo);
+                return null;
+            }
+
+            saveFreeDepositSuccessTx(depositPayEntity, freeDepositOrder, queryOrderRspData);
         }
 
         // 拼装返回数据
@@ -666,7 +733,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
         depositPayVo.setDeposit(depositPayEntity.getDeposit());
         depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
-        depositPayVo.setPayState(depositPayEntity.getPayState());
+        depositPayVo.setPayState(PayStateEnum.SUCCESS.getCode());
         depositPayVo.setPayType(depositPayEntity.getPayType());
         depositPayVo.setStatus(status);
 
