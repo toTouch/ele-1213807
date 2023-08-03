@@ -346,39 +346,22 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
+        //若选择启用的分账设置中套餐信息，在之前已启用的配置中存在，则不允许启用当前设置。
         if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus())) {
+            //1. 查询出当前加盟商下所有的已启用的分账套餐信息。
+            //2. 根据分账id 查询分账套餐记录表中关联的套餐信息。
+            //3. 比对1中套餐信息是否在2中的结果中存在，比较条件为套餐refId和type. 如果这两个条件均满足，则判断为存在。
+            List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = null;
             if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfig.getHierarchy())) {
                 //已启用的分帐配置
-                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null,null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
-
-                if (CollectionUtils.isNotEmpty(divisionAccountConfigRefVOS)) {
-                    List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
-
-                    //当前分帐配置绑定的套餐
-                    List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
-
-                    //TODO 检查问题，完成后需要删除
-                    log.error("HIERARCHY_TWO: already used da config package: {}", enableRefIds);
-                    log.error("HIERARCHY_TWO: current change da config package: {}", currentRefIds);
-                    if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
-                        return Triple.of(false, "", "套餐分帐配置已存在");
-                    }
-                }
+                divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null,null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
             }else {
                 //已启用的分帐配置
-                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null, divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
-                if (CollectionUtils.isNotEmpty(divisionAccountConfigRefVOS)) {
-                    List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
-
-                    //当前分帐配置绑定的套餐
-                    List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
-                    //TODO 检查问题，完成后需要删除
-                    log.error("HIERARCHY_THREE: already used da config package: {}", enableRefIds);
-                    log.error("HIERARCHY_THREE: current change da config package: {}", currentRefIds);
-                    if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
-                        return Triple.of(false, "", "套餐分帐配置已存在");
-                    }
-                }
+                divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null, divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
+            }
+            Triple<Boolean, String, Object> checkResult= checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfigQuery.getId());
+            if(Boolean.FALSE.equals(checkResult.getLeft())){
+                return checkResult;
             }
         }
 
@@ -389,6 +372,27 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         this.update(divisionAccountConfigUpdate);
         return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> checkIsExistDAPackages(List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS, Long divisionAccountConfigId){
+        if(CollectionUtils.isEmpty(divisionAccountConfigRefVOS)){
+            return Triple.of(true, "", null);
+        }
+
+        //当前分帐配置绑定的套餐
+        List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigId(divisionAccountConfigId);
+        for(DivisionAccountConfigRefVO divisionAccountConfigRefVO : divisionAccountConfigRefVOS){
+            for(DivisionAccountBatteryMembercard divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
+                //检查设置套餐是否在之前启用的设置套餐中存在
+                if(divisionAccountConfigRefVO.getRefId().equals(divisionAccountBatteryMembercard.getRefId())
+                        && divisionAccountConfigRefVO.getPackageType().equals(divisionAccountBatteryMembercard.getType())){
+                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getRefId(), divisionAccountConfigId);
+                    return Triple.of(false, "", "套餐分帐配置已存在");
+                }
+            }
+        }
+
+        return Triple.of(true, "", null);
     }
 
     @Deprecated

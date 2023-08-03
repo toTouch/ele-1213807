@@ -244,6 +244,7 @@
         SELECT
         dac.id,
         dac.name,
+        dac.type,
         dac.hierarchy,
         dac.franchisee_id,
         dac.store_id,
@@ -253,7 +254,7 @@
         dac.franchisee_rate_other,
         dac.store_rate,
         dac.status,
-        dabm.type,
+        dabm.type as packageType,
         dabm.ref_id
         FROM t_division_account_config dac
         left join t_division_account_battery_membercard dabm on dac.id = dabm.division_account_id
