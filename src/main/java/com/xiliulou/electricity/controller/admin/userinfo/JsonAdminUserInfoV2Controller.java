@@ -4,11 +4,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoVO;
@@ -35,10 +37,31 @@ import java.util.stream.Collectors;
 public class JsonAdminUserInfoV2Controller {
 
     @Resource
+    private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
     private CarRentalPackageBizService carRentalPackageBizService;
 
     @Resource
     private UserInfoService userInfoService;
+
+
+    /**
+     * 给用户绑定套餐
+     * @param buyOptModel 绑定数据模型
+     * @return true(成功)、false(失败)
+     */
+    @PostMapping("/bindingPackage")
+    public R<Boolean> bindingPackage(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel ) {
+        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getUid(), buyOptModel.getRentalPackageId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        buyOptModel.setTenantId(tenantId);
+
+        return R.ok(carRentalPackageOrderBizService.bindingPackage(buyOptModel));
+    }
 
     /**
      * 获取用户可以购买的套餐
