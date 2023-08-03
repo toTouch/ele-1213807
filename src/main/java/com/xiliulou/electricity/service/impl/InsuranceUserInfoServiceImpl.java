@@ -106,6 +106,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateInsuranceUserInfo.setIsUse(insuranceStatus);
         updateInsuranceUserInfo.setUid(uid);
+        updateInsuranceUserInfo.setType(type);
         updateInsuranceUserInfo.setTenantId(TenantContextHolder.getTenantId());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
@@ -459,11 +460,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     public R editUserInsuranceInfo(InsuranceUserInfoQuery query){
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
-        if (Objects.isNull(userInfo)|| !Objects.equals( userInfo.getTenantId(),TenantContextHolder.getTenantId() )) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(userInfo.getUid(),query.getType());
+        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(userInfo.getUid(), query.getType());
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户未购买保险");
         }
@@ -471,6 +472,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateInsuranceUserInfo.setIsUse(query.getIsUse());
+        updateInsuranceUserInfo.setType(query.getType());
         updateInsuranceUserInfo.setUid(userInfo.getUid());
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -513,7 +515,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(query.getUid());
+        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(query.getUid(), query.getType());
         if (Objects.isNull(insuranceUserInfo) ) {
             return R.fail("100309", "用户未购买保险");
         }
@@ -553,6 +555,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
         updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
         updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+        updateOrAddInsuranceUserInfo.setType(query.getType());
         updateOrAddInsuranceUserInfo.setInsuranceOrderId(orderId);
         updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
         if (Objects.equals(InsuranceUserInfo.IS_USE, insuranceUserInfo.getIsUse()) || (Objects.equals(InsuranceUserInfo.NOT_USE, insuranceUserInfo.getIsUse()) && insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis())) {
