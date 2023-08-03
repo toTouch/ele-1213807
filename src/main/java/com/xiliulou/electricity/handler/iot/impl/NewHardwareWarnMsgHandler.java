@@ -56,6 +56,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
         msg.setWarnTime(hardwareWarnMsg.getCreateTime());
         msg.setCellNo(hardwareWarnMsg.getCellNo());
         msg.setErrorDesc(electricityCabinet.getName());
+        msg.setNum(hardwareWarnMsg.getTriggerCount());
 
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_HARDWARE_FAILURE, JsonUtil.toJson(msg));
 
@@ -103,6 +104,7 @@ class HardwareFailureMqMsg {
     private String errorDesc;
     private String data;
     private String address;
+    private Long num;
 
     /**
      * 电池
