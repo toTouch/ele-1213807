@@ -15,6 +15,14 @@ import java.math.BigDecimal;
 public interface CarRenalPackageDepositBizService {
 
     /**
+     * 免押退押处理逻辑<br />
+     * 用于定时任务
+     * @param offset 偏移量
+     * @param size 取值数量
+     */
+    void freeDepositRefundHandler(Integer offset, Integer size);
+
+    /**
      * 根据押金缴纳订单编号获取套餐ID
      * @param depositPayOrderNo 押金缴纳订单编码
      * @return 套餐ID
