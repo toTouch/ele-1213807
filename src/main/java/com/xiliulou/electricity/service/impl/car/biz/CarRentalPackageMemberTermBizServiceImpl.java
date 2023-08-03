@@ -114,6 +114,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 1. 查询会员套餐表中，套餐购买订单已过期的数据
             List<CarRentalPackageMemberTermPO> memberTermEntityList = carRentalPackageMemberTermService.pageExpire(offset, size, nowTime);
             if (CollectionUtils.isEmpty(memberTermEntityList)) {
+                log.info("expirePackageOrder, The data is empty and does not need to be processed");
                 lookFlag = false;
                 break;
             }

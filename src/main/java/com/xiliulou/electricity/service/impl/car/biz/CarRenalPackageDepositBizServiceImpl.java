@@ -133,6 +133,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             qryModel.setRefundState(RefundStateEnum.REFUNDING.getCode());
             List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
             if (CollectionUtils.isEmpty(depositRefundEntityList)) {
+                log.info("freeDepositRefundHandler, The data is empty and does not need to be processed");
                 lookFlag = false;
                 break;
             }
