@@ -295,6 +295,21 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR!not found userInfo,uid={}", SecurityUtils.getUid());
+            return Collections.emptyList();
+        }
+
+        //未缴纳押金
+        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES , userInfo.getBatteryDepositStatus())){
+            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
+            if (CollectionUtils.isEmpty(list)) {
+                return Collections.emptyList();
+            }
+
+            return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {

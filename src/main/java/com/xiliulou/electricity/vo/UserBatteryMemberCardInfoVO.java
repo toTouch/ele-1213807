@@ -48,6 +48,11 @@ public class UserBatteryMemberCardInfoVO {
      * 套餐到期时间
      */
     private Long memberCardExpireTime;
+
+    /**
+     * 套餐购买时间
+     */
+    private Long memberCardPayTime;
     /**
      * 套餐总剩余次数
      */
