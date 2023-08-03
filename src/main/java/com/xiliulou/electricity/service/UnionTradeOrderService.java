@@ -32,4 +32,5 @@ public interface UnionTradeOrderService {
 
     UnionTradeOrder selectTradeOrderById(Long id);
 
+    Pair<Boolean, Object> notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource);
 }

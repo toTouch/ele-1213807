@@ -4,10 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.query.InsuranceOrderAdd;
-import com.xiliulou.electricity.query.InsuranceOrderQuery;
-import com.xiliulou.electricity.query.IntegratedPaymentAdd;
-import com.xiliulou.electricity.query.UnionTradeOrderAdd;
+import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,4 +22,5 @@ public interface TradeOrderService {
 
     Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList);
 
+    Triple<Boolean, String, Object> payMemberCardAndInsurance(BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request);
 }
