@@ -811,7 +811,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     // 调用回调逻辑
                     WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                     callBackResource.setRefundStatus("SUCCESS");
-                    callBackResource.setOutTradeNo(refundDepositOrderNo);
+                    callBackResource.setOutRefundNo(refundDepositOrderNo);
                     wxRefundPayService.process(callBackResource);
                 }
 
@@ -822,7 +822,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 // 调用回调逻辑
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
-                callBackResource.setOutTradeNo(refundDepositOrderNo);
+                callBackResource.setOutRefundNo(refundDepositOrderNo);
                 wxRefundPayService.process(callBackResource);
             }
 

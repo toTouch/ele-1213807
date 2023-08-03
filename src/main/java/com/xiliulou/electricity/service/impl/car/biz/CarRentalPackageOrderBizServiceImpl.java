@@ -668,7 +668,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
-                callBackResource.setOutTradeNo(refundRentOrderNo);
+                callBackResource.setOutRefundNo(refundRentOrderNo);
                 wxRefundPayService.process(callBackResource);
             }
 
@@ -2041,7 +2041,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setCreateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setDelFlag(DelFlagEnum.OK.getCode());
-
+        carRentalPackageMemberTermEntity.setPayCount(1);
         // 计算到期时间
         Integer tenancy = packageEntity.getTenancy();
         Integer tenancyUnit = packageEntity.getTenancyUnit();
