@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +23,7 @@ public class CouponActivityPackage {
     /**
      * 主键
      */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 优惠券ID

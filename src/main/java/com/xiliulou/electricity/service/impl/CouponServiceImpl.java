@@ -196,7 +196,7 @@ public class CouponServiceImpl implements CouponService {
         int insert = couponMapper.insert(coupon);
 
         //将该优惠券对应的套餐信息保存到数据库中
-        log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
+        //log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
         List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
         if(!CollectionUtils.isEmpty(couponActivityPackages)){
             couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
