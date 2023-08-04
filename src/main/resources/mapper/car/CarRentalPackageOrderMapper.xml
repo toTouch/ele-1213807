@@ -166,7 +166,7 @@
     <select id="selectFirstUnUsedByUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 2 AND `del_flag` = 0
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 2 AND `use_state` = 1 AND `del_flag` = 0
         </where>
         ORDER BY `id` ASC LIMIT 1
     </select>
