@@ -148,7 +148,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     continue;
                 }
 
-                String orderNo = depositRefundEntity.getOrderNo();
+                String orderNo = depositRefundEntity.getDepositPayOrderNo();
                 Long uid = depositRefundEntity.getUid();
 
                 PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
