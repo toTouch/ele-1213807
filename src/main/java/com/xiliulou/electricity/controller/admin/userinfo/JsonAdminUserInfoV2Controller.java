@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -66,7 +65,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         buyOptModel.setTenantId(tenantId);
         buyOptModel.setPayType(PayTypeEnum.OFF_LINE.getCode());
-        buyOptModel.setDepositType(YesNoEnum.NO.getCode());
 
         return R.ok(carRentalPackageOrderBizService.bindingPackage(buyOptModel));
     }
