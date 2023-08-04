@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
@@ -20,6 +21,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +78,25 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    /**
+     * 根据来源订单编码、类型查询保险订单信息
+     *
+     * @param sourceOrderNo 来源订单编码
+     * @param insuranceType 类型：0-电、1-车、2-车电
+     * @return 保险订单
+     */
+    @Slave
+    @Override
+    public InsuranceOrder selectBySourceOrderNoAndType(String sourceOrderNo, Integer insuranceType) {
+        if (!ObjectUtils.allNotNull(sourceOrderNo, insuranceType)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        LambdaQueryWrapper<InsuranceOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(InsuranceOrder::getSourceOrderNo, sourceOrderNo).eq(InsuranceOrder::getInsuranceType, insuranceType);
+        return insuranceOrderMapper.selectOne(queryWrapper);
+    }
 
     @Slave
     @Override
@@ -168,7 +189,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         InsuranceOrder insuranceOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchisee.getId())
@@ -355,7 +376,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         InsuranceOrder insuranceOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(insuranceOrderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
