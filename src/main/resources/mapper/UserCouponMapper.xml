@@ -30,7 +30,7 @@
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
-        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
+        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id

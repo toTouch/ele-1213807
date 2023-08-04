@@ -21,6 +21,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import com.xiliulou.electricity.vo.SearchVo;
+import io.micrometer.core.instrument.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -353,13 +354,13 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             //3. 比对1中套餐信息是否在2中的结果中存在，比较条件为套餐refId和type. 如果这两个条件均满足，则判断为存在。
             List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = null;
             if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfig.getHierarchy())) {
-                //已启用的分帐配置
+                //已启用的二级分帐配置
                 divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null,null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
-            }else {
-                //已启用的分帐配置
+            } else {
+                //已启用的三级分帐配置
                 divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null, divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
             }
-            Triple<Boolean, String, Object> checkResult= checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfigQuery.getId());
+            Triple<Boolean, String, Object> checkResult = checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfigQuery.getId());
             if(Boolean.FALSE.equals(checkResult.getLeft())){
                 return checkResult;
             }
@@ -384,9 +385,10 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         for(DivisionAccountConfigRefVO divisionAccountConfigRefVO : divisionAccountConfigRefVOS){
             for(DivisionAccountBatteryMembercard divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
                 //检查设置套餐是否在之前启用的设置套餐中存在
+                log.error("Already enable da package info: old package info = {}, current package info = {}", JsonUtil.toJson(divisionAccountConfigRefVO), JsonUtil.toJson(divisionAccountBatteryMembercard));
                 if(divisionAccountConfigRefVO.getRefId().equals(divisionAccountBatteryMembercard.getRefId())
                         && divisionAccountConfigRefVO.getPackageType().equals(divisionAccountBatteryMembercard.getType())){
-                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getRefId(), divisionAccountConfigId);
+                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getId(), divisionAccountConfigId);
                     return Triple.of(false, "", "套餐分帐配置已存在");
                 }
             }
