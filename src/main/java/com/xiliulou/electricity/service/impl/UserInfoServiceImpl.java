@@ -816,6 +816,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("100371", "电池加盟商与用户加盟商不一致");
         }
 
+        //多型号  绑定电池需要判断电池是否和用户型号一致
+        Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, oldUserInfo);
+        if(Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())){
+            return R.fail(verifyUserBatteryTypeResult.getMiddle(),(String)verifyUserBatteryTypeResult.getRight());
+        }
+
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(oldUserInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
@@ -876,6 +882,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         return R.ok();
+    }
+
+    private Triple<Boolean,String,Object> verifyUserBatteryType(ElectricityBattery electricityBattery, UserInfo userInfo) {
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        if (!Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            return Triple.of(true, null, null);
+        }
+
+        //获取用户绑定的电池型号
+        List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        if (CollectionUtils.isEmpty(userBindBatteryTypes)) {
+            return Triple.of(true, null, null);
+        }
+
+        String batterType = batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn());
+
+        if(!userBindBatteryTypes.contains(batterType)){
+            return Triple.of(false, "100297", "电池型号与用户绑定的型号不一致");
+        }
+
+        return Triple.of(true, null, null);
     }
 
     @Override
