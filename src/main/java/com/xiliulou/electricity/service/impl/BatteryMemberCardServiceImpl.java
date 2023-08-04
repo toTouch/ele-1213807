@@ -121,11 +121,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels) {
+        int insert = this.batteryMemberCardMapper.insert(batteryMemberCard);
+
         if (CollectionUtils.isNotEmpty(batteryModels)) {
             memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(batteryModels, batteryMemberCard.getId()));
         }
 
-        return this.batteryMemberCardMapper.insert(batteryMemberCard);
+        return insert;
     }
 
     @Override
