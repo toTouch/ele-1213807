@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,31 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    /**
+     * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 用户会员全量信息
+     */
+    @Override
+    public UserMemberInfoVo queryUserMemberInfo(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查看会员信息
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            log.info("queryUserMemberInfo, t_car_rental_package_member_term is null or status is wrong. uid is {}", uid);
+            return null;
+        }
+
+
+
+        return null;
+    }
 
     /**
      * 根据用户ID获取当前用户的绑定车辆型号ID<br />
