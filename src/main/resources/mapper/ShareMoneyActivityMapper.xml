@@ -67,7 +67,7 @@
     <select id="selectActivityByTenantIdAndStatus" resultMap="ShareMoneyActivityMap">
         <include refid="selectShareMoneyActivity"/>
         <where>
-            del_flag = 0
+            del_flg = 0
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
@@ -81,7 +81,7 @@
     <update id="updateActivity">
         update t_share_money_activity
         <set>
-            <if test="configContent != null and configContent != ''">
+            <if test="status != null">
                 status = #{status},
             </if>
             <if test="updateTime != null">
