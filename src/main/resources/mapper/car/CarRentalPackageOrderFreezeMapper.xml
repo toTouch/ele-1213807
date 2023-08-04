@@ -54,6 +54,7 @@
 
     <!-- where 查询条件 -->
     <sql id="where_field">
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
         <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
         <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
         <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
@@ -202,7 +203,7 @@
     <select id="page" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
         </where>
         ORDER BY `create_time` DESC
@@ -213,7 +214,7 @@
     <select id="count" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
         </where>
     </select>

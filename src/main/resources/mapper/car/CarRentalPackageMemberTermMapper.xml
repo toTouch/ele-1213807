@@ -50,7 +50,7 @@
 
     <!-- where 查询条件 -->
     <sql id="where_field">
-
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
     </sql>
 
     <!-- 条件新增字段 -->
@@ -217,7 +217,7 @@
     <select id="page" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
         </where>
         ORDER BY `create_time` DESC
@@ -228,7 +228,7 @@
     <select id="count" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
         </where>
     </select>
