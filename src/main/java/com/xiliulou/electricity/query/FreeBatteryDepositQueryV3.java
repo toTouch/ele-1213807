@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date 2023-07-15-11:30
  */
 @Data
-public class FreeBatteryDepositQueryV2 {
+public class FreeBatteryDepositQueryV3 {
     @NotNull(message = "套餐id不能为空")
     private Long membercardId;
 
