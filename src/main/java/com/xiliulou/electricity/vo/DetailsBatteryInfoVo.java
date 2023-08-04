@@ -106,7 +106,7 @@ public class DetailsBatteryInfoVo {
     /**
      * 电池型号
      */
-    private String batteryModel;
+    private String batteryType;
     
     /**
      * 电量
