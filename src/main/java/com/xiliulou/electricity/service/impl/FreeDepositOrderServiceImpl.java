@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -974,7 +973,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      * 生成电池免押订单
      */
     @Override
-    public Triple<Boolean, String, Object> freeBatteryDepositOrderV2(FreeBatteryDepositQueryV2 freeQuery) {
+    public Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 freeQuery) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
@@ -1008,7 +1007,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return checkUserCanFreeDepositResult;
         }
 
-        Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV2(userInfo, freeQuery);
+        Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
         if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
             return generateDepositOrderResult;
         }
@@ -2817,7 +2816,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
 
-    private Triple<Boolean, String, Object> generateBatteryDepositOrderV2(UserInfo userInfo, FreeBatteryDepositQueryV2 freeQuery) {
+    private Triple<Boolean, String, Object> generateBatteryDepositOrderV3(UserInfo userInfo, FreeBatteryDepositQueryV3 freeQuery) {
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(freeQuery.getProductKey(), freeQuery.getDeviceName());
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(freeQuery.getMembercardId());
@@ -2828,12 +2827,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         //生成押金独立订单
         String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
-        EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(depositOrderId).uid(userInfo.getUid())
-                .phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(batteryMemberCard.getDeposit())
-                .status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
-                .franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.FREE_DEPOSIT_PAYMENT).storeId(Objects.nonNull(electricityCabinet)?electricityCabinet.getStoreId():userInfo.getStoreId())
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(depositOrderId)
+                .uid(userInfo.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(batteryMemberCard.getDeposit())
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(userInfo.getTenantId())
+                .franchiseeId(batteryMemberCard.getFranchiseeId())
+                .payType(EleDepositOrder.FREE_DEPOSIT_PAYMENT)
+                .storeId(Objects.nonNull(electricityCabinet)?electricityCabinet.getStoreId():userInfo.getStoreId())
                 .modelType(0)
+                .mid(freeQuery.getMembercardId())
                 .batteryType(null).build();
 
         return Triple.of(true, null, eleDepositOrder);
