@@ -11,18 +11,17 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserInfoVO;
+import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -38,6 +37,9 @@ import java.util.stream.Collectors;
 public class JsonAdminUserInfoV2Controller {
 
     @Resource
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+
+    @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
     @Resource
@@ -46,10 +48,22 @@ public class JsonAdminUserInfoV2Controller {
     @Resource
     private UserInfoService userInfoService;
 
-/*
-    public void modifyMemberTerm() {
+    /**
+     * 获取会员的全量信息
+     * @param uid 用户ID
+     * @return 用户会员全量信息
+     */
+    @GetMapping("/queryUserMemberInfo")
+    public R<UserMemberInfoVo> queryUserMemberInfo(Long uid) {
+        if (ObjectUtils.isEmpty(uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
-    }*/
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return R.ok(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, uid));
+
+    }
 
     /**
      * 给用户绑定套餐
