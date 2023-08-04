@@ -83,17 +83,17 @@ public class CouponActivityVO {
     private Integer superposition;
 
     /**
-     * 邀请活动关联的换电套餐列表
+     * 换电套餐列表
      */
     private List<BatteryMemberCardVO> batteryPackages;
 
     /**
-     * 邀请活动关联的租车套餐列表
+     * 租车套餐列表
      */
     private List<BatteryMemberCardVO> carRentalPackages;
 
     /**
-     * 邀请活动关联的车电一体套餐列表
+     * 车电一体套餐列表
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
 

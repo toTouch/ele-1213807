@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
@@ -10,17 +11,22 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +73,13 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
+    @Autowired
+    private CouponActivityPackageService couponActivityPackageService;
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     /**
      * 根据订单编码更新优惠券状态
@@ -280,6 +293,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
     }
 
+    @Deprecated
     @Override
     public R queryMyCoupon(List<Integer> statusList, List<Integer> typeList) {
         //用户信息
@@ -321,6 +335,87 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         return R.ok(userCouponVOList);
 
+    }
+
+    @Override
+    public R queryMyCoupons(List<Integer> statusList, List<Integer> typeList) {
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //2.判断用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable!uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ELECTRICITY  ERROR! not auth! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+
+        //查看用户优惠券
+        UserCouponQuery userCouponQuery = new UserCouponQuery();
+        userCouponQuery.setStatusList(statusList);
+        userCouponQuery.setUid(uid);
+        userCouponQuery.setTypeList(typeList);
+        List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
+
+        //若是不可叠加的优惠券,则将对应的套餐信息设置到优惠券中
+        for(UserCouponVO userCouponVO : userCouponVOList){
+            if(Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition())){
+                Long couponId = userCouponVO.getCouponId().longValue();
+                userCouponVO.setBatteryPackages(getBatteryPackages(couponId));
+                userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                userCouponVO.setCarWithBatteryPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }
+        }
+
+        return  R.ok(userCouponVOList);
+    }
+
+    private List<BatteryMemberCardVO> getBatteryPackages(Long couponId){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
+            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+
+        return memberCardVOList;
+    }
+
+    private List<BatteryMemberCardVO> getCarBatteryPackages(Long couponId, Integer packageType){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            batteryMemberCardVO.setId(carRentalPackagePO.getId());
+            batteryMemberCardVO.setName(carRentalPackagePO.getName());
+            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+
+        return memberCardVOList;
     }
 
     /*

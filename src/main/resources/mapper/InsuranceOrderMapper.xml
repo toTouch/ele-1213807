@@ -8,7 +8,7 @@
         insuranceType,tio.user_name as userName,tio.order_id as orderId
         ,tui.id_number as idCard,tio.phone as phone,tio.cid as cid,tio.pay_amount as insuranceAmount,tio.create_time as
         createTime,tio.valid_days as validDays,tio.status,tio.pay_type as payType
-        ,tio.forehead,tio.update_time,tio.is_use
+        ,tio.forehead,tio.update_time,tio.is_use, tio.`source_order_no`
         from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id left join t_user_info tui on
         tio.uid=tui.uid
         <where>

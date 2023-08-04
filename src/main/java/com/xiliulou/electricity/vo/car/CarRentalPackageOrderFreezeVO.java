@@ -58,6 +58,7 @@ public class CarRentalPackageOrderFreezeVO implements Serializable {
      *     4-提前启用
      *     5-自动启用
      *     6-撤回申请
+     *     7-已失效
      * </pre>
      * @see RentalPackageOrderFreezeStatusEnum
      */

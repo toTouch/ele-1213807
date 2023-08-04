@@ -5,10 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -73,6 +78,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    private CarRentalPackageOrderService carRentalPackageOrderService;
 
     @Override
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
@@ -441,6 +449,127 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //处理返现
         userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleInvitationActivityByPackage(UserInfo userInfo, String orderNo, Integer packageType) {
+        //是否参与过套餐返现活动
+        InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(userInfo.getUid());
+        if (Objects.isNull(activityJoinHistory)) {
+            log.info("INVITATION ACTIVITY INFO!not found activityJoinHistory,uid={}", userInfo.getUid());
+            return;
+        }
+
+        InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
+        if (Objects.isNull(invitationActivity)) {
+            log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), invitationActivity.getId());
+            return;
+        }
+
+        //是否有上架的套餐返现活动
+        List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
+        if (CollectionUtils.isEmpty(invitationActivitys)) {
+            log.info("INVITATION ACTIVITY INFO!invitationActivitys is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return;
+        }
+
+        List<Long> activityIds = invitationActivitys.stream().map(InvitationActivity::getId).collect(Collectors.toList());
+        if (!activityIds.contains(invitationActivity.getId())) {
+            log.info("INVITATION ACTIVITY INFO!enable invitationActivitys not contains user join activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
+            return;
+        }
+
+        //增加换电套餐和租车及车电一体套餐的判断逻辑
+        Long packageId = null;
+        Integer payCount = null;
+        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
+            if (Objects.isNull(electricityMemberCardOrder)) {
+                log.info("Invitation activity info， not found electricityMemberCardOrder,orderId={},uid={}", orderNo, userInfo.getUid());
+                return;
+            }
+            packageId = electricityMemberCardOrder.getMemberCardId().longValue();
+            payCount = electricityMemberCardOrder.getPayCount();
+        }else{
+            //获取租车或者车电一体订单信息
+            CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            if(Objects.isNull(carRentalPackageOrderPO)){
+                log.info("Invitation activity info, Not found for car rental package, order number = {}", orderNo);
+                return;
+            }
+
+            //根据当前用户uid, 订单号, 购买成功等条件查询，当前套餐的购买记录
+            CarRentalPackageOrderQryModel queryModel = new CarRentalPackageOrderQryModel();
+            queryModel.setUid(userInfo.getUid());
+            queryModel.setRentalPackageId(carRentalPackageOrderPO.getRentalPackageId());
+            queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
+
+            packageId = carRentalPackageOrderPO.getRentalPackageId();
+            payCount = carRentalPackageOrderService.count(queryModel);
+        }
+
+        //是否购买的是活动指定的套餐
+        List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
+        if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(packageId)) {
+            log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), packageId, userInfo.getUid());
+            return;
+        }
+
+        //返现金额
+        BigDecimal rewardAmount = null;
+
+        //首次购买套餐
+        if (payCount == 1) {
+            //首次购买需要判断活动是否过期
+            if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
+                log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                return;
+            }
+
+            rewardAmount = invitationActivity.getFirstReward();
+            //修改参与状态
+            InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
+            activityJoinHistoryUpdate.setId(activityJoinHistory.getId());
+            activityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
+            activityJoinHistoryUpdate.setMoney(rewardAmount);
+            activityJoinHistoryUpdate.setPayCount(payCount);
+            activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
+
+            //给邀请人增加邀请成功人数及返现金额
+            this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
+        } else {
+            //非首次购买需要判断 首次购买是否成功
+            if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
+                log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
+                return;
+            }
+
+            rewardAmount = invitationActivity.getOtherReward();
+            //保存参与记录
+            InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
+            activityJoinHistoryInsert.setUid(activityJoinHistory.getUid());
+            activityJoinHistoryInsert.setRecordId(activityJoinHistory.getRecordId());
+            activityJoinHistoryInsert.setJoinUid(activityJoinHistory.getJoinUid());
+            activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
+            activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
+            activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
+            activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
+            activityJoinHistoryInsert.setPayCount(payCount);
+            activityJoinHistoryInsert.setMoney(rewardAmount);
+            activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
+            activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
+            activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
+
+            //给邀请人增加返现金额
+            this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
+        }
+
+        //处理返现
+        userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
+    }
+
 
     private static String codeEnCoder(Long activityId, Long uid) {
         String encrypt = AESUtils.encrypt(activityId + ":" + uid);
