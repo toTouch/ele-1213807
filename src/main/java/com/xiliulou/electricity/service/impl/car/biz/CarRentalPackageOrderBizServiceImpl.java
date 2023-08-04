@@ -759,24 +759,29 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 比对时间，进行数据处理
             for (CarRentalPackageOrderFreezePO freezeEntity : pageEntityList) {
 
-                Integer applyTerm = freezeEntity.getApplyTerm();
-                Long auditTime = freezeEntity.getAuditTime();
-                // 到期时间
-                long expireTime = auditTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
+                try {
+                    Integer applyTerm = freezeEntity.getApplyTerm();
+                    Long auditTime = freezeEntity.getAuditTime();
+                    // 到期时间
+                    long expireTime = auditTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
 
-                if (nowTime < expireTime) {
+                    if (nowTime < expireTime) {
+                        continue;
+                    }
+
+                    // 二次保险
+                    CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByUidAndPackageOrderNo(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo());
+                    if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
+                        continue;
+                    }
+
+                    // TODO  此处后续需要优化，目前是循环调用IO，需要考虑批量调用，批量调用的时候，需要考虑在更新的时候，数据状态不一致的情况
+                    // 事务处理
+                    enableFreezeRentOrderTx(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null);
+                } catch (Exception e) {
+                    log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
                 }
-
-                // 二次保险
-                CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByUidAndPackageOrderNo(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo());
-                if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
-                    continue;
-                }
-
-                // TODO  此处后续需要优化，目前是循环调用IO，需要考虑批量调用，批量调用的时候，需要考虑在更新的时候，数据状态不一致的情况
-                // 事务处理
-                enableFreezeRentOrderTx(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null);
 
             }
             offset += size;
