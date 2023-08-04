@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
@@ -19,10 +17,6 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
@@ -168,53 +162,6 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
         if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
             Integer payType = depositPayEntity.getPayType();
-            // 免押，调用解除绑定
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                String freeDepositOrderNo = depositPayEntity.getOrderNo();
-                FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
-                if (ObjectUtils.isEmpty(freeDepositOrder)) {
-                    log.error("saveDepositRefundInfoTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
-                    throw new BizException("300000", "数据有误");
-                }
-
-                PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(memberTermUpdateEntity.getTenantId());
-                if(ObjectUtils.isEmpty(pxzConfig)) {
-                    log.error("saveDepositRefundInfoTx failed. not found t_pxz_config. tenantId is {}", memberTermUpdateEntity.getTenantId());
-                    throw new BizException("300000", "数据有误");
-                }
-
-                PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
-                query.setAesSecret(pxzConfig.getAesKey());
-                query.setDateTime(System.currentTimeMillis());
-                query.setSessionId(freeDepositOrderNo);
-                query.setMerchantCode(pxzConfig.getMerchantCode());
-
-                PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
-                queryRequest.setRemark("租车套餐免押解冻");
-                queryRequest.setTransId(freeDepositOrderNo);
-                query.setData(queryRequest);
-
-                PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
-                try {
-                    log.info("saveDepositRefundInfoTx, pxzDepositService.unfreezeDeposit params query is {}", JsonUtil.toJson(query));
-                    pxzDepositUnfreezeRspPxzCommonRsp = pxzDepositService.unfreezeDeposit(query);
-                } catch (Exception e) {
-                    log.error("saveDepositRefundInfoTx failed. pxzDepositService.unfreezeDeposit failed.", e);
-                    throw new BizException("100406", "免押解冻失败");
-                }
-                log.info("saveDepositRefundInfoTx, pxzDepositService.unfreezeDeposit result is {}", JsonUtil.toJson(pxzDepositUnfreezeRspPxzCommonRsp));
-
-                if (ObjectUtils.isEmpty(pxzDepositUnfreezeRspPxzCommonRsp) || !pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
-                    throw new BizException("100406", "免押解冻失败");
-                }
-
-                FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-                freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
-                freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositOrderService.update(freeDepositOrderUpdate);
-            }
-
             // 线上
             if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
                 // 作废所有的套餐购买订单（未使用、使用中）、

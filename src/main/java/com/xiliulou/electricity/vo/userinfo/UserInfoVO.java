@@ -35,6 +35,11 @@ public class UserInfoVO implements Serializable {
     private String phone;
 
     /**
+     * 身份证号
+     */
+    private String idNumber;
+
+    /**
      * 真实姓名 / 手机号
      */
     private String nameAndPhone;

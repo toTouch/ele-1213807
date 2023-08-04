@@ -223,7 +223,7 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     /**
-     * 混合支付回调 （新）
+     * 押金套餐混合支付回调 （新）
      *
      */
     @Override
@@ -650,6 +650,8 @@ public class UnionTradeOrderServiceImpl extends
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             //若用户未购买套餐  直接绑定
             if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())){
+                electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+
                 userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
                 userBatteryMemberCardUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
                 userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
@@ -742,7 +744,7 @@ public class UnionTradeOrderServiceImpl extends
 
             //TODO MQ消息 分帐 活动
 
-            electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){

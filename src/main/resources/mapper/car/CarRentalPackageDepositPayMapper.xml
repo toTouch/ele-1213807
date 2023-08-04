@@ -17,6 +17,7 @@
         <result property="uid" column="uid" jdbcType="BIGINT" />
         <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="changeAmount" column="change_amount" jdbcType="DECIMAL" />
@@ -38,7 +39,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`,
         `pay_type`, `pay_state`, `remark`, `source_order_no`
     </sql>
 
@@ -55,6 +56,7 @@
         <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
         <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
         <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> AND `rental_package_order_no` = #{rentalPackageOrderNo} </if>
+        <if test=" rentalPackageId != null "> AND `rental_package_id` = #{rentalPackageId} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
@@ -88,6 +90,7 @@
             <if test=" uid != null "> `uid`, </if>
             <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" type != null "> `type`, </if>
             <if test=" changeAmount != null "> `change_amount`, </if>
@@ -113,6 +116,7 @@
             <if test=" uid != null "> #{uid}, </if>
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
             <if test=" changeAmount != null "> #{changeAmount}, </if>

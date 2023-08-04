@@ -140,7 +140,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
         if (!getLockSuccess) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }

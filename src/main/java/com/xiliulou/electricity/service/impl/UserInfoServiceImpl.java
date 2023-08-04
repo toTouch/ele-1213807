@@ -1538,11 +1538,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
-        if (CollectionUtils.isNotEmpty(userBatteryModels)) {
-            vo.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(userInfo.getTenantId()), userBatteryModels));
-        }
-
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
         try {
@@ -1982,13 +1977,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     private void queryUserBattery(DetailsBatteryInfoVo vo, UserInfo userInfo) {
+
+        List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
+        if (CollectionUtils.isNotEmpty(userBatteryModels)) {
+            vo.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(userInfo.getTenantId()), userBatteryModels));
+        }
+
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         if (Objects.isNull(electricityBattery)) {
             return;
         }
         
         vo.setBatterySn(electricityBattery.getSn());
-        vo.setBatteryModel(electricityBattery.getModel());
+        vo.setBatteryType(electricityBattery.getModel());
         vo.setPower(electricityBattery.getPower());
     }
     

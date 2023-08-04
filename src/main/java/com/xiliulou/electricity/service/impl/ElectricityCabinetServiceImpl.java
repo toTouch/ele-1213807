@@ -381,7 +381,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinet);
             redisService.saveWithHash(
                     CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
-                            + electricityCabinet.getDeviceName() + tenantId, electricityCabinet);
+                            + electricityCabinet.getDeviceName(), electricityCabinet);
             
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
@@ -2862,7 +2862,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
-                    + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+                    + electricityCabinet.getDeviceName());
         }
         return update;
     }
