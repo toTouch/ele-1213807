@@ -535,7 +535,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         return callPxzRsp.getData();
     }
 
-
     /**
      * 免押申请数据落库事务处理
      * @param carRentalPackageDepositPay 车辆押金缴纳订单
@@ -547,7 +546,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);
         // 此时会员期限表，数据要么为空，要么就是待生效状态
-        if (ObjectUtils.isNotEmpty(carRentalPackageMemberTermService)) {
+        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
             carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
             carRentalPackageMemberTermService.insert(memberTermEntity);
         }
