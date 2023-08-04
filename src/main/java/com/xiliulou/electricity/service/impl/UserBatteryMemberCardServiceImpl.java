@@ -3,7 +3,8 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
@@ -14,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -266,6 +266,22 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public List<UserBatteryMemberCard> selectUseableList(int offset, int size) {
         return userBatteryMemberCardMapper.selectUseableList(offset, size);
+    }
+
+    /**
+     * 校验用户电池i套餐是否过期
+     */
+    @Override
+    public Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard) {
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return Boolean.TRUE;
+        }
+
+        if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
     }
 
     @Override

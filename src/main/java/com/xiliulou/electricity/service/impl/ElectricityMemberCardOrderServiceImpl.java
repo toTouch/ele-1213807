@@ -1046,15 +1046,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100210", "用户未开通套餐");
         }
 
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-            log.error("DISABLE MEMBER CARD ERROR! not apply disable membercard,uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
-        }
-
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.error("DISABLE MEMBER CARD ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
+        }
+
+        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+            log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            return R.fail("","换电套餐已过期，无法进行暂停操作");
         }
 
         //是否有正在进行中的退款
@@ -1211,21 +1211,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100210", "用户未开通套餐");
         }
 
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(serviceFeeUserInfo)){
-            log.warn("BATTERY SERVICE FEE WARN! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
-            return R.fail("100247", "用户信息不存在");
-        }
-
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
-        }
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.error("DISABLE MEMBER CARD ERROR! memberCard is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
+        }
+
+        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+            log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            return R.fail("","换电套餐已过期，无法进行暂停操作");
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(serviceFeeUserInfo)){
+            log.warn("BATTERY SERVICE FEE WARN! not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+            return R.fail("100247", "用户信息不存在");
         }
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
@@ -1563,6 +1563,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(batteryMemberCard)) {
             log.error("admin saveUserMemberCard  ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
+        }
+
+        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+            log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            return R.fail("","换电套餐已过期，无法进行暂停操作");
         }
 
         //是否有正在进行中的退款
