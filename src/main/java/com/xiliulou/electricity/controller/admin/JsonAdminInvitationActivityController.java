@@ -149,7 +149,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         return R.ok(invitationActivityService.selectByPageCount(query));
     }
 
-    @GetMapping(value = "/admin/invitationActivity/queryPackagesByFranchisee")
+    @GetMapping(value = "/admin/invitationActivity/queryPackages")
     public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
                                        @RequestParam(value = "type",  required = true) Integer type) {
