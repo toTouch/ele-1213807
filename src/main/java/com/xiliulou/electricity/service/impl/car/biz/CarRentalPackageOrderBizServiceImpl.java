@@ -440,32 +440,59 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         CarRentalPackageOrderFreezePO freezeEntity = carRentalPackageOrderFreezeService.selectByOrderNo(freezeRentOrderNo);
         if (ObjectUtils.isEmpty(freezeEntity) || !RentalPackageOrderFreezeStatusEnum.PENDING_APPROVAL.getCode().equals(freezeEntity.getStatus())) {
-            log.error("approveFreezeRentOrder faild. not find car_rental_package_order_freeze or status error. freezeRentOrderNo is {}", freezeRentOrderNo);
+            log.error("approveFreezeRentOrder faild. not find t_car_rental_package_order_freeze or status error. freezeRentOrderNo is {}", freezeRentOrderNo);
             throw new BizException("300000", "数据有误");
         }
 
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(freezeEntity.getRentalPackageOrderNo());
+        if (ObjectUtils.isEmpty(packageOrderEntity)) {
+            log.error("approveFreezeRentOrder faild. not find t_car_rental_package_order. orderNo is {}", freezeEntity.getRentalPackageOrderNo());
+            throw new BizException("300000", "数据有误");
+        }
 
         // 审核通过之后，生成滞纳金
         CarRentalPackageOrderSlippagePO slippageInsertEntity = null;
         CarRentalPackageMemberTermPO memberTermEntity = null;
+        boolean expireFlag = false;
+
         if (approveFlag) {
-            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
+            // 判定会员状态以及套餐是否过期
             memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(freezeEntity.getTenantId(), freezeEntity.getUid());
             if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntity.getStatus())) {
                 log.error("approveFreezeRentOrder faild. not find car_rental_package_member_term or status error. freezeRentOrderNo is {}, uid is {}", freezeRentOrderNo, freezeEntity.getUid());
                 throw new BizException("300000", "数据有误");
             }
+
+            if (!memberTermEntity.getRentalPackageOrderNo().equals(freezeEntity.getRentalPackageOrderNo())) {
+                // 过期 TODO
+                expireFlag = true;
+            } else {
+                if (System.currentTimeMillis() >= memberTermEntity.getDueTime()) {
+                    // 过期 TODO
+                    expireFlag = true;
+                }
+            }
+
+            // 非过期
+            if (!expireFlag) {
+                slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
+            }
         }
 
         // TX 事务落库
-        saveApproveFreezeRentOrderTx(freezeRentOrderNo, approveFlag, apploveDesc, apploveUid, freezeEntity, slippageInsertEntity, memberTermEntity);
+        saveApproveFreezeRentOrderTx(expireFlag, freezeRentOrderNo, approveFlag, apploveDesc, apploveUid, freezeEntity, slippageInsertEntity, memberTermEntity);
 
+        if (expireFlag) {
+            log.error("approveFreezeRentOrder faild. The package has expired and cannot be approved. freezeRentOrderNo is {}", freezeRentOrderNo);
+            throw new BizException("300030", "套餐已过期，无法审核");
+        }
         return true;
     }
 
+
     /**
      * 审核冻结申请单事务处理
+     * @param expireFlag 过期标识
      * @param freezeRentOrderNo 冻结申请单编码
      * @param approveFlag       审批标识，true(同意)；false(驳回)
      * @param apploveDesc       审批意见
@@ -477,47 +504,56 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
-    public void saveApproveFreezeRentOrderTx(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
+    public void saveApproveFreezeRentOrderTx(boolean expireFlag, String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
                                              CarRentalPackageOrderFreezePO freezeEntity, CarRentalPackageOrderSlippagePO slippageInsertEntity, CarRentalPackageMemberTermPO memberTermEntity) {
-
-        // 1. 更新冻结申请单状态
         CarRentalPackageOrderFreezePO freezeUpdateEntity = new CarRentalPackageOrderFreezePO();
         freezeUpdateEntity.setOrderNo(freezeRentOrderNo);
         freezeUpdateEntity.setAuditTime(System.currentTimeMillis());
         freezeUpdateEntity.setRemark(apploveDesc);
         freezeUpdateEntity.setUpdateUid(apploveUid);
 
-        if (approveFlag) {
-            freezeUpdateEntity.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode());
-            carRentalPackageOrderFreezeService.updateByOrderNo(freezeUpdateEntity);
-
-            // 2. 更新会员期限信息
-            CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
-            memberTermUpdateEntity.setStatus(MemberTermStatusEnum.FREEZE.getCode());
-            memberTermUpdateEntity.setId(memberTermEntity.getId());
-            memberTermUpdateEntity.setUpdateUid(apploveUid);
-
-            // 计算总的订单到期时间及当前订单到期时间
-            // 计算规则：审核通过的时间 + 申请期限
-            // Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
-            // 计算规则：原有的时间 + 申请期限
-            Long extendTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
-            memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() + extendTime);
-            memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + extendTime);
-
-            carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
-
-            // 3. 保存滞纳金订单
-            if (ObjectUtils.isNotEmpty(slippageInsertEntity)) {
-                carRentalPackageOrderSlippageService.insert(slippageInsertEntity);
-            }
-        } else {
+        // 过期
+        if (expireFlag) {
             // 1. 更新冻结申请单状态
-            freezeUpdateEntity.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_REJECT.getCode());
+            freezeUpdateEntity.setStatus(RentalPackageOrderFreezeStatusEnum.LOSE_EFFICACY.getCode());
             carRentalPackageOrderFreezeService.updateByOrderNo(freezeUpdateEntity);
 
             // 2. 更新会员期限信息
             carRentalPackageMemberTermService.updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
+        } else {
+            if (approveFlag) {
+                // 1. 更新冻结申请单状态
+                freezeUpdateEntity.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode());
+                carRentalPackageOrderFreezeService.updateByOrderNo(freezeUpdateEntity);
+
+                // 2. 更新会员期限信息
+                CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
+                memberTermUpdateEntity.setStatus(MemberTermStatusEnum.FREEZE.getCode());
+                memberTermUpdateEntity.setId(memberTermEntity.getId());
+                memberTermUpdateEntity.setUpdateUid(apploveUid);
+
+                // 计算总的订单到期时间及当前订单到期时间
+                // 计算规则：审核通过的时间 + 申请期限
+                // Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+                // 计算规则：原有的时间 + 申请期限
+                Long extendTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() + extendTime);
+                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + extendTime);
+
+                carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
+
+                // 3. 保存滞纳金订单
+                if (ObjectUtils.isNotEmpty(slippageInsertEntity)) {
+                    carRentalPackageOrderSlippageService.insert(slippageInsertEntity);
+                }
+            } else {
+                // 1. 更新冻结申请单状态
+                freezeUpdateEntity.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_REJECT.getCode());
+                carRentalPackageOrderFreezeService.updateByOrderNo(freezeUpdateEntity);
+
+                // 2. 更新会员期限信息
+                carRentalPackageMemberTermService.updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
+            }
         }
 
     }

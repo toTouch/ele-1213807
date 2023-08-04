@@ -915,6 +915,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType());
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
+                    // TODO 解绑用户
                 }
 
                 // 线上，调用微信退款

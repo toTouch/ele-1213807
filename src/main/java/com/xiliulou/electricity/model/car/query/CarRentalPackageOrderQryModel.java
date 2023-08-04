@@ -50,6 +50,11 @@ public class CarRentalPackageOrderQryModel implements Serializable {
     private String orderNo;
 
     /**
+     * 套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
      * 用户ID
      */
     private Long uid;

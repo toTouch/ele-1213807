@@ -20,6 +20,7 @@ public enum RentalPackageOrderFreezeStatusEnum implements BasicEnum<Integer, Str
     EARLY_ENABLE(4, "提前启用"),
     AUTO_ENABLE(5, "自动启用"),
     REVOKE(6, "撤回申请"),
+    LOSE_EFFICACY(7, "已失效"),
     ;
 
     private final Integer code;
