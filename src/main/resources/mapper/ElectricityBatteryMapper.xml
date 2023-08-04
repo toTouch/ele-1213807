@@ -374,6 +374,7 @@
                power,
                voltage,
                capacity,
+               model,
                physics_status,
                business_status,
                create_time,
