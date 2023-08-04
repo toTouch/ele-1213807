@@ -229,15 +229,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
 
-        // 获取购买订单编码
-        String rentalPackageOrderNo = depositPayEntity.getRentalPackageOrderNo();
-        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            log.info("CarRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo failed. not found t_car_rental_package_order. rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            return null;
-        }
-
-        return packageOrderEntity.getRentalPackageId();
+        return depositPayEntity.getRentalPackageId();
     }
 
     /**
