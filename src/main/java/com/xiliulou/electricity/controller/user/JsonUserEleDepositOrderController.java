@@ -62,9 +62,15 @@ public class JsonUserEleDepositOrderController {
     }
 
     //用户查询缴纳押金
+    @Deprecated
     @GetMapping(value = "/user/queryUserDeposit")
     public R queryUserDeposit() {
         return eleDepositOrderService.queryUserDeposit();
+    }
+
+    @GetMapping(value = "/user/batteryDeposit/info")
+    public R selectUserBatteryDeposit() {
+        return eleDepositOrderService.selectUserBatteryDeposit();
     }
 
     //用户查询押金

@@ -727,6 +727,34 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok(null);
     }
 
+    @Override
+    public R selectUserBatteryDeposit() {
+        UserBatteryDepositVO userBatteryDepositVO = new UserBatteryDepositVO();
+        userBatteryDepositVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+        userBatteryDepositVO.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+        userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("ELE DEPOSIT WARN! not found userInfo,uid={}", SecurityUtils.getUid());
+            return R.ok(userBatteryDepositVO);
+        }
+
+        userBatteryDepositVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
+        userBatteryDepositVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("ELE DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+            return R.ok(userBatteryDepositVO);
+        }
+
+        userBatteryDepositVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+
+
+        return R.ok(userBatteryDepositVO);
+    }
+
     @Slave
     @Override
     public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {
