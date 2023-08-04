@@ -623,6 +623,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageDepositPayPO carRentalPackageDepositPay = new CarRentalPackageDepositPayPO();
         carRentalPackageDepositPay.setUid(uid);
         carRentalPackageDepositPay.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, uid));
+        carRentalPackageDepositPay.setRentalPackageId(carRentalPackage.getId());
         carRentalPackageDepositPay.setRentalPackageType(carRentalPackage.getType());
         carRentalPackageDepositPay.setType(DepositTypeEnum.NORMAL.getCode());
         carRentalPackageDepositPay.setDeposit(carRentalPackage.getDeposit());

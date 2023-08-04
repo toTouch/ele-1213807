@@ -315,21 +315,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         throw new BizException("300005", "套餐不匹配");
                     }
                     // 比对型号
-                    String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
-                    CarRentalPackageOrderPO oriPackageOrderEntity = null;
-                    if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
-                        // 未退租
-                        // 根据套餐购买订单编号，获取套餐购买订单表，读取其中的套餐快照信息
-                        oriPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-
-                    } else{
-                        // 退租未退押
-                        // 查找最后一个购买的订单信息
-                        oriPackageOrderEntity = carRentalPackageOrderService.seletLastByUid(tenantId, uid);
+                    Long  oriRentalPackageId = memberTermEntity.getRentalPackageId();
+                    if (ObjectUtils.isEmpty(oriRentalPackageId)) {
+                        // 查找押金缴纳的套餐ID
+                        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(memberTermEntity.getDepositPayOrderNo());
+                        oriRentalPackageId = depositPayEntity.getRentalPackageId();
                     }
 
                     // 比对车辆型号
-                    CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
+                    CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriRentalPackageId);
                     if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
                         log.error("bindingPackage failed. Package carModelId mismatch. ");
                         throw new BizException("300005", "套餐不匹配");
@@ -365,7 +359,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType);
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 depositPayOrderNo = depositPayVo.getOrderNo();
@@ -1699,22 +1693,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         return R.fail("300005", "套餐不匹配");
                     }
                     // 比对型号
-                    String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
-                    CarRentalPackageOrderPO oriPackageOrderEntity = null;
-                    if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
-                        // 未退租
-                        // 根据套餐购买订单编号，获取套餐购买订单表，读取其中的套餐快照信息
-                        oriPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-
-                    } else{
-                        // 退租未退押
-                        // 查找最后一个购买的订单信息
-                        oriPackageOrderEntity = carRentalPackageOrderService.seletLastByUid(tenantId, uid);
+                    Long  oriRentalPackageId = memberTermEntity.getRentalPackageId();
+                    if (ObjectUtils.isEmpty(oriRentalPackageId)) {
+                        // 查找押金缴纳的套餐ID
+                        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(memberTermEntity.getDepositPayOrderNo());
+                        oriRentalPackageId = depositPayEntity.getRentalPackageId();
                     }
 
-                    if (ObjectUtils.isNotEmpty(oriPackageOrderEntity)) {
+                    if (ObjectUtils.isNotEmpty(oriRentalPackageId)) {
                         // 比对车辆型号
-                        CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
+                        CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriRentalPackageId);
                         if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
                             log.error("buyRentalPackageOrder failed. Package carModelId mismatch. ");
                             return R.fail("300005", "套餐不匹配");
@@ -1793,7 +1781,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType);
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 // 存在押金信息
@@ -2160,13 +2148,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param storeId 门店ID
      * @param rentalPackageType 套餐类型
      * @param payType 交易方式
+     * @param rentalPackageId 套餐ID
      * @return 待新增的押金缴纳订单
      */
     private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer freeDeposit,
-                                                                         Integer franchiseeId, Integer storeId, Integer rentalPackageType, Integer payType) {
+                                                                         Integer franchiseeId, Integer storeId, Integer rentalPackageType, Integer payType, Long rentalPackageId) {
         CarRentalPackageDepositPayPO carRentalPackageDepositPayEntity = new CarRentalPackageDepositPayPO();
         carRentalPackageDepositPayEntity.setUid(uid);
         carRentalPackageDepositPayEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, uid));
+        carRentalPackageDepositPayEntity.setRentalPackageId(rentalPackageId);
         carRentalPackageDepositPayEntity.setRentalPackageType(rentalPackageType);
         carRentalPackageDepositPayEntity.setType(DepositTypeEnum.NORMAL.getCode());
         carRentalPackageDepositPayEntity.setChangeAmount(BigDecimal.ZERO);
