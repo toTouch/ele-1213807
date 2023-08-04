@@ -4,7 +4,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
@@ -64,6 +63,11 @@ public class JsonAdminInsuranceUserInfoController extends BaseController {
         return R.ok(insuranceUserInfoVo);
     }
 
+    @GetMapping("/admin/userInsurance/detail")
+    public R selectUserInsurance(@RequestParam(value = "uid") Long uid , @RequestParam(value = "type") Integer type) {
+
+        return R.ok(insuranceUserInfoService.selectUserInsurance(uid, type));
+    }
 
     /**
      * 更新用户保险出险状态
