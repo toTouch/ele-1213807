@@ -352,7 +352,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 return;
             }
 
-            log.info("Division Account Start, electricity member card order, order number = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+            log.info("Division Account Start,  car rental or car with battery package order, order number = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid());
             try {
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carRentalPackageOrderPO.getRentalPackageId(), null, carRentalPackageOrderPO.getFranchiseeId().longValue(), carRentalPackageOrderPO.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {

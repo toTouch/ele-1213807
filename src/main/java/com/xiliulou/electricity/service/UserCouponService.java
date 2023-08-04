@@ -44,6 +44,8 @@ public interface UserCouponService {
 
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
 
+    R queryMyCoupons( List<Integer> statusList,List<Integer> typeList);
+
     R getShareCoupon(Integer activityId,Integer couponId);
 
     UserCoupon queryByIdFromDB(Integer userCouponId);

@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 优惠券表(TCoupon)实体类
@@ -97,4 +98,22 @@ public class UserCouponVO {
     private String userName;
 
     private Integer superposition;
+
+    private String description;
+
+    /**
+     * 换电套餐列表
+     */
+    private List<BatteryMemberCardVO> batteryPackages;
+
+    /**
+     * 租车套餐列表
+     */
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    /**
+     * 车电一体套餐列表
+     */
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
+
 }
