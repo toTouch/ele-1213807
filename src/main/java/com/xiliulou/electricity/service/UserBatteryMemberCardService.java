@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
@@ -107,4 +108,6 @@ public interface UserBatteryMemberCardService {
     List<UserBatteryMemberCard> selectList(int offset, int size);
 
     List<UserBatteryMemberCard> selectUseableList(int offset, int size);
+
+    Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
 }

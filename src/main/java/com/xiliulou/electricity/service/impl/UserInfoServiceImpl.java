@@ -818,8 +818,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //多型号  绑定电池需要判断电池是否和用户型号一致
         Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, oldUserInfo);
-        if(Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())){
-            return R.fail(verifyUserBatteryTypeResult.getMiddle(),(String)verifyUserBatteryTypeResult.getRight());
+        if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
+            return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
         }
 
         UserInfo updateUserInfo = new UserInfo();
@@ -884,7 +884,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
-    private Triple<Boolean,String,Object> verifyUserBatteryType(ElectricityBattery electricityBattery, UserInfo userInfo) {
+    private Triple<Boolean, String, Object> verifyUserBatteryType(ElectricityBattery electricityBattery, UserInfo userInfo) {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -903,7 +903,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         String batterType = batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn());
 
-        if(!userBindBatteryTypes.contains(batterType)){
+        if (!userBindBatteryTypes.contains(batterType)) {
             return Triple.of(false, "100297", "电池型号与用户绑定的型号不一致");
         }
 
