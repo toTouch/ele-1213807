@@ -87,13 +87,13 @@
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (
-            #{activityId},
-            #{packageId},
-            #{packageType},
-            #{tenantId},
-            #{delFlag},
-            #{createTime},
-            #{updateTime}
+            #{item.activityId},
+            #{item.packageId},
+            #{item.packageType},
+            #{item.tenantId},
+            #{item.delFlag},
+            #{item.createTime},
+            #{item.updateTime}
             )
         </foreach>
     </insert>
