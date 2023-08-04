@@ -68,10 +68,10 @@
         <include refid="selectShareMoneyActivity"/>
         <where>
             del_flag = 0
-            <if test="id != null">
+            <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="activityId != null">
+            <if test="status != null">
                 and status = #{status}
             </if>
         </where>
