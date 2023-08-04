@@ -1716,7 +1716,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         oriPackageOrderEntity = carRentalPackageOrderService.seletLastByUid(tenantId, uid);
                     }
 
-                    if (ObjectUtils.isEmpty(oriPackageOrderEntity)) {
+                    if (ObjectUtils.isNotEmpty(oriPackageOrderEntity)) {
                         // 比对车辆型号
                         CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
                         if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
