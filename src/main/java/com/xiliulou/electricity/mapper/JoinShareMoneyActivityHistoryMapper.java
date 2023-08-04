@@ -46,5 +46,5 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 
 	List<JoinShareMoneyActivityHistoryVO> queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
-	Long queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+	Long queryParticipantsRecordCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 }

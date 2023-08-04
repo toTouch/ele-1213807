@@ -243,6 +243,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		}
 	}
 
+	@Slave
 	@Override
 	public R queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
 		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
@@ -258,9 +259,10 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		return R.ok(Optional.ofNullable(joinShareMoneyActivityHistoryVOS).orElse(new ArrayList<>()));
 	}
 
+	@Slave
 	@Override
 	public R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
-		Long count = joinShareMoneyActivityHistoryMapper.queryParticipantsCount(jsonShareMoneyActivityHistoryQuery);
+		Long count = joinShareMoneyActivityHistoryMapper.queryParticipantsRecordCount(jsonShareMoneyActivityHistoryQuery);
 		return R.ok(count);
 	}
 
