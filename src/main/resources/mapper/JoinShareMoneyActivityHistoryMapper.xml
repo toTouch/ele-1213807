@@ -154,7 +154,7 @@
             <if test="activityName != null and activityName != ''">
                 and tsa.name like concat('%', #{activityName}, '%')
             </if>
-            <if test="startTime != null">
+            <if test="beginTime != null">
                 and tjsmah.start_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
@@ -196,7 +196,7 @@
             <if test="activityName != null and activityName != ''">
                 and tsa.name like concat('%', #{activityName}, '%')
             </if>
-            <if test="startTime != null">
+            <if test="beginTime != null">
                 and tjsmah.start_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
