@@ -7,7 +7,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -48,7 +47,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -1974,7 +1972,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         divisionAccountOrderDTO.setOrderNo(orderNo);
         divisionAccountOrderDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(ObjectUtils.isNotEmpty(MDC.get(CommonConstant.TRACE_ID)) ? MDC.get(CommonConstant.TRACE_ID) : UUID.randomUUID().toString().replaceAll("-", ""));
+        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
 
         // 9. TODO 处理活动

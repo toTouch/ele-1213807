@@ -13,6 +13,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -41,6 +42,9 @@ import java.util.Objects;
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+
+    @Resource
+    private UserInfoService userInfoService;
 
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
@@ -219,6 +223,11 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                 // 删除会员期限表信息
                 carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+                // TODO 清理user信息/解绑车辆/解绑电池
+                /*UserInfo userInfo = new UserInfo();
+                userInfo.setCarBatteryDepositStatus();
+                userInfo.setCarDepositStatus();
+                userInfoService.updateByUid(userInfo);*/
             }
 
         } else {
