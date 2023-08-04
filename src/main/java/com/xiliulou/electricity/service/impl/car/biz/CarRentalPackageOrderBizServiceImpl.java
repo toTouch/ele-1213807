@@ -707,6 +707,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             List<CarRentalPackageOrderFreezePO> pageEntityList = carRentalPackageOrderFreezeService.page(qryModel);
             if (CollectionUtils.isEmpty(pageEntityList)) {
+                log.info("enableFreezeRentOrderAuto, The data is empty and does not need to be processed");
                 lookFlag = false;
                 break;
             }

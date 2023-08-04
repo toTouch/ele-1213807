@@ -22,7 +22,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectShareMoneyActivity">
-        select id, name, status, type, description, uid, user_name, hours, money, tenant_id, franchisee_id, invitation_criteria, del_flag, create_time, update_time from t_share_money_activity
+        select id, name, status, type, description, uid, user_name, hours, money, tenant_id, franchisee_id, invitation_criteria, del_flg, create_time, update_time from t_share_money_activity
     </sql>
 
     <!--查询指定行数据-->
@@ -67,11 +67,11 @@
     <select id="selectActivityByTenantIdAndStatus" resultMap="ShareMoneyActivityMap">
         <include refid="selectShareMoneyActivity"/>
         <where>
-            del_flag = 0
-            <if test="id != null">
+            del_flg = 0
+            <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-            <if test="activityId != null">
+            <if test="status != null">
                 and status = #{status}
             </if>
         </where>
@@ -81,7 +81,7 @@
     <update id="updateActivity">
         update t_share_money_activity
         <set>
-            <if test="configContent != null and configContent != ''">
+            <if test="status != null">
                 status = #{status},
             </if>
             <if test="updateTime != null">

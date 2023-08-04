@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -55,5 +56,11 @@ public class DivisionAccountConfigRefVO {
     private Integer type;
 
     private Long refId;
+
+    /**
+     * 套餐类型
+     * @see PackageTypeEnum
+     */
+    private Integer packageType;
 
 }

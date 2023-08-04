@@ -244,8 +244,8 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Slave
     @Override
     public List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageMemberTermQryModel();
         }
 
         return carRentalPackageMemberTermMapper.page(qryModel);
@@ -260,8 +260,8 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Slave
     @Override
     public Integer count(CarRentalPackageMemberTermQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageMemberTermQryModel();
         }
 
         return carRentalPackageMemberTermMapper.count(qryModel);

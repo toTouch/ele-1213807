@@ -50,8 +50,8 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
     @Slave
     @Override
     public List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalOrderQryModel();
         }
 
         return carRentalOrderMapper.page(qryModel);
@@ -66,8 +66,8 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
     @Slave
     @Override
     public Integer count(CarRentalOrderQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalOrderQryModel();
         }
 
         return carRentalOrderMapper.count(qryModel);

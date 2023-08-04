@@ -110,10 +110,9 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
     @Slave
     @Override
     public List<CarRentalPackageOrderSlippagePO> page(CarRentalPackageOrderSlippageQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageOrderSlippageQryModel();
         }
-
         return carRentalPackageOrderSlippageMapper.page(qryModel);
     }
 
@@ -126,8 +125,8 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
     @Slave
     @Override
     public Integer count(CarRentalPackageOrderSlippageQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (ObjectUtils.isEmpty(qryModel)) {
+            qryModel = new CarRentalPackageOrderSlippageQryModel();
         }
 
         return carRentalPackageOrderSlippageMapper.count(qryModel);
