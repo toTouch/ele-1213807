@@ -1980,7 +1980,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isNotEmpty(userBatteryModels)) {
-            vo.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(userInfo.getTenantId()), userBatteryModels));
+            vo.setBatteryModels(batteryModelService.selectShortBatteryType(userBatteryModels, userInfo.getTenantId()));
         }
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());

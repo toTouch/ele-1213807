@@ -236,7 +236,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 				.queryParticipants(jsonShareActivityHistoryQuery);
 		for(JoinShareActivityHistoryVO joinShareActivityHistoryVO : joinShareActivityHistoryVOList){
 			Long inviterUid = joinShareActivityHistoryVO.getInviterUid();
-			UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
 			if(Objects.nonNull(userInfo)){
 				joinShareActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareActivityHistoryVO.setInviterPhone(userInfo.getPhone());

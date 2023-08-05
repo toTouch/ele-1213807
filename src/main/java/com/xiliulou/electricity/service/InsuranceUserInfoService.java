@@ -59,4 +59,6 @@ public interface InsuranceUserInfoService {
     InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type);
 
     InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
+
+    Integer saveUserInsurance(InsuranceUserInfo insuranceUserInfo, Integer type);
 }

@@ -64,4 +64,6 @@ public interface BatteryModelMapper extends BaseMapper<BatteryModel> {
     Integer checkMidExist(@Param("mid") Long mid);
 
     Integer batchInsertDefaultBatteryModel(List<BatteryModel> generateDefaultBatteryModel);
+
+    List<String> selectShortBatteryType(@Param("batteryTypes") List<String> batteryTypes, @Param("tenantId") Integer tenantId);
 }
