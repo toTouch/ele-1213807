@@ -138,4 +138,11 @@
         and package_type = #{packageType}
     </select>
 
+    <select id="selectCouponPackageByCondition" resultType="com.xiliulou.electricity.entity.CouponActivityPackage">
+        <include refid="selectCouponPackage"/>
+        where coupon_id = #{couponId}
+        and package_id = #{packageId}
+        and package_type = #{packageType}
+    </select>
+
 </mapper>

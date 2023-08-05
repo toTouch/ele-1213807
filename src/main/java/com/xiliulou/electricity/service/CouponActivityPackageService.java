@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponActivityPackage;
 
 import java.util.List;
@@ -21,5 +22,7 @@ public interface CouponActivityPackageService {
     List<CouponActivityPackage> findActivityPackagesByCouponId(Long couponId);
 
     List<CouponActivityPackage> findPackagesByCouponIdAndType(Long couponId, Integer packageType);
+
+    Boolean checkPackageIsValid(List<Coupon> coupons, Long packageId, Integer packageType);
 
 }
