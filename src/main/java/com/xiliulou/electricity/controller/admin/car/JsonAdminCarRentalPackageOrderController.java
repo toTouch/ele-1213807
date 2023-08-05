@@ -5,9 +5,12 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
@@ -32,6 +35,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin/car/carRentalPackageOrder")
 public class JsonAdminCarRentalPackageOrderController extends BasicController {
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -116,6 +122,13 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
             if (!couponMap.isEmpty()) {
                 carRentalPackageOrderVO.setCouponName(couponMap.getOrDefault(carRentalPackageOrder.getCouponId(), new Coupon()).getName());
+            }
+
+            // 对使用中的订单，进行二次处理
+            // 查询会员信息
+            CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
+            if (UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
+                carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
             }
 
             return carRentalPackageOrderVO;
