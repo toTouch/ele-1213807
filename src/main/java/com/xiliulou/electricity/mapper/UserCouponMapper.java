@@ -18,6 +18,16 @@ import java.util.List;
 public interface UserCouponMapper extends BaseMapper<UserCoupon>{
 
     /**
+     * 根据订单编码作废掉未使用的优惠券
+     *
+     * @param orderId     订单编码
+     * @param orderIdType 订单编码对应的类型
+     * @param optTime 操作时间
+     * @return 操作条数
+     */
+    int cancelByOrderIdAndUnUse(@Param("orderId") String orderId, @Param("orderIdType") Integer orderIdType, @Param("optTime") Long optTime);
+
+    /**
      * 根据订单编码更新优惠券状态
      *
      * @param orderId     订单编码

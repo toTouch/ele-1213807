@@ -83,6 +83,24 @@ public class UserCouponServiceImpl implements UserCouponService {
     BatteryMemberCardService batteryMemberCardService;
 
     /**
+     * 根据订单编码作废掉未使用的优惠券
+     *
+     * @param orderId     订单编码
+     * @param orderIdType 订单编码对应的类型
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean cancelByOrderIdAndUnUse(String orderId, Integer orderIdType) {
+        if (!ObjectUtils.allNotNull(orderId, orderIdType)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        int num = userCouponMapper.cancelByOrderIdAndUnUse(orderId, orderIdType, System.currentTimeMillis());
+
+        return num >= 0;
+    }
+
+    /**
      * 根据订单编码更新优惠券状态
      *
      * @param orderId     订单编码

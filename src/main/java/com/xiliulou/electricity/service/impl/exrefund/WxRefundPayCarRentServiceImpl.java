@@ -4,11 +4,15 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 微信退款-租车租金退款 ServiceImpl
@@ -31,6 +36,12 @@ import java.util.Objects;
 @Slf4j
 @Service("wxRefundPayCarRentServiceImpl")
 public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
+
+    @Resource
+    private UserCouponService userCouponService;
+
+    @Resource
+    private DivisionAccountProducer divisionAccountProducer;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -130,7 +141,18 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
 
                 // 3. 更新购买订单状态
                 carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
-                // 4. TODO 异步处理分账、活动
+
+                // 4. 作废掉赠送给用户的优惠券
+                userCouponService.cancelByOrderIdAndUnUse(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode());
+
+                // 5. 异步处理分账
+                DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                divisionAccountOrderDTO.setOrderNo(outRefundNo);
+                divisionAccountOrderDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
+                divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
 
             } else {
                 // 2. 更新会员期限
