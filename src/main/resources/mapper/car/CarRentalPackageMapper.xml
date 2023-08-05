@@ -69,6 +69,8 @@
         <if test=" applicableType != null "> AND `applicable_type` = #{applicableType} </if>
         <if test=" rentRebate != null "> AND `rent_rebate` = #{rentRebate} </if>
         <if test=" deposit != null "> AND `deposit` = #{deposit} </if>
+        <if test=" confine != null "> AND `confine` = #{confine} </if>
+        <if test=" giveCoupon != null "> AND `give_coupon` = #{giveCoupon} </if>
         <if test=" idList != null and idList.size > 0">
             AND `id` IN
             <foreach collection="idList" item="id" open="(" close=")" separator=",">
