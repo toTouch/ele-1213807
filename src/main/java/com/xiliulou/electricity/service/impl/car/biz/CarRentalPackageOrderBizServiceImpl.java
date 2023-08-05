@@ -1982,32 +1982,51 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             memberTermUpdateEntity.setId(memberTermEntity.getId());
 
             // 原本套餐，非退租且已过期
-            if (StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo()) && memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
-                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
-                memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
-                memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
-                memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
-                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
-                // 计算到期时间
-                Integer tenancy = carRentalPackageOrderEntity.getTenancy();
-                Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-                long dueTime = System.currentTimeMillis();
-                if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                    dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+            if (StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo())) {
+                // 过期使用中
+                if (memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
+                    memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
+                    memberTermUpdateEntity.setRentalPackageType(carRentalPackageOrderEntity.getRentalPackageType());
+                    memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
+                    memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
+                    memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                    // 计算到期时间
+                    Integer tenancy = carRentalPackageOrderEntity.getTenancy();
+                    Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
+                    long dueTime = System.currentTimeMillis();
+                    if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                        dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                    }
+                    if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                        dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                    }
+
+                    memberTermUpdateEntity.setDueTime(dueTime);
+                    memberTermUpdateEntity.setDueTimeTotal(dueTime);
+
+                    // 套餐购买总次数
+                    memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
+
+                    // 更改套餐购买订单的使用状态
+                    carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+                    carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+                } else {
+                    // 未过期使用中
+                    // 计算总到期时间
+                    Integer tenancy = carRentalPackageOrderEntity.getTenancy();
+                    Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
+                    long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
+                    if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                        dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                    }
+                    if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                        dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                    }
+                    memberTermUpdateEntity.setDueTimeTotal(dueTime);
+
+                    // 套餐购买总次数
+                    memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
                 }
-                if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
-                }
-
-                memberTermUpdateEntity.setDueTime(dueTime);
-                memberTermUpdateEntity.setDueTimeTotal(dueTime);
-
-                // 套餐购买总次数
-                memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
-
-                // 更改套餐购买订单的使用状态
-                carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
-                carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
 
             } else {
                 // 计算总到期时间
@@ -2026,19 +2045,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
                 // 退租未退押
-                if (StringUtils.isBlank(memberTermEntity.getRentalPackageOrderNo())) {
-                    memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
-                    memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
-                    memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
-                    memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
-                    memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
-                    // 更改套餐购买订单的使用状态
-                    carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
-                    carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
-                } else {
-                    // 更改套餐购买订单的支付状态
-                    carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
-                }
+                memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
+                memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
+                memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
+                memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
+                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                // 更改套餐购买订单的使用状态
+                carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+                carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
             }
 
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
