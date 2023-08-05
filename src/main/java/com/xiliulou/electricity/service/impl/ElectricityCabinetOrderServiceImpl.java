@@ -1059,15 +1059,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             //判断用户套餐
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
-            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
-                return checkUserMemberCardResult;
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
+                return Triple.of(false, "100210", "用户未开通套餐");
             }
+//            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
+//            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
+//                return checkUserMemberCardResult;
+//            }
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if(Objects.isNull(batteryMemberCard)){
                 log.error("ORDER ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                 return Triple.of(false, "ELECTRICITY.00121","套餐不存在");
+            }
+
+            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
             }
 
             //判断用户电池服务费
@@ -1235,6 +1244,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
 
+    @Deprecated
     private Triple<Boolean, String, Object> checkUserMemberCard(UserBatteryMemberCard userBatteryMemberCard, TokenUser user) {
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
                 || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {

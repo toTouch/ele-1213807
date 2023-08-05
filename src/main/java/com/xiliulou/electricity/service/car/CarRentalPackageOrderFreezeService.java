@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -13,11 +14,28 @@ import java.util.List;
 public interface CarRentalPackageOrderFreezeService {
 
     /**
+     * 根据用户ID和套餐购买订单编号查询冻结中的订单
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @return 冻结订单
+     */
+    CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo);
+
+    /**
      * 根据冻结订单编号更新数据
      * @param entity 数据模型
      * @return
      */
     boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity);
+
+    /**
+     * 计算实际冻结期限(时间戳，单位：天)
+     * @param applyTerm 申请期限
+     * @param auditTime 审核时间
+     * @param autoEnable 是否自动启用
+     * @return 启用时间戳，实际冻结期限(时间戳，单位：天)
+     */
+    Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long auditTime, boolean autoEnable);
 
     /**
      * 根据 uid 和套餐购买订单编码启用冻结订单
@@ -87,5 +105,5 @@ public interface CarRentalPackageOrderFreezeService {
      * @return
      */
     Long insert(CarRentalPackageOrderFreezePO entity);
-    
+
 }

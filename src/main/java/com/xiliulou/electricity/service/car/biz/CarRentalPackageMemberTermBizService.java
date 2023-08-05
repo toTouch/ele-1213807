@@ -10,6 +10,15 @@ import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 public interface CarRentalPackageMemberTermBizService {
 
     /**
+     * TODO 扣减余量次数待定实现
+     * @param tenantId
+     * @param uid
+     * @param packageId
+     * @return
+     */
+    /*boolean substractResidue(Integer tenantId, Long uid, Long packageId)*/
+
+    /**
      * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）
      * @param tenantId 租户ID
      * @param uid 用户ID

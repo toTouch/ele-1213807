@@ -31,6 +31,9 @@
             <if test="query.payType != null">
                 and tedo.pay_type = #{query.payType}
             </if>
+            <if test="query.uid != null">
+                and tedo.uid = #{query.uid}
+            </if>
             <if test="query.refundOrderType != null">
                 and tero.refund_order_type = #{query.refundOrderType}
             </if>
