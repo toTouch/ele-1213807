@@ -17,7 +17,7 @@
     <select id="selectEffectiveByUid" resultType="com.xiliulou.electricity.entity.UserCoupon">
         SELECT * FROM `t_user_coupon`
         <where>
-            `uid` = #{uid} AND `deadline` = #{deadline} AND `id` IN
+            `uid` = #{uid} AND `deadline` <![CDATA[ < ]]> #{deadline} AND `id` IN
             <foreach collection="ids" item="id" open="(" close=")" separator=",">
                 #{id}
             </foreach>

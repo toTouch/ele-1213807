@@ -114,6 +114,10 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 押金缴纳信息
         CarRentalPackageDepositPayPO depositPayEntity= carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(rentalPackageEntity)) {
+            rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+        }
+
 
         // 车辆型号信息
         ElectricityCarModel carModelEntity = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
@@ -187,31 +191,42 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         // 套餐购买信息
-        CarRentalPackageOrderVO carRentalPackageOrder = new CarRentalPackageOrderVO();
-        BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
-        userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
+        if (ObjectUtils.isNotEmpty(rentalPackageOrderEntity)) {
+            CarRentalPackageOrderVO carRentalPackageOrder = new CarRentalPackageOrderVO();
+            BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
+            userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
+        }
+
 
         // 押金缴纳订单信息
-        CarRentalPackageDepositPayVO carRentalPackageDepositPay = new CarRentalPackageDepositPayVO();
-        BeanUtils.copyProperties(depositPayEntity, carRentalPackageDepositPay);
-        userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
+        if (ObjectUtils.isNotEmpty(depositPayEntity)) {
+            CarRentalPackageDepositPayVO carRentalPackageDepositPay = new CarRentalPackageDepositPayVO();
+            BeanUtils.copyProperties(depositPayEntity, carRentalPackageDepositPay);
+            userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
+        }
 
         // 用户保险
-        UserInsuranceVO userInsurance = new UserInsuranceVO();
-        BeanUtils.copyProperties(insuranceUserInfoVo, userInsurance);
-        userMemberInfoVo.setUserInsurance(userInsurance);
+        if (ObjectUtils.isNotEmpty(insuranceUserInfoVo)) {
+            UserInsuranceVO userInsurance = new UserInsuranceVO();
+            BeanUtils.copyProperties(insuranceUserInfoVo, userInsurance);
+            userMemberInfoVo.setUserInsurance(userInsurance);
+        }
 
         // 车辆信息
-        CarVO car = new CarVO();
-        car.setCarSn(carEntity.getSn());
-        car.setCarModelName(carEntity.getModel());
-        userMemberInfoVo.setCar(car);
+        if (ObjectUtils.isNotEmpty(carEntity)) {
+            CarVO car = new CarVO();
+            car.setCarSn(carEntity.getSn());
+            car.setCarModelName(carEntity.getModel());
+            userMemberInfoVo.setCar(car);
+        }
 
         // 电池信息
-        ElectricityUserBatteryVo userBattery = new ElectricityUserBatteryVo();
-        userBattery.setSn(batteryEntity.getSn());
-        userBattery.setModel(batteryEntity.getModel());
-        userMemberInfoVo.setUserBattery(userBattery);
+        if (ObjectUtils.isNotEmpty(batteryEntity)) {
+            ElectricityUserBatteryVo userBattery = new ElectricityUserBatteryVo();
+            userBattery.setSn(batteryEntity.getSn());
+            userBattery.setModel(batteryEntity.getModel());
+            userMemberInfoVo.setUserBattery(userBattery);
+        }
 
         return userMemberInfoVo;
 
