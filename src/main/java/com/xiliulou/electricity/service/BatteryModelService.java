@@ -4,7 +4,6 @@ import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.vo.BatteryModelAndMaterialVO;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
-import com.xiliulou.electricity.vo.BatteryModelVO;
 import com.xiliulou.electricity.vo.BatteryTypeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -17,6 +16,14 @@ import java.util.List;
  * @since 2023-04-11 10:59:51
  */
 public interface BatteryModelService {
+
+    /**
+     * 根据电池型号集查询数据
+     * @param tenantId 租户ID
+     * @param batteryTypes 电池型号集
+     * @return 电池型号集
+     */
+    List<BatteryModel> selectByBatteryTypes(Integer tenantId, List<String> batteryTypes);
 
     /**
      * 通过ID查询单条数据从数据库

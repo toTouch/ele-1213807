@@ -1,26 +1,25 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
-import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
-import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
-import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +28,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author xiaohui.song
@@ -36,6 +36,30 @@ import java.util.List;
 @Slf4j
 @Service
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
+
+    @Resource
+    private BatteryModelService batteryModelService;
+
+    @Resource
+    private StoreService storeService;
+
+    @Resource
+    private FranchiseeService franchiseeService;
+
+    @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+
+    @Resource
+    private ElectricityCarService carService;
+
+    @Resource
+    private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
+
+    @Resource
+    private ElectricityCarModelService carModelService;
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     @Resource
     private CarRentalPackageService carRentalPackageService;
@@ -75,9 +99,122 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return null;
         }
 
+        Long rentalPackageId = memberTermEntity.getRentalPackageId();
+        String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+        String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
+        Integer rentalPackageType = memberTermEntity.getRentalPackageType();
+        Integer franchiseeId = memberTermEntity.getFranchiseeId();
+        Integer storeId = memberTermEntity.getStoreId();
+
+        // 套餐信息
+        CarRentalPackagePO rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
+
+        // 套餐订单信息
+        CarRentalPackageOrderPO rentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
+
+        // 押金缴纳信息
+        CarRentalPackageDepositPayPO depositPayEntity= carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+
+        // 车辆型号信息
+        ElectricityCarModel carModelEntity = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
+
+        // 用户保险信息
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
+
+        // 用户车辆信息
+        ElectricityCar carEntity = carService.selectByUid(tenantId, uid);
+
+        // 加盟商信息
+        Franchisee franchiseeEntity = franchiseeService.queryByIdFromCache(Long.valueOf(franchiseeId));
+
+        // 门店信息
+        Store storeEntity = storeService.queryByIdFromCache(Long.valueOf(storeId));
+
+        // 套餐对应的电池型号信息、用户电池信息
+        List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = null;
+        List<BatteryModel> batteryModelEntityList = null;
+        ElectricityBattery batteryEntity = null;
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
+            if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
+                List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                batteryModelEntityList = batteryModelService.selectByBatteryTypes(tenantId, batteryTypes);
+            }
 
 
-        return null;
+            // 用户电池信息
+            batteryEntity = batteryService.queryByUid(uid);
+        }
+
+        UserMemberInfoVo memberInfoVo = buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity,
+                depositPayEntity, carModelEntity, insuranceUserInfoVo, carEntity, batteryEntity, franchiseeEntity, storeEntity);
+
+
+        return memberInfoVo;
+    }
+
+    /**
+     * 构建返回值信息
+     * @param memberTermEntity 会员期限信息
+     * @param rentalPackageEntity 套餐信息
+     * @param batteryModelEntityList 电池型号集
+     * @param rentalPackageOrderEntity 套餐购买订单
+     * @param depositPayEntity 押金缴纳信息
+     * @param carModelEntity 车辆型号信息
+     * @param insuranceUserInfoVo 保险信息
+     * @param carEntity 车辆信息
+     * @param batteryEntity 电池信息
+     * @param franchiseeEntity 加盟商信息
+     * @param storeEntity 门店信息
+     * @return 会员信息
+     */
+    private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
+                                                   CarRentalPackageOrderPO rentalPackageOrderEntity, CarRentalPackageDepositPayPO depositPayEntity, ElectricityCarModel carModelEntity,
+                                                   InsuranceUserInfoVo insuranceUserInfoVo, ElectricityCar carEntity, ElectricityBattery batteryEntity, Franchisee franchiseeEntity, Store storeEntity) {
+
+        UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
+        userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
+        userMemberInfoVo.setDueTime(memberTermEntity.getDueTime());
+        userMemberInfoVo.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+        userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
+        userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
+        userMemberInfoVo.setStoreName(storeEntity.getName());
+        userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
+            List<String> batteryVShortList = batteryModelEntityList.stream().map(BatteryModel::getBatteryVShort).collect(Collectors.toList());
+            userMemberInfoVo.setBatteryVShortList(batteryVShortList);
+        }
+
+        // 套餐购买信息
+        CarRentalPackageOrderVO carRentalPackageOrder = new CarRentalPackageOrderVO();
+        BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
+        userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
+
+        // 押金缴纳订单信息
+        CarRentalPackageDepositPayVO carRentalPackageDepositPay = new CarRentalPackageDepositPayVO();
+        BeanUtils.copyProperties(depositPayEntity, carRentalPackageDepositPay);
+        userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
+
+        // 用户保险
+        UserInsuranceVO userInsurance = new UserInsuranceVO();
+        BeanUtils.copyProperties(insuranceUserInfoVo, userInsurance);
+        userMemberInfoVo.setUserInsurance(userInsurance);
+
+        // 车辆信息
+        CarVO car = new CarVO();
+        car.setCarSn(carEntity.getSn());
+        car.setCarModelName(carEntity.getModel());
+        userMemberInfoVo.setCar(car);
+
+        // 电池信息
+        ElectricityUserBatteryVo userBattery = new ElectricityUserBatteryVo();
+        userBattery.setSn(batteryEntity.getSn());
+        userBattery.setModel(batteryEntity.getModel());
+        userMemberInfoVo.setUserBattery(userBattery);
+
+        return userMemberInfoVo;
+
     }
 
     /**
