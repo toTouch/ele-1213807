@@ -116,6 +116,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     /**
      * 新增数据
@@ -245,8 +247,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //判断用户套餐
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            Triple<Boolean, String, Object> verifyUserBatteryMembercardResult = verifyUserBatteryMembercard(userBatteryMemberCard, userInfo);
+            Triple<Boolean, String, Object> verifyUserBatteryMembercardResult = userBatteryMemberCardService.verifyUserBatteryMembercard( userInfo);
             if(Boolean.FALSE.equals(verifyUserBatteryMembercardResult.getLeft())){
                 return R.fail(verifyUserBatteryMembercardResult.getMiddle(),(String)verifyUserBatteryMembercardResult.getRight());
             }
@@ -280,63 +281,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (refundCount > 0) {
                 log.error("RENTBATTERY ERROR! deposit is being refunded,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿租电池");
-            }
-
-            Long now = System.currentTimeMillis();
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-            if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-
-                if (Objects.isNull(electricityMemberCard)) {
-                    log.error("RENTBATTERY ERROR! memberCard  is not exit,uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.00121", "套餐不存在");
-                }
-
-
-                if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                    log.error("RENTBATTERY ERROR! memberCard  is Expire,uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.0023", "月卡已过期");
-                }
-
-                if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                    if (userBatteryMemberCard.getRemainingNumber() < 0) {
-                        //用户需购买相同套餐，补齐所欠换电次数
-                        log.error("RENTBATTERY ERROR! memberCard remainingNumber insufficient,uid={}", user.getUid());
-                        return R.fail("ELECTRICITY.00117", "套餐剩余次数为负", electricityMemberCard.getId());
-                    }
-
-                    if (userBatteryMemberCard.getMemberCardExpireTime() < now || userBatteryMemberCard.getRemainingNumber() == 0) {
-                        log.error("RENTBATTERY ERROR! memberCard  is Expire,uid={}", user.getUid());
-                        return R.fail("ELECTRICITY.0023", "月卡已过期");
-                    }
-                }
-
-                if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                    if (row < 1) {
-                        log.error("RENTBATTERY ERROR! not found memberCard uid={}", user.getUid());
-                        return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
-                    }
-                } else {
-                    if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                        Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                        if (row < 1) {
-                            log.error("RENTBATTERY ERROR! not found memberCard uid={}", user.getUid());
-                            return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
-                        }
-                    }
-                }
-
-            } else {
-                if (userBatteryMemberCard.getMemberCardExpireTime() < now || userBatteryMemberCard.getRemainingNumber() == 0) {
-                    log.error("RENTBATTERY ERROR! memberCard is Expire,uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.0023", "月卡已过期");
-                }
-
-                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                if (row < 1) {
-                    log.error("RENTBATTERY ERROR! not found memberCard uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
-                }
             }
 
             //获取满电电池
@@ -406,20 +350,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         return R.ok();
-    }
-
-    private Triple<Boolean, String, Object> verifyUserBatteryMembercard(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
-            return Triple.of(false,"100210", "用户未开通套餐");
-        }
-
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
-            return  Triple.of(false,"100211", "用户套餐已暂停");
-        }
-
-
     }
 
     @Override
