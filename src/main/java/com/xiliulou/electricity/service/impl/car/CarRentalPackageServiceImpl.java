@@ -192,7 +192,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public CarRentalPackagePO selectById(Long id) {
-        if (null == id || id <= 0) {
+        if (ObjectUtils.isEmpty(id)) {
             return null;
         }
 

@@ -361,7 +361,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 查询用户名下是否存在未使用、未过期的优惠券
         List<UserCoupon> userCoupons = userCouponService.selectEffectiveByUid(uid, userCouponIds, System.currentTimeMillis());
         if (CollectionUtils.isEmpty(userCoupons)) {
-            return Triple.of(BigDecimal.ZERO, null, true) ;
+            return Triple.of(amount, null, true) ;
         }
 
         List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
