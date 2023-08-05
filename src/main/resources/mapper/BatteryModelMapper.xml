@@ -65,6 +65,25 @@
         </if>
     </select>
 
+    <select id="selectShortBatteryType" resultType="string">
+        select
+        battery_v_short
+        from t_battery_model
+        where del_flag=0
+        <if test="batteryType != null and batteryType != ''">
+            and battery_type = #{batteryType}
+        </if>
+        <if test="batteryTypes != null">
+            and battery_type in
+            <foreach collection="batteryTypes" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="BatteryModelMap">
         select

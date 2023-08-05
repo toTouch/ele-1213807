@@ -97,4 +97,6 @@ public interface BatteryModelService {
     List<String> selectBatteryVAll();
 
     List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes);
+
+    List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId);
 }

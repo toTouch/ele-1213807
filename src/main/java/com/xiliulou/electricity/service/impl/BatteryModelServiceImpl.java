@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -212,6 +210,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
      * @return
      */
     @Override
+    @Deprecated
     public List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes) {
         if (CollectionUtils.isEmpty(batteryTypes) || CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
@@ -220,6 +219,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         Map<String, String> batteryModelMap = batteryModels.stream().collect(Collectors.toMap(BatteryTypeVO::getBatteryType, BatteryTypeVO::getBatteryVShort));
 
         return batteryTypes.stream().map(batteryModelMap::get).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId) {
+        return this.batteryModelMapper.selectShortBatteryType(batteryTypes, tenantId);
     }
 
     /**

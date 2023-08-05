@@ -232,7 +232,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
             if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                batteryMemberCardVO.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(item.getTenantId()), memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId())));
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()),item.getTenantId()));
             }
 
             if (Objects.nonNull(item.getCouponId())) {

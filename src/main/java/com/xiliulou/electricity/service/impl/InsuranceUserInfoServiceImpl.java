@@ -79,6 +79,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    @Deprecated
     public InsuranceUserInfo queryByUid(Long uid, Integer tenantId) {
         return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId, tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
@@ -122,6 +123,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    @Deprecated
     public InsuranceUserInfo queryByUidFromCache(Long uid) {
 
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
@@ -212,6 +214,25 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
 
         return insuranceUserInfoVo;
+    }
+
+    /**
+     * 保存用户保险
+     * @param insuranceUserInfo
+     * @param type
+     * @return
+     */
+    @Override
+    public Integer saveUserInsurance(InsuranceUserInfo insuranceUserInfo, Integer type) {
+        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceUserInfo.getUid(), type);
+        if (Objects.isNull(insuranceUserInfoCache)) {
+            return this.insert(insuranceUserInfo);
+        }
+
+        insuranceUserInfo.setId(insuranceUserInfoCache.getId());
+        insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        return this.updateInsuranceUserInfoById(insuranceUserInfo);
     }
 
     @Override
