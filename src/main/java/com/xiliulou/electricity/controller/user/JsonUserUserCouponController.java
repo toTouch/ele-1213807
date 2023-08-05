@@ -69,7 +69,7 @@ public class JsonUserUserCouponController {
 
             statusList = Arrays.asList(statuses);
         }
-        return userCouponService.queryMyCoupon(statusList, typeList);
+        return userCouponService.queryMyCoupons(statusList, typeList);
 
     }
 
