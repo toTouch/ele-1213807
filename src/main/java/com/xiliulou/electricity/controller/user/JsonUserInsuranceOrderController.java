@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
+import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -53,6 +54,19 @@ public class JsonUserInsuranceOrderController {
         return insuranceOrderService.homeOneQueryInsurance(model, franchiseeId);
     }
 
+    /**
+     * 用户保险订单分页
+     */
+    @GetMapping(value = "/user/insuranceOrder/page")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+        InsuranceOrderQuery query = InsuranceOrderQuery.builder()
+                .uid(SecurityUtils.getUid())
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return insuranceOrderService.queryList(query);
+    }
 
 
 

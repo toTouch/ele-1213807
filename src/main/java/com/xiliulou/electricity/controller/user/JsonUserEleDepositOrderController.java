@@ -3,10 +3,8 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -34,6 +32,8 @@ public class JsonUserEleDepositOrderController {
      */
     @Autowired
     EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
     @Autowired
     FranchiseeService franchiseeService;
     @Autowired
@@ -190,6 +190,21 @@ public class JsonUserEleDepositOrderController {
     public R refundCarDeposit() {
         return eleDepositOrderService.refundCarDeposit();
     }
-  
+
+    /**
+     * 用户端退款订单分页
+     */
+    @GetMapping(value = "/user/queryRentCarDeposit")
+    public R batteryDepositRefund(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
+                .offset(offset)
+                .size(size)
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(SecurityUtils.getUid())
+                .build();
+
+        return eleRefundOrderService.queryList(eleRefundQuery);
+    }
 }
 
