@@ -2023,7 +2023,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-    */
         long carDays = 0;
         if (userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
             Double carDayTemp = Math
@@ -2037,6 +2036,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                             / (24 * 60 * 60 * 1000L);
         }
         vo.setCardDays(carDays);
+*/
     }
     
     private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {

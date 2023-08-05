@@ -246,14 +246,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //判断用户套餐
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-                log.warn("ORDER WARN! user haven't memberCard uid={}", user.getUid());
-                return R.fail("100210", "用户未开通套餐");
-            }
-
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
-                return R.fail("100211", "用户套餐已暂停");
+            Triple<Boolean, String, Object> verifyUserBatteryMembercardResult = verifyUserBatteryMembercard(userBatteryMemberCard, userInfo);
+            if(Boolean.FALSE.equals(verifyUserBatteryMembercardResult.getLeft())){
+                return R.fail(verifyUserBatteryMembercardResult.getMiddle(),(String)verifyUserBatteryMembercardResult.getRight());
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
@@ -411,6 +406,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         return R.ok();
+    }
+
+    private Triple<Boolean, String, Object> verifyUserBatteryMembercard(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
+            return Triple.of(false,"100210", "用户未开通套餐");
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+            return  Triple.of(false,"100211", "用户套餐已暂停");
+        }
+
+
     }
 
     @Override
