@@ -72,6 +72,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+
+    @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
 
     @Resource
@@ -106,9 +109,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private ElectricityBatteryService batteryService;
-
-    @Resource
-    private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
 
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
@@ -753,7 +753,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             long nowTime = System.currentTimeMillis();
             // 比对时间，进行数据处理
             for (CarRentalPackageOrderFreezePO freezeEntity : pageEntityList) {
-
                 try {
                     Integer applyTerm = freezeEntity.getApplyTerm();
                     Long auditTime = freezeEntity.getAuditTime();
@@ -770,9 +769,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         continue;
                     }
 
-                    // TODO  此处后续需要优化，目前是循环调用IO，需要考虑批量调用，批量调用的时候，需要考虑在更新的时候，数据状态不一致的情况
+                    // 赋值会员更新
+                    CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
+                    memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
+                    memberTermUpdateEntity.setId(memberTermEntity.getId());
+                    memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+
                     // 事务处理
-                    enableFreezeRentOrderTx(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null);
+                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null);
                 } catch (Exception e) {
                     log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
@@ -802,7 +806,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 查询套餐会员期限
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("CarRentalPackageOrderBizServiceImpl.cancelFreezeRentOrder, memberTermEntity not found. uid is {}, tenantId is {}", uid, tenantId);
+            log.error("CarRentalPackageOrderBizServiceImpl.enableFreezeRentOrder, memberTermEntity not found. uid is {}, tenantId is {}", uid, tenantId);
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -819,8 +823,34 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
-        // TX 事务
-        enableFreezeRentOrderTx(tenantId, uid, packageOrderNo, false, optUid);
+        CarRentalPackageOrderFreezePO freezeEntity = carRentalPackageOrderFreezeService.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
+        if (ObjectUtils.isEmpty(freezeEntity)) {
+            log.error("CarRentalPackageOrderBizServiceImpl.enableFreezeRentOrder error. not found order. uid is {}, packageOrderNo is {}",
+                    uid, packageOrderNo);
+            throw new BizException("300020", "订单编码不匹配");
+        }
+
+        // 计算时间
+        Integer applyTerm = freezeEntity.getApplyTerm();
+        Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getAuditTime(), false);
+        Integer realTerm = realTermPair.getRight();
+
+        // 赋值会员更新
+        CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
+        memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
+        memberTermUpdateEntity.setId(memberTermEntity.getId());
+        memberTermUpdateEntity.setUpdateUid(uid);
+        memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+        // 提前启用
+        if (applyTerm.intValue() > realTerm.intValue()) {
+            // 计算差额
+            long diffTime = (applyTerm - realTerm) * TimeConstant.DAY_MILLISECOND;
+            memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime().longValue() - diffTime);
+            memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal().longValue() - diffTime);
+        }
+
+        // 事务处理
+        enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity);
 
         return true;
     }
@@ -828,19 +858,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     /**
      * 启用冻结订单，TX事务处理<br />
      * 非对外
-     * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
      * @param autoEnable 自动启用标识，true(自动)，false(手动提前启用)
      * @param optUid 操作人ID(可为空)
      */
     @Transactional(rollbackFor = Exception.class)
-    public void enableFreezeRentOrderTx(Integer tenantId, Long uid, String packageOrderNo, Boolean autoEnable, Long optUid) {
+    public void enableFreezeRentOrderTx(Long uid, String packageOrderNo, Boolean autoEnable, Long optUid, CarRentalPackageMemberTermPO memberTermEntity) {
         // 1. 更改订单冻结表数据
         carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(packageOrderNo, uid, autoEnable, optUid);
 
         // 2. 更改会员期限表数据
-        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), optUid);
+        carRentalPackageMemberTermService.updateById(memberTermEntity);
     }
 
     /**
