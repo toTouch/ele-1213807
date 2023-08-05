@@ -1973,6 +1973,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 待生效的数据，直接更改状态
         if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.NORMAL.getCode(), null);
+            memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         }
 
         // 正常的数据，更改总计到期时间、总计套餐余量
