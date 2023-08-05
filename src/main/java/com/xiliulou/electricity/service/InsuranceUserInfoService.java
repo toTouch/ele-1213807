@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
@@ -60,5 +61,5 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
 
-    Integer saveUserInsurance(InsuranceUserInfo insuranceUserInfo, Integer type);
+    Integer saveUserInsurance(InsuranceOrder insuranceOrder);
 }

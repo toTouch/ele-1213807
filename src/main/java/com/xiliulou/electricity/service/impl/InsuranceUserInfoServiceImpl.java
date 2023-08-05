@@ -217,22 +217,22 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     /**
-     * 保存用户保险
-     * @param insuranceUserInfo
-     * @param type
+     * 保存或更新用户保险
      * @return
      */
     @Override
-    public Integer saveUserInsurance(InsuranceUserInfo insuranceUserInfo, Integer type) {
-        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceUserInfo.getUid(), type);
-        if (Objects.isNull(insuranceUserInfoCache)) {
-            return this.insert(insuranceUserInfo);
-        }
+    public Integer saveUserInsurance(InsuranceOrder insuranceOrder) {
+//        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceUserInfo.getUid(), type);
+//        if (Objects.isNull(insuranceUserInfoCache)) {
+//            return this.insert(insuranceUserInfo);
+//        }
+//
+//        insuranceUserInfo.setId(insuranceUserInfoCache.getId());
+//        insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+//
+//        return this.updateInsuranceUserInfoById(insuranceUserInfo);
 
-        insuranceUserInfo.setId(insuranceUserInfoCache.getId());
-        insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-
-        return this.updateInsuranceUserInfoById(insuranceUserInfo);
+        return null;
     }
 
     @Override
