@@ -1133,7 +1133,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300000", "数据有误");
+            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
         }
 
         // 检测押金缴纳订单数据
