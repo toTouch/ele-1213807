@@ -1523,6 +1523,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean cancelRentalPackageOrder(String packageOrderNo, Integer tenantId, Long uid) {
         // 1. 处理租车套餐购买订单
         CarRentalPackageOrderPO carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(packageOrderNo);
@@ -1562,8 +1563,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 4. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(packageOrderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
-
-        // 5. TODO 处理保险购买订单
 
         return true;
     }
@@ -2008,6 +2007,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 // 更改套餐购买订单的使用状态
                 carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+                carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+
             } else {
                 // 计算总到期时间
                 Integer tenancy = carRentalPackageOrderEntity.getTenancy();
@@ -2033,6 +2034,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
                     // 更改套餐购买订单的使用状态
                     carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
+                    carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
                 } else {
                     // 更改套餐购买订单的支付状态
                     carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
