@@ -43,8 +43,10 @@ public interface CarRentalPackageBizService {
      * @param amount 原金额
      * @param userCouponIds 用户的优惠券ID集合
      * @param uid 用户ID
+     * @param packageId       套餐ID
+     * @param packageType       套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
      * @return Triple<BigDecimal, List<Long>, Boolean> 实际支付金额、已用的优惠券ID、Boolean（暂无实际意义）
      */
-    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid);
+    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType);
 
 }

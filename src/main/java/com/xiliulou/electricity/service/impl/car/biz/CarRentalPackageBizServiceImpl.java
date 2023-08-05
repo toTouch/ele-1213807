@@ -46,6 +46,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
 
     @Resource
+    private  CouponActivityPackageService couponActivityPackageService;
+
+    @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource
@@ -345,10 +348,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      * @param amount    原金额
      * @param userCouponIds 用户的优惠券ID集合
      * @param uid       用户ID
+     * @param packageId       套餐ID
+     * @param packageType       套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
      * @return Triple<BigDecimal, List<Long>, Boolean> 实际支付金额、已用的用户优惠券ID、Boolean（暂无实际意义）
      */
     @Override
-    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid) {
+    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType) {
         log.info("calculatePaymentAmount amount is {}", amount);
         if (BigDecimal.ZERO.compareTo(amount) == 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIds, true) ;
@@ -379,11 +384,15 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
-            // TODO 错误编码
-            throw new BizException("使用优惠券有误");
+            throw new BizException("300034", "使用优惠券有误");
         }
 
-        // TODO 暴煜, 校验优惠券的使用，是否指定这个套餐
+        // 校验优惠券的使用，是否指定这个套餐
+        // 1-租电 2-租车 3-车电一体
+        Boolean valid = couponActivityPackageService.checkPackageIsValid(couponList, packageId, packageType);
+        if (!valid) {
+            throw new BizException("300034", "使用优惠券有误");
+        }
 
         // 真正使用的用户优惠券ID
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());
