@@ -9,6 +9,7 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
@@ -70,6 +72,12 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+
+    @Resource
+    private ActivityProducer activityProducer;
+
+    @Resource
     private DivisionAccountProducer divisionAccountProducer;
 
     @Resource
@@ -95,9 +103,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private FranchiseeInsuranceService franchiseeInsuranceService;
-
-    @Resource
-    private InsuranceUserInfoService insuranceUserInfoService;
 
     @Resource
     private ElectricityBatteryService batteryService;
@@ -2021,7 +2026,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 7. 处理保险购买订单
         InsuranceOrder insuranceOrder = insuranceOrderService.selectBySourceOrderNoAndType(orderNo, carRentalPackageOrderEntity.getRentalPackageType());
         if (ObjectUtils.isNotEmpty(insuranceOrder)) {
-            // TODO 志龙给保险接口
+            // 7.1 更改保险订单的支付状态
+            insuranceOrder.setStatus(InsuranceOrder.STATUS_SUCCESS);
+            insuranceOrder.setUpdateTime(System.currentTimeMillis());
+            insuranceOrderService.updateOrderStatusById(insuranceOrder);
+            // 7.2 给用户绑定保险
+            insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
 
         // 8. 处理分账
@@ -2032,7 +2042,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
 
-        // 9. TODO 处理活动
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(orderNo);
+        activityProcessDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
         return Pair.of(true, userInfo.getPhone());
     }
 
