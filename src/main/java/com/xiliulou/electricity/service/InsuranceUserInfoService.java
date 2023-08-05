@@ -61,5 +61,5 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
 
-    Integer saveUserInsurance(InsuranceOrder insuranceOrder);
+    void saveUserInsurance(InsuranceOrder insuranceOrder);
 }

@@ -221,18 +221,36 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
      * @return
      */
     @Override
-    public Integer saveUserInsurance(InsuranceOrder insuranceOrder) {
-//        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceUserInfo.getUid(), type);
-//        if (Objects.isNull(insuranceUserInfoCache)) {
-//            return this.insert(insuranceUserInfo);
-//        }
-//
-//        insuranceUserInfo.setId(insuranceUserInfoCache.getId());
-//        insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-//
-//        return this.updateInsuranceUserInfoById(insuranceUserInfo);
+    public void saveUserInsurance(InsuranceOrder insuranceOrder) {
+        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceOrder.getUid(), insuranceOrder.getInsuranceType());
 
-        return null;
+        InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
+        insuranceUserInfo.setUid(insuranceOrder.getUid());
+        insuranceUserInfo.setFranchiseeId(insuranceOrder.getFranchiseeId());
+        insuranceUserInfo.setPremium(insuranceOrder.getPayAmount());
+        insuranceUserInfo.setForehead(insuranceOrder.getForehead());
+        insuranceUserInfo.setInsuranceId(insuranceOrder.getInsuranceId());
+        insuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+        insuranceUserInfo.setInsuranceExpireTime(0L);
+        insuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+        insuranceUserInfo.setDelFlag(InsuranceUserInfo.DEL_NORMAL);
+        insuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
+        insuranceUserInfo.setType(insuranceOrder.getInsuranceType());
+
+        if (Objects.isNull(insuranceUserInfoCache) || Objects.equals(InsuranceUserInfo.IS_USE, insuranceUserInfoCache.getIsUse()) || insuranceUserInfoCache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            insuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+        } else {
+            insuranceUserInfo.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+        }
+
+        if(Objects.isNull(insuranceUserInfoCache)){
+            insuranceUserInfo.setCreateTime(System.currentTimeMillis());
+            insuranceUserInfoService.insert(insuranceUserInfo);
+        }else{
+            insuranceUserInfo.setId(insuranceUserInfoCache.getId());
+            insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            insuranceUserInfoService.updateInsuranceUserInfoById(insuranceUserInfo);
+        }
     }
 
     @Override
@@ -473,6 +491,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .updateTime(System.currentTimeMillis()).build();
         insuranceOrderMapper.insert(insuranceUserOrder);
 
+/*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
         updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
         updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -486,6 +505,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
         updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
         insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
+        */
+        this.saveUserInsurance(insuranceUserOrder);
 
         return R.ok();
     }
@@ -585,6 +606,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .updateTime(System.currentTimeMillis()).build();
         insuranceOrderMapper.insert(insuranceUserOrder);
 
+        this.saveUserInsurance(insuranceUserOrder);
+/*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
         updateOrAddInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
@@ -605,6 +628,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         insuranceUserInfoService.updateInsuranceUserInfoById(updateOrAddInsuranceUserInfo);
 
+        */
         return R.ok();
     }
 
