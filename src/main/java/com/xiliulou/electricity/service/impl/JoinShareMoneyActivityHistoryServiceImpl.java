@@ -249,7 +249,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
 		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
 			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
-			UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
 			if(Objects.nonNull(userInfo)){
 				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());
@@ -264,6 +264,11 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	public R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
 		Long count = joinShareMoneyActivityHistoryMapper.queryParticipantsRecordCount(jsonShareMoneyActivityHistoryQuery);
 		return R.ok(count);
+	}
+
+	@Override
+	public List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
+		return joinShareMoneyActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
 	}
 
 	private String queryStatus(Integer status) {

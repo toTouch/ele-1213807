@@ -383,14 +383,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userInfoUpdate.setUid(uid);
             userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
             userInfoUpdate.setStoreId(Long.valueOf(storeId));
-            userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
             if (CarRentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
             if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
-                userInfoUpdate.setCarBatteryDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+                userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             }
         }
         // 3. 超时关闭之后更新状态
