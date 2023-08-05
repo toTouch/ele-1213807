@@ -18,6 +18,7 @@
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
+        <result property="rentalPackageConfine" column="rental_package_confine" jdbcType="INTEGER" />
         <result property="dueTime" column="due_time" jdbcType="BIGINT" />
         <result property="dueTimeTotal" column="due_time_total" jdbcType="BIGINT" />
         <result property="residue" column="residue" jdbcType="BIGINT" />
@@ -39,7 +40,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `insurance_order_id`, `pay_count`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `rental_package_confine`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `insurance_order_id`, `pay_count`
     </sql>
 
     <!-- 全部字段 -->
@@ -68,6 +69,7 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
+            <if test=" rentalPackageConfine != null "> `rental_package_confine`, </if>
             <if test=" dueTime != null "> `due_time`, </if>
             <if test=" dueTimeTotal != null "> `due_time_total`, </if>
             <if test=" residue != null "> `residue`, </if>
@@ -94,6 +96,7 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
+            <if test=" rentalPackageConfine != null "> #{rentalPackageConfine}, </if>
             <if test=" dueTime != null "> #{dueTime}, </if>
             <if test=" dueTimeTotal != null "> #{dueTimeTotal}, </if>
             <if test=" residue != null "> #{residue}, </if>
@@ -181,6 +184,7 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> , `rental_package_order_no` = #{rentalPackageOrderNo} </if>
             <if test=" rentalPackageId != null "> , `rental_package_id` = #{rentalPackageId} </if>
             <if test=" rentalPackageType != null "> , `rental_package_type` = #{rentalPackageType} </if>
+            <if test=" rentalPackageConfine != null "> , `rental_package_confine` = #{rentalPackageConfine} </if>
             <if test=" dueTime != null "> , `due_time` = #{dueTime} </if>
             <if test=" dueTimeTotal != null "> , `due_time_total` = #{dueTimeTotal} </if>
             <if test=" residue != null "> , `residue` = #{residue} </if>
