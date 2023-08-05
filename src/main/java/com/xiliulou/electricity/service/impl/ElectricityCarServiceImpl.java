@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
@@ -112,6 +113,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     private CarMoveRecordMapper carMoveRecordMapper;
 
     /**
+     * 根据用户ID查询车辆信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 车辆信息
+     */
+    @Slave
+    @Override
+    public ElectricityCar selectByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, tenantId)) {
+            return null;
+        }
+        LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ElectricityCar::getTenantId, tenantId).eq(ElectricityCar::getUid, uid).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode());
+        return electricityCarMapper.selectOne(queryWrapper);
+    }
+
+    /**
      * 根据车辆型号ID判定，是否存在未租车辆
      *
      * @param carModelId 车辆型号ID
@@ -120,6 +139,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Slave
     @Override
     public boolean checkUnleasedByCarModelId(Integer carModelId) {
+        if (ObjectUtils.isEmpty(carModelId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
         LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode()).eq(ElectricityCar::getStatus, ElectricityCar.STATUS_NOT_RENT);
         Integer count = electricityCarMapper.selectCount(queryWrapper);
@@ -135,6 +157,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Slave
     @Override
     public boolean checkBindingByCarModelId(Integer carModelId) {
+        if (ObjectUtils.isEmpty(carModelId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
         LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode());
         Integer count = electricityCarMapper.selectCount(queryWrapper);

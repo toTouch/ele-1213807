@@ -22,6 +22,14 @@ import java.util.List;
 public interface ElectricityCarService {
 
     /**
+     * 根据用户ID查询车辆信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 车辆信息
+     */
+    ElectricityCar selectByUid(Integer tenantId, Long uid);
+
+    /**
      * 根据车辆型号ID判定，是否存在未租车辆
      * @param carModelId 车辆型号ID
      * @return true(存在)、false(不存在)

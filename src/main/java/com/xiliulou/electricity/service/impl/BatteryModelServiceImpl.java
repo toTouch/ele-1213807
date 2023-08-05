@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -20,6 +22,7 @@ import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -67,7 +70,25 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     
     @Autowired
     private FranchiseeService franchiseeService;
-    
+
+    /**
+     * 根据电池型号集查询数据
+     *
+     * @param tenantId     租户ID
+     * @param batteryTypes 电池型号集
+     * @return 电池型号集
+     */
+    @Slave
+    @Override
+    public List<BatteryModel> selectByBatteryTypes(Integer tenantId, List<String> batteryTypes) {
+        if (!ObjectUtils.allNotNull(tenantId, batteryTypes) || CollectionUtils.isEmpty(batteryTypes)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getBatteryType, batteryTypes);
+        return batteryModelMapper.selectList(queryWrapper);
+    }
+
     /**
      * 通过ID查询单条数据从DB
      *

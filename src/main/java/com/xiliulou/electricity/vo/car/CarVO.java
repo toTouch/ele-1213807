@@ -20,6 +20,11 @@ public class CarVO implements Serializable {
     private String carSn;
 
     /**
+     * 车辆型号名称
+     */
+    private String carModelName;
+
+    /**
      * 所属门店名称
      */
     private String storeName;
