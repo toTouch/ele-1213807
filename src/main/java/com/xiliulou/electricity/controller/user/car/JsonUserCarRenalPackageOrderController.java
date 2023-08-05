@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +40,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user/car/renalPackageOrder")
 public class JsonUserCarRenalPackageOrderController extends BasicController {
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -191,6 +196,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 查询套餐购买订单对应的退款订单信息
         Map<String, CarRentalPackageOrderRentRefundPO> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
 
+        // 查询会员信息
+        CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());
+
         long nowTime = System.currentTimeMillis();
 
         // 模型转换，封装返回
@@ -232,6 +240,13 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                         }
                     }
                 }
+
+                // 对使用中的订单，进行二次处理
+                if (UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
+                    rentRebate = YesNoEnum.NO.getCode();
+                    carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
+                }
+
                 carRentalPackageOrderVO.setRentRebate(rentRebate);
             }
 
