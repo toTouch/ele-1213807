@@ -2063,6 +2063,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         userInfoService.updateByUid(userInfo);
 
         // 6. 处理用户优惠券的使用状态
+        userCouponService.selectBySourceOrderId(orderNo);
         userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_USED);
 
         // 6. TODO 车辆断启电
@@ -2144,9 +2145,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 4. 处理用户押金支付信息（保持原样，不做处理）
 
         // 5. 处理用户优惠券的使用状态
+        userCouponService.selectBySourceOrderId(orderNo);
         userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
-
-        // 7. TODO 处理保险购买订单
 
         return Pair.of(true, null);
     }
