@@ -9,11 +9,13 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,6 +43,10 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     UserService userService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+    @Autowired
+    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
     /**
      * 修改数据
@@ -98,13 +104,29 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //2、别人点击链接登录
 
         //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页
-        if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
+        //3.0扩展了活动范围，扩展到登录注册，实名认证及购买套餐。所以不需要再判断是否购买过套餐
+        /*if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
             return R.ok();
+        }*/
+
+        //3.0修改为用户只能参加邀请返券或者邀请返现其中一种活动。如果已经参与了，则提示已参加对应活动。不允许参加多个活动。如果邀请活动未完成，但是已过期或者下架了。则还可以正常参加。
+        //1. 查看当前用户是否存在正在参加或者已成功参加的活动，如果是，则提示已参加过邀请活动。
+        //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
+        List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+        if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
+            return R.fail("000106", "已参加过邀请返券活动");
+        }
+
+        //查询当前用户是否参与了邀请返现活动
+        List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+        if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+            return R.fail("000107", "已参加过邀请返现活动");
         }
 
         //未购买月卡则添加用户参与记录
         //2.2 判断此人是否参与过活动
-        JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
+        //TODO 待删除。 3.0版本后活动不能重复参加，所以如下代码被注释
+        /*JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
                 .eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
                 .eq(JoinShareActivityRecord::getActivityId, activityId)
                 .in(JoinShareActivityRecord::getStatus, JoinShareActivityRecord.STATUS_INIT));
@@ -143,7 +165,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
             joinShareActivityHistoryService.insert(joinShareActivityHistory);
             return R.ok();
-        }
+        }*/
 
         JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
         joinShareActivityRecord.setUid(uid);
