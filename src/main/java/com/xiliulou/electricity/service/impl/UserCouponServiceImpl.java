@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -378,7 +379,8 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //若是不可叠加的优惠券,则将对应的套餐信息设置到优惠券中
         for(UserCouponVO userCouponVO : userCouponVOList){
-            if(Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition())){
+            if(Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition())
+                    && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(userCouponVO.getSpecificPackages())){
                 Long couponId = userCouponVO.getCouponId().longValue();
                 userCouponVO.setBatteryPackages(getBatteryPackages(couponId));
                 userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));

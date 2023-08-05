@@ -123,7 +123,7 @@ public class ActivityServiceImpl implements ActivityService {
 
             if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
-                return Triple.of(false, "", "当前套餐已暂停");
+                return Triple.of(false, "000101", "当前换电套餐已暂停");
             }
 
             //是否是新用户
@@ -147,7 +147,8 @@ public class ActivityServiceImpl implements ActivityService {
             CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
             Long uid = carRentalPackageOrderPO.getUid();
             if(Objects.isNull(carRentalPackageOrderPO)){
-                log.error("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
+                log.warn("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
+                return Triple.of(false, "000102", "当前租车/车电一体套餐已暂停");
             }
             Boolean isOldUser = userBizService.isOldUser(carRentalPackageOrderPO.getTenantId(), uid);
 
@@ -171,10 +172,11 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     /**
-     * 登录注册时 活动处理
+     * 登录注册时 活动处理, 该方法在3.0版本中先不启用
      * @param uid
      * @return
      */
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleActivityByLogon(Long uid) {
@@ -252,6 +254,14 @@ public class ActivityServiceImpl implements ActivityService {
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleActivityByRealName(Long uid) {
         log.info("Activity by real name authentication flow start, uid = {}", uid);
+        //判断该用户是否进行了实名认证
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("not finished real name authentication! user not auth,uid = {}", uid);
+            return Triple.of(false, "000100", "未进行实名认证");
+        }
+
         //获取参与邀请活动记录
         JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
 
@@ -261,7 +271,7 @@ public class ActivityServiceImpl implements ActivityService {
             ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
             //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
             if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
-                    && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareActivity.getInvitationCriteria())){
+                    && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareActivity.getInvitationCriteria())){
 
                 //修改邀请状态
                 joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
@@ -286,7 +296,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (Objects.nonNull(joinShareMoneyActivityRecord)) {
             ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
             if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
-                    && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareMoneyActivity.getInvitationCriteria())){
+                    && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareMoneyActivity.getInvitationCriteria())){
                 //修改邀请状态
                 joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
                 joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());

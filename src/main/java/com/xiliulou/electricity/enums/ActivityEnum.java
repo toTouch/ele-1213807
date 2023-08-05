@@ -14,6 +14,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ActivityEnum implements BasicEnum<Integer, String> {
 
+    //登录注册在3.0版本中先移除
     INVITATION_CRITERIA_LOGON(1, "邀请标准-登录注册"),
 
     INVITATION_CRITERIA_REAL_NAME(2, "邀请标准-实名认证"),

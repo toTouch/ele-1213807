@@ -147,7 +147,8 @@
     <select id="queryParticipantsRecord" resultType="com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO">
         select tjsmah.id as id,
             tjsmah.activity_id as activityId,
-            tsa.name as activityName,
+            tsma.invitation_criteria as invitationCriteria,
+            tsma.name as activityName,
             tjsmah.uid as inviterUid,
             tjsmah.join_uid as joinUid,
             tui.name as joinName,
@@ -161,7 +162,7 @@
 
         from t_join_share_money_activity_history tjsmah
         left join t_user_info as tui on tui.uid = tjsmah.join_uid
-        left join t_share_activity as tsa on tsa.id = tjsmah.activity_id
+        left join t_share_money_activity as tsma on tsma.id = tjsmah.activity_id
         <where>
             <if test="uid != null">
                 and tjsmah.uid = #{uid}
@@ -182,7 +183,7 @@
                 and tui.phone = #{phone}
             </if>
             <if test="activityName != null and activityName != ''">
-                and tsa.name like concat('%', #{activityName}, '%')
+                and tsma.name like concat('%', #{activityName}, '%')
             </if>
             <if test="beginTime != null">
                 and tjsmah.start_time &gt;= #{beginTime}
@@ -203,7 +204,7 @@
             count(1)
         from t_join_share_money_activity_history tjsmah
         left join t_user_info as tui on tui.uid = tjsmah.join_uid
-        left join t_share_activity as tsa on tsa.id = tjsmah.activity_id
+        left join t_share_money_activity as tsa on tsa.id = tjsmah.activity_id
         <where>
             <if test="uid != null">
                 and tjsmah.uid = #{uid}

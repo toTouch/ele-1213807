@@ -15,7 +15,9 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -30,6 +32,20 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
 
     @Resource
     private CarRentalPackageOrderFreezeMapper carRentalPackageOrderFreezeMapper;
+
+    /**
+     * 根据用户ID和套餐购买订单编号查询冻结中的订单
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @return 冻结订单
+     */
+    @Override
+    public CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo) {
+        if (!ObjectUtils.allNotNull(uid, packageOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderFreezeMapper.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
+    }
 
     /**
      * 根据冻结订单编号更新数据
@@ -49,6 +65,36 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     }
 
     /**
+     * 计算实际冻结期限(时间戳，单位：天)
+     *
+     * @param applyTerm  申请期限
+     * @param auditTime  审核时间
+     * @param autoEnable 是否自动启用
+     * @return 启用时间戳，实际冻结期限(单位：天)
+     */
+    @Override
+    public Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long auditTime, boolean autoEnable) {
+        if (!ObjectUtils.allNotNull(applyTerm, auditTime, autoEnable)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        // 实际期限、启用算法
+        // 1. 自动启用，启用时间 = 审核通过时间 + 申请期限；实际期限 = 申请期限
+        // 2. 手动启动，启用时间 = 当前时间；实际期限 = 当前时间 - 审核通过时间（不足一天按照一天计算）
+
+        // 操作时间
+        long nowTime = System.currentTimeMillis();
+        // 启用时间：审核通过时间 + 申请期限
+        Long enableTime = auditTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
+        Integer realTerm = applyTerm;
+        // 提前启用
+        if (!autoEnable) {
+            enableTime = nowTime;
+            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, auditTime)));
+        }
+        return Pair.of(enableTime, realTerm);
+    }
+
+    /**
      * 根据 uid 和套餐购买订单编码启用冻结订单
      *
      * @param packageOrderNo 套餐购买订单编码
@@ -58,6 +104,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean enableFreezeRentOrderByUidAndPackageOrderNo(String packageOrderNo, Long uid, Boolean autoEnable, Long optUid) {
         if (!ObjectUtils.allNotNull(packageOrderNo, uid, autoEnable)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
@@ -79,15 +126,16 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         // 申请期限
         Integer applyTerm = freezeEntity.getApplyTerm();
         Long auditTime = freezeEntity.getAuditTime();
+
+        Pair<Long, Integer> realTermPair = calculateRealTerm(applyTerm, auditTime, autoEnable);
+
         // 启用时间：审核通过时间 + 申请期限
-        Long enableTime = auditTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
+        Long enableTime = realTermPair.getLeft();
         Integer status = RentalPackageOrderFreezeStatusEnum.AUTO_ENABLE.getCode();
-        Integer realTerm = applyTerm;
+        Integer realTerm = realTermPair.getRight();
         // 提前启用
         if (!autoEnable) {
             status = RentalPackageOrderFreezeStatusEnum.EARLY_ENABLE.getCode();
-            enableTime = nowTime;
-            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, auditTime)));
         }
 
         int num = carRentalPackageOrderFreezeMapper.enableByUidAndPackageOrderNo(uid, packageOrderNo, status, optUid, nowTime, enableTime, realTerm);

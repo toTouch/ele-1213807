@@ -80,6 +80,11 @@ public class CouponQuery {
     private Integer applyType;
 
     /**
+     * 指定套餐使用 指定套餐 - 1, 不指定(全部套餐) - 2
+     */
+    private Integer specificPackages;
+
+    /**
      * 类型  1--自营  2--加盟商
      */
     private Integer type;

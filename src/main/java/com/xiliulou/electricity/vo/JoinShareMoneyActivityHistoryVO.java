@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.ActivityEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -68,6 +69,12 @@ public class JoinShareMoneyActivityHistoryVO {
      * 返现金额
      */
     private BigDecimal money;
+
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
 
     /**
      * 邀请人UID
