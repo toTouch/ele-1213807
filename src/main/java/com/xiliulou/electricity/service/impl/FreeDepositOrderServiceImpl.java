@@ -2,8 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.google.api.client.util.Lists;
-import com.google.api.client.util.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -2040,7 +2038,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return rentBatteryInsuranceTriple;
         }
 
-
         //保存保险订单
         if (Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
             InsuranceOrder insuranceOrder = (InsuranceOrder) rentBatteryInsuranceTriple.getRight();
@@ -2149,8 +2146,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, FreeBatteryDepositHybridOrderQuery query, ElectricityCabinet electricityCabinet) {
 
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), new HashSet<>(query.getUserCouponIds()));
-        if(Boolean.FALSE.equals(calculatePayAmountResult.getLeft())){
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()));
+        if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
         BigDecimal payAmount = (BigDecimal) calculatePayAmountResult.getRight();
