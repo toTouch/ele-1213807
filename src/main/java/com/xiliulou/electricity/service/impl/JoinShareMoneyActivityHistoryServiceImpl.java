@@ -249,7 +249,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
 		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
 			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
-			UserInfo userInfo = userInfoService.queryByUidFromCache(inviterUid);
+			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
 			if(Objects.nonNull(userInfo)){
 				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());
