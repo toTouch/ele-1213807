@@ -563,7 +563,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, electricityMemberCardOrder);
     }
 
-    private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, BatteryMemberCardAndInsuranceQuery query, ElectricityCabinet electricityCabinet) {
+    public Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, BatteryMemberCardAndInsuranceQuery query, ElectricityCabinet electricityCabinet) {
 
         //查找计算优惠券
         //计算优惠后支付金额
