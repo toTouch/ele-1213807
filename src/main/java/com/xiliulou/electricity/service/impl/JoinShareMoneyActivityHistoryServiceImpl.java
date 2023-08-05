@@ -266,6 +266,11 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		return R.ok(count);
 	}
 
+	@Override
+	public List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
+		return joinShareMoneyActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
+	}
+
 	private String queryStatus(Integer status) {
         //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
         String result = "";

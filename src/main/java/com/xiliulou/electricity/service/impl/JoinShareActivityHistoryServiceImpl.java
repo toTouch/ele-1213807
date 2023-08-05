@@ -229,6 +229,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		}
 	}
 
+	@Slave
 	@Override
 	public R queryParticipants(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
@@ -245,10 +246,17 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
 	}
 
+	@Slave
 	@Override
 	public R queryParticipantsCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		Long count = joinShareActivityHistoryMapper.queryParticipantsCount(jsonShareActivityHistoryQuery);
 		return R.ok(count);
+	}
+
+	@Slave
+	@Override
+	public List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
+		return joinShareActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
 	}
 
 	private String queryStatus(Integer status) {

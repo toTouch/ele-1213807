@@ -10,6 +10,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,8 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	UserService userService;
 	@Autowired
 	UserBatteryMemberCardService userBatteryMemberCardService;
+	@Autowired
+	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	/**
 	 * 修改数据
@@ -97,6 +100,18 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return R.ok();
 		}
 
+		//3.0版本修改为邀请返券和邀请返现活动只能参加一个，且只是针对新用户参加
+		//查询当前用户是否参与了邀请返现活动
+		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+			return R.fail("000107", "已参加过邀请返现活动");
+		}
+		//检查是否有参与邀请返券的活动
+		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
+			return R.fail("000106", "已参加过邀请返券活动");
+		}
+
 	/*	//2、别人点击链接登录
 
 		//2.1 判断此人是否首次购买月卡
@@ -109,7 +124,8 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 
 		//未购买月卡则添加用户参与记录
 		//2.2 判断此人是否参与过活动
-		JoinShareMoneyActivityRecord oldJoinShareMoneyActivityRecord = joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
+		//TODO 待删除。 3.0版本后活动不能重复参加，所以如下代码被注释
+		/*JoinShareMoneyActivityRecord oldJoinShareMoneyActivityRecord = joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
 				.eq(JoinShareMoneyActivityRecord::getJoinUid, user.getUid()).eq(JoinShareMoneyActivityRecord::getTenantId, tenantId)
 				.eq(JoinShareMoneyActivityRecord::getActivityId, activityId)
 				.in(JoinShareMoneyActivityRecord::getStatus, JoinShareMoneyActivityRecord.STATUS_INIT));
@@ -148,7 +164,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
 			joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
 			return R.ok();
-		}
+		}*/
 
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
 		joinShareMoneyActivityRecord.setUid(uid);

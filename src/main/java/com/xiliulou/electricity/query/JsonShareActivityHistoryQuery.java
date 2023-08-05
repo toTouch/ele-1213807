@@ -20,6 +20,8 @@ public class JsonShareActivityHistoryQuery {
     private Long uid;
     private Integer activityId;
     private Integer tenantId;
+
+    private Long joinUid;
     
     private String joinName;
     

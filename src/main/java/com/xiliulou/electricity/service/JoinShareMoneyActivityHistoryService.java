@@ -62,4 +62,6 @@ public interface JoinShareMoneyActivityHistoryService {
     R queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
     R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+    List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
 }

@@ -28,4 +28,21 @@ public interface UserBizService {
      * @return
      */
     Boolean isOldUser(Integer tenantId, Long uid);
+
+    /**
+     * 处理用户参与邀请返券活动
+     * @param joinUid 参与用户ID
+     * @param packageId 套餐ID
+     */
+    void joinShareActivityProcess(Long joinUid, Long packageId);
+
+    /**
+     * 处理用户参与邀请返现活动
+     * @param joinUid 参与用户ID
+     * @param packageId 套餐ID
+     */
+    void joinShareMoneyActivityProcess(Long joinUid, Long packageId, Integer tenantId);
+
+    void joinChannelActivityProcess(Long joinUid);
+
 }
