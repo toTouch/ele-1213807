@@ -9,7 +9,12 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.SpecificPackagesEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -197,9 +202,11 @@ public class CouponServiceImpl implements CouponService {
 
         //将该优惠券对应的套餐信息保存到数据库中
         //log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
-        List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
-        if(!CollectionUtils.isEmpty(couponActivityPackages)){
-            couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
+        if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(couponQuery.getSpecificPackages())){
+            List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
+            if(!CollectionUtils.isEmpty(couponActivityPackages)){
+                couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
+            }
         }
 
         if (insert > 0) {
@@ -369,14 +376,44 @@ public class CouponServiceImpl implements CouponService {
         BeanUtils.copyProperties(coupon, couponActivityVO);
 
         if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())){
-            couponActivityVO.setBatteryPackages(getBatteryPackages(id));
 
-            couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-            couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            //判断是否指定了使用套餐，如果是1，则查询指定的套餐，如果是2，则拉取所有的套餐信息
+
+            if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(coupon.getSpecificPackages())){
+                couponActivityVO.setBatteryPackages(getBatteryPackages(id));
+                couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }else{
+                couponActivityVO.setBatteryPackages(getAllBatteryPackages());
+                couponActivityVO.setCarRentalPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }
+        }
+        return Triple.of(true, null, couponActivityVO);
+    }
+
+    public List<BatteryMemberCardVO> getAllBatteryPackages(){
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .status(BatteryMemberCard.STATUS_UP)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return batteryMemberCardService.selectByQuery(query);
+    }
+
+    public List<BatteryMemberCardVO> getAllCarBatteryPackages(Integer packageType){
+        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+        qryModel.setTenantId(TenantContextHolder.getTenantId());
+        qryModel.setStatus(UpDownEnum.UP.getCode());
+
+        if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(packageType)){
+            qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+        }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(packageType)){
+            qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
         }
 
+        return batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel);
 
-        return Triple.of(true, null, couponActivityVO);
     }
 
     private List<BatteryMemberCardVO> getBatteryPackages(Long couponId){

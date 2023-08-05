@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.activity;
 
+import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.Data;
 
@@ -81,6 +82,12 @@ public class CouponActivityVO {
      * 是否可叠加 0：否，1：是
      */
     private Integer superposition;
+
+    /**
+     * 是否指定套餐使用 1-指定套餐, 2-不指定套餐,适用于所有套餐
+     * @see SpecificPackagesEnum
+     */
+    private Integer specificPackages;
 
     /**
      * 换电套餐列表

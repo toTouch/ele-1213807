@@ -339,7 +339,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel) {
-        List<CarRentalPackagePO> carRentalPackagePOList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePO> carRentalPackagePOList = carRentalPackageService.list(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackagePOList)) {
             return Collections.emptyList();
         }
