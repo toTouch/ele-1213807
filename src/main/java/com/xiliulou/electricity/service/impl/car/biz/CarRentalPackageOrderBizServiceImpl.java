@@ -380,7 +380,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderService.insert(carRentalPackageOrder);
 
             // 判定 depositPayInsertEntity 是否需要新增
-            if (!ObjectUtils.isEmpty(depositPayInsertEntity)) {
+            if (ObjectUtils.isNotEmpty(depositPayInsertEntity)) {
                 depositPayInsertEntity.setRentalPackageOrderNo(carRentalPackageOrder.getOrderNo());
                 carRentalPackageDepositPayService.insert(depositPayInsertEntity);
             }
@@ -1813,9 +1813,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderService.insert(carRentalPackageOrder);
 
             // 判定 depositPayInsertEntity 是否需要新增
-            if (!ObjectUtils.isEmpty(depositPayInsertEntity)) {
+            if (ObjectUtils.isNotEmpty(depositPayInsertEntity)) {
                 depositPayInsertEntity.setRentalPackageOrderNo(carRentalPackageOrder.getOrderNo());
                 carRentalPackageDepositPayService.insert(depositPayInsertEntity);
+            }
+
+            // 赋值保险订单来源订单编码
+            if (ObjectUtils.isNotEmpty(insuranceOrderInsertEntity)) {
+                insuranceOrderInsertEntity.setSourceOrderNo(carRentalPackageOrder.getOrderNo());
             }
 
             // 5）租车套餐会员期限处理
@@ -1983,8 +1988,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 6. TODO 车辆断启电
 
-        /*rocketMqService.sendAsyncMsg("topic", "msg");*/
-        // 7. TODO 处理保险购买订单
+        // 7. 处理保险购买订单
+        InsuranceOrder insuranceOrder = insuranceOrderService.selectBySourceOrderNoAndType(orderNo, carRentalPackageOrderEntity.getRentalPackageType());
+        if (ObjectUtils.isNotEmpty(insuranceOrder)) {
+            // TODO 志龙给保险接口
+        }
+
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
         divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -2098,7 +2107,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 构建保险订单信息
-     * @return
+     * @param userInfo 用户信息
+     * @param buyInsurance 保险信息
+     * @param payType 交易方式
+     * @return 保险订单信息
      */
     private InsuranceOrder buildInsuranceOrder(UserInfo userInfo, FranchiseeInsurance buyInsurance, Integer payType) {
         if (ObjectUtils.isEmpty(buyInsurance)) {

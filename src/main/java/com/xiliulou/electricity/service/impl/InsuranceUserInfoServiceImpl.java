@@ -187,6 +187,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    @Deprecated
     public InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId) {
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoMapper.queryByUidAndTenantId(uid, tenantId);
 
@@ -197,6 +198,19 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 insuranceUserInfoVo.setCityName(city.getName());
             }
         }
+        return insuranceUserInfoVo;
+    }
+
+    @Override
+    public InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type) {
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return insuranceUserInfoVo;
+        }
+
+        insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
+
         return insuranceUserInfoVo;
     }
 
@@ -420,7 +434,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
@@ -532,7 +546,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
@@ -618,7 +632,14 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
 
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
-        insuranceUserInfoVo.setInsuranceName(Objects.isNull(franchiseeInsurance) ? "" : franchiseeInsurance.getName());
+        if (Objects.isNull(franchiseeInsurance)) {
+            return insuranceUserInfoVo;
+        }
+
+        insuranceUserInfoVo.setInsuranceName(franchiseeInsurance.getName());
+
+        City city = cityService.queryByIdFromDB(franchiseeInsurance.getCid());
+        insuranceUserInfoVo.setCityName(Objects.isNull(city) ? "" : city.getName());
 
         return insuranceUserInfoVo;
     }

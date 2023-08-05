@@ -6,7 +6,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
@@ -204,7 +203,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
 
-        return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
+        return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
 
 

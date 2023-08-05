@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.model.car.query;
 
+import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.List;
-
-import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
-
-import lombok.Data;
 
 /**
  * 租车套餐订单冻结表，DB层查询模型
@@ -60,6 +59,8 @@ public class CarRentalPackageOrderFreezeQryModel implements Serializable {
      *     3-审核拒绝
      *     4-提前启用
      *     5-自动启用
+     *     6-撤回申请
+     *     7-已失效
      * </pre>
      * @see RentalPackageOrderFreezeStatusEnum
      */

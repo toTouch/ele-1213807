@@ -1989,7 +1989,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         vo.setBatterySn(electricityBattery.getSn());
-        vo.setBatteryType(electricityBattery.getModel());
+        vo.setBatteryModel(electricityBattery.getModel());
         vo.setPower(electricityBattery.getPower());
     }
     

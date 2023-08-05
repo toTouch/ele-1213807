@@ -229,15 +229,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
 
-        // 获取购买订单编码
-        String rentalPackageOrderNo = depositPayEntity.getRentalPackageOrderNo();
-        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            log.info("CarRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo failed. not found t_car_rental_package_order. rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            return null;
-        }
-
-        return packageOrderEntity.getRentalPackageId();
+        return depositPayEntity.getRentalPackageId();
     }
 
     /**
@@ -488,11 +480,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 创建免押记录
         FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq);
         // 创建租车会员信息
-        CarRentalPackageMemberTermPO memberTermInsertEntity = null;
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
-            // 生成租车套餐会员期限表信息，准备 Insert
-            memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayInsert.getOrderNo());
-        }
+        CarRentalPackageMemberTermPO memberTermInsertOrUpdateEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayInsert.getOrderNo(), memberTermEntity);
 
         // 调用第三方
         PxzCommonRequest<PxzFreeDepositOrderRequest> query = new PxzCommonRequest<>();
@@ -530,11 +518,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // TX 事务落库
-        saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertEntity);
+        saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
 
         return callPxzRsp.getData();
     }
-
 
     /**
      * 免押申请数据落库事务处理
@@ -547,9 +534,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);
         // 此时会员期限表，数据要么为空，要么就是待生效状态
-        if (ObjectUtils.isNotEmpty(carRentalPackageMemberTermService)) {
-            carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
-            carRentalPackageMemberTermService.insert(memberTermEntity);
+        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
+            if (ObjectUtils.isNotEmpty(memberTermEntity.getId())) {
+                carRentalPackageMemberTermService.updateById(memberTermEntity);
+            } else {
+                carRentalPackageMemberTermService.insert(memberTermEntity);
+            }
         }
     }
 
@@ -560,9 +550,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param uid 用户ID
      * @param packageEntity 租车套餐信息
      * @param depositPayOrderNo 押金缴纳订单编码
-     * @return 将要新增的租车会员期限信息
+     * @param memberTermEntity DB层的会员期限数据
+     * @return 将要新增或修改的租车会员期限信息
      */
-    private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity, String depositPayOrderNo) {
+    private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity, String depositPayOrderNo, CarRentalPackageMemberTermPO memberTermEntity) {
         CarRentalPackageMemberTermPO carRentalPackageMemberTermEntity = new CarRentalPackageMemberTermPO();
         carRentalPackageMemberTermEntity.setUid(uid);
         carRentalPackageMemberTermEntity.setRentalPackageType(packageEntity.getType());
@@ -577,7 +568,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageMemberTermEntity.setCreateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setDelFlag(DelFlagEnum.OK.getCode());
-
+        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
+            carRentalPackageMemberTermEntity.setId(memberTermEntity.getId());
+        }
         return carRentalPackageMemberTermEntity;
     }
 

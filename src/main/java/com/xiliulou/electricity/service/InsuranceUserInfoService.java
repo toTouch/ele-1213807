@@ -57,4 +57,6 @@ public interface InsuranceUserInfoService {
     Boolean verifyUserIsNeedBuyInsurance(UserInfo userInfo, Integer type, String simpleBatteryType, Long carModelId);
 
     InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type);
+
+    InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
 }

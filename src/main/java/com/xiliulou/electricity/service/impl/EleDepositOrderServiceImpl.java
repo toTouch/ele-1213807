@@ -750,7 +750,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         userBatteryDepositVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-
+        userBatteryDepositVO.setDepositType(userBatteryDeposit.getDepositType());
 
         return R.ok(userBatteryDepositVO);
     }

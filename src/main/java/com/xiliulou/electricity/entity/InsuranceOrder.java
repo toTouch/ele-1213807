@@ -70,6 +70,7 @@ public class InsuranceOrder {
 
     /**
      * 保险类型 0--电池 1--车辆
+     * 取保险表,保持一致
      */
     private Integer insuranceType;
 
@@ -108,8 +109,10 @@ public class InsuranceOrder {
 
     private Long updateTime;
 
-    public static final Integer BATTERY_INSURANCE_TYPE = 0;
-    public static final Integer CAR_INSURANCE_TYPE = 1;
+    /**
+     * 来源订单编码
+     */
+    private String sourceOrderNo;
 
     public static final Integer NOT_USE = 0;
     public static final Integer IS_USE = 1;

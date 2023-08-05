@@ -24,7 +24,10 @@ public class UserBatteryDepositVO {
 
     private BigDecimal batteryDeposit;
 
-
+    /**
+     * 押金类型
+     */
+    private Integer depositType;
 
 
 

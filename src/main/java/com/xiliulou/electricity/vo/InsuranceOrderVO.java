@@ -55,4 +55,9 @@ public class InsuranceOrderVO {
     private Integer isUse;
 
     private Integer payType;
+
+    /**
+     * 来源订单编码
+     */
+    private String sourceOrderNo;
 }
