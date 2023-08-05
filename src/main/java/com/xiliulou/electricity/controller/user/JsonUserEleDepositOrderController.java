@@ -194,7 +194,7 @@ public class JsonUserEleDepositOrderController {
     /**
      * 用户端退款订单分页
      */
-    @GetMapping(value = "/user/queryRentCarDeposit")
+    @GetMapping(value = "/user/batteryDeposit/refund")
     public R batteryDepositRefund(@RequestParam("size") long size, @RequestParam("offset") long offset) {
 
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
