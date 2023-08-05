@@ -145,7 +145,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
 
             //设置电池短型号
-            if (Objects.nonNull(electricityBatteryVO.getModel())) {
+            if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
                 String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
                 item.setBatteryShortType(batteryShortType);
             }

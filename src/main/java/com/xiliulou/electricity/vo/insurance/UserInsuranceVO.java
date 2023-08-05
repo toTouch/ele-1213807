@@ -31,4 +31,44 @@ public class UserInsuranceVO implements Serializable {
     private BigDecimal premium;
 
 
+    private Integer id;
+
+    private Long uid;
+
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+
+    /**
+     * 保额
+     */
+    private BigDecimal forehead;
+
+    /**
+     * 保险Id
+     */
+    private Integer insuranceId;
+    /**
+     * 保险订单编号
+     */
+    private String orderId;
+
+    /**
+     * 是否出险 0--未出险 1--已出险
+     */
+    private Integer isUse;
+
+    private Long createTime;
+
+    private String cityName;
+
+    private Integer cid;
+
+    /**
+     * 保险购买时间
+     */
+    private Long payInsuranceTime;
+
+
 }

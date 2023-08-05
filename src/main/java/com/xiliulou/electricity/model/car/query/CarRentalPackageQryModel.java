@@ -120,6 +120,17 @@ public class CarRentalPackageQryModel implements Serializable {
      */
     private Integer rentRebate;
 
+
+    /**
+     * 优惠券赠送
+     * <pre>
+     *     0-是
+     *     1-否
+     * </pre>
+     * @see YesNoEnum
+     */
+    private Integer giveCoupon;
+
     /**
      * 主键ID集
      */
