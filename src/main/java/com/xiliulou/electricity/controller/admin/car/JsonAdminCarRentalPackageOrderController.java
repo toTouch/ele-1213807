@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -127,7 +128,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             // 对使用中的订单，进行二次处理
             // 查询会员信息
             CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
-            if (UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
+            if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
                 carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
             }
 
