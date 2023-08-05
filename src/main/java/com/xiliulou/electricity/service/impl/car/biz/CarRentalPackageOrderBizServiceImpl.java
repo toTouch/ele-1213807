@@ -921,6 +921,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
         }
 
+        long now = System.currentTimeMillis();
+        if (memberTermEntity.getDueTime().longValue() < now) {
+            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time is {}. now is {}", memberTermEntity.getDueTime(), now);
+            throw new BizException("300033", "套餐已过期，无法申请冻结");
+        }
+
         // 查询套餐购买订单信息
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(packageOrderNo);
 
@@ -1078,8 +1084,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 查询会员期限信息
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+        }
+
+        long now = System.currentTimeMillis();
+        if (memberTermEntity.getDueTimeTotal().longValue() < now) {
+            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
+            throw new BizException("300032", "套餐已过期，无法申请退租");
         }
 
         // 查询套餐购买订单
@@ -1091,7 +1103,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.notEqual(YesNoEnum.YES.getCode(), packageOrderEntity.getRentRebate())) {
             throw new BizException("300012", "订单不允许退租");
         } else {
-            if (System.currentTimeMillis() >= packageOrderEntity.getRentRebateEndTime()) {
+            if (now >= packageOrderEntity.getRentRebateEndTime().longValue()) {
                 throw new BizException("300013", "订单超过可退期限");
             }
         }
