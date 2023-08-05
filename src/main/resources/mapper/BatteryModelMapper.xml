@@ -70,10 +70,7 @@
         battery_v_short
         from t_battery_model
         where del_flag=0
-        <if test="batteryType != null and batteryType != ''">
-            and battery_type = #{batteryType}
-        </if>
-        <if test="batteryTypes != null">
+        <if test="batteryTypes != null and batteryTypes.size > 0">
             and battery_type in
             <foreach collection="batteryTypes" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
