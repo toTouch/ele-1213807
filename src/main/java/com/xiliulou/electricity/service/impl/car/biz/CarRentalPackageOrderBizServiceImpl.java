@@ -1981,8 +1981,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
             memberTermUpdateEntity.setId(memberTermEntity.getId());
 
-            // 原本套餐，已过期
-            if (memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
+            // 原本套餐，非退租且已过期
+            if (StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo()) && memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
                 memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                 memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                 memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
