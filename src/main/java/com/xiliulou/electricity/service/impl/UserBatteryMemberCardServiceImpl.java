@@ -294,6 +294,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.checkUserByMembercardId(id);
     }
 
+    /**
+     * 检查用户套餐是否可用
+     * @param userInfo
+     * @return
+     */
     @Override
     public Triple<Boolean, String, Object> verifyUserBatteryMembercard(UserInfo userInfo) {
         UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(userInfo.getUid());
@@ -302,7 +307,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return Triple.of(false, "100210", "用户未开通套餐");
         }
 
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
             log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
             return Triple.of(false, "100211", "用户套餐不可用");
         }
