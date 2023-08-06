@@ -11,7 +11,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -407,9 +407,9 @@ public class CouponServiceImpl implements CouponService {
         qryModel.setStatus(UpDownEnum.UP.getCode());
 
         if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(packageType)){
-            qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+            qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
         }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(packageType)){
-            qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+            qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
         }
 
         return batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel);

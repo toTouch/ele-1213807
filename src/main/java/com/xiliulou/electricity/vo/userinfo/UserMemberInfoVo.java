@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
@@ -27,7 +27,7 @@ public class UserMemberInfoVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer type;
 

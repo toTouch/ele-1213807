@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
@@ -36,6 +37,9 @@ import java.util.Objects;
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+
+    @Resource
+    private UserBizService userBizService;
 
     @Resource
     private UserInfoService userInfoService;
@@ -170,11 +174,8 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                 // 删除会员期限表信息
                 carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
-                // TODO 清理user信息/解绑车辆/解绑电池
-                /*UserInfo userInfo = new UserInfo();
-                userInfo.setCarBatteryDepositStatus();
-                userInfo.setCarDepositStatus();
-                userInfoService.updateByUid(userInfo);*/
+                // 清理user信息/解绑车辆/解绑电池
+                userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
             }
 
         } else {

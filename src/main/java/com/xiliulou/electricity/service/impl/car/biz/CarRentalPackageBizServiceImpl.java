@@ -10,7 +10,7 @@ import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -161,7 +161,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 }
 
                 // 车电一体且存在订单
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询电池型号信息
                     List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
                     batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
@@ -194,7 +194,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 车电一体，需要二次处理
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             // 查询型号关联关系
             List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePO::getId).collect(Collectors.toList());
             List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
@@ -251,7 +251,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPackage(CarRentalPackageOptModel optModel) {
         if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName())
-                || !BasicEnum.isExist(optModel.getType(), CarRentalPackageTypeEnum.class)) {
+                || !BasicEnum.isExist(optModel.getType(), RentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -270,13 +270,13 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         Long packageId = carRentalPackageService.insert(entity);
 
         // 车电一体
-        if (CarRentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
+        if (RentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
             return true;
         }
 
         // 车电一体
         List<String> batteryModelTypes = CollectionUtils.isEmpty(optModel.getBatteryModelTypes()) ? new ArrayList<>() : optModel.getBatteryModelTypes();
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(Long.valueOf(optModel.getFranchiseeId()));
             if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType()) && CollectionUtils.isEmpty(batteryModelTypes)) {
                 log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");

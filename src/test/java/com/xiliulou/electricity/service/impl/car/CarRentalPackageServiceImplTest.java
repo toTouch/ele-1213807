@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.electricity.ElectricityCabinetApplication;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -62,7 +62,7 @@ public class CarRentalPackageServiceImplTest {
         optModel.setCreateTime(now);
         optModel.setUpdateTime(now);
         optModel.setName("测试新增租车套餐");
-        optModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+        optModel.setType(RentalPackageTypeEnum.CAR.getCode());
         optModel.setTenancy(30);
         optModel.setTenancyUnit(RentalUnitEnum.DAY.getCode());
         optModel.setRent(new BigDecimal("90"));

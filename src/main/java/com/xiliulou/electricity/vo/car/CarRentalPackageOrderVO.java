@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -28,7 +28,7 @@ public class CarRentalPackageOrderVO implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 

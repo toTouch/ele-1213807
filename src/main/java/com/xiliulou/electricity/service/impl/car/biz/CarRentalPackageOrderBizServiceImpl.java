@@ -14,7 +14,7 @@ import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
@@ -266,7 +266,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 7. 判定套餐互斥
             // 7.1 车或者电与车电一体互斥
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
                     (!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus()) || !UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus()))) {
                 log.error("bindingPackage failed. Package type mismatch. Buy package type is {}, user package type is battery", buyPackageEntity.getType());
                 throw new BizException("300005", "套餐不匹配");
@@ -334,7 +334,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         throw new BizException("300005", "套餐不匹配");
                     }
                     // 车电一体，比对电池型号
-                    if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
+                    if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
                         // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
                         Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
                         if (ObjectUtils.isEmpty(franchisee)) {
@@ -1056,7 +1056,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
                 createFlag = true;
@@ -1164,7 +1164,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
                 throw new BizException("300018", "存在未归还的车辆");
             }
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
                 ElectricityBattery battery = batteryService.queryByUid(uid);
                 if (ObjectUtils.isNotEmpty(battery)) {
                     throw new BizException("300019", "存在未归还的电池");
@@ -1448,7 +1448,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 7. 电池消息
         ElectricityUserBatteryVo userBatteryVo = null;
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
             userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
@@ -1695,7 +1695,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 7. 判定套餐互斥
             // 7.1 车或者电与车电一体互斥
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
                     (!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus()) || !UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus()))) {
                 log.error("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is battery", buyPackageEntity.getType());
                 return R.fail("300005", "套餐不匹配");
@@ -1764,7 +1764,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             return R.fail("300005", "套餐不匹配");
                         }
                         // 车电一体，比对电池型号
-                        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
+                        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
                             // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
                             Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
                             if (ObjectUtils.isEmpty(franchisee)) {
@@ -1812,7 +1812,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     return R.fail("300027", "保险与套餐不匹配");
                 }
 
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType())) {
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType())) {
                     // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
                     if (ObjectUtils.isEmpty(franchisee)) {
@@ -1856,7 +1856,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 3）支付金额处理
             // 优惠券只抵扣租金
-            Integer packageType = CarRentalPackageTypeEnum.CAR.getCode().equals(buyPackageEntity.getType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode();
+            Integer packageType = RentalPackageTypeEnum.CAR.getCode().equals(buyPackageEntity.getType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode();
             Triple<BigDecimal, List<Long>, Boolean> couponTriple = carRentalPackageBizService.calculatePaymentAmount(buyPackageEntity.getRent(), buyOptModel.getUserCouponIds(), uid, buyRentalPackageId, packageType);
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
@@ -2083,7 +2083,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         if (YesNoEnum.NO.getCode().equals(userInfo.getCarBatteryDepositStatus()) || UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
             userInfo.setUpdateTime(System.currentTimeMillis());
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
                 userInfo.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             } else {
                 userInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
@@ -2119,7 +2119,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
         divisionAccountOrderDTO.setOrderNo(orderNo);
-        divisionAccountOrderDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
         divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
@@ -2127,7 +2127,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 9. 处理活动
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
         activityProcessDTO.setOrderNo(orderNo);
-        activityProcessDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));

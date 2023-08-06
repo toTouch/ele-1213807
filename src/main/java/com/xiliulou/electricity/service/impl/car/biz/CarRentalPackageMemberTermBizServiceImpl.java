@@ -4,7 +4,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
@@ -138,7 +138,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = null;
         List<BatteryModel> batteryModelEntityList = null;
         ElectricityBattery batteryEntity = null;
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
             if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
                 List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
@@ -415,7 +415,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
                 createFlag = true;

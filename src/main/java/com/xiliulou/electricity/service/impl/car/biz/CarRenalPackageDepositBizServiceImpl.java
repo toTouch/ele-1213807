@@ -4,9 +4,12 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
@@ -15,6 +18,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -52,6 +56,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
+
+    @Resource
+    private UserBizService userBizService;
 
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
@@ -177,7 +184,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     continue;
                 }
 
-                // 未解冻
+                // 已解冻
                 PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
                     log.info("freeDepositRefundHandler, pxzDepositService.queryFreeDepositOrder is not auth_un_frozen. orderNo is {}, uid is {}", orderNo, uid);
@@ -208,6 +215,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         insuranceUserInfoService.deleteByUidAndType(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
         // 删除会员期限表信息
         carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
+        // 清理user信息/解绑车辆/解绑电池
+        userBizService.depositRefundUnbind(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
+
     }
 
     /**
@@ -385,10 +395,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userInfoUpdate.setStoreId(Long.valueOf(storeId));
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
-            if (CarRentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
+            if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             }
         }
@@ -584,7 +594,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      */
     private FreeDepositOrder buildFreeDepositOrderEntity(Integer tenantId, Long uid, CarRentalPackageDepositPayPO carRentalPackageDepositPayInsert, FreeDepositOptReq freeDepositOptReq) {
         Integer depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR;
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
             depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY;
         }
         FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder()
@@ -910,7 +920,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType());
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
-                    // TODO 解绑用户
+                    // 清理user信息/解绑车辆/解绑电池
+                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+
                 }
 
                 // 线上，调用微信退款
@@ -1000,7 +1012,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
                     freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
                     freeDepositOrderService.update(freeDepositOrderUpdate);
-
                 }
 
             } else {
@@ -1015,11 +1026,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
-                    // TODO 清理user信息/解绑车辆/解绑电池
-                    /*UserInfo userInfo = new UserInfo();
-                    userInfo.setCarBatteryDepositStatus();
-                    userInfo.setCarDepositStatus();
-                    userInfoService.updateByUid(userInfo);*/
+                    // 清理user信息/解绑车辆/解绑电池
+                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getType());
                 }
 
                 // 免押
@@ -1274,7 +1282,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 车电一体，查询设备(电池)
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
                 log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are unreturned batteries. uid is {}", uid);
