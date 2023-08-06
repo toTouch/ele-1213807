@@ -10,7 +10,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -50,7 +50,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
      * @return 逾期订单集
      */
     @GetMapping("/page")
-    public R<List<CarRentalPackageOrderSlippageVO>> page(Integer offset, Integer size, @RequestParam(required = false) Integer rentalPackageType) {
+    public R<List<CarRentalPackageOrderSlippageVo>> page(Integer offset, Integer size, @RequestParam(required = false) Integer rentalPackageType) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -72,11 +72,11 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        List<CarRentalPackageOrderSlippageVO> carRentalPackageSlippageVoList = new ArrayList<>();
+        List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
         long nowTime = System.currentTimeMillis();
 
         for (CarRentalPackageOrderSlippagePO slippageEntity : carRentalPackageSlippageEntityList) {
-            CarRentalPackageOrderSlippageVO slippageVo = new CarRentalPackageOrderSlippageVO();
+            CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
             // 默认应缴==实缴
             slippageVo.setLateFeePayable(slippageVo.getLateFeePay());

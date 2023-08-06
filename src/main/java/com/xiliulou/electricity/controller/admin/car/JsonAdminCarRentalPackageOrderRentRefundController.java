@@ -26,7 +26,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundServi
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
 import com.xiliulou.security.bean.TokenUser;
 
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +93,7 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
      * @return 退租订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderRentRefundVO>> page(@RequestBody CarRentalPackageOrderRentRefundQryReq queryReq) {
+    public R<List<CarRentalPackageOrderRentRefundVo>> page(@RequestBody CarRentalPackageOrderRentRefundQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderRentRefundQryReq();
         }
@@ -135,9 +135,9 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         Map<Long, String> carRentalPackageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderRentRefundVO> rentRefundVOList = refundPOList.stream().map(rentRefundPO -> {
+        List<CarRentalPackageOrderRentRefundVo> rentRefundVOList = refundPOList.stream().map(rentRefundPO -> {
 
-            CarRentalPackageOrderRentRefundVO rentRefundVO = new CarRentalPackageOrderRentRefundVO();
+            CarRentalPackageOrderRentRefundVo rentRefundVO = new CarRentalPackageOrderRentRefundVo();
             BeanUtils.copyProperties(rentRefundPO, rentRefundVO);
 
             if (!userInfoMap.isEmpty()) {

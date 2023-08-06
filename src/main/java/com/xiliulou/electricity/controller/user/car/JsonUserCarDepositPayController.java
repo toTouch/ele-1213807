@@ -13,7 +13,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -87,7 +87,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      * @return 押金缴纳订单集
      */
     @GetMapping("/page")
-    public R<List<CarRentalPackageDepositPayVO>> page(Integer offset, Integer size) {
+    public R<List<CarRentalPackageDepositPayVo>> page(Integer offset, Integer size) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -110,8 +110,8 @@ public class JsonUserCarDepositPayController extends BasicController {
         }
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositPayVO> depositPayVoList = depositPayEntityList.stream().map(depositPayEntity -> {
-            CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
+        List<CarRentalPackageDepositPayVo> depositPayVoList = depositPayEntityList.stream().map(depositPayEntity -> {
+            CarRentalPackageDepositPayVo depositPayVo = new CarRentalPackageDepositPayVo();
             BeanUtils.copyProperties(depositPayEntity, depositPayVo);
             return depositPayVo;
         }).collect(Collectors.toList());
@@ -147,7 +147,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      * @return
      */
     @GetMapping("/queryUnRefundCarDeposit")
-    public R<CarRentalPackageDepositPayVO> queryUnRefundCarDeposit() {
+    public R<CarRentalPackageDepositPayVo> queryUnRefundCarDeposit() {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

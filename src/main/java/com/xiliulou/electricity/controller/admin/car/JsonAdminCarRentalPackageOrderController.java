@@ -13,7 +13,7 @@ import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -49,7 +49,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
      * @return 租车套餐购买订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
+    public R<List<CarRentalPackageOrderVo>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderQryReq();
         }
@@ -102,9 +102,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
+        List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
 
-            CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
+            CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO);
 
             if (!userInfoMap.isEmpty()) {

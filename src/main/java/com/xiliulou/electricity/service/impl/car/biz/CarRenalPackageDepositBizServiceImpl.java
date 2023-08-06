@@ -22,7 +22,7 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
@@ -648,7 +648,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return 押金缴纳信息
      */
     @Override
-    public CarRentalPackageDepositPayVO selectUnRefundCarDeposit(Integer tenantId, Long uid) {
+    public CarRentalPackageDepositPayVo selectUnRefundCarDeposit(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -735,7 +735,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 拼装返回数据
-        CarRentalPackageDepositPayVO depositPayVo = new CarRentalPackageDepositPayVO();
+        CarRentalPackageDepositPayVo depositPayVo = new CarRentalPackageDepositPayVo();
         depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
         depositPayVo.setDeposit(depositPayEntity.getDeposit());
         depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());

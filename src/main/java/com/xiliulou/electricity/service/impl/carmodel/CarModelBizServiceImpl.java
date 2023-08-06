@@ -21,7 +21,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.StoreVO;
-import com.xiliulou.electricity.vo.car.CarModelDetailVO;
+import com.xiliulou.electricity.vo.car.CarModelDetailVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
      * @return 车辆型号详细信息
      */
     @Override
-    public CarModelDetailVO queryDetailByCarModelId(Integer carModelId) {
+    public CarModelDetailVo queryDetailByCarModelId(Integer carModelId) {
         if (ObjectUtils.isEmpty(carModelId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -96,7 +96,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         Store store = storeService.queryByIdFromCache(carModel.getStoreId());
 
         // 拼装返回数据
-        CarModelDetailVO carModelDetailVo = new CarModelDetailVO();
+        CarModelDetailVo carModelDetailVo = new CarModelDetailVo();
         carModelDetailVo.setId(carModel.getId());
         carModelDetailVo.setName(carModel.getName());
         carModelDetailVo.setOtherProperties(carModel.getOtherProperties());

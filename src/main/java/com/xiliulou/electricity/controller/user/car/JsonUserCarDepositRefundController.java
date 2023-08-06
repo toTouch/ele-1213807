@@ -9,7 +9,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -64,7 +64,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
      * @return 押金退还订单集
      */
     @GetMapping("/page")
-    public R<List<CarRentalPackageDepositRefundVO>> page(Integer offset, Integer size) {
+    public R<List<CarRentalPackageDepositRefundVo>> page(Integer offset, Integer size) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -87,8 +87,8 @@ public class JsonUserCarDepositRefundController extends BasicController {
 
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositRefundVO> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
-            CarRentalPackageDepositRefundVO depositRefundVo = new CarRentalPackageDepositRefundVO();
+        List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
+            CarRentalPackageDepositRefundVo depositRefundVo = new CarRentalPackageDepositRefundVo();
             BeanUtils.copyProperties(depositRefundEntity, depositRefundVo);
             return depositRefundVo;
         }).collect(Collectors.toList());

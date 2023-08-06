@@ -9,7 +9,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryMod
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -52,7 +52,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
      * @return 押金缴纳订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
+    public R<List<CarRentalPackageDepositPayVo>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositPayQryReq();
         }
@@ -87,8 +87,8 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositPayVO> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
-            CarRentalPackageDepositPayVO depositPayVO = new CarRentalPackageDepositPayVO();
+        List<CarRentalPackageDepositPayVo> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
+            CarRentalPackageDepositPayVo depositPayVO = new CarRentalPackageDepositPayVo();
             BeanUtils.copyProperties(depositPayEntity, depositPayVO);
 
             if (!userInfoMap.isEmpty()) {

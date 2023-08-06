@@ -32,9 +32,9 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
-import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
+import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
@@ -360,7 +360,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageDepositPayPO depositPayInsertEntity = null;
             // 押金缴纳订单编码
             String depositPayOrderNo = null;
-            CarRentalPackageDepositPayVO depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
+            CarRentalPackageDepositPayVo depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
@@ -1474,7 +1474,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 套餐订单信息
-        CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
+        CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
         carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
         carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
         carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
@@ -1499,7 +1499,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 车辆信息
         if (ObjectUtils.isNotEmpty(carInfo)) {
-            CarVO carVO = new CarVO();
+            CarVo carVO = new CarVo();
             carVO.setCarSn(carInfo.getCarSn());
             carVO.setStoreName(carInfo.getStoreName());
             carVO.setLatitude(carInfo.getLatitude());
@@ -1833,7 +1833,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageDepositPayPO depositPayInsertEntity = null;
             // 押金缴纳订单编码
             String depositPayOrderNo = null;
-            CarRentalPackageDepositPayVO depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
+            CarRentalPackageDepositPayVo depositPayVo = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert

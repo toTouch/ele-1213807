@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageOrderRentRefundVO implements Serializable {
+public class CarRentalPackageOrderRentRefundVo implements Serializable {
 
     private static final long serialVersionUID = 2271729616539732402L;
 

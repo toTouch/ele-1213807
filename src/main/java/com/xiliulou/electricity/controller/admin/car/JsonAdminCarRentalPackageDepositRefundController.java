@@ -13,7 +13,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -110,7 +110,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      * @return 退押订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
+    public R<List<CarRentalPackageDepositRefundVo>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
@@ -143,9 +143,9 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositRefundVO> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
+        List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
 
-            CarRentalPackageDepositRefundVO depositRefundVO = new CarRentalPackageDepositRefundVO();
+            CarRentalPackageDepositRefundVo depositRefundVO = new CarRentalPackageDepositRefundVo();
             BeanUtils.copyProperties(depositRefundEntity, depositRefundVO);
 
             if (!userInfoMap.isEmpty()) {

@@ -14,7 +14,7 @@ import java.util.List;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageVO implements Serializable {
+public class CarRentalPackageVo implements Serializable {
 
     private static final long serialVersionUID = 8317006002657408755L;
 

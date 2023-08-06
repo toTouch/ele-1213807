@@ -16,7 +16,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -149,7 +149,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
      * @return 套餐购买订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq qryReq) {
+    public R<List<CarRentalPackageOrderVo>> page(@RequestBody CarRentalPackageOrderQryReq qryReq) {
         if (null == qryReq) {
             qryReq = new CarRentalPackageOrderQryReq();
         }
@@ -202,8 +202,8 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         long nowTime = System.currentTimeMillis();
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderEntityList.stream().map(carRentalPackageOrder -> {
-            CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
+        List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderEntityList.stream().map(carRentalPackageOrder -> {
+            CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
             carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
             carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
             carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());

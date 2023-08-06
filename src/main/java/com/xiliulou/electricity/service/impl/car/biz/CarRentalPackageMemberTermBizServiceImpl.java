@@ -12,9 +12,9 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
-import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
+import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
@@ -192,7 +192,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 套餐购买信息
         if (ObjectUtils.isNotEmpty(rentalPackageOrderEntity)) {
-            CarRentalPackageOrderVO carRentalPackageOrder = new CarRentalPackageOrderVO();
+            CarRentalPackageOrderVo carRentalPackageOrder = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
             userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
         }
@@ -200,7 +200,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 押金缴纳订单信息
         if (ObjectUtils.isNotEmpty(depositPayEntity)) {
-            CarRentalPackageDepositPayVO carRentalPackageDepositPay = new CarRentalPackageDepositPayVO();
+            CarRentalPackageDepositPayVo carRentalPackageDepositPay = new CarRentalPackageDepositPayVo();
             BeanUtils.copyProperties(depositPayEntity, carRentalPackageDepositPay);
             userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
         }
@@ -214,7 +214,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 车辆信息
         if (ObjectUtils.isNotEmpty(carEntity)) {
-            CarVO car = new CarVO();
+            CarVo car = new CarVo();
             car.setCarSn(carEntity.getSn());
             car.setCarModelName(carEntity.getModel());
             userMemberInfoVo.setCar(car);

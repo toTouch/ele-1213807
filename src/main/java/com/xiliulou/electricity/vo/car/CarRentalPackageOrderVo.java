@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageOrderVO implements Serializable {
+public class CarRentalPackageOrderVo implements Serializable {
 
     private static final long serialVersionUID = -1774728302026416327L;
 

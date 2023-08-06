@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.carmodel;
 
-import com.xiliulou.electricity.vo.car.CarModelDetailVO;
+import com.xiliulou.electricity.vo.car.CarModelDetailVo;
 
 /**
  * 车辆型号业务聚合 BizService
@@ -15,7 +15,7 @@ public interface CarModelBizService {
      * @param carModelId 车辆型号ID
      * @return 车辆型号详细信息
      */
-    CarModelDetailVO queryDetailByCarModelId(Integer carModelId);
+    CarModelDetailVo queryDetailByCarModelId(Integer carModelId);
 
     /**
      * 检测是否允许购买此车辆型号

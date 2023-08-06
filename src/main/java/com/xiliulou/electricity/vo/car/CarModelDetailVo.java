@@ -12,7 +12,7 @@ import java.util.List;
  * @author xiaohui.song
  **/
 @Data
-public class CarModelDetailVO implements Serializable {
+public class CarModelDetailVo implements Serializable {
 
     private static final long serialVersionUID = -3397808849014441627L;
 

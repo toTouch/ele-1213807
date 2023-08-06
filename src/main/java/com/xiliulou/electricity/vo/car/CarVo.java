@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author xiaohui.song
  **/
 @Data
-public class CarVO implements Serializable {
+public class CarVo implements Serializable {
 
     private static final long serialVersionUID = -6974069090885954269L;
 
