@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -37,7 +37,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      */
     @Slave
     @Override
-    public List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel) {
+    public List<CarRentalOrderPo> list(CarRentalOrderQryModel qryModel) {
         return carRentalOrderMapper.list(qryModel);
     }
 
@@ -49,7 +49,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      */
     @Slave
     @Override
-    public List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel) {
+    public List<CarRentalOrderPo> page(CarRentalOrderQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalOrderQryModel();
         }
@@ -81,7 +81,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      */
     @Slave
     @Override
-    public CarRentalOrderPO selectByOrderNo(String orderNo) {
+    public CarRentalOrderPo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -97,7 +97,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      */
     @Slave
     @Override
-    public CarRentalOrderPO selectById(Long id) {
+    public CarRentalOrderPo selectById(Long id) {
         if (null == id || id <= 0) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -112,7 +112,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      * @return 主键ID
      */
     @Override
-    public Long insert(CarRentalOrderPO entity) {
+    public Long insert(CarRentalOrderPo entity) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

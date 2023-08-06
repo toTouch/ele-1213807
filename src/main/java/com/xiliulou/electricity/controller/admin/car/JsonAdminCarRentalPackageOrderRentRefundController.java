@@ -1,10 +1,21 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
+import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
+import com.xiliulou.electricity.query.car.audit.AuditOptReq;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -14,22 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
-import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
-import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
-import com.xiliulou.electricity.query.car.audit.AuditOptReq;
-import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
-import com.xiliulou.security.bean.TokenUser;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单退租订单 Controller
@@ -39,6 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/admin/car/carRentalPackageOrderRentRefund")
 public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicController {
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
@@ -115,7 +116,7 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageOrderRentRefundPO> refundPOList = carRentalPackageOrderRentRefundService.page(qryModel);
+        List<CarRentalPackageOrderRentRefundPo> refundPOList = carRentalPackageOrderRentRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(refundPOList)) {
             return R.ok(Collections.emptyList());
         }
@@ -135,25 +136,25 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         Map<Long, String> carRentalPackageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderRentRefundVo> rentRefundVOList = refundPOList.stream().map(rentRefundPO -> {
+        List<CarRentalPackageOrderRentRefundVo> rentRefundVoList = refundPOList.stream().map(rentRefundPo -> {
 
-            CarRentalPackageOrderRentRefundVo rentRefundVO = new CarRentalPackageOrderRentRefundVo();
-            BeanUtils.copyProperties(rentRefundPO, rentRefundVO);
+            CarRentalPackageOrderRentRefundVo rentRefundVo = new CarRentalPackageOrderRentRefundVo();
+            BeanUtils.copyProperties(rentRefundPo, rentRefundVo);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(rentRefundPO.getUid(), new UserInfo());
-                rentRefundVO.setUserRelName(userInfo.getName());
-                rentRefundVO.setUserPhone(userInfo.getPhone());
+                UserInfo userInfo = userInfoMap.getOrDefault(rentRefundPo.getUid(), new UserInfo());
+                rentRefundVo.setUserRelName(userInfo.getName());
+                rentRefundVo.setUserPhone(userInfo.getPhone());
             }
 
             if (!carRentalPackageNameMap.isEmpty()) {
-                rentRefundVO.setCarRentalPackageName(carRentalPackageNameMap.getOrDefault(rentRefundPO.getRentalPackageId(), ""));
+                rentRefundVo.setCarRentalPackageName(carRentalPackageNameMap.getOrDefault(rentRefundPo.getRentalPackageId(), ""));
             }
 
-            return rentRefundVO;
+            return rentRefundVo;
         }).collect(Collectors.toList());
 
-        return R.ok(rentRefundVOList);
+        return R.ok(rentRefundVoList);
     }
 
     /**

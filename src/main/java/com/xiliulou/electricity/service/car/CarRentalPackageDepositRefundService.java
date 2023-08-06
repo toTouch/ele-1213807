@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 
 import java.util.List;
@@ -17,14 +17,14 @@ public interface CarRentalPackageDepositRefundService {
      * @param depositPayOrderNo 押金缴纳编码
      * @return 押金退款订单编码
      */
-    CarRentalPackageDepositRefundPO selectLastByDepositPayOrderNo(String depositPayOrderNo);
+    CarRentalPackageDepositRefundPo selectLastByDepositPayOrderNo(String depositPayOrderNo);
 
     /**
      * 根据退押申请单编码进行更新
      * @param entity 实体数据
      * @return
      */
-    boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity);
+    boolean updateByOrderNo(CarRentalPackageDepositRefundPo entity);
 
     /**
      * 条件查询列表<br />
@@ -32,14 +32,14 @@ public interface CarRentalPackageDepositRefundService {
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageDepositRefundPO> list(CarRentalPackageDepositRefundQryModel qryModel);
+    List<CarRentalPackageDepositRefundPo> list(CarRentalPackageDepositRefundQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageDepositRefundPO> page(CarRentalPackageDepositRefundQryModel qryModel);
+    List<CarRentalPackageDepositRefundPo> page(CarRentalPackageDepositRefundQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -53,14 +53,14 @@ public interface CarRentalPackageDepositRefundService {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageDepositRefundPO selectByOrderNo(String orderNo);
+    CarRentalPackageDepositRefundPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageDepositRefundPO selectById(Long id);
+    CarRentalPackageDepositRefundPo selectById(Long id);
 
 
     /**
@@ -68,5 +68,5 @@ public interface CarRentalPackageDepositRefundService {
      * @param entity 实体数据
      * @return
      */
-    Long insert(CarRentalPackageDepositRefundPO entity);
+    Long insert(CarRentalPackageDepositRefundPo entity);
 }

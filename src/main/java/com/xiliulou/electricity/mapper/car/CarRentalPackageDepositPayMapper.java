@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,7 +21,7 @@ public interface CarRentalPackageDepositPayMapper {
      * @param uid 用户ID
      * @return 押金支付订单
      */
-    CarRentalPackageDepositPayPO selectLastByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageDepositPayPo selectLastByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据订单编码更新支付状态
@@ -41,7 +41,7 @@ public interface CarRentalPackageDepositPayMapper {
      * @param uid      用户ID
      * @return
      */
-    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageDepositPayPo selectUnRefundCarDeposit(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />
@@ -49,14 +49,14 @@ public interface CarRentalPackageDepositPayMapper {
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackageDepositPayPO> list(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPo> list(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackageDepositPayPO> page(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPo> page(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -70,19 +70,19 @@ public interface CarRentalPackageDepositPayMapper {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageDepositPayPO selectByOrderNo(String orderNo);
+    CarRentalPackageDepositPayPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageDepositPayPO selectById(Long id);
+    CarRentalPackageDepositPayPo selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
      * @return
      */
-    int insert(CarRentalPackageDepositPayPO entity);
+    int insert(CarRentalPackageDepositPayPo entity);
 }

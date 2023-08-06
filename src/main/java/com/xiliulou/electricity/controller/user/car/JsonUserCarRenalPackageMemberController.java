@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.controller.user.car;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -45,7 +45,7 @@ public class JsonUserCarRenalPackageMemberController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             return R.ok();
         }

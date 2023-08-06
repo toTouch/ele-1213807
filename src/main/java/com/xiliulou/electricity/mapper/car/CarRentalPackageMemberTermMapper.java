@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,7 +24,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param nowTime 当前时间戳
      * @return 会员套餐信息集
      */
-    List<CarRentalPackageMemberTermPO> pageExpire(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
+    List<CarRentalPackageMemberTermPo> pageExpire(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
 
     /**
      * 根据用户ID和套餐购买订单编码进行退租<br >
@@ -44,7 +44,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param packageOrderNo 套餐购买订单编码
      * @return 会员套餐信息
      */
-    CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
+    CarRentalPackageMemberTermPo selectByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
 
     /**
      * 根据用户ID和租户ID更新状态
@@ -82,7 +82,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param entity 实体数据
      * @return 操作条数
      */
-    int updateById(CarRentalPackageMemberTermPO entity);
+    int updateById(CarRentalPackageMemberTermPo entity);
 
     /**
      * 根据租户ID和用户ID查询租车套餐会员限制信息
@@ -90,7 +90,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param uid 用户ID
      * @return 操作条数
      */
-    CarRentalPackageMemberTermPO selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageMemberTermPo selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />
@@ -98,14 +98,14 @@ public interface CarRentalPackageMemberTermMapper {
      * @param qryModel 查询条件模型
      * @return 会员套餐信息集
      */
-    List<CarRentalPackageMemberTermPO> list(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPo> list(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return 会员套餐信息集
      */
-    List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPo> page(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -119,13 +119,13 @@ public interface CarRentalPackageMemberTermMapper {
      * @param id 主键ID
      * @return 会员套餐信息
      */
-    CarRentalPackageMemberTermPO selectById(Long id);
+    CarRentalPackageMemberTermPo selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
      * @return 操作条数
      */
-    int insert(CarRentalPackageMemberTermPO entity);
+    int insert(CarRentalPackageMemberTermPo entity);
 
 }

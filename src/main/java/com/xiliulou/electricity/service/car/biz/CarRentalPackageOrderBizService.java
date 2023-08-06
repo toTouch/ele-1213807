@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -14,6 +15,15 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderBizService {
+
+    /**
+     * 退租提示
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 套餐购买订单编码
+     * @return 提示模型
+     */
+    RefundRentOrderHintVo refundRentOrderHint(Integer tenantId, Long uid, String packageOrderNo);
 
     /**
      * 后端给用户绑定套餐

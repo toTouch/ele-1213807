@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.user.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
@@ -104,7 +104,7 @@ public class JsonUserCarDepositPayController extends BasicController {
 
 
         // 调用服务
-        List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
+        List<CarRentalPackageDepositPayPo> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
         if (CollectionUtils.isEmpty(depositPayEntityList)) {
             return R.ok(Collections.emptyList());
         }

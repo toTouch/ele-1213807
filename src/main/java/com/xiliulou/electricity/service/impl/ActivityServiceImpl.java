@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.service.*;
@@ -144,7 +144,7 @@ public class ActivityServiceImpl implements ActivityService {
         }else{
             //开始处理租车，车电一体购买套餐后的活动
             log.info("Activity flow for car Rental or car with battery package, orderNo = {}", orderNo);
-            CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
             Long uid = carRentalPackageOrderPO.getUid();
             if(Objects.isNull(carRentalPackageOrderPO)){
                 log.warn("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);

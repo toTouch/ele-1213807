@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -19,14 +19,14 @@ public interface CarRentalPackageOrderFreezeService {
      * @param packageOrderNo 购买订单编码
      * @return 冻结订单
      */
-    CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo);
+    CarRentalPackageOrderFreezePo selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo);
 
     /**
      * 根据冻结订单编号更新数据
      * @param entity 数据模型
      * @return
      */
-    boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity);
+    boolean updateByOrderNo(CarRentalPackageOrderFreezePo entity);
 
     /**
      * 计算实际冻结期限(时间戳，单位：天)
@@ -61,7 +61,7 @@ public interface CarRentalPackageOrderFreezeService {
      * @param uid 用户ID
      * @return
      */
-    CarRentalPackageOrderFreezePO selectPendingApprovalByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderFreezePo selectPendingApprovalByUid(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />
@@ -69,14 +69,14 @@ public interface CarRentalPackageOrderFreezeService {
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageOrderFreezePO> list(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePo> list(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageOrderFreezePO> page(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePo> page(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -90,20 +90,20 @@ public interface CarRentalPackageOrderFreezeService {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageOrderFreezePO selectByOrderNo(String orderNo);
+    CarRentalPackageOrderFreezePo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageOrderFreezePO selectById(Long id);
+    CarRentalPackageOrderFreezePo selectById(Long id);
 
     /**
      * 新增数据，返回主键ID
      * @param entity 实体模型
      * @return
      */
-    Long insert(CarRentalPackageOrderFreezePO entity);
+    Long insert(CarRentalPackageOrderFreezePo entity);
 
 }

@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderFreezeQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
@@ -114,7 +114,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageOrderFreezePO> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
+        List<CarRentalPackageOrderFreezePo> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
         if (CollectionUtils.isEmpty(freezeEntityList)) {
             return R.ok(Collections.emptyList());
         }

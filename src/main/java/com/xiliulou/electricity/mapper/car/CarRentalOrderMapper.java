@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -20,14 +20,14 @@ public interface CarRentalOrderMapper {
      * @param qryModel 查询条件模型
      * @return 车辆租赁订单集
      */
-    List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPo> list(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return 车辆租赁订单集
      */
-    List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPo> page(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -41,19 +41,19 @@ public interface CarRentalOrderMapper {
      * @param orderNo 订单编码
      * @return 车辆租赁订单
      */
-    CarRentalOrderPO selectByOrderNo(String orderNo);
+    CarRentalOrderPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return 车辆租赁订单
      */
-    CarRentalOrderPO selectById(Long id);
+    CarRentalOrderPo selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
      * @return 操作条数
      */
-    int insert(CarRentalOrderPO entity);
+    int insert(CarRentalOrderPo entity);
 }

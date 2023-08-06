@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.user.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
@@ -80,7 +80,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
         qryModel.setSize(size);
 
         // 调用服务
-        List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
+        List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
             return R.ok(Collections.emptyList());
         }

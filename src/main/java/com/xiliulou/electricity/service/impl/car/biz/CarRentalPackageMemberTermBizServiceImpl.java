@@ -93,7 +93,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         // 查看会员信息
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.info("queryUserMemberInfo, t_car_rental_package_member_term is null or status is wrong. uid is {}", uid);
             return null;
@@ -107,13 +107,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Integer storeId = memberTermEntity.getStoreId();
 
         // 套餐信息
-        CarRentalPackagePO rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
+        CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
 
         // 套餐订单信息
-        CarRentalPackageOrderPO rentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
+        CarRentalPackageOrderPo rentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
 
         // 押金缴纳信息
-        CarRentalPackageDepositPayPO depositPayEntity= carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        CarRentalPackageDepositPayPo depositPayEntity= carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
             rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
         }
@@ -135,13 +135,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Store storeEntity = storeService.queryByIdFromCache(Long.valueOf(storeId));
 
         // 套餐对应的电池型号信息、用户电池信息
-        List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = null;
+        List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = null;
         List<BatteryModel> batteryModelEntityList = null;
         ElectricityBattery batteryEntity = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
             if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
-                List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 batteryModelEntityList = batteryModelService.selectByBatteryTypes(tenantId, batteryTypes);
             }
 
@@ -172,8 +172,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @param storeEntity 门店信息
      * @return 会员信息
      */
-    private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
-                                                   CarRentalPackageOrderPO rentalPackageOrderEntity, CarRentalPackageDepositPayPO depositPayEntity, ElectricityCarModel carModelEntity,
+    private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
+                                                   CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity, ElectricityCarModel carModelEntity,
                                                    InsuranceUserInfoVo insuranceUserInfoVo, ElectricityCar carEntity, ElectricityBattery batteryEntity, Franchisee franchiseeEntity, Store storeEntity) {
 
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
@@ -247,7 +247,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         // 查询租车会员信息
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, not found car_rental_package_member_term or status is pending effective. uid is {}", uid);
             return null;
@@ -261,7 +261,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         // 查询套餐设置信息
-        CarRentalPackagePO rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
+        CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
             log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, not found car_rental_package. rentalPackageId is {}", rentalPackageId);
             return null;
@@ -290,18 +290,18 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         while (lookFlag) {
             // 1. 查询会员套餐表中，套餐购买订单已过期的数据
-            List<CarRentalPackageMemberTermPO> memberTermEntityList = carRentalPackageMemberTermService.pageExpire(offset, size, nowTime);
+            List<CarRentalPackageMemberTermPo> memberTermEntityList = carRentalPackageMemberTermService.pageExpire(offset, size, nowTime);
             if (CollectionUtils.isEmpty(memberTermEntityList)) {
                 log.info("expirePackageOrder, The data is empty and does not need to be processed");
                 lookFlag = false;
                 break;
             }
 
-            for (CarRentalPackageMemberTermPO memberTermEntity : memberTermEntityList) {
+            for (CarRentalPackageMemberTermPo memberTermEntity : memberTermEntityList) {
                 try {
                     // 根据用户ID查询第一条未使用的支付成功的订单信息
-                    CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
-                    CarRentalPackageOrderSlippagePO slippageEntityInsert = null;
+                    CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                    CarRentalPackageOrderSlippagePo slippageEntityInsert = null;
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
                         // 判定构建逾期订单
@@ -314,7 +314,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         }
                     } else {
                         // 二次保底确认
-                        CarRentalPackageMemberTermPO oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getRentalPackageId());
+                        CarRentalPackageMemberTermPo oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getRentalPackageId());
                         if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
                             log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. t_car_rental_package_member_term processed. skip. uid is {}", memberTermEntity.getUid());
                             continue;
@@ -322,7 +322,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     }
 
                     // 若生成滞纳金，则代表肯定设置了滞纳金，此时查看是否存在因冻结产生的滞纳金，若存在，则更新数据，并新增一条过期的逾期订单
-                    CarRentalPackageOrderSlippagePO slippageFreezeEntity = null;
+                    CarRentalPackageOrderSlippagePo slippageFreezeEntity = null;
                     if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
                         slippageFreezeEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
                         if (ObjectUtils.isNotEmpty(slippageFreezeEntity)) {
@@ -346,8 +346,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePO slippageEntityInsert, CarRentalPackageOrderPO packageOrderEntityNew,
-                                         CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderSlippagePO slippageFreezeEntity, String oriRentalPackageOrderNo) {
+    public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePo slippageEntityInsert, CarRentalPackageOrderPo packageOrderEntityNew,
+                                         CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderSlippagePo slippageFreezeEntity, String oriRentalPackageOrderNo) {
         // 生成逾期订单
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
@@ -356,7 +356,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         if (ObjectUtils.isNotEmpty(packageOrderEntityNew)) {
             // 覆盖会员期限信息
-            CarRentalPackageMemberTermPO memberTermEntityUpdate = new CarRentalPackageMemberTermPO();
+            CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
             memberTermEntityUpdate.setRentalPackageOrderNo(packageOrderEntityNew.getOrderNo());
             memberTermEntityUpdate.setRentalPackageId(packageOrderEntityNew.getRentalPackageId());
             memberTermEntityUpdate.setRentalPackageConfine(packageOrderEntityNew.getConfine());
@@ -391,9 +391,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     }
 
 
-    private CarRentalPackageOrderSlippagePO buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageMemberTermPO memberTermEntity) {
+    private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageMemberTermPo memberTermEntity) {
         // 查询当时购买的订单信息
-        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
+        CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
         if (ObjectUtils.isEmpty(packageOrderEntity)) {
             log.info("CarRentalPackageMemberTermBizService.buildCarRentalPackageOrderSlippage failed. not found car_rental_package_order. orderNo is {}", memberTermEntity.getRentalPackageOrderNo());
         }
@@ -429,7 +429,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
 
         // 生成实体记录
-        CarRentalPackageOrderSlippagePO slippageEntity = new CarRentalPackageOrderSlippagePO();
+        CarRentalPackageOrderSlippagePo slippageEntity = new CarRentalPackageOrderSlippagePo();
         slippageEntity.setUid(uid);
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
         slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());

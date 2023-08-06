@@ -8,12 +8,11 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
-import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
@@ -198,7 +197,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         List<Long> carRentalPackages = shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages();
         for(Long packageId : carRentalPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000203", "租车套餐不存在");
             }
@@ -206,7 +205,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         List<Long> carElectricityPackages = shareMoneyActivityAddAndUpdateQuery.getCarWithBatteryPackages();
         for(Long packageId : carElectricityPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }

@@ -6,7 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -339,13 +339,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel) {
-        List<CarRentalPackagePO> carRentalPackagePOList = carRentalPackageService.list(qryModel);
+        List<CarRentalPackagePo> carRentalPackagePOList = carRentalPackageService.list(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackagePOList)) {
             return Collections.emptyList();
         }
 
         List<BatteryMemberCardVO> batteryMemberCardVOList = Lists.newArrayList();
-        for (CarRentalPackagePO carRentalPackagePO : carRentalPackagePOList) {
+        for (CarRentalPackagePo carRentalPackagePO : carRentalPackagePOList) {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             batteryMemberCardVO.setId(carRentalPackagePO.getId());
             batteryMemberCardVO.setName(carRentalPackagePO.getName());

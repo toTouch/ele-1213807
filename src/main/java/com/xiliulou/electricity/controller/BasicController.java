@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -68,20 +68,20 @@ public class BasicController {
      * @param orderNos 退租订单编码集
      * @return K：套餐退租订单编码，V：退租订单信息
      */
-    protected Map<String, CarRentalPackageOrderRentRefundPO> queryCarRentalRentRefundOrderByOrderNos(Set<String> orderNos) {
+    protected Map<String, CarRentalPackageOrderRentRefundPo> queryCarRentalRentRefundOrderByOrderNos(Set<String> orderNos) {
         if (CollectionUtils.isEmpty(orderNos)) {
             return Collections.emptyMap();
         }
 
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         qryModel.setOrderNoList(new ArrayList<>(orderNos));
-        List<CarRentalPackageOrderRentRefundPO> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
+        List<CarRentalPackageOrderRentRefundPo> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
 
         if (CollectionUtils.isEmpty(rentRefundEntityList)) {
             return Collections.emptyMap();
         }
 
-        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getOrderNo, Function.identity(), (k1, k2) -> k1));
+        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPo::getOrderNo, Function.identity(), (k1, k2) -> k1));
 
     }
 
@@ -92,20 +92,20 @@ public class BasicController {
      * @param rentalPackageOrderNos 套餐购买订单编码集
      * @return K：套餐购买订单编码，V：退租订单信息
      */
-    protected Map<String, CarRentalPackageOrderRentRefundPO> queryCarRentalRentRefundOrderByRentalOrderNos(Set<String> rentalPackageOrderNos) {
+    protected Map<String, CarRentalPackageOrderRentRefundPo> queryCarRentalRentRefundOrderByRentalOrderNos(Set<String> rentalPackageOrderNos) {
         if (CollectionUtils.isEmpty(rentalPackageOrderNos)) {
             return Collections.emptyMap();
         }
 
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         qryModel.setRentalPackageOrderNoList(new ArrayList<>(rentalPackageOrderNos));
-        List<CarRentalPackageOrderRentRefundPO> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
+        List<CarRentalPackageOrderRentRefundPo> rentRefundEntityList = carRentalPackageOrderRentRefundService.list(qryModel);
 
         if (CollectionUtils.isEmpty(rentRefundEntityList)) {
             return Collections.emptyMap();
         }
         // 此处有一个及其不易注意的坑点，k1, k2 的取值，目前取值k2，注意点在于数据库的数据，要按照主键ID正序排列
-        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPO::getRentalPackageOrderNo, Function.identity(), (k1, k2) -> k2));
+        return rentRefundEntityList.stream().collect(Collectors.toMap(CarRentalPackageOrderRentRefundPo::getRentalPackageOrderNo, Function.identity(), (k1, k2) -> k2));
 
     }
 
@@ -170,16 +170,16 @@ public class BasicController {
      * @param carRentalPackageIds 租车套餐ID集
      * @return 租车套餐ID:租车套餐信息
      */
-    protected Map<Long, CarRentalPackagePO> getCarRentalPackageByIdsForMap(Set<Long> carRentalPackageIds) {
+    protected Map<Long, CarRentalPackagePo> getCarRentalPackageByIdsForMap(Set<Long> carRentalPackageIds) {
 
-        List<CarRentalPackagePO> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
+        List<CarRentalPackagePo> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
         if (CollectionUtils.isEmpty(resData)) {
             log.info("BasicController.getCarRentalPackageByIdsForMap response is {}", JSON.toJSONString(resData));
             return Collections.emptyMap();
         }
 
-        Map<Long, CarRentalPackagePO> carRentalPackageMap = resData.stream()
-                .collect(Collectors.toMap(CarRentalPackagePO::getId, Function.identity(), (k1, k2) -> k1));
+        Map<Long, CarRentalPackagePo> carRentalPackageMap = resData.stream()
+                .collect(Collectors.toMap(CarRentalPackagePo::getId, Function.identity(), (k1, k2) -> k1));
         return carRentalPackageMap;
 
     }
@@ -193,14 +193,14 @@ public class BasicController {
      */
     protected Map<Long, String> getCarRentalPackageNameByIdsForMap(Set<Long> carRentalPackageIds) {
 
-        List<CarRentalPackagePO> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
+        List<CarRentalPackagePo> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
         if (CollectionUtils.isEmpty(resData)) {
             log.info("BasicController.getCarRentalPackageNameByIdsForMap response is {}", JSON.toJSONString(resData));
             return Collections.emptyMap();
         }
 
         Map<Long, String> carRentalPackageMap = resData.stream()
-                .collect(Collectors.toMap(CarRentalPackagePO::getId, CarRentalPackagePO::getName, (k1, k2) -> k1));
+                .collect(Collectors.toMap(CarRentalPackagePo::getId, CarRentalPackagePo::getName, (k1, k2) -> k1));
         return carRentalPackageMap;
 
     }

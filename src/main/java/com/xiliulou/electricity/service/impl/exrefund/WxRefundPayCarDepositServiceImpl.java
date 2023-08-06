@@ -3,9 +3,9 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
@@ -87,7 +87,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             }
 
             // 押金退款单信息
-            CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
+            CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
                 log.error("WxRefundPayCarDepositService.process failed. t_car_rental_package_order_rent_refund not found or status wrong. orderNo is {}", outRefundNo);
                 return;
@@ -99,7 +99,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             }
 
             // 查询会员期限信息
-            CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
             if (ObjectUtils.isEmpty(memberTermEntity)) {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", depositRefundEntity.getUid());
                 throw new BizException("300000", "数据有误");
@@ -107,7 +107,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
             // 押金缴纳订单编码
             String depositPayOrderNo = depositRefundEntity.getDepositPayOrderNo();
-            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+            CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
             if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_deposit_refund or status error. orderNo is {}", depositPayOrderNo);
                 throw new BizException("300000", "数据有误");
@@ -117,7 +117,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
 
             // 构建押金退款订单表更新实体信息
-            CarRentalPackageDepositRefundPO depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);
+            CarRentalPackageDepositRefundPo depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);
 
             // 事务处理
             saveDepositRefundInfoTx(refundState, depositRefundUpdateEntity, memberTermEntity, depositPayEntity);
@@ -145,8 +145,8 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      * @param refundState 退款状态
      * @return
      */
-    private CarRentalPackageDepositRefundPO buildDepositRefundEntity(CarRentalPackageDepositRefundPO depositRefundEntity, Integer refundState) {
-        CarRentalPackageDepositRefundPO depositRefundUpdateEntity = new CarRentalPackageDepositRefundPO();
+    private CarRentalPackageDepositRefundPo buildDepositRefundEntity(CarRentalPackageDepositRefundPo depositRefundEntity, Integer refundState) {
+        CarRentalPackageDepositRefundPo depositRefundUpdateEntity = new CarRentalPackageDepositRefundPo();
         depositRefundUpdateEntity.setOrderNo(depositRefundEntity.getOrderNo());
         depositRefundUpdateEntity.setRefundState(refundState);
         depositRefundUpdateEntity.setUpdateTime(System.currentTimeMillis());
@@ -160,7 +160,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      * @param memberTermUpdateEntity 会员期限信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundInfoTx(Integer refundState, CarRentalPackageDepositRefundPO depositRefundUpdateEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity, CarRentalPackageDepositPayPO depositPayEntity) {
+    public void saveDepositRefundInfoTx(Integer refundState, CarRentalPackageDepositRefundPo depositRefundUpdateEntity, CarRentalPackageMemberTermPo memberTermUpdateEntity, CarRentalPackageDepositPayPo depositPayEntity) {
         // 更新退款订单的状态
         carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
 

@@ -11,7 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -446,7 +446,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
             batteryMemberCardVO.setId(carRentalPackagePO.getId());
             batteryMemberCardVO.setName(carRentalPackagePO.getName());
             batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

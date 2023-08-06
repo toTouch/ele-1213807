@@ -2,10 +2,10 @@ package com.xiliulou.electricity.controller.user.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
+import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -144,6 +145,27 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     }
 
     /**
+     * 退租提示
+     * @param packageOrderNo 购买订单编码
+     * @return 提示模型
+     */
+    @GetMapping("/refundRentOrderHint")
+    public R<RefundRentOrderHintVo> refundRentOrderHint(String packageOrderNo) {
+        if (StringUtils.isBlank(packageOrderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalPackageOrderBizService.refundRentOrderHint(tenantId, user.getUid(), packageOrderNo));
+    }
+
+    /**
      * 套餐购买订单-条件查询列表
      * @param qryReq 请求参数类
      * @return 套餐购买订单集
@@ -170,7 +192,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        List<CarRentalPackageOrderPO> carRentalPackageOrderEntityList = carRentalPackageOrderService.page(qryModel);
+        List<CarRentalPackageOrderPo> carRentalPackageOrderEntityList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -185,19 +207,19 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         });
 
         // 套餐名称信息
-        Map<Long, CarRentalPackagePO> carRentalPackageMap = getCarRentalPackageByIdsForMap(rentalPackageIds);
+        Map<Long, CarRentalPackagePo> carRentalPackageMap = getCarRentalPackageByIdsForMap(rentalPackageIds);
 
         // 车辆型号ID集
-        Set<Integer> carModelIds = carRentalPackageMap.values().stream().map(CarRentalPackagePO::getCarModelId).collect(Collectors.toSet());
+        Set<Integer> carModelIds = carRentalPackageMap.values().stream().map(CarRentalPackagePo::getCarModelId).collect(Collectors.toSet());
 
         // 车辆型号名称信息
         Map<Integer, String> carModelNameMap = getCarModelNameByIdsForMap(carModelIds);
 
         // 查询套餐购买订单对应的退款订单信息
-        Map<String, CarRentalPackageOrderRentRefundPO> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
+        Map<String, CarRentalPackageOrderRentRefundPo> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
 
         // 查询会员信息
-        CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());
+        CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());
 
         long nowTime = System.currentTimeMillis();
 
@@ -229,7 +251,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                         rentRebate = YesNoEnum.NO.getCode();
                     } else {
                         // 集成退款订单的状态，综合判定
-                        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+                        CarRentalPackageOrderRentRefundPo rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
                         if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
                             Integer refundState = rentRefundOrderEntity.getRefundState();
                             if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
@@ -251,9 +273,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             }
 
             // 赋值业务属性信息
-            carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getName());
-            carRentalPackageOrderVO.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getBatteryVoltage());
-            carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getCarModelId(), ""));
+            carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getName());
+            carRentalPackageOrderVO.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getBatteryVoltage());
+            carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getCarModelId(), ""));
 
             return carRentalPackageOrderVO;
         }).collect(Collectors.toList());

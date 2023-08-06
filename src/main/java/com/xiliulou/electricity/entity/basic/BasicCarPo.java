@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author xiaohui.song
  **/
 @Data
-public class BasicCarPO implements Serializable {
+public class BasicCarPo implements Serializable {
 
     private static final long serialVersionUID = 8272918001150547084L;
 

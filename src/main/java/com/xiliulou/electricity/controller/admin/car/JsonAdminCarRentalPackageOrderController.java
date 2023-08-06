@@ -5,8 +5,8 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
@@ -72,7 +72,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
 
         // 调用服务
-        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
+        List<CarRentalPackageOrderPo> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderPOList)) {
             return R.ok(Collections.emptyList());
         }
@@ -127,7 +127,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
             // 对使用中的订单，进行二次处理
             // 查询会员信息
-            CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
+            CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
             if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
                 carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
             }

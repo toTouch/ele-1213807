@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 
 import java.util.List;
@@ -17,14 +17,14 @@ public interface CarRentalOrderService {
      * @param qryModel 查询模型
      * @return 车辆租赁订单集
      */
-    List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPo> list(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return 车辆租赁订单集
      */
-    List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPo> page(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -38,14 +38,14 @@ public interface CarRentalOrderService {
      * @param orderNo 订单编码
      * @return 车辆租赁订单
      */
-    CarRentalOrderPO selectByOrderNo(String orderNo);
+    CarRentalOrderPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return 车辆租赁订单
      */
-    CarRentalOrderPO selectById(Long id);
+    CarRentalOrderPo selectById(Long id);
 
 
     /**
@@ -53,6 +53,6 @@ public interface CarRentalOrderService {
      * @param entity 操作模型
      * @return 主键ID
      */
-    Long insert(CarRentalOrderPO entity);
+    Long insert(CarRentalOrderPo entity);
 
 }

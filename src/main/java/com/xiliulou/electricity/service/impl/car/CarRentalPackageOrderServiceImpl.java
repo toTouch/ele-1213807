@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -42,7 +42,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO selectLastUnPayByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPo selectLastUnPayByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -58,7 +58,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO selectFirstUnUsedAndPaySuccessByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPo selectFirstUnUsedAndPaySuccessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -74,7 +74,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO seletLastPaySuccessByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPo seletLastPaySuccessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -178,7 +178,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderPO> list(CarRentalPackageOrderQryModel qryModel) {
+    public List<CarRentalPackageOrderPo> list(CarRentalPackageOrderQryModel qryModel) {
         return carRentalPackageOrderMapper.list(qryModel);
     }
 
@@ -190,7 +190,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel) {
+    public List<CarRentalPackageOrderPo> page(CarRentalPackageOrderQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageOrderQryModel();
         }
@@ -222,7 +222,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderPo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             return null;
         }
@@ -238,7 +238,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderPO> selectById(Long id) {
+    public R<CarRentalPackageOrderPo> selectById(Long id) {
         if (id == null || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -347,7 +347,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @return 主键ID
      */
     @Override
-    public Long insert(CarRentalPackageOrderPO entity) {
+    public Long insert(CarRentalPackageOrderPo entity) {
         if (ObjectUtils.isEmpty(entity)) {
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }

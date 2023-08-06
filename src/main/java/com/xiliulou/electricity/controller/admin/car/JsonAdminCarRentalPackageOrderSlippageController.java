@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderSlippageQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -63,7 +63,7 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageOrderSlippagePO> slippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
         if (CollectionUtils.isEmpty(slippageEntityList)) {
             return R.ok(Collections.emptyList());
         }

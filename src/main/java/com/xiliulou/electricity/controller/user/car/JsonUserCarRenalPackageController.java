@@ -3,7 +3,7 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
@@ -57,12 +57,12 @@ public class JsonUserCarRenalPackageController extends BasicController {
 
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
+        List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
 
         // 获取优惠券ID集
         List<Long> couponIdList = entityList.stream()
                 .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && entity.getCouponId().longValue() > 0)
-                .map(CarRentalPackagePO::getCouponId).distinct().collect(Collectors.toList());
+                .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
 
         // 查询赠送的优惠券信息
         Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIdList);
@@ -78,7 +78,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
      * @param entityList
      * @return
      */
-    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePO> entityList, Map<Long, Coupon> couponMap) {
+    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePo> entityList, Map<Long, Coupon> couponMap) {
         return entityList.stream().map(entity -> {
             CarRentalPackageVo packageVo = new CarRentalPackageVo();
             packageVo.setId(entity.getId());

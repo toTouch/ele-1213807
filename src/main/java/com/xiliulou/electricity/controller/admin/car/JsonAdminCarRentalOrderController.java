@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalOrderQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
@@ -86,7 +86,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalOrderPO> rentalOrderEntityList = carRentalOrderService.page(qryModel);
+        List<CarRentalOrderPo> rentalOrderEntityList = carRentalOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(rentalOrderEntityList)) {
             return R.ok(Collections.emptyList());
         }

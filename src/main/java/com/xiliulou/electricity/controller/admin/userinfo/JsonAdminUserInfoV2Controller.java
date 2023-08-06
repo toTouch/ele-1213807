@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
@@ -97,7 +97,7 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, qryReq.getUid());
+        List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, qryReq.getUid());
 
         // 转换 VO
         List<CarRentalPackageVo> voList = buildVOList(entityList);
@@ -111,7 +111,7 @@ public class JsonAdminUserInfoV2Controller {
      * @param entityList
      * @return
      */
-    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePO> entityList) {
+    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePo> entityList) {
         return entityList.stream().map(entity -> {
             CarRentalPackageVo packageVo = new CarRentalPackageVo();
             packageVo.setId(entity.getId());

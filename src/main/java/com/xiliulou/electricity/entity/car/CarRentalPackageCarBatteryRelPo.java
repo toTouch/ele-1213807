@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 /**
  * 租车套餐车辆电池关联表
@@ -13,7 +11,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @TableName("t_car_rental_package_car_battery_rel")
-public class CarRentalPackageCarBatteryRelPO extends BasicCarPO {
+public class CarRentalPackageCarBatteryRelPo extends BasicCarPo {
 
     /**
      * 套餐ID

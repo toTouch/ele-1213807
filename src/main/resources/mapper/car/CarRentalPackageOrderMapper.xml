@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO" id="entityMap">
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo" id="entityMap">
         <!--基础映射 -->
         <result property="id" column="id" jdbcType="BIGINT" />
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
@@ -327,7 +327,7 @@
     </update>
 
     <!-- 条件新增 -->
-    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 

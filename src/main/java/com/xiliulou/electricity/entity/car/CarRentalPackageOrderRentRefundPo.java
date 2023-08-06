@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @TableName("t_car_rental_package_order_rent_refund")
-public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
+public class CarRentalPackageOrderRentRefundPo extends BasicCarPo {
 
     private static final long serialVersionUID = 4224921643482546889L;
 

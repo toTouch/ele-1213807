@@ -3,7 +3,7 @@ package com.xiliulou.electricity.controller.user.car;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -67,7 +67,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         qryModel.setRentalPackageType(rentalPackageType);
 
         // 调用服务
-        List<CarRentalPackageOrderSlippagePO> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
+        List<CarRentalPackageOrderSlippagePo> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageSlippageEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -75,7 +75,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
         long nowTime = System.currentTimeMillis();
 
-        for (CarRentalPackageOrderSlippagePO slippageEntity : carRentalPackageSlippageEntityList) {
+        for (CarRentalPackageOrderSlippagePo slippageEntity : carRentalPackageSlippageEntityList) {
             CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
             // 默认应缴==实缴

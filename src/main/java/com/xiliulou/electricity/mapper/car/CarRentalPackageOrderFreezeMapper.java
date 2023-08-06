@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +20,7 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param entity 实体数据
      * @return
      */
-    int updateByOrderNo(CarRentalPackageOrderFreezePO entity);
+    int updateByOrderNo(CarRentalPackageOrderFreezePo entity);
 
     /**
      * 根据用户ID和购买订单编号启用冻结订单
@@ -43,7 +43,7 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param packageOrderNo 购买订单编码
      * @return
      */
-    CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
+    CarRentalPackageOrderFreezePo selectFreezeByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
 
     /**
      * 根据冻结申请单编号，撤销冻结申请
@@ -60,7 +60,7 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param uid 用户ID
      * @return
      */
-    CarRentalPackageOrderFreezePO selectPendingApprovalByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageOrderFreezePo selectPendingApprovalByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />
@@ -68,14 +68,14 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackageOrderFreezePO> list(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePo> list(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackageOrderFreezePO> page(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePo> page(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -89,20 +89,20 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageOrderFreezePO selectByOrderNo(String orderNo);
+    CarRentalPackageOrderFreezePo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageOrderFreezePO selectById(Long id);
+    CarRentalPackageOrderFreezePo selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
      * @return
      */
-    int insert(CarRentalPackageOrderFreezePO entity);
+    int insert(CarRentalPackageOrderFreezePo entity);
 
 }

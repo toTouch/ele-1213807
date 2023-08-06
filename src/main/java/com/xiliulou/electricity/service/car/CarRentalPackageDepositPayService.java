@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface CarRentalPackageDepositPayService {
      * @param uid 用户ID
      * @return 押金支付订单
      */
-    CarRentalPackageDepositPayPO selectLastByUid(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayPo selectLastByUid(Integer tenantId, Long uid);
 
     /**
      * 同步免押状态
@@ -52,7 +52,7 @@ public interface CarRentalPackageDepositPayService {
      * @param uid 用户ID
      * @return 押金支付订单
      */
-    CarRentalPackageDepositPayPO selectLastPaySucessByUid(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayPo selectLastPaySucessByUid(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />
@@ -60,14 +60,14 @@ public interface CarRentalPackageDepositPayService {
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageDepositPayPO> list(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPo> list(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageDepositPayPO> page(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPo> page(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -81,14 +81,14 @@ public interface CarRentalPackageDepositPayService {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageDepositPayPO selectByOrderNo(String orderNo);
+    CarRentalPackageDepositPayPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageDepositPayPO selectById(Long id);
+    CarRentalPackageDepositPayPo selectById(Long id);
 
 
     /**
@@ -96,5 +96,5 @@ public interface CarRentalPackageDepositPayService {
      * @param entity 操作实体
      * @return
      */
-    Long insert(CarRentalPackageDepositPayPO entity);
+    Long insert(CarRentalPackageDepositPayPo entity);
 }

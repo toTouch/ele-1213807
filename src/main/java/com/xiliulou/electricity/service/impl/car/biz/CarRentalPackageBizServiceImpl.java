@@ -2,9 +2,9 @@ package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -86,7 +86,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      * @return
      */
     @Override
-    public List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid) {
+    public List<CarRentalPackagePo> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid) {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -131,7 +131,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
 
         // 1、查询是否存在会员期限信息(代表是否存在过套餐购买)
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         // 存在数据，则代表押金已经缴纳，即租户、加盟商、门店、套餐类型、押金全都定下来了
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
             // 待生效，代表未支付
@@ -147,7 +147,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 // 必定是老用户
                 if (ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询套餐对应的车辆型号
-                    CarRentalPackagePO packageEntity = carRentalPackageService.selectById(rentalPackageId);
+                    CarRentalPackagePo packageEntity = carRentalPackageService.selectById(rentalPackageId);
 
                     // 车辆型号不匹配
                     if (!packageEntity.getCarModelId().equals(carModelId)) {
@@ -163,8 +163,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 // 车电一体且存在订单
                 if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询电池型号信息
-                    List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
-                    batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                    List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
+                    batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 }
 
                 deposit = memberTermEntity.getDeposit();
@@ -188,7 +188,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
         qryModel.setConfine(confine);
-        List<CarRentalPackagePO> packageEntityList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);
         if (CollectionUtils.isEmpty(packageEntityList)) {
             return Collections.emptyList();
         }
@@ -196,25 +196,25 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 车电一体，需要二次处理
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             // 查询型号关联关系
-            List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePO::getId).collect(Collectors.toList());
-            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
+            List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePo::getId).collect(Collectors.toList());
+            List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
             if (CollectionUtils.isEmpty(carBatteryRelEntityList)) {
                 return packageEntityList;
             }
 
-            Map<Long, List<CarRentalPackageCarBatteryRelPO>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPO::getRentalPackageId));
+            Map<Long, List<CarRentalPackageCarBatteryRelPo>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPo::getRentalPackageId));
 
             List<String> batteryModelTypeDbList = null;
 
             // 迭代器处理
-            Iterator<CarRentalPackagePO> iterator = packageEntityList.iterator();
+            Iterator<CarRentalPackagePo> iterator = packageEntityList.iterator();
             while (iterator.hasNext()) {
-                CarRentalPackagePO carRentalPackage = iterator.next();
-                List<CarRentalPackageCarBatteryRelPO> carBatteryRels = carBatteryRelMap.get(carRentalPackage.getId());
+                CarRentalPackagePo carRentalPackage = iterator.next();
+                List<CarRentalPackageCarBatteryRelPo> carBatteryRels = carBatteryRelMap.get(carRentalPackage.getId());
                 if (CollectionUtils.isEmpty(carBatteryRels)) {
                     continue;
                 }
-                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 if (!batteryModelTypeDbList.containsAll(batteryModelTypeList)) {
                     iterator.remove();
                 }
@@ -265,7 +265,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 新增租车套餐
-        CarRentalPackagePO entity = new CarRentalPackagePO();
+        CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity);
         Long packageId = carRentalPackageService.insert(entity);
 
@@ -285,8 +285,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 1. 保存关联表
-        List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = batteryModelTypes.stream().map(batteryModelType -> {
-            CarRentalPackageCarBatteryRelPO carBatteryRelEntity = new CarRentalPackageCarBatteryRelPO();
+        List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = batteryModelTypes.stream().map(batteryModelType -> {
+            CarRentalPackageCarBatteryRelPo carBatteryRelEntity = new CarRentalPackageCarBatteryRelPo();
             carBatteryRelEntity.setRentalPackageId(packageId);
             carBatteryRelEntity.setCarModelId(entity.getCarModelId());
             carBatteryRelEntity.setBatteryModelType(batteryModelType);
@@ -311,7 +311,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         return true;
     }
 
-    private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePO entity) {
+    private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePo entity) {
         BatteryMemberCard batteryMemberCardEntity = new BatteryMemberCard();
         batteryMemberCardEntity.setName(entity.getName());
         batteryMemberCardEntity.setDeposit(entity.getDeposit());

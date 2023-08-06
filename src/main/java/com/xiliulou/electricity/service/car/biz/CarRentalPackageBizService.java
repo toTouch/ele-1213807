@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,7 +21,7 @@ public interface CarRentalPackageBizService {
      * @param uid 用户ID
      * @return 可购买的套餐数据集
      */
-    List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
+    List<CarRentalPackagePo> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
 
     /**
      * 根据套餐ID删除套餐信息

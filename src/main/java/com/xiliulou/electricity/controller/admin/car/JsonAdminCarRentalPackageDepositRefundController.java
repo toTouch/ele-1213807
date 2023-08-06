@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
@@ -131,13 +131,13 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
+        List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
             return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息）
-        Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPO::getUid).collect(Collectors.toSet());
+        Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);

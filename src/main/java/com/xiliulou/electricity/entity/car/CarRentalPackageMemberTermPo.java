@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @TableName("t_car_rental_package_member_term")
-public class CarRentalPackageMemberTermPO extends BasicCarPO {
+public class CarRentalPackageMemberTermPo extends BasicCarPo {
 
     private static final long serialVersionUID = -342704315388619926L;
 

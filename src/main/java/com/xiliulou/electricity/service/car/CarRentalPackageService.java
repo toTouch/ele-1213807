@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 
 import java.util.List;
@@ -17,14 +17,14 @@ public interface CarRentalPackageService {
      * @param ids 主键ID集
      * @return
      */
-    List<CarRentalPackagePO> selectByIds(List<Long> ids);
+    List<CarRentalPackagePo> selectByIds(List<Long> ids);
 
     /**
      * 根据条件查询<br />
      * @param qryModel
      * @return
      */
-    List<CarRentalPackagePO> listByCondition(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePo> listByCondition(CarRentalPackageQryModel qryModel);
 
     /**
      * 检测唯一：租户ID+套餐名称
@@ -57,14 +57,14 @@ public interface CarRentalPackageService {
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePo> list(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePo> page(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -80,14 +80,14 @@ public interface CarRentalPackageService {
      * @param id 主键ID
      * @return
      */
-    CarRentalPackagePO selectById(Long id);
+    CarRentalPackagePo selectById(Long id);
 
     /**
      * 根据ID更新
      * @param entity 实体数据
      * @return
      */
-    Boolean updateById(CarRentalPackagePO entity);
+    Boolean updateById(CarRentalPackagePo entity);
 
     /**
      * 新增数据，返回主键ID<br />
@@ -95,6 +95,6 @@ public interface CarRentalPackageService {
      * @param entity 实体数据
      * @return
      */
-    Long insert(CarRentalPackagePO entity);
+    Long insert(CarRentalPackagePo entity);
 
 }

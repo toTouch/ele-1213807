@@ -127,4 +127,9 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      */
     private String carRentalPackageName;
 
+    /**
+     * 拼接好的余量
+     */
+    private String residueStr;
+
 }

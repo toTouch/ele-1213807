@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageCarBatteryRelMapper;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
@@ -48,7 +48,7 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public List<CarRentalPackageCarBatteryRelPO> selectByRentalPackageIds(List<Long> rentalPackageIdList) {
+    public List<CarRentalPackageCarBatteryRelPo> selectByRentalPackageIds(List<Long> rentalPackageIdList) {
         if (CollectionUtils.isEmpty(rentalPackageIdList)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -63,7 +63,7 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public List<CarRentalPackageCarBatteryRelPO> selectByRentalPackageId(Long rentalPackageId) {
+    public List<CarRentalPackageCarBatteryRelPo> selectByRentalPackageId(Long rentalPackageId) {
         if (ObjectUtils.isEmpty(rentalPackageId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -77,7 +77,7 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean batchInsert(List<CarRentalPackageCarBatteryRelPO> entityList) {
+    public boolean batchInsert(List<CarRentalPackageCarBatteryRelPo> entityList) {
         if (ObjectUtils.isEmpty(entityList)) {
             return true;
         }

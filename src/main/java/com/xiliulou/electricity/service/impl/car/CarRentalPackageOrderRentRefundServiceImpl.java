@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -35,7 +35,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      * @return
      */
     @Override
-    public boolean updateByOrderNo(CarRentalPackageOrderRentRefundPO entity) {
+    public boolean updateByOrderNo(CarRentalPackageOrderRentRefundPo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -56,7 +56,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderRentRefundPO> list(CarRentalPackageOrderRentRefundQryModel qryModel) {
+    public List<CarRentalPackageOrderRentRefundPo> list(CarRentalPackageOrderRentRefundQryModel qryModel) {
         return carRentalPackageOrderRentRefundMapper.list(qryModel);
     }
 
@@ -68,7 +68,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderRentRefundPO> page(CarRentalPackageOrderRentRefundQryModel qryModel) {
+    public List<CarRentalPackageOrderRentRefundPo> page(CarRentalPackageOrderRentRefundQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageOrderRentRefundQryModel();
         }
@@ -100,7 +100,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public CarRentalPackageOrderRentRefundPO selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderRentRefundPo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -116,7 +116,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public CarRentalPackageOrderRentRefundPO selectById(Long id) {
+    public CarRentalPackageOrderRentRefundPo selectById(Long id) {
         if (null == id || id <= 0) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -131,7 +131,7 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      * @return
      */
     @Override
-    public Long insert(CarRentalPackageOrderRentRefundPO entity) {
+    public Long insert(CarRentalPackageOrderRentRefundPo entity) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
