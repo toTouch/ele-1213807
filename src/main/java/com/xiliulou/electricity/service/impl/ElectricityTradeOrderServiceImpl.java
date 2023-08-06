@@ -241,7 +241,7 @@ public class ElectricityTradeOrderServiceImpl extends
      * @return
      */
     private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId) {
-        Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid);
+        Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid, null);
         if (!pair.getLeft()) {
             return pair;
         }

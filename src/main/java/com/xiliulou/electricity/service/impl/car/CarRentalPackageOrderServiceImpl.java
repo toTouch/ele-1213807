@@ -34,6 +34,22 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
+     * 根据用户ID查找最后一条未支付成功的购买记录信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 购买订单信息
+     */
+    @Slave
+    @Override
+    public CarRentalPackageOrderPO selectLastUnPayByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderMapper.selectLastUnPayByUid(tenantId, uid);
+    }
+
+    /**
      * 根据用户ID查询第一条未使用的支付成功的订单信息
      *
      * @param tenantId 租户ID
@@ -42,15 +58,15 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO selectFirstUnUsedByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPO selectFirstUnUsedAndPaySuccessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return carRentalPackageOrderMapper.selectFirstUnUsedByUid(tenantId, uid);
+        return carRentalPackageOrderMapper.selectFirstUnUsedAndPaySuccessByUid(tenantId, uid);
     }
 
     /**
-     * 根据用户ID查找最后一条成功的购买记录信息
+     * 根据用户ID查找最后一条支付成功的购买记录信息
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
@@ -58,11 +74,11 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPO seletLastByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPO seletLastPaySuccessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return carRentalPackageOrderMapper.seletLastByUid(tenantId, uid);
+        return carRentalPackageOrderMapper.seletLastPaySuccessByUid(tenantId, uid);
     }
 
     /**

@@ -15,6 +15,13 @@ import java.util.List;
 public interface UserCouponService {
 
     /**
+     * 根据ID集查询用户优惠券信息
+     * @param idList 主键ID集
+     * @return 用户优惠券集
+     */
+    List<UserCoupon> listByIds(List<Long> idList);
+
+    /**
      * 根据订单编码作废掉未使用的优惠券
      * @param orderId 订单编码
      * @param orderIdType 订单编码对应的类型

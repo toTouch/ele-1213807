@@ -299,8 +299,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
             for (CarRentalPackageMemberTermPO memberTermEntity : memberTermEntityList) {
                 try {
-                    // 根据UID查询名下的未使用的订单第一条订单
-                    CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectFirstUnUsedByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                    // 根据用户ID查询第一条未使用的支付成功的订单信息
+                    CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
                     CarRentalPackageOrderSlippagePO slippageEntityInsert = null;
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());

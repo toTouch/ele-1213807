@@ -312,9 +312,11 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
     /**
      * <code>C</code>端用户取消套餐订单<br />
+     * 若订单号码不传入，则取消最后一笔未支付的订单，若传入，则按照传入的订单编码进行取消<br />
      * 用于如下情况
      * <pre>
-     *     1. 用户未支付（主动终止流程，未曾真正调用微信支付系统）
+     *     1. 用户未支付（主动终止流程，未曾真正调用微信支付系统，在订单中心，会有“取消订单”的入口，此时有订单编码）
+     *     1. 用户未支付（主动终止流程，点击直接页面的“关闭X”，会有一个回调，此时没有订单编码，所以取消最后一笔）
      * </pre>
      * @param packageOrderNo 购买套餐订单编号
      * @return com.xiliulou.core.web.R<java.lang.Boolean>
@@ -322,10 +324,6 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
      **/
     @GetMapping("/cancelRentalPackageOrder")
     public R<Boolean> cancelRentalPackageOrder(String packageOrderNo) {
-        if (StringUtils.isBlank(packageOrderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -333,9 +331,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean cancelFlag = carRentalPackageOrderBizService.cancelRentalPackageOrder(packageOrderNo, tenantId, user.getUid());
-
-        return R.ok(cancelFlag);
+        return R.ok(carRentalPackageOrderBizService.cancelRentalPackageOrder(packageOrderNo, tenantId, user.getUid()));
     }
 
     /**

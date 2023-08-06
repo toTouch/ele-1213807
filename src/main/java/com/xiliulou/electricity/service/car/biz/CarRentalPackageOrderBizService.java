@@ -6,6 +6,7 @@ import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 租车套餐购买业务聚合 BizService
@@ -123,9 +124,10 @@ public interface CarRentalPackageOrderBizService {
      * @param orderNo 租车套餐购买订单编号
      * @param tenantId 租户ID
      * @param uid 用户ID
+     * @param userCouponIds 用户优惠券ID集，可为空
      * @return
      */
-    Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid);
+    Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid, List<Long> userCouponIds);
 
     /**
      * 支付失败之后的逻辑

@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,6 +82,23 @@ public class UserCouponServiceImpl implements UserCouponService {
     private CouponActivityPackageService couponActivityPackageService;
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+
+    /**
+     * 根据ID集查询用户优惠券信息
+     *
+     * @param idList 主键ID集
+     * @return 用户优惠券集
+     */
+    @Slave
+    @Override
+    public List<UserCoupon> listByIds(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+
+        return userCouponMapper.selectBatchIds(idList);
+
+    }
 
     /**
      * 根据订单编码作废掉未使用的优惠券

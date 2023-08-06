@@ -14,20 +14,28 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
+     * 根据用户ID查找最后一条未支付成功的购买记录信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 购买订单信息
+     */
+    CarRentalPackageOrderPO selectLastUnPayByUid(Integer tenantId, Long uid);
+
+    /**
      * 根据用户ID查询第一条未使用的支付成功的订单信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 套餐购买订单
      */
-    CarRentalPackageOrderPO selectFirstUnUsedByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderPO selectFirstUnUsedAndPaySuccessByUid(Integer tenantId, Long uid);
 
     /**
-     * 根据用户ID查找最后一条成功的购买记录信息
+     * 根据用户ID查找最后一条支付成功的购买记录信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 购买订单信息
      */
-    CarRentalPackageOrderPO seletLastByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderPO seletLastPaySuccessByUid(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID进行退押操作<br />
