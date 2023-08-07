@@ -1807,7 +1807,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 7.1 车或者电与车电一体互斥
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
                     (!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus()) || !UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus()))) {
-                log.error("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is battery", buyPackageEntity.getType());
+                log.error("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is battery or car", buyPackageEntity.getType());
                 return R.fail("300005", "套餐不匹配");
             }
 
