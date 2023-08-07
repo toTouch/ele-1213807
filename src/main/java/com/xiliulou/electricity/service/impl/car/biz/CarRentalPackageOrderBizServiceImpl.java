@@ -2177,7 +2177,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 memberTermUpdateEntity.setDueTime(memberTermUpdateEntity.getDueTimeTotal());
                 memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
                 // 更改套餐购买订单的使用状态
-                carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+                carRentalPackageOrderService.updateUseStateByOrderNo(carRentalPackageOrderEntity.getOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
                 carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
             }
 
