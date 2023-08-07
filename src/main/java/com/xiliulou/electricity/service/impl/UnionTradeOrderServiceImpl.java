@@ -704,7 +704,7 @@ public class UnionTradeOrderServiceImpl extends
                 //     2.套餐未过期，保存到资源包
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
 
-                    electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+                    electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
                     userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                     userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());

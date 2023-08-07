@@ -34,4 +34,11 @@ public interface MqProducerConstant {
      * 硬件故障
      */
     String TOPIC_HARDWARE_FAILURE = "WARNING_BREAKDOWN_TOPIC";
+
+
+    /** 用户优惠券公用 topic */
+    String USER_COUPON_COMMON_TOPIC = "user_coupon_common_topic";
+
+    /** 用户优惠券公用 topic 下的所有 tag */
+    String USER_COUPON_COMMON_TOPIC_TAG = "*";
 }

@@ -18,4 +18,7 @@ public interface MqConsumerConstant {
 
     String BATTERY_CONSUMER = "battery-power-consumer";
 
+    /** 用户优惠券公用 consumer group */
+    String USER_COUPON_COMMON_CONSUMER_GROUP = "user_coupon_common_consumer_group";
+
 }

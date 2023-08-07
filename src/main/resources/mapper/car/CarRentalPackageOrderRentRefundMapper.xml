@@ -19,8 +19,10 @@
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
-        <result property="residue" column="residue" jdbcType="BIGINT" />
-        <result property="residueUnit" column="residue_unit" jdbcType="INTEGER" />
+        <result property="tenancyResidue" column="tenancy_residue" jdbcType="BIGINT" />
+        <result property="tenancyResidueUnit" column="tenancy_residue_unit" jdbcType="INTEGER" />
+        <result property="confine" column="confine" jdbcType="INTEGER" />
+        <result property="confineResidue" column="confine_residue" jdbcType="INTEGER" />
         <result property="refundAmount" column="refund_amount" jdbcType="DECIMAL" />
         <result property="refundState" column="refund_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
@@ -40,7 +42,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `refund_amount`, `refund_state`, `remark`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `tenancy_residue`, `tenancy_residue_unit`, `confine`, `confine_residue`, `refund_amount`, `refund_state`, `remark`,
         `rent_payment`, `rent_unit_price`, `pay_type`, `audit_time`
     </sql>
 
@@ -105,8 +107,10 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
-            <if test=" residue != null and residue != '' "> `residue`, </if>
-            <if test=" residueUnit != null "> `residue_unit`, </if>
+            <if test=" tenancyResidue != null "> `tenancy_residue`, </if>
+            <if test=" tenancyResidueUnit != null "> `tenancy_residue_unit`, </if>
+            <if test=" confine != null "> `confine`, </if>
+            <if test=" confineResidue != null "> `confine_residue`, </if>
             <if test=" refundAmount != null "> `refund_amount`, </if>
             <if test=" refundState != null "> `refund_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
@@ -132,8 +136,10 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
-            <if test=" residue != null and residue != '' "> #{residue}, </if>
-            <if test=" residueUnit != null "> #{residueUnit}, </if>
+            <if test=" tenancyResidue != null "> #{tenancyResidue}, </if>
+            <if test=" tenancyResidueUnit != null "> #{tenancyResidueUnit}, </if>
+            <if test=" confine != null "> #{confine}, </if>
+            <if test=" confineResidue != null "> #{confineResidue}, </if>
             <if test=" refundAmount != null "> #{refundAmount}, </if>
             <if test=" refundState != null "> #{refundState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>

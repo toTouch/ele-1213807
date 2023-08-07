@@ -258,12 +258,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100285", "电池套餐已失效");
             }
 
-            //如果套餐使用中,判断是否有未使用的套餐
-            if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING) && CollectionUtils.isNotEmpty(userBatteryMemberCardPackageService.selectByUid(userInfo.getUid()))) {
-                log.warn("BATTERY MEMBERCARD REFUND WARN! user has not used membercard,uid={}", user.getUid());
-                return Triple.of(false, "100290", "请先退租未使用的套餐");
-            }
-
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMemberCard,uid={},mid={}", user.getUid(), electricityMemberCardOrder.getMemberCardId());
