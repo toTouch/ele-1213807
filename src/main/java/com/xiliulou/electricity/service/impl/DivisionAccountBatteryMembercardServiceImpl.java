@@ -4,6 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
 import com.xiliulou.electricity.mapper.DivisionAccountBatteryMembercardMapper;
 import com.xiliulou.electricity.service.DivisionAccountBatteryMembercardService;
+import com.xiliulou.electricity.vo.DivisionAccountBatteryMemberCardVO;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -66,14 +67,21 @@ public class DivisionAccountBatteryMembercardServiceImpl implements DivisionAcco
         return this.divisionAccountBatteryMembercardMapper.selectByDivisionAccountConfigId(id);
     }
 
+    @Slave
     @Override
     public List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(Long divisionAccountId) {
         return this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigId(divisionAccountId);
     }
 
+    @Slave
     @Override
     public List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(Long divisionAccountId, Integer type) {
         return  this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigIdAndType(divisionAccountId, type);
+    }
+
+    @Override
+    public List<DivisionAccountBatteryMemberCardVO> selectMemberCardsByDAConfigIdAndHierarchy(Long id, Integer hierarchy) {
+        return this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigIdAndHierarchy(id, hierarchy);
     }
 
     @Slave
