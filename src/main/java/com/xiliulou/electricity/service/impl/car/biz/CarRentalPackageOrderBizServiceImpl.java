@@ -2110,7 +2110,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 原本套餐，非退租且已过期
             if (StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo())) {
                 // 过期使用中
-                if (memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
+                if (memberTermEntity.getDueTime() <= System.currentTimeMillis()) {
                     memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                     memberTermUpdateEntity.setRentalPackageType(carRentalPackageOrderEntity.getRentalPackageType());
                     memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
