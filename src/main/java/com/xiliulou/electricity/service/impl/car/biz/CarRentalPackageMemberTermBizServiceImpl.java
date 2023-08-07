@@ -4,7 +4,6 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
@@ -314,9 +313,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         }
                     } else {
                         // 二次保底确认
-                        CarRentalPackageMemberTermPo oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getRentalPackageId());
+                        CarRentalPackageMemberTermPo oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getId());
+                        if (ObjectUtils.isEmpty(oriMemberTermEntity)) {
+                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. t_car_rental_package_member_term Abnormal old data. skip. id is {}", memberTermEntity.getId());
+                            continue;
+                        }
                         if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
-                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. t_car_rental_package_member_term processed. skip. uid is {}", memberTermEntity.getUid());
+                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. t_car_rental_package_member_term processed. skip. id is {}", memberTermEntity.getId());
                             continue;
                         }
                     }
