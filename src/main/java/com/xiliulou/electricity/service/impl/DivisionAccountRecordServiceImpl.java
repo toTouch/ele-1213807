@@ -3,9 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.DivisionAccountRecordMapper;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
@@ -346,7 +346,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             }
 
         } else {
-            CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
             if(Objects.isNull(carRentalPackageOrderPO)){
                 log.error("Division Account error, Not found for car rental package, order number = {}", orderNo);
                 return;
@@ -362,7 +362,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 DivisionAccountAmountVO CarRentalAmountVO = calculateBenefitsByCarRentalPackage(carRentalPackageOrderPO.getRentPayment(), divisionAccountConfigRefVO);
                 //获取租车/车电一体套餐信息
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
 
                 //保存分帐记录
                 DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
@@ -587,20 +587,20 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
     @Transactional(rollbackFor = Exception.class)
     public void handleRefundDivisionAccountByCarRentalPackage(String orderNo){
-        CarRentalPackageOrderRentRefundPO carRentalPackageOrderRentRefundPO = carRentalPackageOrderRentRefundService.selectByOrderNo(orderNo);
+        CarRentalPackageOrderRentRefundPo carRentalPackageOrderRentRefundPO = carRentalPackageOrderRentRefundService.selectByOrderNo(orderNo);
         if(Objects.isNull(carRentalPackageOrderRentRefundPO)){
             log.error("Refund Division Account error, Not found for car rental package order, refund order number = {}", orderNo);
             return;
         }
 
         log.info("Refund Division Account Start, car rental package order, refund order id = {}, uid = {}", carRentalPackageOrderRentRefundPO.getId(), carRentalPackageOrderRentRefundPO.getUid());
-        CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(carRentalPackageOrderRentRefundPO.getRentalPackageOrderNo());
+        CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(carRentalPackageOrderRentRefundPO.getRentalPackageOrderNo());
 
         //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
         DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(carRentalPackageOrderPO.getOrderNo());
 
         //不需要再根据之前的分账设置去计算退款金额，直接按购买时的分账金额全部退回。同时将构面分账记录状态设置为失效状态。如果后续分账时只需查找分账状态为正常且创建时间大于7天的记录即可。
-        CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
+        CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
 
         //保存分帐记录
         DivisionAccountRecord refundDivisionAccountRecord = new DivisionAccountRecord();

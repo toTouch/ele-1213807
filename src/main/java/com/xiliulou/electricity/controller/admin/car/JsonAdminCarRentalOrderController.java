@@ -4,13 +4,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalOrderQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalOrderVO;
+import com.xiliulou.electricity.vo.car.CarRentalOrderVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -64,7 +64,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      * @return 租车订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq qryReq) {
+    public R<List<CarRentalOrderVo>> page(@RequestBody CarRentalOrderQryReq qryReq) {
         if (null == qryReq) {
             qryReq = new CarRentalOrderQryReq();
         }
@@ -86,7 +86,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalOrderPO> rentalOrderEntityList = carRentalOrderService.page(qryModel);
+        List<CarRentalOrderPo> rentalOrderEntityList = carRentalOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(rentalOrderEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -111,9 +111,9 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         Map<Long, String> storeMap = getStoreNameByIdsForMap(storeIds);
 
         // 模型转换，封装返回
-        List<CarRentalOrderVO> carRentalPackageVOList = rentalOrderEntityList.stream().map(rentalOrderEntity -> {
+        List<CarRentalOrderVo> carRentalPackageVOList = rentalOrderEntityList.stream().map(rentalOrderEntity -> {
 
-            CarRentalOrderVO rentalOrderVo = new CarRentalOrderVO();
+            CarRentalOrderVo rentalOrderVo = new CarRentalOrderVo();
             BeanUtils.copyProperties(rentalOrderEntity, rentalOrderVo);
 
             if (!userInfoMap.isEmpty()) {

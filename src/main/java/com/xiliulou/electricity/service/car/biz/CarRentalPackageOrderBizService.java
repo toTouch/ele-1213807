@@ -2,10 +2,12 @@ package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 租车套餐购买业务聚合 BizService
@@ -13,6 +15,15 @@ import javax.servlet.http.HttpServletRequest;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderBizService {
+
+    /**
+     * 退租提示
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 套餐购买订单编码
+     * @return 提示模型
+     */
+    RefundRentOrderHintVo refundRentOrderHint(Integer tenantId, Long uid, String packageOrderNo);
 
     /**
      * 后端给用户绑定套餐
@@ -123,9 +134,10 @@ public interface CarRentalPackageOrderBizService {
      * @param orderNo 租车套餐购买订单编号
      * @param tenantId 租户ID
      * @param uid 用户ID
+     * @param userCouponIds 用户优惠券ID集，可为空
      * @return
      */
-    Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid);
+    Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid, List<Long> userCouponIds);
 
     /**
      * 支付失败之后的逻辑

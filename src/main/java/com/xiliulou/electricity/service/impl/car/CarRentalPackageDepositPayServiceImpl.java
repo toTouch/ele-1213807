@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -38,7 +38,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      * @return 押金支付订单
      */
     @Override
-    public CarRentalPackageDepositPayPO selectLastByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageDepositPayPo selectLastByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -99,7 +99,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public CarRentalPackageDepositPayPO selectLastPaySucessByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageDepositPayPo selectLastPaySucessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -116,7 +116,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public List<CarRentalPackageDepositPayPO> list(CarRentalPackageDepositPayQryModel qryModel) {
+    public List<CarRentalPackageDepositPayPo> list(CarRentalPackageDepositPayQryModel qryModel) {
         return carRentalPackageDepositPayMapper.list(qryModel);
     }
 
@@ -128,7 +128,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public List<CarRentalPackageDepositPayPO> page(CarRentalPackageDepositPayQryModel qryModel) {
+    public List<CarRentalPackageDepositPayPo> page(CarRentalPackageDepositPayQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageDepositPayQryModel();
         }
@@ -160,7 +160,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public CarRentalPackageDepositPayPO selectByOrderNo(String orderNo) {
+    public CarRentalPackageDepositPayPo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -176,7 +176,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public CarRentalPackageDepositPayPO selectById(Long id) {
+    public CarRentalPackageDepositPayPo selectById(Long id) {
         if (ObjectUtils.isEmpty(id)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -191,7 +191,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      * @return
      */
     @Override
-    public Long insert(CarRentalPackageDepositPayPO entity) {
+    public Long insert(CarRentalPackageDepositPayPo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getTenantId(), entity.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

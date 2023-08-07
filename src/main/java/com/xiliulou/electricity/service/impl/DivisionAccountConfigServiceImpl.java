@@ -8,7 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.mapper.DivisionAccountConfigMapper;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
@@ -21,7 +21,6 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import com.xiliulou.electricity.vo.SearchVo;
-import io.micrometer.core.instrument.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -579,7 +578,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         //2.检查租车套餐及分账配置是否存在
         if(CollectionUtils.isNotEmpty(query.getCarRentalPackages())){
             for(Long memberCardId : query.getCarRentalPackages()){
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
                 if (Objects.isNull(carRentalPackagePO)) {
                     return Triple.of(false, "000203", "租车套餐不存在");
                 }
@@ -596,7 +595,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         //3.检查车电一体套餐及分账配置是否存在
         if(CollectionUtils.isNotEmpty(query.getCarWithBatteryPackages()))
         for(Long memberCardId : query.getCarWithBatteryPackages()){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
@@ -811,7 +810,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                     list.add(batteryMemberCard.getName());
                 }
             }else{
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
                 if (Objects.nonNull(carRentalPackagePO)) {
                     list.add(carRentalPackagePO.getName());
                 }
@@ -847,7 +846,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             //获取租车或车电一体的套餐信息
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
                 batteryMemberCardVO.setId(carRentalPackagePO.getId());
                 batteryMemberCardVO.setName(carRentalPackagePO.getName());
                 list.add(batteryMemberCardVO);
@@ -878,7 +877,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                     list.add(batteryMemberCardVO);
                 }
             }else{
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
                 if (Objects.nonNull(carRentalPackagePO)) {
                     batteryMemberCardVO.setName(carRentalPackagePO.getName());
                     list.add(batteryMemberCardVO);
@@ -1044,7 +1043,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if(CollectionUtils.isNotEmpty(carRentalPackages)){
             for(Long memberCardId : carRentalPackages){
                 EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
                 eleDivisionAccountOperationRecordDTO.setId(memberCardId.intValue());
                 eleDivisionAccountOperationRecordDTO.setType(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL);
                 if (Objects.nonNull(carRentalPackagePO)){
@@ -1058,7 +1057,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if(CollectionUtils.isNotEmpty(carElectricityPackages)){
             for(Long memberCardId : carElectricityPackages){
                 EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
-                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(memberCardId);
                 eleDivisionAccountOperationRecordDTO.setId(memberCardId.intValue());
                 eleDivisionAccountOperationRecordDTO.setType(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY);
                 if (Objects.nonNull(carRentalPackagePO)){

@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
@@ -13,7 +13,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -110,7 +110,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      * @return 退押订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
+    public R<List<CarRentalPackageDepositRefundVo>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
@@ -131,21 +131,21 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
+        List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
             return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息）
-        Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPO::getUid).collect(Collectors.toSet());
+        Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositRefundVO> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
+        List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
 
-            CarRentalPackageDepositRefundVO depositRefundVO = new CarRentalPackageDepositRefundVO();
+            CarRentalPackageDepositRefundVo depositRefundVO = new CarRentalPackageDepositRefundVo();
             BeanUtils.copyProperties(depositRefundEntity, depositRefundVO);
 
             if (!userInfoMap.isEmpty()) {

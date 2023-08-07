@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public interface CarRentalPackageMemberTermService {
      * @param nowTime 当前时间戳(可为空)
      * @return 会员套餐信息集
      */
-    List<CarRentalPackageMemberTermPO> pageExpire(Integer offset, Integer size, Long nowTime);
+    List<CarRentalPackageMemberTermPo> pageExpire(Integer offset, Integer size, Long nowTime);
 
     /**
      * 根据用户ID和套餐购买订单编码进行退租<br />
@@ -41,7 +41,7 @@ public interface CarRentalPackageMemberTermService {
      * @param packageOrderNo 购买套餐订单编码
      * @return 租车套餐会员期限信息
      */
-    CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo);
+    CarRentalPackageMemberTermPo selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo);
 
     /**
      * 根据用户ID和租户ID删除
@@ -76,7 +76,7 @@ public interface CarRentalPackageMemberTermService {
      * @param entity 实体数据
      * @return true(成功)、false(失败)
      */
-    Boolean updateById(CarRentalPackageMemberTermPO entity);
+    Boolean updateById(CarRentalPackageMemberTermPo entity);
 
     /**
      * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
@@ -86,7 +86,7 @@ public interface CarRentalPackageMemberTermService {
      * @param uid 用户ID
      * @return 租车套餐会员期限信息
      */
-    CarRentalPackageMemberTermPO selectByTenantIdAndUid(Integer tenantId, Long uid);
+    CarRentalPackageMemberTermPo selectByTenantIdAndUid(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />
@@ -94,14 +94,14 @@ public interface CarRentalPackageMemberTermService {
      * @param qryModel 查询模型
      * @return 租车套餐会员期限信息集
      */
-    List<CarRentalPackageMemberTermPO> list(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPo> list(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return 租车套餐会员期限信息集
      */
-    List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPo> page(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -115,7 +115,7 @@ public interface CarRentalPackageMemberTermService {
      * @param id 主键ID
      * @return 租车套餐会员期限信息
      */
-    CarRentalPackageMemberTermPO selectById(Long id);
+    CarRentalPackageMemberTermPo selectById(Long id);
 
 
     /**
@@ -123,6 +123,6 @@ public interface CarRentalPackageMemberTermService {
      * @param entity 操作实体
      * @return 主键ID
      */
-    Long insert(CarRentalPackageMemberTermPO entity);
+    Long insert(CarRentalPackageMemberTermPo entity);
     
 }

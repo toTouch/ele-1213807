@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
@@ -492,7 +492,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             payCount = electricityMemberCardOrder.getPayCount();
         }else{
             //获取租车或者车电一体订单信息
-            CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
             if(Objects.isNull(carRentalPackageOrderPO)){
                 log.info("Invitation activity info, Not found for car rental package, order number = {}", orderNo);
                 return;

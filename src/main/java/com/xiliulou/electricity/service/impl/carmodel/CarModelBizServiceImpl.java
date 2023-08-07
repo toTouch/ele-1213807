@@ -5,8 +5,8 @@ import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -21,7 +21,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.StoreVO;
-import com.xiliulou.electricity.vo.car.CarModelDetailVO;
+import com.xiliulou.electricity.vo.car.CarModelDetailVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
      * @return 车辆型号详细信息
      */
     @Override
-    public CarModelDetailVO queryDetailByCarModelId(Integer carModelId) {
+    public CarModelDetailVo queryDetailByCarModelId(Integer carModelId) {
         if (ObjectUtils.isEmpty(carModelId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -96,7 +96,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         Store store = storeService.queryByIdFromCache(carModel.getStoreId());
 
         // 拼装返回数据
-        CarModelDetailVO carModelDetailVo = new CarModelDetailVO();
+        CarModelDetailVo carModelDetailVo = new CarModelDetailVo();
         carModelDetailVo.setId(carModel.getId());
         carModelDetailVo.setName(carModel.getName());
         carModelDetailVo.setOtherProperties(carModel.getOtherProperties());
@@ -151,7 +151,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         }
 
         // 3. 查询租车会员信息
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isNotEmpty(memberTermEntity) &&
                 !(MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus()) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus()))) {
             log.info("CarModelBizService.checkBuyByCarModelId, The t_car_rental_package_member_term abnormal status. uid is {}", uid);
@@ -168,7 +168,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
                 String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
                 rentalPackageId = carRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo(depositPayOrderNo);
             }
-            CarRentalPackagePO rentalPackage = carRentalPackageService.selectById(rentalPackageId);
+            CarRentalPackagePo rentalPackage = carRentalPackageService.selectById(rentalPackageId);
             if (ObjectUtils.isEmpty(rentalPackage)) {
                 log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
                 throw new BizException("300000", "数据有误");

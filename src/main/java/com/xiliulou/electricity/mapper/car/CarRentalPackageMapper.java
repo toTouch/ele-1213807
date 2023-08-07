@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +20,7 @@ public interface CarRentalPackageMapper {
      * @param idList 主键ID集
      * @return
      */
-    List<CarRentalPackagePO> selectByIds(@Param("idList") List<Long> idList);
+    List<CarRentalPackagePo> selectByIds(@Param("idList") List<Long> idList);
 
     /**
      * 检测唯一：租户ID+套餐名称
@@ -55,14 +55,14 @@ public interface CarRentalPackageMapper {
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePo> list(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePo> page(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -76,20 +76,20 @@ public interface CarRentalPackageMapper {
      * @param id 主键ID
      * @return
      */
-    CarRentalPackagePO selectById(Long id);
+    CarRentalPackagePo selectById(Long id);
 
     /**
      * 根据ID更新
      * @param entity 实体类
      * @return
      */
-    int updateById(CarRentalPackagePO entity);
+    int updateById(CarRentalPackagePo entity);
 
     /**
      * 插入
      * @param entity 实体类
      * @return
      */
-    int insert(CarRentalPackagePO entity);
+    int insert(CarRentalPackagePo entity);
 
 }

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
@@ -15,7 +15,7 @@ import lombok.Data;
  **/
 @Data
 @TableName("t_car_rental_order")
-public class CarRentalOrderPO extends BasicCarPO {
+public class CarRentalOrderPo extends BasicCarPo {
 
     private static final long serialVersionUID = -1949828948420819144L;
 

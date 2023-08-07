@@ -3,14 +3,14 @@ package com.xiliulou.electricity.controller.user.car;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -50,7 +50,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
      * @return 逾期订单集
      */
     @GetMapping("/page")
-    public R<List<CarRentalPackageOrderSlippageVO>> page(Integer offset, Integer size, @RequestParam(required = false) Integer rentalPackageType) {
+    public R<List<CarRentalPackageOrderSlippageVo>> page(Integer offset, Integer size, @RequestParam(required = false) Integer rentalPackageType) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -67,16 +67,16 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         qryModel.setRentalPackageType(rentalPackageType);
 
         // 调用服务
-        List<CarRentalPackageOrderSlippagePO> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
+        List<CarRentalPackageOrderSlippagePo> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageSlippageEntityList)) {
             return R.ok(Collections.emptyList());
         }
 
-        List<CarRentalPackageOrderSlippageVO> carRentalPackageSlippageVoList = new ArrayList<>();
+        List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
         long nowTime = System.currentTimeMillis();
 
-        for (CarRentalPackageOrderSlippagePO slippageEntity : carRentalPackageSlippageEntityList) {
-            CarRentalPackageOrderSlippageVO slippageVo = new CarRentalPackageOrderSlippageVO();
+        for (CarRentalPackageOrderSlippagePo slippageEntity : carRentalPackageSlippageEntityList) {
+            CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
             // 默认应缴==实缴
             slippageVo.setLateFeePayable(slippageVo.getLateFeePay());

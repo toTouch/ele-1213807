@@ -6,7 +6,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarModelDetailVO;
+import com.xiliulou.electricity.vo.car.CarModelDetailVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -37,7 +37,7 @@ public class JsonUserCarModelController extends BasicController {
      * @return 车辆型号详细信息
      */
     @GetMapping("/queryByCarModelId")
-    public R<CarModelDetailVO> queryByCarModelId(Integer carModelId) {
+    public R<CarModelDetailVo> queryByCarModelId(Integer carModelId) {
         if (ObjectUtils.isEmpty(carModelId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

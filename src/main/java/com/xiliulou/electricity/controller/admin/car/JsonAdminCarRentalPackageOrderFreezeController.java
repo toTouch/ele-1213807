@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderFreezeQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
@@ -12,7 +12,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -92,7 +92,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
      * @return 冻结订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderFreezeVO>> page(@RequestBody CarRentalPackageOrderFreezeQryReq queryReq) {
+    public R<List<CarRentalPackageOrderFreezeVo>> page(@RequestBody CarRentalPackageOrderFreezeQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderFreezeQryReq();
         }
@@ -114,7 +114,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageOrderFreezePO> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
+        List<CarRentalPackageOrderFreezePo> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
         if (CollectionUtils.isEmpty(freezeEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -134,9 +134,9 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderFreezeVO> freezeVoList = freezeEntityList.stream().map(freezeEntity -> {
+        List<CarRentalPackageOrderFreezeVo> freezeVoList = freezeEntityList.stream().map(freezeEntity -> {
 
-            CarRentalPackageOrderFreezeVO freezeVO = new CarRentalPackageOrderFreezeVO();
+            CarRentalPackageOrderFreezeVo freezeVO = new CarRentalPackageOrderFreezeVo();
             BeanUtils.copyProperties(freezeEntity, freezeVO);
 
             if (!userInfoMap.isEmpty()) {

@@ -2,15 +2,15 @@ package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -44,6 +44,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private  CouponActivityPackageService couponActivityPackageService;
 
     @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
@@ -83,7 +86,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      * @return
      */
     @Override
-    public List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid) {
+    public List<CarRentalPackagePo> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid) {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -128,7 +131,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
 
         // 1、查询是否存在会员期限信息(代表是否存在过套餐购买)
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         // 存在数据，则代表押金已经缴纳，即租户、加盟商、门店、套餐类型、押金全都定下来了
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
             // 待生效，代表未支付
@@ -144,7 +147,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 // 必定是老用户
                 if (ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询套餐对应的车辆型号
-                    CarRentalPackagePO packageEntity = carRentalPackageService.selectById(rentalPackageId);
+                    CarRentalPackagePo packageEntity = carRentalPackageService.selectById(rentalPackageId);
 
                     // 车辆型号不匹配
                     if (!packageEntity.getCarModelId().equals(carModelId)) {
@@ -158,10 +161,10 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 }
 
                 // 车电一体且存在订单
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
                     // 查询电池型号信息
-                    List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
-                    batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                    List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
+                    batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 }
 
                 deposit = memberTermEntity.getDeposit();
@@ -185,33 +188,33 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
         qryModel.setConfine(confine);
-        List<CarRentalPackagePO> packageEntityList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);
         if (CollectionUtils.isEmpty(packageEntityList)) {
             return Collections.emptyList();
         }
 
         // 车电一体，需要二次处理
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             // 查询型号关联关系
-            List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePO::getId).collect(Collectors.toList());
-            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
+            List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePo::getId).collect(Collectors.toList());
+            List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
             if (CollectionUtils.isEmpty(carBatteryRelEntityList)) {
                 return packageEntityList;
             }
 
-            Map<Long, List<CarRentalPackageCarBatteryRelPO>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPO::getRentalPackageId));
+            Map<Long, List<CarRentalPackageCarBatteryRelPo>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPo::getRentalPackageId));
 
             List<String> batteryModelTypeDbList = null;
 
             // 迭代器处理
-            Iterator<CarRentalPackagePO> iterator = packageEntityList.iterator();
+            Iterator<CarRentalPackagePo> iterator = packageEntityList.iterator();
             while (iterator.hasNext()) {
-                CarRentalPackagePO carRentalPackage = iterator.next();
-                List<CarRentalPackageCarBatteryRelPO> carBatteryRels = carBatteryRelMap.get(carRentalPackage.getId());
+                CarRentalPackagePo carRentalPackage = iterator.next();
+                List<CarRentalPackageCarBatteryRelPo> carBatteryRels = carBatteryRelMap.get(carRentalPackage.getId());
                 if (CollectionUtils.isEmpty(carBatteryRels)) {
                     continue;
                 }
-                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 if (!batteryModelTypeDbList.containsAll(batteryModelTypeList)) {
                     iterator.remove();
                 }
@@ -248,7 +251,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPackage(CarRentalPackageOptModel optModel) {
         if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName())
-                || !BasicEnum.isExist(optModel.getType(), CarRentalPackageTypeEnum.class)) {
+                || !BasicEnum.isExist(optModel.getType(), RentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -262,18 +265,18 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 新增租车套餐
-        CarRentalPackagePO entity = new CarRentalPackagePO();
+        CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity);
         Long packageId = carRentalPackageService.insert(entity);
 
         // 车电一体
-        if (CarRentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
+        if (RentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
             return true;
         }
 
         // 车电一体
         List<String> batteryModelTypes = CollectionUtils.isEmpty(optModel.getBatteryModelTypes()) ? new ArrayList<>() : optModel.getBatteryModelTypes();
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(Long.valueOf(optModel.getFranchiseeId()));
             if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType()) && CollectionUtils.isEmpty(batteryModelTypes)) {
                 log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
@@ -282,8 +285,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 1. 保存关联表
-        List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = batteryModelTypes.stream().map(batteryModelType -> {
-            CarRentalPackageCarBatteryRelPO carBatteryRelEntity = new CarRentalPackageCarBatteryRelPO();
+        List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = batteryModelTypes.stream().map(batteryModelType -> {
+            CarRentalPackageCarBatteryRelPo carBatteryRelEntity = new CarRentalPackageCarBatteryRelPo();
             carBatteryRelEntity.setRentalPackageId(packageId);
             carBatteryRelEntity.setCarModelId(entity.getCarModelId());
             carBatteryRelEntity.setBatteryModelType(batteryModelType);
@@ -308,7 +311,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         return true;
     }
 
-    private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePO entity) {
+    private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePo entity) {
         BatteryMemberCard batteryMemberCardEntity = new BatteryMemberCard();
         batteryMemberCardEntity.setName(entity.getName());
         batteryMemberCardEntity.setDeposit(entity.getDeposit());
@@ -345,10 +348,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      * @param amount    原金额
      * @param userCouponIds 用户的优惠券ID集合
      * @param uid       用户ID
+     * @param packageId       套餐ID
+     * @param packageType       套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
      * @return Triple<BigDecimal, List<Long>, Boolean> 实际支付金额、已用的用户优惠券ID、Boolean（暂无实际意义）
      */
     @Override
-    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid) {
+    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType) {
         log.info("calculatePaymentAmount amount is {}", amount);
         if (BigDecimal.ZERO.compareTo(amount) == 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIds, true) ;
@@ -379,11 +384,15 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
-            // TODO 错误编码
-            throw new BizException("使用优惠券有误");
+            throw new BizException("300034", "使用优惠券有误");
         }
 
-        // TODO 暴煜, 校验优惠券的使用，是否指定这个套餐
+        // 校验优惠券的使用，是否指定这个套餐
+        // 1-租电 2-租车 3-车电一体
+        Boolean valid = couponActivityPackageService.checkPackageIsValid(couponList, packageId, packageType);
+        if (!valid) {
+            throw new BizException("300034", "使用优惠券有误");
+        }
 
         // 真正使用的用户优惠券ID
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());

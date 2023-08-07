@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param entity 实体数据
      * @return
      */
-    boolean updateByOrderNo(CarRentalPackageOrderRentRefundPO entity);
+    boolean updateByOrderNo(CarRentalPackageOrderRentRefundPo entity);
 
     /**
      * 条件查询列表<br />
@@ -25,14 +25,14 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageOrderRentRefundPO> list(CarRentalPackageOrderRentRefundQryModel qryModel);
+    List<CarRentalPackageOrderRentRefundPo> list(CarRentalPackageOrderRentRefundQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    List<CarRentalPackageOrderRentRefundPO> page(CarRentalPackageOrderRentRefundQryModel qryModel);
+    List<CarRentalPackageOrderRentRefundPo> page(CarRentalPackageOrderRentRefundQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -46,14 +46,14 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param orderNo 订单编码
      * @return
      */
-    CarRentalPackageOrderRentRefundPO selectByOrderNo(String orderNo);
+    CarRentalPackageOrderRentRefundPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    CarRentalPackageOrderRentRefundPO selectById(Long id);
+    CarRentalPackageOrderRentRefundPo selectById(Long id);
 
 
     /**
@@ -61,5 +61,5 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param entity 操作实体
      * @return
      */
-    Long insert(CarRentalPackageOrderRentRefundPO entity);
+    Long insert(CarRentalPackageOrderRentRefundPo entity);
 }

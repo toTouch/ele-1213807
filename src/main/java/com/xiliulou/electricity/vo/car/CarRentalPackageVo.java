@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageVO implements Serializable {
+public class CarRentalPackageVo implements Serializable {
 
     private static final long serialVersionUID = 8317006002657408755L;
 
@@ -35,7 +35,7 @@ public class CarRentalPackageVO implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer type;
 

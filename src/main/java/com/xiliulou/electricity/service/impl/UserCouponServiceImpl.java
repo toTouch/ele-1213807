@@ -11,7 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,6 +82,23 @@ public class UserCouponServiceImpl implements UserCouponService {
     private CouponActivityPackageService couponActivityPackageService;
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+
+    /**
+     * 根据ID集查询用户优惠券信息
+     *
+     * @param idList 主键ID集
+     * @return 用户优惠券集
+     */
+    @Slave
+    @Override
+    public List<UserCoupon> listByIds(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+
+        return userCouponMapper.selectBatchIds(idList);
+
+    }
 
     /**
      * 根据订单编码作废掉未使用的优惠券
@@ -428,7 +446,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
             batteryMemberCardVO.setId(carRentalPackagePO.getId());
             batteryMemberCardVO.setName(carRentalPackagePO.getName());
             batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

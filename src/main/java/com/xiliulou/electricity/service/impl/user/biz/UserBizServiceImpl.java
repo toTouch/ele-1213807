@@ -1,10 +1,15 @@
 package com.xiliulou.electricity.service.impl.user.biz;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
+import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
@@ -30,10 +35,23 @@ import java.util.stream.Collectors;
 public class UserBizServiceImpl implements UserBizService {
 
     @Resource
+    private ElectricityBatteryService batteryService;
+
+    @Resource
+    private UserCarService userCarService;
+
+    @Resource
+    private ElectricityCarService carService;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
+
     @Autowired
     JoinShareActivityRecordService joinShareActivityRecordService;
     @Autowired
@@ -60,15 +78,117 @@ public class UserBizServiceImpl implements UserBizService {
 
     /**
      * 退押解绑用户信息
-     *
+     * @param tenantId 租户ID
      * @param uid  用户ID
-     * @param type 操作类型：0-退电、1-退车、2-退车电
+     * @param type 操作类型：0-单电、1-单车、2-车电一体 <br />
      * @return true(成功)、false(失败)
+     *
+     * @see RentalPackageTypeEnum
      */
     @Override
-    public boolean depositRefundUnbind(Long uid, Integer type) {
-        // TODO 实现
-        return false;
+    @Transactional(rollbackFor = Exception.class)
+    public boolean depositRefundUnbind(Integer tenantId, Long uid, Integer type) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, type) || BasicEnum.isExist(type, RentalPackageTypeEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (ObjectUtils.isEmpty(userInfo) || !userInfo.getTenantId().equals(tenantId)) {
+            log.error("depositRefundUnbind failed. not found t_user_info or tenantId mismatching. uid is {}, user's tenantId is {}, params tenantId is {}", uid, userInfo.getTenantId(), tenantId);
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 定义数据
+        ElectricityCarBindUser unBindCar = null;
+
+        // 待更新的数据
+        UserInfo userInfoEntity = new UserInfo();
+        userInfoEntity.setId(userInfo.getId());
+        userInfoEntity.setTenantId(tenantId);
+        userInfoEntity.setUpdateTime(System.currentTimeMillis());
+
+        if (RentalPackageTypeEnum.CAR.getCode().equals(type)) {
+            // 解绑用户车辆
+            if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
+                ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+                unBindCar = new ElectricityCarBindUser();
+                unBindCar.setUid(uid);
+                unBindCar.setCarId(electricityCar.getId());
+            }
+
+            // 设置用户租赁状态
+            userInfoEntity.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            userInfoEntity.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+            // 置空加盟商、门店
+            if (UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus())) {
+                userInfoEntity.setFranchiseeId(0L);
+                userInfoEntity.setStoreId(0L);
+            }
+
+        }
+
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(type)) {
+            // 解绑用户车辆
+            if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
+                ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+                unBindCar = new ElectricityCarBindUser();
+                unBindCar.setUid(uid);
+                unBindCar.setCarId(electricityCar.getId());
+            }
+
+            // TODO 解绑用户电池
+
+            // 设置用户租赁状态
+            userInfoEntity.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            userInfoEntity.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+            userInfoEntity.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            userInfoEntity.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+            userInfoEntity.setCarBatteryDepositStatus(YesNoEnum.NO.getCode());
+            // 置空加盟商、门店
+            userInfoEntity.setFranchiseeId(0L);
+            userInfoEntity.setStoreId(0L);
+        }
+
+        // TODO 志龙检查一下
+        // TODO t_franchisee_user_info 这张表还有没有用，需要找志龙确认下
+        if (RentalPackageTypeEnum.BATTERY.getCode().equals(type)) {
+
+            // 设置用户租赁状态
+            userInfoEntity.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            userInfoEntity.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+            // 置空加盟商、门店
+            if (UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
+                userInfoEntity.setFranchiseeId(0L);
+                userInfoEntity.setStoreId(0L);
+            }
+        }
+
+        // 事务处理
+        log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, unBindCar is {}", JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(unBindCar));
+        saveDepositRefundUnbindTx(userInfoEntity, unBindCar);
+
+        return true;
+    }
+
+    /**
+     * 退押解绑用户信息事务操作
+     * @param userInfoEntity 更新用户实体信息
+     * @param unBindCar 解绑用户车辆信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCarBindUser unBindCar) {
+        // 解绑用户信息
+        userInfoService.update(userInfoEntity);
+        // 解绑用户车辆
+        if (ObjectUtils.isNotEmpty(unBindCar)) {
+            R unBindUserRep = carService.unBindUser(unBindCar);
+            log.info("depositRefundUnbind. carService.unBindUser response is {}", JsonUtil.toJson(unBindUserRep));
+            if (!unBindUserRep.isSuccess()) {
+                throw new BizException(unBindUserRep.getErrCode(), unBindUserRep.getErrMsg());
+            }
+        }
+        // TODO 解绑用户电池
     }
 
     /**

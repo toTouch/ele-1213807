@@ -5,11 +5,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.UserCouponService;
@@ -74,7 +74,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
         try {
 
             // 退租订单信息
-            CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
+            CarRentalPackageOrderRentRefundPo rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(rentRefundEntity)) {
                 log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
                 return;
@@ -86,7 +86,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
             }
 
             // 租车会员信息
-            CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
             if (ObjectUtils.isEmpty(memberTermEntity)) {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", rentRefundEntity.getUid());
                 throw new BizException("300000", "数据有误");
@@ -94,7 +94,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
 
             // 购买套餐编码
             String orderNo = rentRefundEntity.getRentalPackageOrderNo();
-            CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
             if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode().equals(packageOrderEntity.getUseState())) {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
                 throw new BizException("300000", "数据有误");
@@ -104,7 +104,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
             Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
 
             // 更新退款单数据
-            CarRentalPackageOrderRentRefundPO rentRefundUpdate = new CarRentalPackageOrderRentRefundPO();
+            CarRentalPackageOrderRentRefundPo rentRefundUpdate = new CarRentalPackageOrderRentRefundPo();
             rentRefundUpdate.setOrderNo(outRefundNo);
             rentRefundUpdate.setRefundState(refundState);
             rentRefundUpdate.setUpdateTime(System.currentTimeMillis());
@@ -132,7 +132,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                     }
 
                     // 更新数据
-                    CarRentalPackageMemberTermPO entityModify = new CarRentalPackageMemberTermPO();
+                    CarRentalPackageMemberTermPo entityModify = new CarRentalPackageMemberTermPo();
                     entityModify.setDueTimeTotal(dueTimeTotal);
                     entityModify.setId(memberTermEntity.getId());
                     entityModify.setUpdateTime(System.currentTimeMillis());
@@ -148,7 +148,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 // 5. 异步处理分账
                 DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                 divisionAccountOrderDTO.setOrderNo(outRefundNo);
-                divisionAccountOrderDTO.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
                 divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
                 divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                 divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));

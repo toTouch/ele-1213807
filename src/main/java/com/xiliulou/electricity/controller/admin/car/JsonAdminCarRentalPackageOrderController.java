@@ -5,15 +5,15 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -49,7 +49,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
      * @return 租车套餐购买订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
+    public R<List<CarRentalPackageOrderVo>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderQryReq();
         }
@@ -72,7 +72,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
 
         // 调用服务
-        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
+        List<CarRentalPackageOrderPo> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderPOList)) {
             return R.ok(Collections.emptyList());
         }
@@ -102,9 +102,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
+        List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
 
-            CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
+            CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO);
 
             if (!userInfoMap.isEmpty()) {
@@ -127,7 +127,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
             // 对使用中的订单，进行二次处理
             // 查询会员信息
-            CarRentalPackageMemberTermPO memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
+            CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
             if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
                 carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
             }

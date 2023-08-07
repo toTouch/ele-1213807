@@ -1,28 +1,21 @@
-package com.xiliulou.electricity.entity.car;
+package com.xiliulou.electricity.vo.car;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 租车套餐购买订单表
+ * 租车套餐购买订单展示层数据模型
  *
  * @author xiaohui.song
  **/
 @Data
-@TableName("t_car_rental_package_order")
-public class CarRentalPackageOrderPO extends BasicCarPO {
+public class CarRentalPackageOrderVo implements Serializable {
 
-    private static final long serialVersionUID = -2568173202959559791L;
-
-    /**
-     * 用户ID
-     */
-    private Long uid;
+    private static final long serialVersionUID = -1774728302026416327L;
 
     /**
      * 订单编码
@@ -30,17 +23,12 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private String orderNo;
 
     /**
-     * 套餐ID
-     */
-    private Long rentalPackageId;
-
-    /**
      * 套餐类型
      * <pre>
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 
@@ -121,11 +109,6 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private Long rentRebateEndTime;
 
     /**
-     * 押金
-     */
-    private BigDecimal deposit;
-
-    /**
      * 押金缴纳订单编号
      */
     private String depositPayOrderNo;
@@ -180,8 +163,50 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private String remark;
 
     /**
-     * 开始使用时间
+     * 创建时间，时间戳
      */
-    private Long useBeginTime;
+    private Long createTime;
+
+    // ++++++++++ 辅助业务数据 ++++++++++
+
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+
+    /**
+     * 用户真实姓名
+     */
+    private String userRelName;
+
+    /**
+     * 用户手机号
+     */
+    private String userPhone;
+
+    /**
+     * 租车套餐名称
+     */
+    private String carRentalPackageName;
+
+    /**
+     * 车辆型号名称
+     */
+    private String carModelName;
+
+    /**
+     * 赠送的优惠券名称
+     */
+    private String couponName;
+
+    /**
+     * 电池型号对应的电压伏数
+     */
+    private String batteryVoltage;
+
+    /**
+     * 押金金额(元)
+     */
+    private BigDecimal deposit;
 
 }

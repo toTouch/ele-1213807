@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.model.car.opt;
 
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -85,7 +85,7 @@ public class CarRentalPackageOptModel implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     @NotNull(message = "[套餐类型]不能为空", groups = {CreateGroup.class})
     private Integer type;

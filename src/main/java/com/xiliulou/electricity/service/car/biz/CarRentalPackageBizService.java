@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,7 +21,7 @@ public interface CarRentalPackageBizService {
      * @param uid 用户ID
      * @return 可购买的套餐数据集
      */
-    List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
+    List<CarRentalPackagePo> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
 
     /**
      * 根据套餐ID删除套餐信息
@@ -43,8 +43,10 @@ public interface CarRentalPackageBizService {
      * @param amount 原金额
      * @param userCouponIds 用户的优惠券ID集合
      * @param uid 用户ID
+     * @param packageId       套餐ID
+     * @param packageType       套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
      * @return Triple<BigDecimal, List<Long>, Boolean> 实际支付金额、已用的优惠券ID、Boolean（暂无实际意义）
      */
-    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid);
+    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType);
 
 }

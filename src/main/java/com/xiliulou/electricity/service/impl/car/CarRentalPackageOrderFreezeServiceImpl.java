@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
@@ -40,7 +40,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @return 冻结订单
      */
     @Override
-    public CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo) {
+    public CarRentalPackageOrderFreezePo selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo) {
         if (!ObjectUtils.allNotNull(uid, packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -54,7 +54,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @return
      */
     @Override
-    public boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity) {
+    public boolean updateByOrderNo(CarRentalPackageOrderFreezePo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -110,7 +110,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        CarRentalPackageOrderFreezePO freezeEntity = carRentalPackageOrderFreezeMapper.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
+        CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeMapper.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
         if (ObjectUtils.isEmpty(freezeEntity)) {
             log.error("CarRentalPackageOrderFreezeServiceImpl.enableFreezeRentOrderByUidAndPackageOrderNo error. not found order. uid is {}, packageOrderNo is {}",
                     uid, packageOrderNo);
@@ -168,7 +168,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public CarRentalPackageOrderFreezePO selectPendingApprovalByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderFreezePo selectPendingApprovalByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -184,7 +184,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderFreezePO> list(CarRentalPackageOrderFreezeQryModel qryModel) {
+    public List<CarRentalPackageOrderFreezePo> list(CarRentalPackageOrderFreezeQryModel qryModel) {
         return carRentalPackageOrderFreezeMapper.list(qryModel);
     }
 
@@ -196,7 +196,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderFreezePO> page(CarRentalPackageOrderFreezeQryModel qryModel) {
+    public List<CarRentalPackageOrderFreezePo> page(CarRentalPackageOrderFreezeQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageOrderFreezeQryModel();
         }
@@ -228,7 +228,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public CarRentalPackageOrderFreezePO selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderFreezePo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -244,7 +244,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public CarRentalPackageOrderFreezePO selectById(Long id) {
+    public CarRentalPackageOrderFreezePo selectById(Long id) {
         if (null == id || id <= 0) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -259,7 +259,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @return
      */
     @Override
-    public Long insert(CarRentalPackageOrderFreezePO entity) {
+    public Long insert(CarRentalPackageOrderFreezePo entity) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

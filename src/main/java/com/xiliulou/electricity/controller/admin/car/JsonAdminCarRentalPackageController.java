@@ -7,9 +7,9 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -23,7 +23,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -74,7 +74,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @return 车辆套餐信息集
      */
     @PostMapping("/pageByName")
-    public R<List<CarRentalPackageVO>> pageByName(@RequestBody CarRentalPackageQryReq qryReq) {
+    public R<List<CarRentalPackageVo>> pageByName(@RequestBody CarRentalPackageQryReq qryReq) {
         if (null == qryReq) {
             qryReq = new CarRentalPackageQryReq();
         }
@@ -88,15 +88,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        List<CarRentalPackagePO> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
         if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
             return R.ok(Collections.emptyList());
         }
 
         // 模型转换，封装返回
-        List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
+        List<CarRentalPackageVo> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
 
-            CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+            CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
             carRentalPackageVo.setId(carRentalPackageEntity.getId());
             carRentalPackageVo.setName(carRentalPackageEntity.getName());
 
@@ -153,7 +153,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @return 车辆套餐信息集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageVO>> page(@RequestBody CarRentalPackageQryReq qryReq) {
+    public R<List<CarRentalPackageVo>> page(@RequestBody CarRentalPackageQryReq qryReq) {
         if (null == qryReq) {
             qryReq = new CarRentalPackageQryReq();
         }
@@ -175,7 +175,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackagePO> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
         if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -204,9 +204,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
+        List<CarRentalPackageVo> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
 
-            CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+            CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
             BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
 
             if (!franchiseeMap.isEmpty()) {
@@ -264,13 +264,13 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @return 车辆套餐信息
      */
     @GetMapping("/queryById")
-    public R<CarRentalPackageVO> queryById(Long id) {
+    public R<CarRentalPackageVo> queryById(Long id) {
         if (id <= 0L) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
         // 调用服务
-        CarRentalPackagePO carRentalPackageEntity = carRentalPackageService.selectById(id);
+        CarRentalPackagePo carRentalPackageEntity = carRentalPackageService.selectById(id);
         if (ObjectUtils.isEmpty(carRentalPackageEntity)) {
             return R.ok();
         }
@@ -295,7 +295,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         }
 
         // 转换模型，组装返回值
-        CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+        CarRentalPackageVo carRentalPackageVo = new CarRentalPackageVo();
         BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
 
         // 赋值辅助业务数据
@@ -305,9 +305,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         carRentalPackageVo.setCouponName(ObjectUtils.isNotEmpty(coupon) ? coupon.getName() : null);
 
         // 查询电池型号
-        if (carRentalPackageEntity.getType().equals(CarRentalPackageTypeEnum.CAR_BATTERY.getCode())) {
-            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackageEntity.getId());
-            List<String> batteryModelTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+        if (carRentalPackageEntity.getType().equals(RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
+            List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackageEntity.getId());
+            List<String> batteryModelTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
             carRentalPackageVo.setBatteryModelTypes(batteryModelTypes);
         }
 
@@ -354,7 +354,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         optModel.setTenantId(tenantId);
         optModel.setUpdateUid(user.getUid());
 
-        CarRentalPackagePO entity = new CarRentalPackagePO();
+        CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity);
 
         return R.ok(carRentalPackageService.updateById(entity));

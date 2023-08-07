@@ -3,7 +3,7 @@ package com.xiliulou.electricity.vo.car;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageDepositPayVO implements Serializable {
+public class CarRentalPackageDepositPayVo implements Serializable {
 
     private static final long serialVersionUID = 1718767898763254057L;
 
@@ -31,7 +31,7 @@ public class CarRentalPackageDepositPayVO implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 

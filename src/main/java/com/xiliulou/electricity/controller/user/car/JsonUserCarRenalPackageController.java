@@ -3,13 +3,13 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -43,7 +43,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
      * @return 可购买的套餐数据集，包含赠送优惠券信息
      */
     @PostMapping("/queryCanPurchasePackage")
-    public R<List<CarRentalPackageVO>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
+    public R<List<CarRentalPackageVo>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -57,18 +57,18 @@ public class JsonUserCarRenalPackageController extends BasicController {
 
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
+        List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
 
         // 获取优惠券ID集
         List<Long> couponIdList = entityList.stream()
                 .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && entity.getCouponId().longValue() > 0)
-                .map(CarRentalPackagePO::getCouponId).distinct().collect(Collectors.toList());
+                .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
 
         // 查询赠送的优惠券信息
         Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIdList);
 
         // 转换 VO
-        List<CarRentalPackageVO> voList = buildVOList(entityList, couponMap);
+        List<CarRentalPackageVo> voList = buildVOList(entityList, couponMap);
 
         return R.ok(voList);
     }
@@ -78,27 +78,27 @@ public class JsonUserCarRenalPackageController extends BasicController {
      * @param entityList
      * @return
      */
-    private List<CarRentalPackageVO> buildVOList(List<CarRentalPackagePO> entityList, Map<Long, Coupon> couponMap) {
+    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePo> entityList, Map<Long, Coupon> couponMap) {
         return entityList.stream().map(entity -> {
-            CarRentalPackageVO packageVO = new CarRentalPackageVO();
-            packageVO.setId(entity.getId());
-            packageVO.setName(entity.getName());
-            packageVO.setType(entity.getType());
-            packageVO.setTenancy(entity.getTenancy());
-            packageVO.setTenancyUnit(entity.getTenancyUnit());
-            packageVO.setRent(entity.getRent());
-            packageVO.setRentRebate(entity.getRentRebate());
-            packageVO.setRentRebateTerm(entity.getRentRebateTerm());
-            packageVO.setDeposit(entity.getDeposit());
-            packageVO.setFreeDeposit(entity.getFreeDeposit());
-            packageVO.setConfine(entity.getConfine());
-            packageVO.setConfineNum(entity.getConfineNum());
-            packageVO.setGiveCoupon(entity.getGiveCoupon());
-            packageVO.setRemark(entity.getRemark());
-            packageVO.setBatteryVoltage(entity.getBatteryVoltage());
+            CarRentalPackageVo packageVo = new CarRentalPackageVo();
+            packageVo.setId(entity.getId());
+            packageVo.setName(entity.getName());
+            packageVo.setType(entity.getType());
+            packageVo.setTenancy(entity.getTenancy());
+            packageVo.setTenancyUnit(entity.getTenancyUnit());
+            packageVo.setRent(entity.getRent());
+            packageVo.setRentRebate(entity.getRentRebate());
+            packageVo.setRentRebateTerm(entity.getRentRebateTerm());
+            packageVo.setDeposit(entity.getDeposit());
+            packageVo.setFreeDeposit(entity.getFreeDeposit());
+            packageVo.setConfine(entity.getConfine());
+            packageVo.setConfineNum(entity.getConfineNum());
+            packageVo.setGiveCoupon(entity.getGiveCoupon());
+            packageVo.setRemark(entity.getRemark());
+            packageVo.setBatteryVoltage(entity.getBatteryVoltage());
             // 设置辅助业务信息
-            packageVO.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
-            return packageVO;
+            packageVo.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
+            return packageVo;
         }).collect(Collectors.toList());
     }
 

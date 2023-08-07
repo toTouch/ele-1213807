@@ -4,12 +4,12 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderSlippageQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -41,7 +41,7 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
      * @return 逾期订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageOrderSlippageVO>> page(@RequestBody CarRentalPackageOrderSlippageQryReq qryReq) {
+    public R<List<CarRentalPackageOrderSlippageVo>> page(@RequestBody CarRentalPackageOrderSlippageQryReq qryReq) {
         if (null == qryReq) {
             qryReq = new CarRentalPackageOrderSlippageQryReq();
         }
@@ -63,7 +63,7 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
-        List<CarRentalPackageOrderSlippagePO> slippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
         if (CollectionUtils.isEmpty(slippageEntityList)) {
             return R.ok(Collections.emptyList());
         }
@@ -83,9 +83,9 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         Map<Long, String> franchiseeNameMap = getFranchiseeNameByIdsForMap(franchiseeIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderSlippageVO> slippageVOList = slippageEntityList.stream().map(slippageEntity -> {
+        List<CarRentalPackageOrderSlippageVo> slippageVOList = slippageEntityList.stream().map(slippageEntity -> {
 
-            CarRentalPackageOrderSlippageVO slippageVo = new CarRentalPackageOrderSlippageVO();
+            CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
 
             if (!userInfoMap.isEmpty()) {

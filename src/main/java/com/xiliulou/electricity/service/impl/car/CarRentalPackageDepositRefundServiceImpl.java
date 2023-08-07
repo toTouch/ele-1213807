@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -36,7 +36,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public CarRentalPackageDepositRefundPO selectLastByDepositPayOrderNo(String depositPayOrderNo) {
+    public CarRentalPackageDepositRefundPo selectLastByDepositPayOrderNo(String depositPayOrderNo) {
         if (StringUtils.isBlank(depositPayOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -50,7 +50,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * @return true/false
      */
     @Override
-    public boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity) {
+    public boolean updateByOrderNo(CarRentalPackageDepositRefundPo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -71,7 +71,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public List<CarRentalPackageDepositRefundPO> list(CarRentalPackageDepositRefundQryModel qryModel) {
+    public List<CarRentalPackageDepositRefundPo> list(CarRentalPackageDepositRefundQryModel qryModel) {
         return carRentalPackageDepositRefundMapper.list(qryModel);
     }
 
@@ -83,7 +83,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public List<CarRentalPackageDepositRefundPO> page(CarRentalPackageDepositRefundQryModel qryModel) {
+    public List<CarRentalPackageDepositRefundPo> page(CarRentalPackageDepositRefundQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageDepositRefundQryModel();
         }
@@ -115,7 +115,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public CarRentalPackageDepositRefundPO selectByOrderNo(String orderNo) {
+    public CarRentalPackageDepositRefundPo selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -131,7 +131,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public CarRentalPackageDepositRefundPO selectById(Long id) {
+    public CarRentalPackageDepositRefundPo selectById(Long id) {
         if (ObjectUtils.isEmpty(id)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -146,7 +146,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * @return 主键ID
      */
     @Override
-    public Long insert(CarRentalPackageDepositRefundPO entity) {
+    public Long insert(CarRentalPackageDepositRefundPo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getTenantId(), entity.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

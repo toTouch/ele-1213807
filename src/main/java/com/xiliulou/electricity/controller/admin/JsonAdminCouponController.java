@@ -6,7 +6,7 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -220,9 +220,9 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
-                qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+                qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
             }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
-                qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+                qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
             }
 
             return R.ok(batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel));
@@ -250,9 +250,9 @@ public class JsonAdminCouponController extends BaseController {
             qryModel.setStatus(UpDownEnum.UP.getCode());
 
             if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
-                qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+                qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
             }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
-                qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+                qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
             }
             return R.ok(carRentalPackageService.count(qryModel));
         }

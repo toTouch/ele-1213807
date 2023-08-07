@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
@@ -157,7 +157,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
         List<Long> carRentalPackages = invitationActivityQuery.getCarRentalPackages();
         for(Long packageId : carRentalPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000203", "租车套餐不存在");
             }
@@ -165,7 +165,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
         List<Long> carElectricityPackages = invitationActivityQuery.getCarWithBatteryPackages();
         for(Long packageId : carElectricityPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
@@ -397,7 +397,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         List<InvitationActivityMemberCard> invitationActivityMemberCards = invitationActivityMemberCardService.selectPackagesByActivityIdAndType(activityId, packageType);
         for(InvitationActivityMemberCard invitationActivityMemberCard : invitationActivityMemberCards){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(invitationActivityMemberCard.getMid());
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(invitationActivityMemberCard.getMid());
             batteryMemberCardVO.setId(carRentalPackagePO.getId());
             batteryMemberCardVO.setName(carRentalPackagePO.getName());
             batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

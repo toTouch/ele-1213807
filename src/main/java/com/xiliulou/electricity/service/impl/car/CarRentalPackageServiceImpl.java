@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
@@ -49,7 +49,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public List<CarRentalPackagePO> selectByIds(List<Long> ids) {
+    public List<CarRentalPackagePo> selectByIds(List<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
@@ -65,7 +65,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public List<CarRentalPackagePO> listByCondition(CarRentalPackageQryModel qryModel) {
+    public List<CarRentalPackagePo> listByCondition(CarRentalPackageQryModel qryModel) {
         if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -148,7 +148,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel) {
+    public List<CarRentalPackagePo> list(CarRentalPackageQryModel qryModel) {
         return carRentalPackageMapper.list(qryModel);
     }
 
@@ -159,7 +159,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel) {
+    public List<CarRentalPackagePo> page(CarRentalPackageQryModel qryModel) {
         if (ObjectUtils.isEmpty(qryModel)) {
             qryModel = new CarRentalPackageQryModel();
         }
@@ -191,7 +191,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public CarRentalPackagePO selectById(Long id) {
+    public CarRentalPackagePo selectById(Long id) {
         if (ObjectUtils.isEmpty(id)) {
             return null;
         }
@@ -199,13 +199,13 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id);
         String cacheStr = redisService.get(cacheKey);
-        CarRentalPackagePO cacheEntity = JSON.parseObject(cacheStr, CarRentalPackagePO.class);
+        CarRentalPackagePo cacheEntity = JSON.parseObject(cacheStr, CarRentalPackagePo.class);
         if (ObjectUtils.isNotEmpty(cacheEntity)) {
             return cacheEntity;
         }
 
         // 查询 DB
-        CarRentalPackagePO dbEntity = carRentalPackageMapper.selectById(id);
+        CarRentalPackagePo dbEntity = carRentalPackageMapper.selectById(id);
 
         // 存入缓存
         redisService.set(cacheKey, JSON.toJSONString(dbEntity));
@@ -219,13 +219,13 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @return
      */
     @Override
-    public Boolean updateById(CarRentalPackagePO entity) {
+    public Boolean updateById(CarRentalPackagePo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getId(), entity.getUpdateUid(), entity.getTenantId(), entity.getName())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         // 检测原始套餐状态
-        CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(entity.getId());
+        CarRentalPackagePo oriEntity = carRentalPackageMapper.selectById(entity.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
             log.info("CarRentalPackageService.updateById, not found car_rental_package. packageId is {}", entity.getId());
             throw new BizException("300000", "数据有误");
@@ -263,7 +263,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long insert(CarRentalPackagePO entity) {
+    public Long insert(CarRentalPackagePo entity) {
         if (!ObjectUtils.allNotNull(entity, entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

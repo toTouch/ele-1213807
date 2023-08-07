@@ -3,8 +3,8 @@ package com.xiliulou.electricity.vo.rental;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
-import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
+import com.xiliulou.electricity.vo.car.CarVo;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -23,12 +23,12 @@ public class RentalPackageVO implements Serializable {
     /**
      * 当前套餐订单信息
      */
-    private CarRentalPackageOrderVO carRentalPackageOrder;
+    private CarRentalPackageOrderVo carRentalPackageOrder;
 
     /**
      * 车辆信息
      * */
-    private CarVO car;
+    private CarVo car;
 
     /**
      * 电池信息

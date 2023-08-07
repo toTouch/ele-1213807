@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 
 import java.math.BigDecimal;
 
@@ -52,7 +52,7 @@ public interface CarRenalPackageDepositBizService {
      * @param uid 用户ID
      * @return 押金缴纳信息
      */
-    CarRentalPackageDepositPayVO selectUnRefundCarDeposit(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayVo selectUnRefundCarDeposit(Integer tenantId, Long uid);
 
     /**
      * 运营商端创建退押

@@ -1,23 +1,30 @@
-package com.xiliulou.electricity.vo.car;
+package com.xiliulou.electricity.entity.car;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 租车套餐订单退租展现层数据模型
+ * 租车套餐订单租金退款表
  *
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageOrderRentRefundVO implements Serializable {
+@TableName("t_car_rental_package_order_rent_refund")
+public class CarRentalPackageOrderRentRefundPo extends BasicCarPo {
 
-    private static final long serialVersionUID = 2271729616539732402L;
+    private static final long serialVersionUID = 4224921643482546889L;
+
+    /**
+     * 用户ID
+     */
+    private Long uid;
 
     /**
      * 订单编码
@@ -30,12 +37,17 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     private String rentalPackageOrderNo;
 
     /**
+     * 套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
      * 套餐类型
      * <pre>
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 
@@ -75,6 +87,11 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     private Integer refundState;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 租金单价
      */
     private BigDecimal rentUnitPrice;
@@ -95,36 +112,7 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     private Integer payType;
 
     /**
-     * 备注
+     * 审核时间
      */
-    private String remark;
-
-    /**
-     * 创建时间
-     */
-    private Long createTime;
-
-    /**
-     * 更新时间
-     */
-    private Long updateTime;
-
-
-    // ++++++++++ 辅助业务数据 ++++++++++
-
-    /**
-     * 用户真实姓名
-     */
-    private String userRelName;
-
-    /**
-     * 用户手机号
-     */
-    private String userPhone;
-
-    /**
-     * 租车套餐名称
-     */
-    private String carRentalPackageName;
-
+    private Long auditTime;
 }

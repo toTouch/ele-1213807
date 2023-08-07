@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public interface CarRentalPackageOrderSlippageService {
      * @param entity 操作实体
      * @return true(成功)、false(失败)
      */
-    boolean updateById(CarRentalPackageOrderSlippagePO entity);
+    boolean updateById(CarRentalPackageOrderSlippagePo entity);
 
     /**
      * 根据套餐购买订单编号和逾期订单类型，查询未支付的逾期订单信息
@@ -25,7 +25,7 @@ public interface CarRentalPackageOrderSlippageService {
      * @param type 逾期订单类型：1-过期、2-冻结
      * @return 逾期订单信息
      */
-    CarRentalPackageOrderSlippagePO selectByPackageOrderNoAndType(String rentalPackageOrderNo, Integer type);
+    CarRentalPackageOrderSlippagePo selectByPackageOrderNoAndType(String rentalPackageOrderNo, Integer type);
 
     /**
      * 根据用户ID查询未支付的逾期订单
@@ -33,7 +33,7 @@ public interface CarRentalPackageOrderSlippageService {
      * @param uid 用户ID
      * @return 逾期订单信息集
      */
-    List<CarRentalPackageOrderSlippagePO> selectUnPayByByUid(Integer tenantId, Long uid);
+    List<CarRentalPackageOrderSlippagePo> selectUnPayByByUid(Integer tenantId, Long uid);
 
     /**
      * 距当前时间，是否存在未缴纳的逾期订单
@@ -49,14 +49,14 @@ public interface CarRentalPackageOrderSlippageService {
      * @param qryModel 查询模型
      * @return 逾期订单信息集
      */
-    List<CarRentalPackageOrderSlippagePO> list(CarRentalPackageOrderSlippageQryModel qryModel);
+    List<CarRentalPackageOrderSlippagePo> list(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return 逾期订单信息集
      */
-    List<CarRentalPackageOrderSlippagePO> page(CarRentalPackageOrderSlippageQryModel qryModel);
+    List<CarRentalPackageOrderSlippagePo> page(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -70,19 +70,19 @@ public interface CarRentalPackageOrderSlippageService {
      * @param orderNo 订单编码
      * @return 逾期订单信息
      */
-    CarRentalPackageOrderSlippagePO selectByOrderNo(String orderNo);
+    CarRentalPackageOrderSlippagePo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return 逾期订单信息
      */
-    CarRentalPackageOrderSlippagePO selectById(Long id);
+    CarRentalPackageOrderSlippagePo selectById(Long id);
 
     /**
      * 新增数据，返回主键ID
      * @param entity 操作实体
      * @return 主键ID
      */
-    Long insert(CarRentalPackageOrderSlippagePO entity);
+    Long insert(CarRentalPackageOrderSlippagePo entity);
 }

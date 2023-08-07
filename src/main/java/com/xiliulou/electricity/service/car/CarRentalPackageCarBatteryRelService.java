@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 
 import java.util.List;
 
@@ -23,19 +23,19 @@ public interface CarRentalPackageCarBatteryRelService {
      * @param rentalPackageIdList 套餐ID集
      * @return 套餐车辆电池关联数据集
      */
-    List<CarRentalPackageCarBatteryRelPO> selectByRentalPackageIds(List<Long> rentalPackageIdList);
+    List<CarRentalPackageCarBatteryRelPo> selectByRentalPackageIds(List<Long> rentalPackageIdList);
 
     /**
      * 根据套餐ID查询
      * @param rentalPackageId 套餐ID
      * @return 套餐车辆电池关联数据集
      */
-    List<CarRentalPackageCarBatteryRelPO> selectByRentalPackageId(Long rentalPackageId);
+    List<CarRentalPackageCarBatteryRelPo> selectByRentalPackageId(Long rentalPackageId);
 
     /**
      * 批量新增
      * @param entityList 操作实体集
      * @return true(成功)、false(失败)
      */
-    boolean batchInsert(List<CarRentalPackageCarBatteryRelPO> entityList);
+    boolean batchInsert(List<CarRentalPackageCarBatteryRelPo> entityList);
 }

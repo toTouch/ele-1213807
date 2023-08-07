@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackagePO" id="entityMap">
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackagePo" id="entityMap">
         <!--基础映射 -->
         <result property="id" column="id" jdbcType="BIGINT" />
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
@@ -243,7 +243,7 @@
     </select>
 
     <!-- 根据ID更新 -->
-    <update id="updateById" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePO">
+    <update id="updateById" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePo">
         UPDATE <include refid="table_name" />
         <set>
             `update_uid` = #{updateUid}, `update_time` = #{updateTime}
@@ -268,7 +268,7 @@
     </update>
 
     <!-- 条件新增 -->
-    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePO" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 

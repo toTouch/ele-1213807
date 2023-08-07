@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 
 import java.util.List;
@@ -14,20 +14,28 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
+     * 根据用户ID查找最后一条未支付成功的购买记录信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 购买订单信息
+     */
+    CarRentalPackageOrderPo selectLastUnPayByUid(Integer tenantId, Long uid);
+
+    /**
      * 根据用户ID查询第一条未使用的支付成功的订单信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 套餐购买订单
      */
-    CarRentalPackageOrderPO selectFirstUnUsedByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderPo selectFirstUnUsedAndPaySuccessByUid(Integer tenantId, Long uid);
 
     /**
-     * 根据用户ID查找最后一条成功的购买记录信息
+     * 根据用户ID查找最后一条支付成功的购买记录信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 购买订单信息
      */
-    CarRentalPackageOrderPO seletLastByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderPo seletLastPaySuccessByUid(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID进行退押操作<br />
@@ -77,14 +85,14 @@ public interface CarRentalPackageOrderService {
      * @param qryModel 查询条件模型
      * @return 套餐购买订单集
      */
-    List<CarRentalPackageOrderPO> list(CarRentalPackageOrderQryModel qryModel);
+    List<CarRentalPackageOrderPo> list(CarRentalPackageOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
      * @return 套餐购买订单集
      */
-    List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel);
+    List<CarRentalPackageOrderPo> page(CarRentalPackageOrderQryModel qryModel);
 
     /**
      * 条件查询总数
@@ -98,14 +106,14 @@ public interface CarRentalPackageOrderService {
      * @param orderNo 订单编码
      * @return 套餐购买订单
      */
-    CarRentalPackageOrderPO selectByOrderNo(String orderNo);
+    CarRentalPackageOrderPo selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return 套餐购买订单
      */
-    R<CarRentalPackageOrderPO> selectById(Long id);
+    R<CarRentalPackageOrderPo> selectById(Long id);
 
     /**
      * 根据订单编号更新支付状态
@@ -158,6 +166,6 @@ public interface CarRentalPackageOrderService {
      * @param entity 操作实体
      * @return 主键ID
      */
-    Long insert(CarRentalPackageOrderPO entity);
+    Long insert(CarRentalPackageOrderPo entity);
 
 }

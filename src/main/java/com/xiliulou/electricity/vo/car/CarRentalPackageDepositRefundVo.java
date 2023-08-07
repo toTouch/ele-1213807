@@ -1,29 +1,22 @@
-package com.xiliulou.electricity.entity.car;
+package com.xiliulou.electricity.vo.car;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 租车套餐押金退款表
+ * 租车套餐押金退款展现层数据模型
  *
  * @author xiaohui.song
  **/
 @Data
-@TableName("t_car_rental_package_deposit_refund")
-public class CarRentalPackageDepositRefundPO extends BasicCarPO {
+public class CarRentalPackageDepositRefundVo implements Serializable {
 
-    private static final long serialVersionUID = 1268475913696945741L;
-
-    /**
-     * 用户ID
-     */
-    private Long uid;
+    private static final long serialVersionUID = 1431787925860312325L;
 
     /**
      * 订单编码
@@ -41,7 +34,7 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 
@@ -81,14 +74,25 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
     private Integer refundState;
 
     /**
+     * 创建时间
+     */
+    private Long createTime;
+
+    /**
      * 备注
      */
     private String remark;
 
-    /**
-     * 审核时间
-     */
-    private Long auditTime;
+    // ++++++++++ 辅助业务数据 ++++++++++
 
+    /**
+     * 用户真实姓名
+     */
+    private String userRelName;
+
+    /**
+     * 用户手机号
+     */
+    private String userPhone;
 
 }

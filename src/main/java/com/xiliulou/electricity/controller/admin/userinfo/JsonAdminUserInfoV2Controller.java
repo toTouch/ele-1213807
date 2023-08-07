@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
@@ -14,7 +14,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.electricity.vo.userinfo.UserInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +89,7 @@ public class JsonAdminUserInfoV2Controller {
      * @return 可购买的套餐数据集，包含赠送优惠券信息
      */
     @PostMapping("/queryCanPurchasePackage")
-    public R<List<CarRentalPackageVO>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
+    public R<List<CarRentalPackageVo>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
         if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), qryReq.getUid())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -97,10 +97,10 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, qryReq.getUid());
+        List<CarRentalPackagePo> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, qryReq.getUid());
 
         // 转换 VO
-        List<CarRentalPackageVO> voList = buildVOList(entityList);
+        List<CarRentalPackageVo> voList = buildVOList(entityList);
 
         return R.ok(voList);
     }
@@ -111,25 +111,25 @@ public class JsonAdminUserInfoV2Controller {
      * @param entityList
      * @return
      */
-    private List<CarRentalPackageVO> buildVOList(List<CarRentalPackagePO> entityList) {
+    private List<CarRentalPackageVo> buildVOList(List<CarRentalPackagePo> entityList) {
         return entityList.stream().map(entity -> {
-            CarRentalPackageVO packageVO = new CarRentalPackageVO();
-            packageVO.setId(entity.getId());
-            packageVO.setName(entity.getName());
-            packageVO.setType(entity.getType());
-            packageVO.setTenancy(entity.getTenancy());
-            packageVO.setTenancyUnit(entity.getTenancyUnit());
-            packageVO.setRent(entity.getRent());
-            packageVO.setRentRebate(entity.getRentRebate());
-            packageVO.setRentRebateTerm(entity.getRentRebateTerm());
-            packageVO.setDeposit(entity.getDeposit());
-            packageVO.setFreeDeposit(entity.getFreeDeposit());
-            packageVO.setConfine(entity.getConfine());
-            packageVO.setConfineNum(entity.getConfineNum());
-            packageVO.setGiveCoupon(entity.getGiveCoupon());
-            packageVO.setRemark(entity.getRemark());
-            packageVO.setBatteryVoltage(entity.getBatteryVoltage());
-            return packageVO;
+            CarRentalPackageVo packageVo = new CarRentalPackageVo();
+            packageVo.setId(entity.getId());
+            packageVo.setName(entity.getName());
+            packageVo.setType(entity.getType());
+            packageVo.setTenancy(entity.getTenancy());
+            packageVo.setTenancyUnit(entity.getTenancyUnit());
+            packageVo.setRent(entity.getRent());
+            packageVo.setRentRebate(entity.getRentRebate());
+            packageVo.setRentRebateTerm(entity.getRentRebateTerm());
+            packageVo.setDeposit(entity.getDeposit());
+            packageVo.setFreeDeposit(entity.getFreeDeposit());
+            packageVo.setConfine(entity.getConfine());
+            packageVo.setConfineNum(entity.getConfineNum());
+            packageVo.setGiveCoupon(entity.getGiveCoupon());
+            packageVo.setRemark(entity.getRemark());
+            packageVo.setBatteryVoltage(entity.getBatteryVoltage());
+            return packageVo;
         }).collect(Collectors.toList());
     }
 

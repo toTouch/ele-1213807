@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 
 import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @TableName("t_car_rental_package_order_freeze")
-public class CarRentalPackageOrderFreezePO extends BasicCarPO {
+public class CarRentalPackageOrderFreezePo extends BasicCarPo {
 
     private static final long serialVersionUID = 5478346441293230084L;
 
@@ -47,7 +47,7 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
      *     1-单车
      *     2-车电一体
      * </pre>
-     * @see CarRentalPackageTypeEnum
+     * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
 

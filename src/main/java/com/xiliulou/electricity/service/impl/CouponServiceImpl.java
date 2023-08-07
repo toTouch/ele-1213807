@@ -7,11 +7,11 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -251,7 +251,7 @@ public class CouponServiceImpl implements CouponService {
 
         List<Long> carRentalPackages = couponQuery.getCarRentalPackages();
         for(Long packageId : carRentalPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000203", "租车套餐不存在");
             }
@@ -259,7 +259,7 @@ public class CouponServiceImpl implements CouponService {
 
         List<Long> carElectricityPackages = couponQuery.getCarWithBatteryPackages();
         for(Long packageId : carElectricityPackages){
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
@@ -407,9 +407,9 @@ public class CouponServiceImpl implements CouponService {
         qryModel.setStatus(UpDownEnum.UP.getCode());
 
         if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(packageType)){
-            qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+            qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
         }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(packageType)){
-            qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+            qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
         }
 
         return batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel);
@@ -435,7 +435,7 @@ public class CouponServiceImpl implements CouponService {
         List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
             batteryMemberCardVO.setId(carRentalPackagePO.getId());
             batteryMemberCardVO.setName(carRentalPackagePO.getName());
             batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

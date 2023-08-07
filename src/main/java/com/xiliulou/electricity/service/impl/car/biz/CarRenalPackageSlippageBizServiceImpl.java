@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
-import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
@@ -40,14 +40,14 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        List<CarRentalPackageOrderSlippagePO> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
         if (ObjectUtils.isEmpty(slippageEntityList)) {
             return null;
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         long now = System.currentTimeMillis();
-        for (CarRentalPackageOrderSlippagePO slippageEntity : slippageEntityList) {
+        for (CarRentalPackageOrderSlippagePo slippageEntity : slippageEntityList) {
             // 结束时间，不为空
             if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
                 now = slippageEntity.getLateFeeEndTime();
