@@ -337,7 +337,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     // 数据落库处理
                     saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity, memberTermEntity.getRentalPackageOrderNo());
                 } catch (Exception e) {
-                    log.info("CarRentalPackageMemberTermBizService.expirePackageOrder skip. error. ", e);
+                    log.error("CarRentalPackageMemberTermBizService.expirePackageOrder skip. error. ", e);
                     continue;
                 }
             }
