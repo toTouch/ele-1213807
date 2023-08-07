@@ -1759,7 +1759,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 5.1 用户套餐会员限制状态异常
                     if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                         log.error("buyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                        return R.fail("300002", "租车会员状态异常");
+                        return R.fail("300035", "您有正在审核中流程，不可购买套餐");
                     }
                     // 从会员期限中获取押金金额
                     log.info("buyRentalPackageOrder deposit from memberTerm");
@@ -2212,6 +2212,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 7.2 给用户绑定保险
             insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
+
+        // 9. TODO 异步发放优惠券，暴煜
 
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
