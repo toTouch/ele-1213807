@@ -2,10 +2,7 @@ package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.basic.BasicCarPo;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.RentalUnitEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -52,20 +49,34 @@ public class CarRentalPackageOrderRentRefundPo extends BasicCarPo {
     private Integer rentalPackageType;
 
     /**
-     * 余量
+     * 租期余量
      */
-    private Long residue;
+    private Long tenancyResidue;
 
     /**
-     * 余量单位
+     * 租期余量单位
      * <pre>
-     *     -1-次数
      *     1-天
      *     0-分钟
      * </pre>
      * @see RentalUnitEnum
      */
-    private Integer residueUnit;
+    private Integer tenancyResidueUnit;
+
+    /**
+     * 套餐限制
+     * <pre>
+     *     0-不限制
+     *     1-次数
+     * </pre>
+     * @see RenalPackageConfineEnum
+     */
+    private Integer confine;
+
+    /**
+     * 限制余量
+     */
+    private Long confineResidue;
 
     /**
      * 退款金额

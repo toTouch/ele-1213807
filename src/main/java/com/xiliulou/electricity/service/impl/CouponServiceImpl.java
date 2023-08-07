@@ -200,9 +200,10 @@ public class CouponServiceImpl implements CouponService {
 
         int insert = couponMapper.insert(coupon);
 
-        //将该优惠券对应的套餐信息保存到数据库中
+        //将该优惠券对应的套餐信息保存到数据库中, 优惠券类型为不可叠加，并且为指定得套餐使用
         //log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
-        if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(couponQuery.getSpecificPackages())){
+        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())
+                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())){
             List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
             if(!CollectionUtils.isEmpty(couponActivityPackages)){
                 couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
@@ -379,7 +380,7 @@ public class CouponServiceImpl implements CouponService {
 
             //判断是否指定了使用套餐，如果是1，则查询指定的套餐，如果是2，则拉取所有的套餐信息
 
-            if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(coupon.getSpecificPackages())){
+            if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(coupon.getSpecificPackages())){
                 couponActivityVO.setBatteryPackages(getBatteryPackages(id));
                 couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));

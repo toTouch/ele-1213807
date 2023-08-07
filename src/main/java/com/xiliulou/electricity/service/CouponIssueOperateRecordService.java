@@ -19,4 +19,8 @@ public interface CouponIssueOperateRecordService {
 
     R queryCount(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
 
+    R queryRecordList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+
+    R queryRecordCount(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+
 }
