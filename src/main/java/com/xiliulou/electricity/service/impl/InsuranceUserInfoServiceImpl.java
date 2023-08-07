@@ -69,9 +69,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
 
-    @Resource
-    InsuranceOrderMapper insuranceOrderMapper;
-
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
         return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId, tenantId)
@@ -489,7 +486,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .validDays(franchiseeInsurance.getValidDays())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
-        insuranceOrderMapper.insert(insuranceUserOrder);
+        insuranceOrderService.insert(insuranceUserOrder);
 
 /*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
@@ -604,9 +601,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .validDays(franchiseeInsurance.getValidDays())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
-        insuranceOrderMapper.insert(insuranceUserOrder);
+        insuranceOrderService.insert(insuranceUserOrder);
 
         this.saveUserInsurance(insuranceUserOrder);
+
+        InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
+        if(Objects.nonNull(oldInsuranceUserOrder)){
+            InsuranceOrder insuranceUserOrderUpdate=new InsuranceOrder();
+            insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
+            insuranceUserOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+            insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            insuranceOrderService.update(insuranceUserOrderUpdate);
+        }
 /*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
         updateOrAddInsuranceUserInfo.setId(insuranceUserInfo.getId());

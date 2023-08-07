@@ -341,6 +341,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         insuranceOrderMapper.insert(insuranceOrder);
     }
 
+    @Override
+    public Integer update(InsuranceOrder insuranceOrder) {
+        return insuranceOrderMapper.updateById(insuranceOrder);
+    }
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid +

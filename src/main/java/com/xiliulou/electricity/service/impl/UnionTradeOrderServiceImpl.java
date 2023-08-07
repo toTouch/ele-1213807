@@ -834,6 +834,16 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.isNull(insuranceUserInfo)) {
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
             } else {
+                //更新旧保险订单状态
+                InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
+                if(Objects.nonNull(oldInsuranceUserOrder)){
+                    InsuranceOrder insuranceUserOrderUpdate=new InsuranceOrder();
+                    insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
+                    insuranceUserOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+                    insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    insuranceOrderService.update(insuranceUserOrderUpdate);
+                }
+
                 insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
             }
         }
