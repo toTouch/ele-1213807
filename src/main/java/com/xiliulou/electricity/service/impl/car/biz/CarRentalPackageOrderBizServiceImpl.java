@@ -1644,15 +1644,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
-            log.error("CancelRentalPackageOrder failed, not found car_rental_package_order, order_no is {}", packageOrderNo);
+            log.error("CancelRentalPackageOrder failed, not found car_rental_package_order");
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
+
+        packageOrderNo = carRentalPackageOrderEntity.getOrderNo();
+
 
         // 订单支付状态不匹配
         if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), carRentalPackageOrderEntity.getPayState())) {
             log.error("CancelRentalPackageOrder failed, car_rental_package_order processed, order_no is {}", packageOrderNo);
             throw new BizException("300009", "租车套餐购买订单已处理");
         }
+
 
         // 更改套餐购买订单的支付状态
         carRentalPackageOrderService.updatePayStateByOrderNo(packageOrderNo, PayStateEnum.CANCEL.getCode());
@@ -1678,7 +1682,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 4. 处理用户优惠券的使用状态
-        userCouponService.updateStatusByOrderId(packageOrderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
+        userCouponService.updateStatusByOrderId(packageOrderNo, UserCoupon.STATUS_UNUSED);
 
         return true;
     }
@@ -2004,7 +2008,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 6）更改用户优惠券状态使用中
             // 使用的优惠券
             List<Long> userCouponIds = CollectionUtils.isEmpty(couponTriple.getMiddle()) ? new ArrayList<>() : couponTriple.getMiddle();
-            List<UserCoupon> userCouponList = buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, carRentalPackageOrder.getOrderNo(), OrderTypeEnum.CAR_BUY_ORDER.getCode());
+            List<UserCoupon> userCouponList = buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, carRentalPackageOrder.getOrderNo());
             userCouponService.batchUpdateUserCoupon(userCouponList);
 
             // 7）支付零元的处理
@@ -2203,10 +2207,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 此参数为了兼容同一个大事务，数据尚未落库。二次查询，目的是为了拿在事务缓存中的最新数据
             List<UserCoupon> userCoupons = userCouponService.listByIds(userCouponIds);
             if (!CollectionUtils.isEmpty(userCoupons)) {
-                userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_USED, orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode()));
+                userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_USED, orderNo));
             }
         } else {
-            userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_USED);
+            userCouponService.updateStatusByOrderId(orderNo, UserCoupon.STATUS_USED);
         }
 
         // 6. TODO 车辆断启电
@@ -2288,7 +2292,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 4. 处理用户押金支付信息（保持原样，不做处理）
 
         // 5. 处理用户优惠券的使用状态
-        userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
+        userCouponService.updateStatusByOrderId(orderNo, UserCoupon.STATUS_UNUSED);
 
         return Pair.of(true, null);
     }
@@ -2426,15 +2430,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param userCouponIds 用户优惠券ID
      * @param status 状态
      * @param orderNo 订单编号
-     * @param orderIdType 订单类型
      * @return
      */
-    private List<UserCoupon> buildUserCouponList(List<Long> userCouponIds, Integer status, String orderNo, Integer orderIdType) {
+    private List<UserCoupon> buildUserCouponList(List<Long> userCouponIds, Integer status, String orderNo) {
         return userCouponIds.stream().map(userCouponId -> {
             UserCoupon userCoupon = new UserCoupon();
             userCoupon.setId(userCouponId);
             userCoupon.setOrderId(orderNo);
-            userCoupon.setOrderIdType(orderIdType);
             userCoupon.setStatus(status);
             userCoupon.setUpdateTime(System.currentTimeMillis());
             return userCoupon;
