@@ -14,12 +14,12 @@ import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.mq.producer.UserCouponProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
@@ -71,6 +71,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private UserCouponProducer userCouponProducer;
 
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
@@ -2213,8 +2216,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
 
-        // 9. TODO 异步发放优惠券，暴煜
-
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
         divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -2230,6 +2231,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+        // 10. TODO 异步发放优惠券，暴煜
+        userCouponProducer.sendSyncMessage("");
 
         return Pair.of(true, userInfo.getPhone());
     }

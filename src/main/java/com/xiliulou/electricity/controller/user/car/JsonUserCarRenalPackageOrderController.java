@@ -224,62 +224,83 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         long nowTime = System.currentTimeMillis();
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderEntityList.stream().map(carRentalPackageOrder -> {
-            CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
-            carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
-            carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
-            carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
-            carRentalPackageOrderVO.setConfineNum(carRentalPackageOrder.getConfineNum());
-            carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
-            carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
-            carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
-            carRentalPackageOrderVO.setPayState(carRentalPackageOrder.getPayState());
-            carRentalPackageOrderVO.setUseState(carRentalPackageOrder.getUseState());
-            carRentalPackageOrderVO.setCreateTime(carRentalPackageOrder.getCreateTime());
-            carRentalPackageOrderVO.setRentRebate(carRentalPackageOrder.getRentRebate());
+        List<CarRentalPackageOrderVo> carRentalPackageVOList = new ArrayList<>();
+        for(CarRentalPackageOrderPo carRentalPackageOrder : carRentalPackageOrderEntityList) {
+            CarRentalPackageOrderVo carRentalPackageOrderVo = new CarRentalPackageOrderVo();
+            carRentalPackageOrderVo.setOrderNo(carRentalPackageOrder.getOrderNo());
+            carRentalPackageOrderVo.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
+            carRentalPackageOrderVo.setConfine(carRentalPackageOrder.getConfine());
+            carRentalPackageOrderVo.setConfineNum(carRentalPackageOrder.getConfineNum());
+            carRentalPackageOrderVo.setTenancy(carRentalPackageOrder.getTenancy());
+            carRentalPackageOrderVo.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
+            carRentalPackageOrderVo.setRent(carRentalPackageOrder.getRent());
+            carRentalPackageOrderVo.setPayState(carRentalPackageOrder.getPayState());
+            carRentalPackageOrderVo.setUseState(carRentalPackageOrder.getUseState());
+            carRentalPackageOrderVo.setCreateTime(carRentalPackageOrder.getCreateTime());
+            carRentalPackageOrderVo.setRentRebate(carRentalPackageOrder.getRentRebate());
+            // 赋值业务属性信息
+            carRentalPackageOrderVo.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getName());
+            carRentalPackageOrderVo.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getBatteryVoltage());
+            carRentalPackageOrderVo.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getCarModelId(), ""));
 
-            if (YesNoEnum.YES.getCode().equals(carRentalPackageOrder.getRentRebate())) {
-                // 判定可退截止时间
-                Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
-
-                Integer useState = carRentalPackageOrder.getUseState();
-                if (UseStateEnum.EXPIRED.getCode().equals(useState) || UseStateEnum.RETURNED.getCode().equals(useState)) {
-                    rentRebate = YesNoEnum.NO.getCode();
-                } else {
-                    Integer payState = carRentalPackageOrder.getPayState();
-                    if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
-                        rentRebate = YesNoEnum.NO.getCode();
-                    } else {
-                        // 集成退款订单的状态，综合判定
-                        CarRentalPackageOrderRentRefundPo rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
-                        if (ObjectUtils.isNotEmpty(rentRefundOrderEntity)) {
-                            Integer refundState = rentRefundOrderEntity.getRefundState();
-                            if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
-                                rentRebate = YesNoEnum.YES.getCode();
-                            } else {
-                                rentRebate = YesNoEnum.NO.getCode();
-                            }
-                        }
-                    }
-                }
-
-                // 对使用中的订单，进行二次处理
-                if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
-                        && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
-                    rentRebate = YesNoEnum.NO.getCode();
-                    carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
-                }
-
-                carRentalPackageOrderVO.setRentRebate(rentRebate);
+            // 二次判定是否可退
+            if (YesNoEnum.NO.getCode().equals(carRentalPackageOrder.getRentRebate())) {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
             }
 
-            // 赋值业务属性信息
-            carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getName());
-            carRentalPackageOrderVO.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getBatteryVoltage());
-            carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getCarModelId(), ""));
+            // 判定可退截止时间
+            Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
+            if (YesNoEnum.NO.getCode().equals(rentRebate)) {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
 
-            return carRentalPackageOrderVO;
-        }).collect(Collectors.toList());
+            // 使用状态判定
+            Integer useState = carRentalPackageOrder.getUseState();
+            if (UseStateEnum.EXPIRED.getCode().equals(useState) || UseStateEnum.RETURNED.getCode().equals(useState)) {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
+
+            // 对使用中的订单，进行二次处理
+            if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
+                    && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
+                carRentalPackageOrderVo.setUseState(UseStateEnum.EXPIRED.getCode());
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
+
+            // 支付状态判定
+            Integer payState = carRentalPackageOrder.getPayState();
+            if (!PayStateEnum.SUCCESS.getCode().equals(payState)) {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
+
+
+            // 集成退款订单的状态，综合判定
+            CarRentalPackageOrderRentRefundPo rentRefundOrderEntity = rentRefundMap.get(carRentalPackageOrder.getOrderNo());
+            if (ObjectUtils.isEmpty(rentRefundOrderEntity)) {
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
+
+            // 退款单状态
+            Integer refundState = rentRefundOrderEntity.getRefundState();
+            if (RefundStateEnum.AUDIT_REJECT.getCode().equals(refundState) || RefundStateEnum.FAILED.getCode().equals(refundState)) {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.YES.getCode());
+            } else {
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+            }
+
+            carRentalPackageVOList.add(carRentalPackageOrderVo);
+        }
 
         return R.ok(carRentalPackageVOList);
     }
