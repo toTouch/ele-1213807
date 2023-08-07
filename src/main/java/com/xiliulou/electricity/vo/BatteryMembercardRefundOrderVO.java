@@ -83,6 +83,6 @@ public class BatteryMembercardRefundOrderVO {
      */
     private Integer rentUnit;
 
-
+    private BigDecimal rentPriceUnit;
 
 }

@@ -58,6 +58,9 @@
         <if test="query.source != null">
             and tel.source =#{query.source}
         </if>
+        <if test="query.useStatus != null">
+            and tel.use_status =#{query.useStatus}
+        </if>
         <if test="query.refId != null">
             and tel.ref_id =#{query.refId}
         </if>
@@ -129,6 +132,9 @@
         </if>
         <if test="query.status != null">
             and tel.status =#{query.status}
+        </if>
+        <if test="query.useStatus != null">
+            and tel.use_status =#{query.useStatus}
         </if>
         <if test="query.tenantId != null">
             and tel.tenant_id = #{query.tenantId}

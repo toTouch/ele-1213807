@@ -46,7 +46,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                                           @RequestParam(value = "uid", required = false) Long uid,
                                           @RequestParam(value = "phone", required = false) String phone,
                                           @RequestParam(value = "orderId", required = false) String orderId,
-                                          @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                                          @RequestParam(value = "rentType", required = false) Integer rentType,
                                           @RequestParam(value = "mid", required = false) Long mid,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "startTime", required = false) Long startTime,
@@ -90,6 +90,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
+                .rentType(rentType)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
                 .franchiseeIds(franchiseeIds)
@@ -104,7 +105,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "orderId", required = false) String orderId,
-                        @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                        @RequestParam(value = "rentType", required = false) Integer rentType,
                         @RequestParam(value = "mid", required = false) Long mid,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "startTime", required = false) Long startTime,
@@ -140,6 +141,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .rentType(rentType)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .mid(mid)
@@ -147,7 +149,6 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
 
         return R.ok(batteryMembercardRefundOrderService.selectPageCount(query));
     }
-
 
     @PostMapping("/admin/battery/membercard/refund/audit")
     @Log(title = "电池租金退款审核")

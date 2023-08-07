@@ -94,6 +94,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
+                  @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
                   @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -128,6 +129,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .franchiseeIds(franchiseeIds)
                 .status(status)
                 .rentType(rentType)
+                .rentUnit(rentUnit)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .build();
@@ -142,6 +144,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "rentType", required = false) Integer rentType,
+                       @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
                        @RequestParam(value = "name", required = false) String name) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -166,6 +169,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .franchiseeIds(franchiseeIds)
                 .status(status)
                 .rentType(rentType)
+                .rentUnit(rentUnit)
                 .name(name)
                 .tenantId(TenantContextHolder.getTenantId())
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
