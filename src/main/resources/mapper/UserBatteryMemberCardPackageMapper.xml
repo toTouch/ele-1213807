@@ -23,7 +23,8 @@
     </select>
 
     <select id="checkUserBatteryMemberCardPackageByUid" resultType="Integer">
-       select 1 from t_user_battery_member_card_package where uid = #{uid} LIMIT 1
+       SELECT	1 FROM	t_user_battery_member_card_package ubmcp	LEFT JOIN t_battery_member_card bmc ON ubmcp.member_card_id = bmc.id
+       WHERE	bmc.is_refund = 1 	AND ubmcp.uid = #{uid} LIMIT 1
     </select>
 
     <select id="selectByUid" resultMap="UserBatteryMemberCardPackageMap">

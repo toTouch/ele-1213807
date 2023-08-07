@@ -51,4 +51,6 @@ public class MemberCardOrderQuery {
      * 套餐购买次数
      */
     private Integer cardPayCount;
+
+    private Integer useStatus;
 }

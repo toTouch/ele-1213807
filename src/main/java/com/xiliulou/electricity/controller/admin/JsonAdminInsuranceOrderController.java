@@ -46,6 +46,7 @@ public class JsonAdminInsuranceOrderController {
     @Autowired
     UserDataScopeService userDataScopeService;
 
+
     //保险订单查询
     @GetMapping("/admin/insuranceOrder/list")
     public R queryList(@RequestParam("size") Long size,
@@ -53,6 +54,8 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
+                       @RequestParam(value = "isUse", required = false) Integer isUse,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -101,6 +104,8 @@ public class JsonAdminInsuranceOrderController {
                 .tenantId(tenantId)
                 .phone(phone)
                 .status(status)
+                .insuranceType(insuranceType)
+                .isUse(isUse)
                 .userName(userName)
                 .offset(offset)
                 .size(size)
@@ -114,6 +119,8 @@ public class JsonAdminInsuranceOrderController {
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
+                        @RequestParam(value = "isUse", required = false) Integer isUse,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -148,6 +155,8 @@ public class JsonAdminInsuranceOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
+                .insuranceType(insuranceType)
+                .isUse(isUse)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .franchiseeName(franchiseeName)

@@ -1,13 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
+import com.xiliulou.electricity.mq.producer.ActivityProducer;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -30,6 +39,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -170,6 +180,12 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+
+    @Autowired
+    DivisionAccountProducer divisionAccountProducer;
+
+    @Autowired
+    ActivityProducer activityProducer;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -578,9 +594,24 @@ public class UnionTradeOrderServiceImpl extends
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
-            //TODO MQ消息 分帐 活动
 
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+
+            // 8. 处理分账
+            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+            divisionAccountOrderDTO.setOrderNo(orderNo);
+            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
+            // 9. 处理活动
+            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+            activityProcessDTO.setOrderNo(orderNo);
+            activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
@@ -803,6 +834,16 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.isNull(insuranceUserInfo)) {
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
             } else {
+                //更新旧保险订单状态
+                InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
+                if(Objects.nonNull(oldInsuranceUserOrder)){
+                    InsuranceOrder insuranceUserOrderUpdate=new InsuranceOrder();
+                    insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
+                    insuranceUserOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+                    insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    insuranceOrderService.update(insuranceUserOrderUpdate);
+                }
+
                 insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
             }
         }

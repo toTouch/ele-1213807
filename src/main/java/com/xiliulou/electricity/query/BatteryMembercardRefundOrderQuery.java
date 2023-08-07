@@ -32,6 +32,10 @@ public class BatteryMembercardRefundOrderQuery {
 
     private Integer type;
 
+    private Integer rentType;
+
+    private Integer payType;
+
     private Long createTime;
 
     private Long updateTime;

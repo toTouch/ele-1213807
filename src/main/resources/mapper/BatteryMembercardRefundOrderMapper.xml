@@ -33,69 +33,112 @@
     </select>
     <select id="selectByPage" resultMap="BatteryMembercardRefundOrderMap">
         select
-        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, pay_type, create_time, update_time, tenant_id, franchisee_id, store_id
-        from t_battery_membercard_refund_order
+        bmro.id,
+        bmro.uid,
+        bmro.phone,
+        bmro.mid,
+        bmro.refund_order_no,
+        bmro.member_card_order_no,
+        bmro.pay_amount,
+        bmro.refund_amount,
+        bmro.remaining_time,
+        bmro.remaining_number,
+        bmro.status,
+        bmro.msg,
+        bmro.type,
+        bmro.pay_type,
+        bmro.create_time,
+        bmro.update_time,
+        bmro.tenant_id,
+        bmro.franchisee_id,
+        bmro.store_id,
+        bmc.rent_type
+        from t_battery_membercard_refund_order bmro left join t_battery_member_card bmc on bmc.id=bmro.mid
         <where>
             <if test="uid != null">
-                and uid = #{uid}
+                and bmro.uid = #{uid}
             </if>
             <if test="mid != null">
-                and mid = #{mid}
+                and bmro.mid = #{mid}
+            </if>
+            <if test="rentType != null">
+                and bmc.rent_type = #{rentType}
+            </if>
+            <if test="payType != null">
+                and bmro.pay_type = #{payType}
+            </if>
+            <if test="startTime != null">
+                and bmro.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bmro.create_time &lt;= #{endTime}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and bmro.status = #{status}
             </if>
             <if test="refundOrderNo != null and refundOrderNo != ''">
-                and refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
+                and bmro.refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and bmro.tenant_id = #{tenantId}
             </if>
             <if test="storeIds != null">
-                and store_id in
+                and bmro.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and bmro.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
-        order by id desc
+        order by bmro.id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectPageCount" resultType="int">
         select
         count(*)
-        from t_battery_membercard_refund_order
+        from t_battery_membercard_refund_order bmro left join t_battery_member_card bmc on bmc.id=bmro.mid
         <where>
             <if test="uid != null">
-                and uid = #{uid}
+                and bmro.uid = #{uid}
             </if>
             <if test="mid != null">
-                and mid = #{mid}
+                and bmro.mid = #{mid}
+            </if>
+            <if test="rentType != null">
+                and bmc.rent_type = #{rentType}
+            </if>
+            <if test="payType != null">
+                and bmro.pay_type = #{payType}
+            </if>
+            <if test="startTime != null">
+                and bmro.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bmro.create_time &lt;= #{endTime}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and bmro.status = #{status}
             </if>
             <if test="refundOrderNo != null and refundOrderNo != ''">
-                and refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
+                and bmro.refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and bmro.tenant_id = #{tenantId}
             </if>
             <if test="storeIds != null">
-                and store_id in
+                and bmro.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and bmro.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>

@@ -2,13 +2,22 @@ package com.xiliulou.electricity.controller.user.info;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.userinfo.UserInfoVO;
+import com.xiliulou.electricity.vo.userinfo.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +33,78 @@ import java.util.Objects;
 @RequestMapping("/user/info/v2")
 public class JsonUserInfoV2Controller extends BasicController {
 
+    @Autowired
+    private UserBatteryMemberCardService batteryMemberCardService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 查询用户会员名下的所有套餐的过期时间<br />
+     * 单车、单电、车电一体
+     * @return 会员套餐信息
+     */
+    @GetMapping("/queryRentalPackage")
+    public R<UserMemberPackageVo> queryRentalPackage() {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Long uid = user.getUid();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        UserMemberPackageVo userMemberPackageVo = new UserMemberPackageVo();
+        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId())) {
+            userMemberPackageVo.setFranchiseeId(userInfo.getFranchiseeId().intValue());
+        }
+
+        // 单电
+        if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+            UserBatteryMemberCard batteryMemberCard = batteryMemberCardService.selectByUidFromCache(uid);
+            Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
+
+            if (ObjectUtils.isNotEmpty(orderExpireTime) && orderExpireTime.longValue() != 0L) {
+                UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
+                batteryPackage.setDueTime(orderExpireTime);
+                batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
+                userMemberPackageVo.setBatteryPackage(batteryPackage);
+            }
+        }
+
+        // 电车、车电一体
+        if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            Integer rentalPackageType = memberTermEntity.getRentalPackageType();
+            Long dueTime = memberTermEntity.getDueTime();
+
+            if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
+                if (ObjectUtils.isNotEmpty(dueTime) && dueTime.longValue() != 0L) {
+                    UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
+                    carPackage.setDueTime(dueTime);
+                    carPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    userMemberPackageVo.setCarPackage(carPackage);
+                }
+            }
+
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+                if (ObjectUtils.isNotEmpty(dueTime) && dueTime.longValue() != 0L) {
+                    UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
+                    carBatteryPackage.setDueTime(dueTime);
+                    carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
+                }
+            }
+
+        }
+        return R.ok(userMemberPackageVo);
+    }
 
     /**
      * 获取实名认证信息

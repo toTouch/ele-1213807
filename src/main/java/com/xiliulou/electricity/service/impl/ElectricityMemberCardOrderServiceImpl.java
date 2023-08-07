@@ -22,12 +22,19 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.ActivityProducer;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -196,6 +203,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     private EleBatteryServiceFeeOrderService batteryServiceFeeOrderService;
+
+    @Autowired
+    DivisionAccountProducer divisionAccountProducer;
+
+    @Autowired
+    ActivityProducer activityProducer;
 
     /**
      * 根据用户ID查询对应状态的记录
@@ -1052,9 +1065,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
-        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+        if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard))) {
             log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
-            return R.fail("","换电套餐已过期，无法进行暂停操作");
+            return R.fail("100298","换电套餐已过期，无法进行暂停操作");
         }
 
         //是否有正在进行中的退款
@@ -1217,9 +1230,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
-        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+        if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard))) {
             log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
-            return R.fail("","换电套餐已过期，无法进行暂停操作");
+            return R.fail("100298","换电套餐已过期，无法进行暂停操作");
         }
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
@@ -1565,9 +1578,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
-        if (userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard)) {
+        if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard,userBatteryMemberCard))) {
             log.error("DISABLE MEMBER CARD ERROR! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
-            return R.fail("","换电套餐已过期，无法进行暂停操作");
+            return R.fail("100298","换电套餐已过期，无法进行暂停操作");
         }
 
         //是否有正在进行中的退款
@@ -3204,6 +3217,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoInsert.setDisableMemberCardNo("");
         serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
 
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
         return Triple.of(true, null, null);
     }
 
@@ -3433,14 +3462,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
 
-        if(Objects.isNull(userBatteryMemberCard)){
-            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
-        }else{
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-        }
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
@@ -3477,6 +3501,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //TODO 发送MQ消息  分帐  活动
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(memberCardOrder.getOrderId());
+        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
 
         return Triple.of(true, null, null);
     }
