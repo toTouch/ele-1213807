@@ -1,29 +1,31 @@
-package com.xiliulou.electricity.query;
+package com.xiliulou.electricity.vo;
 
-import lombok.Builder;
 import lombok.Data;
 
 /**
- * @author: hrp
- * @Date: 2022/08/19 16:02
+ * @author: Kenneth
+ * @Date: 2023/8/7 17:01
  * @Description:
  */
-@Data
-@Builder
-public class CouponIssueOperateRecordQuery {
-    private Long size;
-    private Long offset;
 
-    private String phone;
+@Data
+public class CouponIssueOperateRecordVO {
+
+    private Integer id;
 
     private Integer couponId;
-
-    private Long beginTime;
-    private Long endTime;
 
     private Long uid;
 
     private String name;
+
+    private String operateName;
+
+    private String phone;
+
+    private Long createTime;
+
+    private Long updateTime;
 
     private Integer tenantId;
 
@@ -32,5 +34,6 @@ public class CouponIssueOperateRecordQuery {
      *             4--已核销， 5--使用中， 6--已失效
      */
     private Integer status;
+
 
 }

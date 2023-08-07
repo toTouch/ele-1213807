@@ -200,9 +200,10 @@ public class CouponServiceImpl implements CouponService {
 
         int insert = couponMapper.insert(coupon);
 
-        //将该优惠券对应的套餐信息保存到数据库中
+        //将该优惠券对应的套餐信息保存到数据库中, 优惠券类型为不可叠加，并且为指定得套餐使用
         //log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
-        if(SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(couponQuery.getSpecificPackages())){
+        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())
+                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.equals(couponQuery.getSpecificPackages())){
             List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
             if(!CollectionUtils.isEmpty(couponActivityPackages)){
                 couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);

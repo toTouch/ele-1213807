@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.vo.CouponIssueOperateRecordVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -22,5 +23,7 @@ public interface CouponIssueOperateRecordMapper extends BaseMapper<CouponIssueOp
     List<CouponIssueOperateRecord> queryList(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
 
     Integer queryCount(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+    List<CouponIssueOperateRecordVO> queryRecordList(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+    Integer queryRecordCount(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
 
 }

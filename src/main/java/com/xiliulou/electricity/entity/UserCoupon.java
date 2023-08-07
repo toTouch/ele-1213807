@@ -82,6 +82,7 @@ public class UserCoupon {
     private Long updateTime;
     /**
      * 优惠券状态1--未使用， 2--已使用 ，3--已过期
+     *         4--已核销， 5--使用中， 6--已失效
      */
     private Integer status;
     /**

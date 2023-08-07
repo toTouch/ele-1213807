@@ -381,6 +381,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         //当前分帐配置绑定的套餐
         List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigId(divisionAccountConfigId);
+        //TODO 排查问题，完成后需要删除
+        log.error("check the da status is enable: enable da config info = {}", JsonUtil.toJson(divisionAccountConfigRefVOS));
+        log.error("current da config packages: current package info = {}", JsonUtil.toJson(divisionAccountBatteryMembercards));
         for(DivisionAccountConfigRefVO divisionAccountConfigRefVO : divisionAccountConfigRefVOS){
             for(DivisionAccountBatteryMembercard divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
                 //检查设置套餐是否在之前启用的设置套餐中存在
