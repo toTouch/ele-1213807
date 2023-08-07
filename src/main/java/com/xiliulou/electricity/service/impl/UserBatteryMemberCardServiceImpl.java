@@ -158,8 +158,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         userBatteryMemberCard.setMemberCardId(0L);
         userBatteryMemberCard.setOrderId("");
         userBatteryMemberCard.setOrderExpireTime(0L);
+        userBatteryMemberCard.setOrderEffectiveTime(0L);
         userBatteryMemberCard.setMemberCardExpireTime(0L);
         userBatteryMemberCard.setRemainingNumber(0L);
+        userBatteryMemberCard.setOrderRemainingNumber(0L);
         userBatteryMemberCard.setMemberCardStatus(0);
         userBatteryMemberCard.setDisableMemberCardTime(null);
         userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
