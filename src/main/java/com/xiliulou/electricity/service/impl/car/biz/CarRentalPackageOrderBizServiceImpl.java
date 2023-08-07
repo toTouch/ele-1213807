@@ -2056,6 +2056,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid, List<Long> userCouponIds) {
+        log.info("handBuyRentalPackageOrderSuccess, orderNo is {}, uid is {}", orderNo, uid);
+
         // 1. 处理租车套餐购买订单
         CarRentalPackageOrderPo carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
@@ -2248,6 +2250,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> handBuyRentalPackageOrderFailed(String orderNo, Integer tenantId, Long uid) {
+        log.info("handBuyRentalPackageOrderFailed, orderNo is {}, uid is {}", orderNo, uid);
+
         // 1. 处理租车套餐购买订单
         CarRentalPackageOrderPo carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
