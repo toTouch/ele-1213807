@@ -1337,7 +1337,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 定义实际应返金额
         BigDecimal refundAmount = null;
 
-        // TODO 余量数字已经抽取了一个方法，此处需要优化
         Long residueNum = null;
         // 实际支付金额
         BigDecimal rentPayment = packageOrderEntity.getRentPayment();
@@ -1372,14 +1371,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 已使用天数
                     long diffDay = DateUtils.diffDay(useBeginTime, nowTime);
 
-                    return Pair.of(diffAmount(diffDay, packageOrderEntity.getRentUnitPrice(), rentPayment), packageOrderEntity.getTenancy().intValue() - diffDay);
+                    // 剩余天数
+                    long residueDay = packageOrderEntity.getTenancy() - diffDay;
+
+                    return Pair.of(diffAmount(residueDay, packageOrderEntity.getRentUnitPrice(), rentPayment), packageOrderEntity.getTenancy().intValue() - diffDay);
                 }
 
                 if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
                     // 已使用分钟数
                     long diffMinute = DateUtils.diffMinute(useBeginTime, nowTime);
 
-                    return Pair.of(diffAmount(diffMinute, packageOrderEntity.getRentUnitPrice(), rentPayment), packageOrderEntity.getTenancy().intValue() - diffMinute);
+                    // 剩余分钟数
+                    long residueMinute = packageOrderEntity.getTenancy() - diffMinute;
+
+                    return Pair.of(diffAmount(residueMinute, packageOrderEntity.getRentUnitPrice(), rentPayment), packageOrderEntity.getTenancy().intValue() - diffMinute);
                 }
             }
         }

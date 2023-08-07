@@ -105,4 +105,14 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      */
     private Integer status;
 
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
 }
