@@ -64,6 +64,15 @@
             <if test="rentType != null">
                 and bmc.rent_type = #{rentType}
             </if>
+            <if test="payType != null">
+                and bmro.pay_type = #{payType}
+            </if>
+            <if test="startTime != null">
+                and bmro.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bmro.create_time &lt;= #{endTime}
+            </if>
             <if test="status != null">
                 and bmro.status = #{status}
             </if>
@@ -103,6 +112,15 @@
             </if>
             <if test="rentType != null">
                 and bmc.rent_type = #{rentType}
+            </if>
+            <if test="payType != null">
+                and bmro.pay_type = #{payType}
+            </if>
+            <if test="startTime != null">
+                and bmro.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and bmro.create_time &lt;= #{endTime}
             </if>
             <if test="status != null">
                 and bmro.status = #{status}

@@ -149,7 +149,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             BatteryMembercardRefundOrderVO batteryMembercardRefundOrderVO = new BatteryMembercardRefundOrderVO();
             BeanUtils.copyProperties(item, batteryMembercardRefundOrderVO);
 
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
             batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
