@@ -2526,14 +2526,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //把加盟商绑定的电池过滤出来
         usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
 
-        //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配用户绑定电池型号串数最大的电池
+        //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //用户当前绑定电池的型号
             String userCurrentBatteryType = electricityBattery.getModel();
 
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(usableBatteryCellNos)) {
-                return Triple.of(true, null, usableBatteryCellNos.get(0));
+            List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
+                return Triple.of(true, null, userBindBatteryCellNos.get(0));
             }
 
             //获取用户绑定的型号
@@ -2548,9 +2548,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
             }
 
+            //电量最大的
+            Double maxPower = usableBatteryCellNos.get(0).getPower();
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+            if (usableBatteryCellNos.size() == 1) {
+                return Triple.of(true, null, usableBatteryCellNos.get(0));
+            }
+
             return Triple.of(true, null, usableBatteryCellNos.get(0));
         }
-
 
         usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(usableBatteryCellNos)) {

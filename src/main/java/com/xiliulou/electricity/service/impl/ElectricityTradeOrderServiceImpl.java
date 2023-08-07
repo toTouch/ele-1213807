@@ -1,15 +1,24 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
+import com.xiliulou.electricity.mq.producer.ActivityProducer;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -165,6 +174,12 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    DivisionAccountProducer divisionAccountProducer;
+
+    @Autowired
+    ActivityProducer activityProducer;
 
     /**
      * 租车套餐购买回调
@@ -378,8 +393,23 @@ public class ElectricityTradeOrderServiceImpl extends
                 Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
+            // 8. 处理分账
+            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+            divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
 
+            // 9. 处理活动
+            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+            activityProcessDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+            activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
             //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
+
 
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         } else {
