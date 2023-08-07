@@ -734,6 +734,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             saveFreeDepositSuccessTx(depositPayEntity, freeDepositOrder, queryOrderRspData);
         }
 
+        // 获取套餐信息
+        CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+
         // 拼装返回数据
         CarRentalPackageDepositPayVo depositPayVo = new CarRentalPackageDepositPayVo();
         depositPayVo.setOrderNo(depositPayEntity.getOrderNo());
@@ -741,6 +744,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
         depositPayVo.setPayState(PayStateEnum.SUCCESS.getCode());
         depositPayVo.setPayType(depositPayEntity.getPayType());
+        depositPayVo.setStoreId(depositPayEntity.getStoreId());
+        depositPayVo.setCarModelId(rentalPackageEntity.getCarModelId());
         depositPayVo.setStatus(status);
 
         return depositPayVo;

@@ -104,7 +104,7 @@ public class UserBizServiceImpl implements UserBizService {
 
         // 待更新的数据
         UserInfo userInfoEntity = new UserInfo();
-        userInfoEntity.setId(userInfo.getId());
+        userInfoEntity.setUid(userInfo.getUid());
         userInfoEntity.setTenantId(tenantId);
         userInfoEntity.setUpdateTime(System.currentTimeMillis());
 

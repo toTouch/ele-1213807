@@ -264,7 +264,8 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                 }
 
                 // 对使用中的订单，进行二次处理
-                if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
+                if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
+                        && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
                     rentRebate = YesNoEnum.NO.getCode();
                     carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
                 }
