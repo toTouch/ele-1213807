@@ -88,7 +88,7 @@ public class UserBizServiceImpl implements UserBizService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean depositRefundUnbind(Integer tenantId, Long uid, Integer type) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, type) || BasicEnum.isExist(type, RentalPackageTypeEnum.class)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, type) || !BasicEnum.isExist(type, RentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 

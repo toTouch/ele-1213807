@@ -3,7 +3,6 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.enums.OrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -93,16 +92,6 @@ public class UserCoupon {
      * 租户
      */
     private Integer tenantId;
-
-    /**
-     * 订单类型，标记 order_id 的归属
-     * <pre>
-     *     1-换电套餐购买订单
-     *     2-租车套餐购买订单
-     * </pre>
-     * @see OrderTypeEnum
-     */
-    private Integer orderIdType;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

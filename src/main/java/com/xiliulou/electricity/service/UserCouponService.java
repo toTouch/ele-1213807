@@ -24,19 +24,17 @@ public interface UserCouponService {
     /**
      * 根据订单编码作废掉未使用的优惠券
      * @param orderId 订单编码
-     * @param orderIdType 订单编码对应的类型
      * @return true(成功)、false(失败)
      */
-    boolean cancelByOrderIdAndUnUse(String orderId, Integer orderIdType);
+    boolean cancelByOrderIdAndUnUse(String orderId);
 
     /**
      * 根据订单编码更新优惠券状态
      * @param orderId 订单编码
-     * @param orderIdType 订单编码对应的类型
      * @param status 状态
      * @return true(成功)、false(失败)
      */
-    boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status);
+    boolean updateStatusByOrderId(String orderId, Integer status);
 
     /**
      * 查询用户名下有效的优惠券

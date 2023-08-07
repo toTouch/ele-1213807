@@ -104,16 +104,15 @@ public class UserCouponServiceImpl implements UserCouponService {
      * 根据订单编码作废掉未使用的优惠券
      *
      * @param orderId     订单编码
-     * @param orderIdType 订单编码对应的类型
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean cancelByOrderIdAndUnUse(String orderId, Integer orderIdType) {
-        if (!ObjectUtils.allNotNull(orderId, orderIdType)) {
+    public boolean cancelByOrderIdAndUnUse(String orderId) {
+        if (!ObjectUtils.allNotNull(orderId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        int num = userCouponMapper.cancelByOrderIdAndUnUse(orderId, orderIdType, System.currentTimeMillis());
+        int num = userCouponMapper.cancelByOrderIdAndUnUse(orderId, System.currentTimeMillis());
 
         return num >= 0;
     }
@@ -122,17 +121,16 @@ public class UserCouponServiceImpl implements UserCouponService {
      * 根据订单编码更新优惠券状态
      *
      * @param orderId     订单编码
-     * @param orderIdType 订单编码对应的类型
      * @param status      状态
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status) {
-        if (!ObjectUtils.allNotNull(orderId, orderIdType, status)) {
+    public boolean updateStatusByOrderId(String orderId, Integer status) {
+        if (!ObjectUtils.allNotNull(orderId, status)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        int num = userCouponMapper.updateStatusByOrderId(orderId, orderIdType, status, System.currentTimeMillis());
+        int num = userCouponMapper.updateStatusByOrderId(orderId, status, System.currentTimeMillis());
 
         return num >= 0;
     }
