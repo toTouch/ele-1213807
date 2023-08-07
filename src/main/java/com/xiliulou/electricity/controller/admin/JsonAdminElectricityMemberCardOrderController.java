@@ -56,6 +56,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                                           @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "useStatus", required = false) Integer useStatus,
                                           @RequestParam(value = "source", required = false) Integer source,
                                           @RequestParam(value = "payCount", required = false) Integer payCount,
                                           @RequestParam(value = "refId", required = false) Long refId,
@@ -104,6 +105,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .size(size)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
                 .refId(refId)
@@ -130,6 +132,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "useStatus", required = false) Integer useStatus,
                         @RequestParam(value = "payCount", required = false) Integer payCount,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "refId", required = false) Long refId,
@@ -169,6 +172,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
                 .refId(refId)
