@@ -20,6 +20,13 @@ import java.util.Map;
 public interface ElectricityCarModelService {
 
     /**
+     * 根据主键ID进行更新
+     * @param carModel
+     * @return
+     */
+    boolean updateById(ElectricityCarModel carModel);
+
+    /**
      * 根据门店ID集，获取指定数量的数据，已租数量降序
      * @param size 取值范围
      * @param storeIdList 门店ID集
