@@ -4,6 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.RentalTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalOrderMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
@@ -125,7 +126,12 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         if (StringUtils.isBlank(entity.getOrderNo())) {
-            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, entity.getUid()));
+            if (RentalTypeEnum.RENTAL.getCode().equals(entity.getType())) {
+                entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, entity.getUid()));
+            }
+            if (RentalTypeEnum.RETURN.getCode().equals(entity.getType())) {
+                entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, entity.getUid()));
+            }
         }
 
 

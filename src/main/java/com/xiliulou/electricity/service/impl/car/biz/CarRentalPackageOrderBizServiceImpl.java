@@ -1341,8 +1341,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private Triple<BigDecimal, Long, Long> calculateRefundAmount(CarRentalPackageOrderPo packageOrderEntity, Integer tenantId, Long uid) {
         // 定义实际应返金额
         BigDecimal refundAmount = null;
+        // 定义使用的租期
+        Long tenancyUse = null;
         // 定义租期余量
         Long tenancyResidue = null;
+        // 定义限制使用量
+        Long confineUse= null;
         // 定义限制余量
         Long confineResidue = null;
         // 实际支付金额
@@ -1359,31 +1363,35 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             long useBeginTime = packageOrderEntity.getUseBeginTime();
             if (RentalUnitEnum.DAY.getCode().equals(packageOrderEntity.getTenancyUnit())) {
                 // 已使用天数
-                tenancyResidue = DateUtils.diffDay(useBeginTime, nowTime);
+                tenancyUse = DateUtils.diffDay(useBeginTime, nowTime);
+                // 剩余天数
+                tenancyResidue = packageOrderEntity.getTenancy() - tenancyUse;
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
                 // 已使用分钟数
-                tenancyResidue = DateUtils.diffMinute(useBeginTime, nowTime);
+                tenancyUse = DateUtils.diffMinute(useBeginTime, nowTime);
+                // 剩余分钟数
+                tenancyResidue = packageOrderEntity.getTenancy() - tenancyUse;
             }
 
             // 1. 若限制次数，则根据次数计算退款金额
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
                 // 查询当前套餐的余量
-                long residue = memberTermEntity.getResidue();
+                confineResidue = memberTermEntity.getResidue();
                 // 余量为 0，则退款金额为 0
-                if (residue == 0) {
+                if (confineResidue == 0) {
                     refundAmount = BigDecimal.ZERO;
                 } else{
                     // 已使用数量
-                    confineResidue = packageOrderEntity.getConfineNum() - residue;
-                    refundAmount = diffAmount(confineResidue, packageOrderEntity.getRentUnitPrice(), rentPayment);
+                    confineUse = packageOrderEntity.getConfineNum() - confineResidue;
+                    refundAmount = diffAmount(confineUse, packageOrderEntity.getRentUnitPrice(), rentPayment);
                 }
             }
 
-            // 2. 若不限制，则根据租期余量计算退款金额
+            // 2. 若不限制，则根据租期使用量计算退款金额
             if (RenalPackageConfineEnum.NO.getCode().equals(packageOrderEntity.getConfine())) {
-                refundAmount = diffAmount(tenancyResidue, packageOrderEntity.getRentUnitPrice(), rentPayment);
+                refundAmount = diffAmount(tenancyUse, packageOrderEntity.getRentUnitPrice(), rentPayment);
             }
         }
 
