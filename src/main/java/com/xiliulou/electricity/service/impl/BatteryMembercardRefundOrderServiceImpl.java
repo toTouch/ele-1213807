@@ -372,6 +372,17 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100281", "电池套餐订单不存在");
         }
 
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.selectLatestByMembercardOrderNo(orderNo);
+        if (Objects.nonNull(batteryMembercardRefundOrder)) {
+            if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
+                return Triple.of(false, "", "电池套餐订单已退款");
+            }
+
+            if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
+                return Triple.of(false, "", "电池套餐订单退款审核中");
+            }
+        }
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found userInfo,uid={}", electricityMemberCardOrder.getUid());
@@ -547,7 +558,24 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
+        //更新套餐绑定的优惠券为已失效
+        updateUserCouponStatus(electricityMemberCardOrder.getOrderId());
+
         return Triple.of(true, "", null);
+    }
+
+    @Override
+    public void updateUserCouponStatus(String orderId) {
+        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(orderId);
+        if(Objects.isNull(userCoupon)){
+            return;
+        }
+
+        UserCoupon userCouponUpdate = new UserCoupon();
+        userCouponUpdate.setId(userCoupon.getId());
+        userCouponUpdate.setStatus(UserCoupon.STATUS_IS_INVALID);
+        userCouponUpdate.setUpdateTime(System.currentTimeMillis());
+        userCouponService.update(userCouponUpdate);
     }
 
     @Override
