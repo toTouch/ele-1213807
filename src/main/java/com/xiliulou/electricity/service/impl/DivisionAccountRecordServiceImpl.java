@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.DivisionAccountRecordMapper;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
 import com.xiliulou.electricity.service.*;
@@ -14,6 +17,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundServi
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DivisionAccountAmountVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO;
@@ -96,6 +100,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
     @Autowired
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
+
+    @Autowired
+    RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -288,15 +295,23 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Transactional(rollbackFor = Exception.class)
     public void handleDivisionAccountByPackage(String orderNo, Integer type){
 
-        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
-            if(Objects.isNull(electricityMemberCardOrder)){
-                log.error("Division Account error, Not found for electricity member card, order number = {}", orderNo);
-                return;
-            }
+        String value = orderNo + type;
+        if (!redisService
+                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value, value, 5 * 1000L, false)) {
+            //return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+            log.error("Division Account by package error, operations frequently, order number = {}, package type = {}", orderNo, type);
+        }
 
-            log.info("Division Account Start, electricity member card order, order number = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
-            try {
+        try{
+            if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+                ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
+                if(Objects.isNull(electricityMemberCardOrder)){
+                    log.error("Division Account error, Not found for electricity member card, order number = {}", orderNo);
+                    return;
+                }
+
+                log.info("Division Account flow Start for purchase battery package, order number = {}, package type = {}, uid = {}", electricityMemberCardOrder.getOrderId(), type, electricityMemberCardOrder.getUid());
+
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(electricityMemberCardOrder.getMemberCardId().longValue(), null, electricityMemberCardOrder.getFranchiseeId(), electricityMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
                     log.error("Division Account error, Division account for electricity member card, not found division account config info, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
@@ -341,22 +356,21 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setCreateTime(System.currentTimeMillis());
                 divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
                 divisionAccountRecordMapper.insert(divisionAccountRecord);
-            }catch (Exception e) {
-                log.error("Division Account error, Division account for electricity member card error, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid(), e);
-            }
 
-        } else {
-            CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
-            if(Objects.isNull(carRentalPackageOrderPO)){
-                log.error("Division Account error, Not found for car rental package, order number = {}", orderNo);
-                return;
-            }
+                log.info("Division Account flow end, purchase battery package, order number = {}, package type = {}, uid = {}", electricityMemberCardOrder.getOrderId(), type, electricityMemberCardOrder.getUid());
 
-            log.info("Division Account Start,  car rental or car with battery package order, order number = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid());
-            try {
+            } else {
+                CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+                if(Objects.isNull(carRentalPackageOrderPO)){
+                    log.error("Division Account error, Not found for car rental package, order number = {}", orderNo);
+                    return;
+                }
+
+                log.info("Division Account flow start for car rental,  car rental or car with battery package order, order number = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carRentalPackageOrderPO.getRentalPackageId(), null, carRentalPackageOrderPO.getFranchiseeId().longValue(), carRentalPackageOrderPO.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.info("Division Account error, Division account for car rental or car-electricity package, not found division account config info, orderId = {},uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+                    log.error("Division Account error, Division account for car rental or car-electricity package, not found division account config info, orderId = {},uid = {}", orderNo, carRentalPackageOrderPO.getUid());
                     return;
                 }
 
@@ -395,10 +409,14 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
                 divisionAccountRecordMapper.insert(divisionAccountRecord);
 
-            } catch(Exception e){
-                log.error("Division Account error, Division account for car rental or car-electricity package error, orderId = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid(), e);
-            }
+                log.info("Division Account flow end for car rental package, orderId = {}, package type, uid = {}", orderNo, type, carRentalPackageOrderPO.getUid());
 
+            }
+        }
+        catch(Exception e){
+            log.error("Division Account error, Division account for purchase package error, order number = {}, package type = {}", orderNo, type, e);
+        }finally {
+            redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value);
         }
     }
 
@@ -505,16 +523,25 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleRefundDivisionAccountByPackage(String orderNo, Integer type){
-        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(orderNo);
 
-            if(Objects.isNull(batteryMembercardRefundOrder)) {
-                log.error("Refund Division Account error, Not found for battery member card refund order, refund order number = {}", orderNo);
-                return;
-            }
-            log.info("Refund Division Account Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
-            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
-            try {
+        String value = orderNo + type;
+        if (!redisService
+                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value, value, 5 * 1000L, false)) {
+            //return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+            log.error("Division Account by refund error, operations frequently, order number = {}, package type = {}", orderNo, type);
+        }
+
+        try{
+
+            if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+                BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(orderNo);
+
+                if(Objects.isNull(batteryMembercardRefundOrder)) {
+                    log.error("Refund Division Account error, Not found for battery member card refund order, refund order number = {}, package type = {}", orderNo, type);
+                    return;
+                }
+                log.info("Refund Division Account flow Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
+                ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
 
                 //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
                 DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
@@ -547,18 +574,22 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 //退租后，需要将之前购买的分账记录状态置为无效
                 updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_INVALIDITY);
-            }catch (Exception e) {
-                log.error("Refund Division Account error, Refund Division account for electricity member card error, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid(), e);
+
+                log.info("Refund Division Account flow end, orderId = {}, package type = {}, uid = {}", electricityMemberCardOrder.getOrderId(), type, electricityMemberCardOrder.getUid());
+
+            } else {
+                //处理租车和车电一体的退租分账记录
+                handleRefundDivisionAccountByCarRentalPackage(orderNo);
+
             }
 
-        } else {
-            //处理租车和车电一体的退租分账记录
-            try{
-                handleRefundDivisionAccountByCarRentalPackage(orderNo);
-            }catch (Exception e){
-                log.error("Refund Division Account error, Refund Division account for car rental package error, orderNo = {}", orderNo, e);
-            }
+        }catch (Exception e){
+            log.error("Division Account for refund error, Division account for refund package error, order number = {}, package type = {}", orderNo, type, e);
+
+        }finally {
+            redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value);
         }
+
     }
 
     /**
@@ -630,6 +661,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
         //退租后，需要将之前购买的分账记录状态置为无效
         updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_INVALIDITY);
+
+        log.info("Refund Division Account end, car rental package order, refund order id = {}, uid = {}", carRentalPackageOrderRentRefundPO.getId(), carRentalPackageOrderRentRefundPO.getUid());
     }
 
     private BigDecimal getAmountByRate(BigDecimal userPayAmount, BigDecimal rate){
