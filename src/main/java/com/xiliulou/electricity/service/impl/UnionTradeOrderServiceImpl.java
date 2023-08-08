@@ -773,9 +773,22 @@ public class UnionTradeOrderServiceImpl extends
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
-            //TODO MQ消息 分帐 活动
 
+            // 8. 处理分账
+            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+            divisionAccountOrderDTO.setOrderNo(orderNo);
+            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
 
+            // 9. 处理活动
+            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+            activityProcessDTO.setOrderNo(orderNo);
+            activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
