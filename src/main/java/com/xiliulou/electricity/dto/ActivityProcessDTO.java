@@ -14,6 +14,11 @@ import lombok.Data;
 public class ActivityProcessDTO {
 
     /**
+     * 用户ID 用于登录注册或实名认证情况下的活动处理
+     */
+    private Long uid;
+
+    /**
      * 订单编号
      */
     private String orderNo;

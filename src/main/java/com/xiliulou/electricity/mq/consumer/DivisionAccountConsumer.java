@@ -5,6 +5,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.DivisionAccountRecord;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
@@ -40,14 +41,14 @@ public class DivisionAccountConsumer implements RocketMQListener<String> {
             }
 
             //同步处理分账业务
-            if(DivisionAccountRecord.TYPE_PURCHASE.equals(divisionAccountOrderDTO.getDivisionAccountType())){
+            if(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
                 /*executorService.execute(() -> {
                     divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
                 });*/
                 //使用MQ自身线程池消费消息，无需再开一个线程去处理。
                 divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
 
-            }else if(DivisionAccountRecord.TYPE_REFUND.equals(divisionAccountOrderDTO.getDivisionAccountType())){
+            }else if(DivisionAccountEnum.DA_TYPE_REFUND.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
                 /*executorService.execute(() -> {
                     divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
                 });*/

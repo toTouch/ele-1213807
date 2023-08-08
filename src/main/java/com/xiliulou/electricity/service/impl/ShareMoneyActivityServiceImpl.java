@@ -130,7 +130,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
             //如果存在已上架的活动，则将该活动修改为下架
             ShareMoneyActivity moneyActivity = new ShareMoneyActivity();
-            moneyActivity.setId(moneyActivity.getId());
+            moneyActivity.setId(activityResult.getId());
             moneyActivity.setStatus(ShareMoneyActivity.STATUS_OFF);
             moneyActivity.setUpdateTime(System.currentTimeMillis());
             shareMoneyActivityMapper.updateActivity(moneyActivity);

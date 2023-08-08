@@ -241,7 +241,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.isNull(insuranceUserInfoCache) || Objects.equals(InsuranceUserInfo.IS_USE, insuranceUserInfoCache.getIsUse()) || insuranceUserInfoCache.getInsuranceExpireTime() < System.currentTimeMillis()) {
             insuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
         } else {
-            insuranceUserInfo.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+            insuranceUserInfo.setInsuranceExpireTime(insuranceUserInfoCache.getInsuranceExpireTime() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
         }
 
         if(Objects.isNull(insuranceUserInfoCache)){

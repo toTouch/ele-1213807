@@ -55,4 +55,5 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
 
     private String simpleBatteryType;
 
+    private Integer isRefund;
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -606,6 +607,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         Long exceedTime = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L;
         List<DivisionAccountRecord> divisionAccountRecords = divisionAccountRecordMapper.selectDAFreezeStatusRecordsByTime(exceedTime);
         if(CollectionUtils.isNotEmpty(divisionAccountRecords)){
+            log.info("update division account records = {}", JsonUtil.toJson(divisionAccountRecords));
+
             for(DivisionAccountRecord divisionAccountRecord : divisionAccountRecords){
                //只要查到超过七天的状态还是冻结态的记录，则将其修改为正常，因为如果有退单的记录，这个状态就会被置为失效。所以能查到的肯定是未退款的记录
                 updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_NORMAL);
