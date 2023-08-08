@@ -9,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class UserCouponDTO {
+
     /**
      * 优惠券ID
       */
@@ -18,6 +19,11 @@ public class UserCouponDTO {
      * 用户ID
      */
     private Long uid;
+
+    /**
+     * 来源订单编码
+     */
+    private String sourceOrderNo;
 
     /**
      * 链路ID

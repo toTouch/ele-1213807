@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
+import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
@@ -2232,8 +2233,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
 
-        // 10. TODO 异步发放优惠券，暴煜
-        userCouponProducer.sendSyncMessage("");
+        // 10. 发放优惠券
+        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+            userCouponDTO.setUid(uid);
+            userCouponDTO.setSourceOrderNo(orderNo);
+            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+            userCouponProducer.sendSyncMessage("");
+        }
+
 
         return Pair.of(true, userInfo.getPhone());
     }
