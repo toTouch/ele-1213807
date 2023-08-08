@@ -21,6 +21,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -208,9 +209,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
-
-        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceUserInfoVo.getOrderId());
-        insuranceUserInfoVo.setPayInsuranceTime(Objects.isNull(insuranceOrder) ? null : insuranceOrder.getCreateTime());
+        if (Objects.nonNull(insuranceUserInfoVo)) {
+            InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceUserInfoVo.getOrderId());
+            insuranceUserInfoVo.setPayInsuranceTime(Objects.isNull(insuranceOrder) ? null : insuranceOrder.getCreateTime());
+        }
 
         return insuranceUserInfoVo;
     }
@@ -696,5 +698,29 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceUserInfoVo.setCityName(Objects.isNull(city) ? "" : city.getName());
 
         return insuranceUserInfoVo;
+    }
+
+    @Override
+    public void updateUserInsuranceOrderStatusTask() {
+
+        int offset = 0;
+        int size = 200;
+
+        while (true) {
+            List<InsuranceUserInfo> list = this.selectUserInsuranceList(offset, size);
+            if(CollectionUtils.isEmpty(list)){
+                return;
+            }
+
+            list.parallelStream().forEach(item->{
+                insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(),InsuranceOrder.EXPIRED);
+            });
+
+            offset += size;
+        }
+    }
+
+    private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
+        return baseMapper.selectUserInsuranceList(offset,size);
     }
 }

@@ -56,6 +56,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
     @Override
     public EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo) {
         return eleBatteryServiceFeeOrderMapper.selectOne(new LambdaQueryWrapper<EleBatteryServiceFeeOrder>().eq(EleBatteryServiceFeeOrder::getOrderId, orderNo));
@@ -171,6 +174,15 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             }
 
             userBatteryMemberCardList.parallelStream().forEach(item -> {
+                //如果套餐过期更新订单状态为已失效
+                if(item.getMemberCardExpireTime() <System.currentTimeMillis()){
+                    ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+                    electricityMemberCardOrder.setOrderId(item.getOrderId());
+                    electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                    electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+                    electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrder);
+                }
+
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
                 if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                     return;
