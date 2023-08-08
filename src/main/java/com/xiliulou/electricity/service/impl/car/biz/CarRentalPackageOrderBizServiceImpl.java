@@ -1260,7 +1260,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
         if (ObjectUtils.isNotEmpty(userCoupon)) {
             Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status)) {
+            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
                 throw new BizException("300016", "订单赠送优惠券状态异常");
             }
         }
