@@ -25,7 +25,7 @@ import java.util.Objects;
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.ACTIVITY_COMMON_TOPIC, consumerGroup = MqConsumerConstant.ACTIVITY_COMMON_CONSUMER_GROUP)
 public class ActivityConsumer implements RocketMQListener<String> {
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_CONSUMER_POOL", 5, "activity_handle_thread");
+    //XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_CONSUMER_POOL", 5, "activity_handle_thread");
     @Autowired
     private ActivityService activityService;
 
@@ -39,9 +39,8 @@ public class ActivityConsumer implements RocketMQListener<String> {
             }
 
             if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(activityProcessDTO.getActivityType())){
-                executorService.execute(() -> {
-                    activityService.handleActivityByPackage(activityProcessDTO.getOrderNo(), activityProcessDTO.getType());
-                });
+
+                activityService.handleActivityByPackage(activityProcessDTO.getOrderNo(), activityProcessDTO.getType());
             }
 
         } catch (Exception e){

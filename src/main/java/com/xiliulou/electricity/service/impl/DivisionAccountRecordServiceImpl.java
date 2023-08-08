@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundServi
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DivisionAccountAmountVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO;
@@ -295,11 +294,12 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Transactional(rollbackFor = Exception.class)
     public void handleDivisionAccountByPackage(String orderNo, Integer type){
 
-        String value = orderNo + type;
+        String value = orderNo + "_" + type;
         if (!redisService
-                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value, value, 5 * 1000L, false)) {
+                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value, value, 10 * 1000L, false)) {
             //return Triple.of(false, "000000", "操作频繁，请稍后再试！");
             log.error("Division Account by package error, operations frequently, order number = {}, package type = {}", orderNo, type);
+            return;
         }
 
         try{
@@ -415,6 +415,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         }
         catch(Exception e){
             log.error("Division Account error, Division account for purchase package error, order number = {}, package type = {}", orderNo, type, e);
+            throw new BizException("100000", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value);
         }
@@ -524,11 +525,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Transactional(rollbackFor = Exception.class)
     public void handleRefundDivisionAccountByPackage(String orderNo, Integer type){
 
-        String value = orderNo + type;
+        String value = orderNo + "_" + type;
         if (!redisService
-                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value, value, 5 * 1000L, false)) {
-            //return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+                .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value, value, 10 * 1000L, false)) {
             log.error("Division Account by refund error, operations frequently, order number = {}, package type = {}", orderNo, type);
+            return;
         }
 
         try{
@@ -542,6 +543,10 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 }
                 log.info("Refund Division Account flow Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
+                if(Objects.isNull(electricityMemberCardOrder)){
+                    log.error("Refund Division Account error, Not found division account record for purchase battery package, refund order number = {}", orderNo);
+                    return;
+                }
 
                 //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
                 DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
@@ -585,7 +590,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
         }catch (Exception e){
             log.error("Division Account for refund error, Division account for refund package error, order number = {}, package type = {}", orderNo, type, e);
-
+            throw new BizException("100001", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value);
         }
@@ -629,6 +634,10 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
         //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
         DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(carRentalPackageOrderPO.getOrderNo());
+        if(Objects.isNull(divisionAccountRecord)){
+            log.error("Refund Division Account error, Not found division account record for purchase car rental package , refund order number = {}", orderNo);
+            return;
+        }
 
         //不需要再根据之前的分账设置去计算退款金额，直接按购买时的分账金额全部退回。同时将构面分账记录状态设置为失效状态。如果后续分账时只需查找分账状态为正常且创建时间大于7天的记录即可。
         CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());

@@ -24,7 +24,7 @@ import java.util.Objects;
 @RocketMQMessageListener(topic = MqProducerConstant.USER_COUPON_COMMON_TOPIC, consumerGroup = MqConsumerConstant.USER_COUPON_COMMON_CONSUMER_GROUP)
 public class UserCouponConsumer implements RocketMQListener<String> {
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_CONSUMER_POOL", 5, "send_coupon_consumer_thread");
+    //XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_CONSUMER_POOL", 5, "send_coupon_consumer_thread");
 
     @Autowired
     private UserCouponService userCouponService;
@@ -37,9 +37,11 @@ public class UserCouponConsumer implements RocketMQListener<String> {
                 return;
             }
 
-            executorService.execute(() -> {
+            /*executorService.execute(() -> {
                 userCouponService.sendCouponToUser(userCouponDTO);
-            });
+            });*/
+
+            userCouponService.sendCouponToUser(userCouponDTO);
 
         } catch (Exception e){
             log.error("Send coupon consumer error! msg = {}", message, e);
