@@ -278,6 +278,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
+
+                //更新用户套餐订单为已失效
+                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
     
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
@@ -288,6 +291,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    //更新用户保险订单为已失效
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 //退押金解绑用户所属加盟商
