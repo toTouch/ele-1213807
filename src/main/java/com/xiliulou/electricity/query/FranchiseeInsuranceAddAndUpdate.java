@@ -83,7 +83,6 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 保险说明
      */
-    @NotEmpty(message = "保险说明不能为空!")
     private String instruction;
 
     /**

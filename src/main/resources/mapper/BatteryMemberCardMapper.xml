@@ -145,6 +145,9 @@
             </if>
         </where>
         order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
     <select id="selectByPageForUser" resultMap="BatteryMemberCardMap">

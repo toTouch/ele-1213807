@@ -254,9 +254,10 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * @return
      */
     @GetMapping("/admin/battery/memberCard/selectListByQuery")
-    public R selectListByQuery(@RequestParam(value = "name", required = false) String name,
-                  @RequestParam(value = "status", required = false) Integer status,
-                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+    public R selectListByQuery(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                               @RequestParam(value = "name", required = false) String name,
+                               @RequestParam(value = "status", required = false) Integer status,
+                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -282,6 +283,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .status(status)
                 .name(name)
+                .size(size)
+                .offset(offset)
                 .build();
 
         return R.ok(batteryMemberCardService.selectListByQuery(query));
