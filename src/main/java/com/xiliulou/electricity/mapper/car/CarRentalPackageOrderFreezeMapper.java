@@ -16,6 +16,13 @@ import java.util.List;
 public interface CarRentalPackageOrderFreezeMapper {
 
     /**
+     * 根据用户ID查询冻结中的订单
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageOrderFreezePo selectFreezeByUid(@Param("uid") Long uid);
+
+    /**
      * 根据订单编码进行数据更新
      * @param entity 实体数据
      * @return

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -54,7 +55,8 @@ public class JsonUserCarRenalPackageMemberController {
         BeanUtils.copyProperties(memberTermEntity, memberTermVo);
 
         // 判定是否过期
-        if (memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis()) {
+        if (memberTermEntity.getDueTimeTotal() <= System.currentTimeMillis() ||
+                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue().longValue() <= 0L)) {
             memberTermVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         return R.ok(memberTermVo);

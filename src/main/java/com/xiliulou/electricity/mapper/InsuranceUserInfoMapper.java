@@ -23,4 +23,6 @@ public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
     InsuranceUserInfo selectByUidAndTypeFromDB(@Param("uid") Long uid, @Param("type") Integer type);
 
     int deleteByUidAndType(@Param("uid") Long uid, @Param("type") Integer type);
+
+    List<InsuranceUserInfo> selectUserInsuranceList(@Param("offset") int offset, @Param("size") int size);
 }

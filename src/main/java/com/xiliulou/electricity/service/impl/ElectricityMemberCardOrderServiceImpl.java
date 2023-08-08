@@ -932,6 +932,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrderVO.getMemberCardId());
             electricityMemberCardOrderVO.setRentType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentType());
             electricityMemberCardOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
+            electricityMemberCardOrderVO.setIsRefund(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getIsRefund());
 
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
@@ -3588,6 +3589,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        userBatteryMemberCardInfoVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
@@ -3771,6 +3773,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public Integer updateStatusByOrderNo(ElectricityMemberCardOrder memberCardOrder) {
         return this.baseMapper.updateStatusByOrderNo(memberCardOrder);
+    }
+
+    @Override
+    public Integer batchUpdateStatusByOrderNo(List<String> orderIds, Integer useStatus) {
+        if(CollectionUtils.isEmpty(orderIds)){
+            return NumberConstant.ZERO;
+        }
+        return this.baseMapper.batchUpdateStatusByOrderNo(orderIds,useStatus);
     }
 
     @Override

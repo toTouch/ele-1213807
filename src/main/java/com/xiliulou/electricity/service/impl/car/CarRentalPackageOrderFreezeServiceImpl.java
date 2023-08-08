@@ -34,6 +34,20 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     private CarRentalPackageOrderFreezeMapper carRentalPackageOrderFreezeMapper;
 
     /**
+     * 根据用户ID查询冻结中的订单
+     *
+     * @param uid 用户ID
+     * @return 冻结订单
+     */
+    @Override
+    public CarRentalPackageOrderFreezePo selectFreezeByUid(Long uid) {
+        if (ObjectUtils.isEmpty(uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderFreezeMapper.selectFreezeByUid(uid);
+    }
+
+    /**
      * 根据用户ID和套餐购买订单编号查询冻结中的订单
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码

@@ -110,6 +110,9 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_SUCCESS);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+
+            //更新套餐绑定的优惠券为已失效
+            batteryMembercardRefundOrderService.updateUserCouponStatus(electricityMemberCardOrder.getOrderId());
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());

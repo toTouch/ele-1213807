@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
@@ -17,10 +18,13 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (UserBatteryMemberCard)表服务实现类
@@ -55,6 +59,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -294,6 +301,27 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer checkUserByMembercardId(Long id) {
         return userBatteryMemberCardMapper.checkUserByMembercardId(id);
+    }
+
+    /**
+     * 获取用户套餐订单
+     */
+    @Override
+    public List<String> selectUserBatteryMemberCardOrder(Long uid) {
+        List<String> orderList=new ArrayList<>();
+
+        UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(uid);
+        if(!Objects.isNull(userBatteryMemberCard)){
+            orderList.add(userBatteryMemberCard.getOrderId());
+        }
+
+
+        List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(uid);
+        if(!CollectionUtils.isEmpty(userBatteryMemberCardPackages)){
+            orderList.addAll(userBatteryMemberCardPackages.stream().map(UserBatteryMemberCardPackage::getOrderId).collect(Collectors.toList()));
+        }
+
+        return orderList;
     }
 
     /**

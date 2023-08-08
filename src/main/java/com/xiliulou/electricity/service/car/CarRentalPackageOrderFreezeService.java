@@ -14,6 +14,13 @@ import java.util.List;
 public interface CarRentalPackageOrderFreezeService {
 
     /**
+     * 根据用户ID查询冻结中的订单
+     * @param uid 用户ID
+     * @return 冻结订单
+     */
+    CarRentalPackageOrderFreezePo selectFreezeByUid(Long uid);
+
+    /**
      * 根据用户ID和套餐购买订单编号查询冻结中的订单
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码

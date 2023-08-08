@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
@@ -22,6 +23,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -344,6 +346,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Override
     public Integer update(InsuranceOrder insuranceOrder) {
         return insuranceOrderMapper.updateById(insuranceOrder);
+    }
+
+    @Override
+    public Integer updateUseStatusByOrderId(String insuranceOrderId, Integer useStatus) {
+        if(StringUtils.isBlank(insuranceOrderId)){
+            return NumberConstant.ZERO;
+        }
+        return insuranceOrderMapper.updateUseStatusByOrderId(insuranceOrderId,useStatus);
     }
 
     public String generateOrderId(Long uid) {

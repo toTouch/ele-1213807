@@ -2818,6 +2818,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
+                //更新用户套餐订单为已失效
+                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(freeDepositOrder.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+
                 userBatteryMemberCardService.unbindMembercardInfoByUid(freeDepositOrder.getUid());
                 userBatteryDepositService.logicDeleteByUid(freeDepositOrder.getUid());
                 userBatteryService.deleteByUid(freeDepositOrder.getUid());
@@ -2825,6 +2828,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(freeDepositOrder.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    //更新用户保险订单为已失效
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 userInfoService.unBindUserFranchiseeId(freeDepositOrder.getUid());

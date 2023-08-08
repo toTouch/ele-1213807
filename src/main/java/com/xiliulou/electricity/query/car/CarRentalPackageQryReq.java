@@ -100,4 +100,14 @@ public class CarRentalPackageQryReq implements Serializable {
      */
     private Integer applicableType;
 
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see RentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
+
 }

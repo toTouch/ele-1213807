@@ -136,6 +136,8 @@ public interface ElectricityMemberCardOrderService {
 
     Integer updateStatusByOrderNo(ElectricityMemberCardOrder oldMemberCardOrder);
 
+    Integer batchUpdateStatusByOrderNo(List<String> orderIds,Integer useStatus);
+
     Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query);
 
     Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query);

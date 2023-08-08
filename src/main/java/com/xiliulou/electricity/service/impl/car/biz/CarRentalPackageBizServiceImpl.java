@@ -95,38 +95,40 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         Integer franchiseeId = qryReq.getFranchiseeId();
         Integer storeId = qryReq.getStoreId();
         Integer carModelId = qryReq.getCarModelId();
+        Integer rentalPackageType = qryReq.getRentalPackageType();
+
 
         Boolean oldUserFlag = false;
         BigDecimal deposit = null;
-        Integer rentalPackageType = null;
         List<String> batteryModelTypeList = null;
         Integer confine = null;
 
         // 0. 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("CheckBuyPackageCommon failed. Not found user. uid is {} ", uid);
+            log.error("queryCanPurchasePackage failed. Not found user. uid is {} ", uid);
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
         // 0.1 用户可用状态
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("CheckBuyPackageCommon failed. User is unUsable. uid is {} ", uid);
+            log.error("queryCanPurchasePackage failed. User is unUsable. uid is {} ", uid);
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
 
         // 0.2 用户实名认证状态
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
+            log.error("queryCanPurchasePackage failed. User not auth. uid is {}", uid);
             throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
         }
 
-        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0) {
-            franchiseeId = userInfo.getFranchiseeId().intValue();
+        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !franchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
+            log.error("queryCanPurchasePackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), qryReq.getFranchiseeId());
+            throw new BizException("300036", "所属机构不匹配");
         }
-
-        if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0) {
-            storeId = userInfo.getStoreId().intValue();
+        if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !storeId.equals(userInfo.getStoreId().intValue())) {
+            log.error("queryCanPurchasePackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), qryReq.getStoreId());
+            throw new BizException("300036", "所属机构不匹配");
         }
 
 

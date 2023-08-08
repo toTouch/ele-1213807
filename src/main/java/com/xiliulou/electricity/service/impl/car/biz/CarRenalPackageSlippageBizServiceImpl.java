@@ -1,14 +1,23 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -25,7 +34,111 @@ import java.util.List;
 public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSlippageBizService {
 
     @Resource
+    private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
+    private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
+
+    /**
+     * 清除滞纳金
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param optUid   操作用户ID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean clearSlippage(Integer tenantId, Long uid, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, optUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询名下当前所有类型的未支付、支付失败的逾期订单
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(slippageEntityList)) {
+            log.info("clearSlippage, not found t_car_rental_package_order_slippage. uid is {}", uid);
+            return true;
+        }
+
+        if (slippageEntityList.size() == 1 && SlippageTypeEnum.EXPIRE.getCode().equals(slippageEntityList.get(0).getType())) {
+            saveClearSlippageTx(slippageEntityList, null, optUid);
+        } else {
+            // 查询会员详情
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                log.error("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+                throw new BizException("300000", "数据有误");
+            }
+
+            // 查询冻结订单
+            CarRentalPackageOrderFreezePo freezeEntity = null;
+            if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
+                freezeEntity = carRentalPackageOrderFreezeService.selectFreezeByUid(uid);
+                if (ObjectUtils.isEmpty(freezeEntity)) {
+                    log.error("clearSlippage, not found t_car_rental_package_order_freeze. uid is {}", uid);
+                    throw new BizException("300000", "数据有误");
+                }
+            }
+            saveClearSlippageTx(slippageEntityList, freezeEntity, optUid);
+        }
+
+        return true;
+    }
+
+    /**
+     * 清除滞纳金事务处理
+     * @param slippageEntityList 逾期订单
+     * @param freezeEntity 冻结订单
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveClearSlippageTx(List<CarRentalPackageOrderSlippagePo> slippageEntityList, CarRentalPackageOrderFreezePo freezeEntity, Long optUid) {
+        long now = System.currentTimeMillis();
+        // 处理逾期
+        slippageEntityList.forEach(slippageEntity -> {
+            CarRentalPackageOrderSlippagePo slippageUpdateEntity = new CarRentalPackageOrderSlippagePo();
+            slippageUpdateEntity.setId(slippageEntity.getId());
+            slippageUpdateEntity.setUpdateUid(optUid);
+            slippageUpdateEntity.setUpdateTime(now);
+            slippageUpdateEntity.setPayState(PayStateEnum.CLEAN_UP.getCode());
+            slippageUpdateEntity.setPayTime(now);
+
+            // 过期
+            if (SlippageTypeEnum.EXPIRE.getCode().equals(slippageEntity.getType())) {
+                slippageUpdateEntity.setLateFeeEndTime(now);
+                // 转换天
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), now);
+                // 计算滞纳金金额
+                slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
+            }
+
+            // 冻结
+            if (SlippageTypeEnum.FREEZE.getCode().equals(slippageEntity.getType())) {
+                Long endTime = slippageEntity.getLateFeeEndTime();
+                // 没有结束
+                if (ObjectUtils.isEmpty(slippageEntity.getLateFeeEndTime())) {
+                    slippageUpdateEntity.setLateFeeEndTime(now);
+                    endTime = now;
+                }
+                // 转换天
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), endTime.longValue());
+                // 计算滞纳金金额
+                slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
+            }
+            carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
+        });
+
+        // 处理冻结
+        if (ObjectUtils.isNotEmpty(freezeEntity)) {
+            carRentalPackageOrderBizService.enableFreezeRentOrder(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), optUid);
+        }
+
+    }
 
     /**
      * 根据用户ID查询车辆租赁套餐订单未支付的滞纳金金额
