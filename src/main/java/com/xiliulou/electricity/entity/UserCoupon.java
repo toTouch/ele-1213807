@@ -103,6 +103,8 @@ public class UserCoupon {
     //邀请好友活动领取
     public static final Integer TYPE_SOURCE_SHARE_ACTIVITY = 2;
 
+    public static final Integer TYPE_SOURCE_BUY_PACKAGE = 3;
+
     //未使用
     public static final Integer STATUS_UNUSED = 1;
     //已使用

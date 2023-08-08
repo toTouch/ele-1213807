@@ -17,10 +17,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.BatteryMemberCardVO;
-import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
-import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
-import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -345,7 +342,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Objects.isNull(divisionAccountConfig) || !Objects.equals(divisionAccountConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100480", "分帐配置不存在");
         }
-
+        log.error("update DA Status flow start: request parameters = {}", JsonUtil.toJson(divisionAccountConfigQuery));
         //若选择启用的分账设置中套餐信息，在之前已启用的配置中存在，则不允许启用当前设置。
         if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus())) {
             //1. 查询出当前加盟商下所有的已启用的分账套餐信息。
@@ -359,7 +356,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                 //已启用的三级分帐配置
                 divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null, divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
             }
-            Triple<Boolean, String, Object> checkResult = checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfigQuery.getId());
+            Triple<Boolean, String, Object> checkResult = checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfig);
             if(Boolean.FALSE.equals(checkResult.getLeft())){
                 return checkResult;
             }
@@ -374,23 +371,23 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         return Triple.of(true, null, null);
     }
 
-    private Triple<Boolean, String, Object> checkIsExistDAPackages(List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS, Long divisionAccountConfigId){
+    private Triple<Boolean, String, Object> checkIsExistDAPackages(List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS, DivisionAccountConfig divisionAccountConfig){
         if(CollectionUtils.isEmpty(divisionAccountConfigRefVOS)){
             return Triple.of(true, "", null);
         }
 
         //当前分帐配置绑定的套餐
-        List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigId(divisionAccountConfigId);
+        List<DivisionAccountBatteryMemberCardVO> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigIdAndHierarchy(divisionAccountConfig.getId(), divisionAccountConfig.getHierarchy());
         //TODO 排查问题，完成后需要删除
         log.error("check the da status is enable: enable da config info = {}", JsonUtil.toJson(divisionAccountConfigRefVOS));
         log.error("current da config packages: current package info = {}", JsonUtil.toJson(divisionAccountBatteryMembercards));
         for(DivisionAccountConfigRefVO divisionAccountConfigRefVO : divisionAccountConfigRefVOS){
-            for(DivisionAccountBatteryMembercard divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
+            for(DivisionAccountBatteryMemberCardVO divisionAccountBatteryMembercard : divisionAccountBatteryMembercards){
                 //检查设置套餐是否在之前启用的设置套餐中存在
                 log.error("Already enable da package info: old package info = {}, current package info = {}", JsonUtil.toJson(divisionAccountConfigRefVO), JsonUtil.toJson(divisionAccountBatteryMembercard));
                 if(divisionAccountConfigRefVO.getRefId().equals(divisionAccountBatteryMembercard.getRefId())
                         && divisionAccountConfigRefVO.getPackageType().equals(divisionAccountBatteryMembercard.getType())){
-                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getId(), divisionAccountConfigId);
+                    log.error("Already used da config package: old division account config id = {}, current config id = {}", divisionAccountConfigRefVO.getId(), divisionAccountConfig.getId());
                     return Triple.of(false, "", "套餐分帐配置已存在");
                 }
             }

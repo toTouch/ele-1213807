@@ -29,6 +29,24 @@
         where division_account_id = #{id}
     </select>
 
+    <select id="selectMemberCardsByDAConfigIdAndHierarchy" resultType="com.xiliulou.electricity.vo.DivisionAccountBatteryMemberCardVO">
+        select
+            tdabm.id,
+            tdabm.division_account_id,
+            tdabm.ref_id,
+            tdabm.tenant_id,
+            tdabm.type,
+            tdabm.del_flag,
+            tdabm.create_time,
+            tdabm.update_time,
+            tdac.hierarchy,
+            tdac.status
+        from t_division_account_battery_membercard tdabm
+        left join t_division_account_config tdac on tdac.id = tdabm.division_account_id
+        where tdabm.division_account_id = #{id}
+        and tdac.hierarchy = #{hierarchy}
+    </select>
+
     <select id="selectMemberCardsByDAConfigId" resultMap="DivisionAccountBatteryMembercardMap">
         select
         id, division_account_id, ref_id, tenant_id, type, del_flag, create_time, update_time

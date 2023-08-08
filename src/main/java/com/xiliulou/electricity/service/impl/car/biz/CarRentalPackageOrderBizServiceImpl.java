@@ -11,15 +11,16 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
+import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.mq.producer.UserCouponProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
@@ -71,6 +72,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private UserCouponProducer userCouponProducer;
 
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
@@ -1759,7 +1763,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 5.1 用户套餐会员限制状态异常
                     if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                         log.error("buyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                        return R.fail("300002", "租车会员状态异常");
+                        return R.fail("300035", "您有正在审核中流程，不可购买套餐");
                     }
                     // 从会员期限中获取押金金额
                     log.info("buyRentalPackageOrder deposit from memberTerm");
@@ -2228,6 +2232,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+        // 10. 发放优惠券
+        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+            userCouponDTO.setUid(uid);
+            userCouponDTO.setSourceOrderNo(orderNo);
+            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+            userCouponProducer.sendSyncMessage("");
+        }
+
 
         return Pair.of(true, userInfo.getPhone());
     }

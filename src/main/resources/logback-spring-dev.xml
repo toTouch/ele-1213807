@@ -82,6 +82,7 @@
 	<appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="error"/>
 	</appender>
 	
@@ -89,12 +90,14 @@
 	<appender name="ASYNC_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="debug"/>
 	</appender>
 	
 	<appender name="ASYNC_REQUEST" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="request"/>
 	</appender>
 	

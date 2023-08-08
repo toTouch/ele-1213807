@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CarRentalAndRefundProtocolMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.CarRentalAndRefundProtocol" id="CarRentalAndRefundProtocolMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectCarRentalAndRefundProtocol">
+        select id, content, create_time, update_time, tenant_id from t_car_rental_and_refund_protocol
+    </sql>
+
+    <select id="selectProtocolByQuery" resultType="com.xiliulou.electricity.entity.CarRentalAndRefundProtocol">
+        <include refid="selectCarRentalAndRefundProtocol"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.CarRentalAndRefundProtocol" useGeneratedKeys="true" keyProperty="id">
+        insert into t_car_rental_and_refund_protocol
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            content,
+            create_time,
+            update_time,
+            tenant_id,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{content},
+            #{createTime},
+            #{updateTime},
+            #{tenantId},
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_car_rental_and_refund_protocol
+        <set>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_car_rental_and_refund_protocol where id = #{id}
+    </delete>
+
+</mapper>

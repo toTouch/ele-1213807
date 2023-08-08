@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
+import com.xiliulou.electricity.vo.DivisionAccountBatteryMemberCardVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -71,6 +72,8 @@ public interface DivisionAccountBatteryMembercardService {
     List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(Long divisionAccountId);
 
     List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(Long divisionAccountId, Integer type);
+
+    List<DivisionAccountBatteryMemberCardVO> selectMemberCardsByDAConfigIdAndHierarchy(Long id, Integer hierarchy);
 
     Long selectByBatteryMembercardId(Long membercardId);
 
