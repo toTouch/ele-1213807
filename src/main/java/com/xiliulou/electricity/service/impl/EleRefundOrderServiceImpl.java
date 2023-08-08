@@ -2039,4 +2039,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return Pair.of(true, depositOrderNO);
     }
 
+    @Override
+    public List<EleRefundOrder> selectByOrderId(String orderId) {
+        return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
+    }
 }
