@@ -54,6 +54,27 @@ public class JsonAdminUserInfoV2Controller {
     private UserInfoService userInfoService;
 
     /**
+     * 启用冻结套餐订单
+     * @param packageOrderNo 购买订单编号
+     * @return true(成功)、false(失败)
+     */
+    @GetMapping("/enableFreezeRentOrder")
+    public R<Boolean> enableFreezeRentOrder(String packageOrderNo, Long uid) {
+        if (StringUtils.isBlank(packageOrderNo) || ObjectUtils.isEmpty(uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid()));
+    }
+
+    /**
      * 冻结套餐订单
      * @param freezeRentOrderoptReq 请求操作数据模型
      * @return true(成功)、false(失败)
