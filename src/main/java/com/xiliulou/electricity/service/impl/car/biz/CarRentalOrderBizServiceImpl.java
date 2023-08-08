@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -10,7 +12,9 @@ import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RentalTypeEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -31,6 +35,12 @@ import javax.annotation.Resource;
 @Slf4j
 @Service
 public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
+
+    @Resource
+    private ElectricityCarModelService carModelService;
+
+    @Resource
+    private UserInfoService userInfoService;
 
     @Resource
     private CarRentalOrderService carRentalOrderService;
@@ -116,27 +126,84 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 生成租赁订单
-        CarRentalOrderPo carRentalOrderEntity = buildCarRentalOrder(rentalPackageEntity, memberTermEntity, electricityCar, optUid);
+        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, memberTermEntity, electricityCar, optUid);
 
-        // 更改用户租赁状态
-        // 增加车辆型号的已租数量
+        // 生成用户租赁状态
+        UserInfo userInfoUpdate = buildUserInfo(uid);
 
-        bindingCarTx(carRentalOrderEntity);
+        // 构建车辆型号的已租数量
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(electricityCar.getModelId());
+        ElectricityCarModel carModelUpdate = buildElectricityCarModel(carModel);
+
+        // 生成车辆绑定用户信息
+        ElectricityCar electricityCarUpdate = buildElectricityCar(electricityCar, uid);
+
+        // 处理事务层
+        bindingCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate);
+
         return true;
     }
+
 
     /**
      * 用户绑定车辆事务处理
      * @param carRentalOrderEntity 车辆租赁订单
+     * @param userInfo
+     * @param carModelUpdate
+     * @param electricityCarUpdate
      */
     @Transactional(rollbackFor = Exception.class)
-    public void bindingCarTx(CarRentalOrderPo carRentalOrderEntity) {
+    public void bindingCarTx(CarRentalOrderPo carRentalOrderEntity, UserInfo userInfo, ElectricityCarModel carModelUpdate, ElectricityCar electricityCarUpdate) {
         // 生成租赁订单
         carRentalOrderService.insert(carRentalOrderEntity);
         // 更改用户租赁状态
-
+        userInfoService.updateByUid(userInfo);
         // 增加车辆型号的已租数量
+        carModelService.updateById(carModelUpdate);
+        // 更新车辆的归属人
+        carService.update(electricityCarUpdate);
+    }
 
+    /**
+     * 构建车辆更新数据
+     * @param car 原始车辆信息
+     * @return 车辆更新信息
+     */
+    private ElectricityCar buildElectricityCar(ElectricityCar car, Long uid) {
+        ElectricityCar carUpdate = new ElectricityCar();
+        car.setId(car.getId());
+        car.setUid(uid);
+        car.setUpdateTime(System.currentTimeMillis());
+
+        return car;
+    }
+
+    /**
+     * 构建车辆型号更新数据
+     * @param carModel 原始车辆型号信息
+     * @return 车辆型号更新信息
+     */
+    private ElectricityCarModel buildElectricityCarModel(ElectricityCarModel carModel) {
+        ElectricityCarModel carModelUpdate = new ElectricityCarModel();
+        carModelUpdate.setId(carModel.getId());
+        carModelUpdate.setRentedQuantity(carModel.getRentedQuantity() + 1);
+        carModelUpdate.setUpdateTime(System.currentTimeMillis());
+
+        return carModelUpdate;
+    }
+
+    /**
+     * 构建用户更新数据
+     * @param uid 用户UID
+     * @return 用户信息
+     */
+    private UserInfo buildUserInfo(Long uid) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(uid);
+        userInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
+        userInfo.setUpdateTime(System.currentTimeMillis());
+
+        return userInfo;
     }
 
     /**
@@ -148,7 +215,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @return 租赁订单信息
      */
     private CarRentalOrderPo buildCarRentalOrder(CarRentalPackagePo rentalPackageEntity, CarRentalPackageMemberTermPo memberTermEntity, ElectricityCar electricityCar, Long optId) {
-
         CarRentalOrderPo carRentalOrdeEntity = new CarRentalOrderPo();
         carRentalOrdeEntity.setUid(memberTermEntity.getUid());
         carRentalOrdeEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, memberTermEntity.getUid()));
