@@ -223,7 +223,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(userCoupon)) {
             Integer status = userCoupon.getStatus();
             if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status)) {
-                throw new BizException("300016", "订单赠送优惠券状态异常");
+                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
             }
         }
 
@@ -1261,7 +1261,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(userCoupon)) {
             Integer status = userCoupon.getStatus();
             if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
-                throw new BizException("300016", "订单赠送优惠券状态异常");
+                throw new BizException("300016", "您已使用优惠券，该套餐不可退");
             }
         }
 
@@ -2153,14 +2153,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 计算总到期时间
                     Integer tenancy = carRentalPackageOrderEntity.getTenancy();
                     Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-                    long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
+                    long dueTimeTotal = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
                     if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                        dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                        dueTimeTotal = dueTimeTotal + (tenancy * TimeConstant.DAY_MILLISECOND);
                     }
                     if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                        dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                        dueTimeTotal = dueTimeTotal + (tenancy * TimeConstant.MINUTE_MILLISECOND);
                     }
-                    memberTermUpdateEntity.setDueTimeTotal(dueTime);
+                    memberTermUpdateEntity.setDueTimeTotal(dueTimeTotal);
 
                     // 套餐购买总次数
                     memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
@@ -2172,14 +2172,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 计算总到期时间
                 Integer tenancy = carRentalPackageOrderEntity.getTenancy();
                 Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-                long dueTime = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
+                long dueTimeTotal = ObjectUtils.isNotEmpty(memberTermEntity.getDueTimeTotal()) ? memberTermEntity.getDueTimeTotal() : System.currentTimeMillis();
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                    dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                    dueTimeTotal = dueTimeTotal + (tenancy * TimeConstant.DAY_MILLISECOND);
                 }
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
+                    dueTimeTotal = dueTimeTotal + (tenancy * TimeConstant.MINUTE_MILLISECOND);
                 }
-                memberTermUpdateEntity.setDueTimeTotal(dueTime);
+                memberTermUpdateEntity.setDueTimeTotal(dueTimeTotal);
 
                 // 套餐购买总次数
                 memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
@@ -2364,7 +2364,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         carRentalPackageMemberTermEntity.setDueTime(dueTime);
-        carRentalPackageMemberTermEntity.setDueTimeTotal(dueTime);
 
         return carRentalPackageMemberTermEntity;
     }
