@@ -34,7 +34,9 @@ public class CarProtocolServiceImpl implements CarProtocolService {
         query.setTenantId(tenantId);
         CarRentalAndRefundProtocol result = carRentalAndRefundProtocolMapper.selectProtocolByQuery(query);
         CarProtocolVO carProtocolVO = new CarProtocolVO();
-        BeanUtils.copyProperties(result, carProtocolVO);
+        if(Objects.nonNull(result)){
+            BeanUtils.copyProperties(result, carProtocolVO);
+        }
 
         return carProtocolVO;
     }

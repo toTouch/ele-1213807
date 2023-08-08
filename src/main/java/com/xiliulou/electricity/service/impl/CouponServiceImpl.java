@@ -187,6 +187,7 @@ public class CouponServiceImpl implements CouponService {
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
+        coupon.setDays(Integer.parseInt(couponQuery.getValidDays()));
 
         if(Objects.isNull(coupon.getStatus())){
             coupon.setStatus(Coupon.STATUS_OFF);
