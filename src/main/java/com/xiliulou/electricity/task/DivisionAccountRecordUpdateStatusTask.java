@@ -22,7 +22,8 @@ public class DivisionAccountRecordUpdateStatusTask extends IJobHandler  {
     private DivisionAccountRecordService divisionAccountRecordService;
 
     /**
-     * 更新分账记录表中超过七天没有退租且分账状态为冻结状态的记录。
+     * 更新分账记录表中超过七天没有退租且分账状态为冻结状态的记录，每天凌晨一点执行一次。
+     *
      * @param s
      * @return
      * @throws Exception
