@@ -1537,7 +1537,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
 
-        // 6. 查询用户保险信息，志龙
+        // 6. 查询用户保险信息
         Integer rentalPackageType = memberTerm.getRentalPackageType();
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
 
@@ -1587,8 +1587,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(insuranceUserInfoVo)) {
             UserInsuranceVO userInsuranceVo = new UserInsuranceVO();
             userInsuranceVo.setInsuranceName(insuranceUserInfoVo.getInsuranceName());
-            userInsuranceVo.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
             userInsuranceVo.setPremium(insuranceUserInfoVo.getPremium());
+            userInsuranceVo.setIsUse(insuranceUserInfoVo.getIsUse());
+            userInsuranceVo.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
+            userInsuranceVo.setForehead(insuranceUserInfoVo.getForehead());
+            userInsuranceVo.setType(insuranceUserInfoVo.getType());
             rentalPackageVO.setUserInsurance(userInsuranceVo);
         }
 
@@ -1747,12 +1750,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
             if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0 && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
-                log.error("buyRentalPackageOrder failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-                throw new BizException("100235", "未找到用户的第三方授权信息");
+                log.error("buyRentalPackageOrder failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), buyOptModel.getFranchiseeId());
+                throw new BizException("300036", "所属机构不匹配");
             }
             if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0 && !userStoreId.equals(userInfo.getStoreId())) {
-                log.error("buyRentalPackageOrder failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-                throw new BizException("100235", "未找到用户的第三方授权信息");
+                log.error("buyRentalPackageOrder failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), buyOptModel.getStoreId());
+                throw new BizException("300036", "所属机构不匹配");
             }
 
             Integer rentalPackageConfine = null;
