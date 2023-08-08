@@ -72,7 +72,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             // 查询会员详情
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-                log.error("clearSlippage, not found t_car_rental_package_member_term. uid is {}", uid);
+                log.error("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
                 throw new BizException("300000", "数据有误");
             }
 
