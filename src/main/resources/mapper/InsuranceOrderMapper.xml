@@ -131,4 +131,8 @@
         update t_insurance_order set is_use=#{isUse},update_time=#{updateTime} where order_id=#{orderId} and tenant_id=#{tenantId}
     </update>
 
+    <update id="updateUseStatusByOrderId">
+        update t_insurance_order set is_use=#{useStatus},update_time=UNIX_TIMESTAMP()*1000 where order_id=#{orderId}
+    </update>
+
 </mapper>

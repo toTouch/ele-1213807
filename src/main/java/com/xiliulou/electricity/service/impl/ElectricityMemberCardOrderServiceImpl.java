@@ -3774,6 +3774,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public Integer batchUpdateStatusByOrderNo(List<String> orderIds, Integer useStatus) {
+        if(CollectionUtils.isEmpty(orderIds)){
+            return NumberConstant.ZERO;
+        }
+        return this.baseMapper.batchUpdateStatusByOrderNo(orderIds,useStatus);
+    }
+
+    @Override
     public Integer checkOrderByMembercardId(Long membercardId) {
         return baseMapper.checkOrderByMembercardId(membercardId);
     }
