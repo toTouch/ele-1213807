@@ -28,4 +28,9 @@ public class FreezeRentOrderOptReq implements Serializable {
      * 申请理由
      */
     private String applyReason;
+
+    /**
+     * 用户ID
+     */
+    private Long uid;
 }

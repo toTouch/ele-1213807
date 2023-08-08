@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
@@ -87,9 +88,11 @@ public interface CarRentalPackageOrderBizService {
      * @param packageOrderNo 套餐购买订单编号
      * @param applyTerm 申请期限(天)
      * @param applyReason 申请理由
+     * @param systemDefinitionEnum 操作系统
+     * @param optUid 操作人ID
      * @return
      */
-    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason);
+    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid);
 
     /**
      * 根据用户ID及订单编码，退租购买的订单申请

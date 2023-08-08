@@ -77,5 +77,8 @@ public class InsuranceUserInfoVo {
      */
     private Long payInsuranceTime;
 
-
+    /**
+     * 保险类型
+     */
+    private Integer type;
 }
