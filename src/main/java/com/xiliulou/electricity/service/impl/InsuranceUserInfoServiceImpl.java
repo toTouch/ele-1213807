@@ -211,7 +211,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
 
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceUserInfoVo.getOrderId());
-        insuranceUserInfoVo.setPayInsuranceTime(Objects.isNull(insuranceOrder) ? null : insuranceOrder.getCreateTime());
+        if(Objects.nonNull(insuranceOrder)){
+            insuranceUserInfoVo.setPayInsuranceTime(insuranceOrder.getCreateTime());
+        }
 
         return insuranceUserInfoVo;
     }
