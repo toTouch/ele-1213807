@@ -337,6 +337,21 @@ public interface CacheConstant {
     String CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY = "cache_division_account_package_refund_key:";
 
     /**
+     * 购买套餐是处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY = "cache_handle_activity_package_purchase_key:";
+
+    /**
+     * 实名认证后处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY = "cache_handle_activity_real_name_auth_key:";
+
+    /**
+     * 购买套餐后发放优惠券给用户缓存锁
+     */
+    String CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY = "cache_send_coupon_package_purchase_key:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";

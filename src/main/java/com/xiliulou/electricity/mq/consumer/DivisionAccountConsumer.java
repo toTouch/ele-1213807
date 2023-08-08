@@ -26,7 +26,7 @@ import java.util.Objects;
 @RocketMQMessageListener(topic = MqProducerConstant.DIVISION_ACCOUNT_COMMON_TOPIC, consumerGroup = MqConsumerConstant.DIVISION_ACCOUNT_COMMON_CONSUMER_GROUP)
 public class DivisionAccountConsumer implements RocketMQListener<String> {
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("DIVISION_ACCOUNT_CONSUMER_POOL", 5, "division_account_thread");
+    //XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("DIVISION_ACCOUNT_CONSUMER_POOL", 5, "division_account_thread");
 
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
@@ -41,13 +41,17 @@ public class DivisionAccountConsumer implements RocketMQListener<String> {
 
             //同步处理分账业务
             if(DivisionAccountRecord.TYPE_PURCHASE.equals(divisionAccountOrderDTO.getDivisionAccountType())){
-                executorService.execute(() -> {
+                /*executorService.execute(() -> {
                     divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
-                });
+                });*/
+                //使用MQ自身线程池消费消息，无需再开一个线程去处理。
+                divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
+
             }else if(DivisionAccountRecord.TYPE_REFUND.equals(divisionAccountOrderDTO.getDivisionAccountType())){
-                executorService.execute(() -> {
+                /*executorService.execute(() -> {
                     divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
-                });
+                });*/
+                divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
             }
         } catch (Exception e){
             log.error("Division account consumer error! msg = {}", message, e);

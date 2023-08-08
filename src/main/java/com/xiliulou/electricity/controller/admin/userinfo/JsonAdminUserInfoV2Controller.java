@@ -4,19 +4,24 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
+import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.electricity.vo.userinfo.UserInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +43,9 @@ import java.util.stream.Collectors;
 public class JsonAdminUserInfoV2Controller {
 
     @Resource
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+
+    @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     @Resource
@@ -47,6 +56,73 @@ public class JsonAdminUserInfoV2Controller {
 
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 清空滞纳金
+     * @param uid 用户UID
+     * @return
+     */
+    @GetMapping("/clearSlippage")
+    public R<Boolean> clearSlippage(Long uid) {
+        if (ObjectUtils.isEmpty(uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRenalPackageSlippageBizService.clearSlippage(tenantId, uid, user.getUid()));
+    }
+
+    /**
+     * 启用冻结套餐订单
+     * @param packageOrderNo 购买订单编号
+     * @return true(成功)、false(失败)
+     */
+    @GetMapping("/enableFreezeRentOrder")
+    public R<Boolean> enableFreezeRentOrder(String packageOrderNo, Long uid) {
+        if (StringUtils.isBlank(packageOrderNo) || ObjectUtils.isEmpty(uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid()));
+    }
+
+    /**
+     * 冻结套餐订单
+     * @param freezeRentOrderoptReq 请求操作数据模型
+     * @return true(成功)、false(失败)
+     */
+    @PostMapping("/freezeRentOrder")
+    public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderOptReq freezeRentOrderoptReq) {
+        if (!ObjectUtils.allNotNull(freezeRentOrderoptReq, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyTerm())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getPackageOrderNo(), freezeRentOrderoptReq.getApplyTerm(),
+                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid());
+
+        return R.ok(freezeFlag);
+
+    }
 
     /**
      * 获取会员的全量信息

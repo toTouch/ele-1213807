@@ -683,41 +683,57 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sendCouponToUser(UserCouponDTO userCouponDTO) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Long uid = userCouponDTO.getUid();
-        Long couponId = userCouponDTO.getCouponId();
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if(Objects.isNull(userInfo)){
-            log.error("send coupon failed! not found user,uid = {}",uid);
-            return;
+        String lockValue = userCouponDTO.getSourceOrderNo() + "_" + userCouponDTO.getCouponId() + "_" + userCouponDTO.getUid();
+        if (!redisService
+                .setNx(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue, lockValue, 10 * 1000L, false)) {
+            log.error("Handle activity for real name auth error, operations frequently, uid = {}", userCouponDTO.getUid());
         }
 
-        Coupon coupon = couponService.queryByIdFromCache(couponId.intValue());
-        if (Objects.isNull(coupon)) {
-            log.error("query coupon issue! not found coupon ! couponId = {} ", couponId);
-            return;
+        try{
+
+            Integer tenantId = TenantContextHolder.getTenantId();
+            Long uid = userCouponDTO.getUid();
+            Long couponId = userCouponDTO.getCouponId();
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if(Objects.isNull(userInfo)){
+                log.error("send coupon failed! not found user,uid = {}",uid);
+                return;
+            }
+
+            Coupon coupon = couponService.queryByIdFromCache(couponId.intValue());
+            if (Objects.isNull(coupon)) {
+                log.error("query coupon issue! not found coupon ! couponId = {} ", couponId);
+                return;
+            }
+
+            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                    .name(coupon.getName())
+                    .source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE)
+                    .couponId(coupon.getId())
+                    .discountType(coupon.getDiscountType())
+                    .status(UserCoupon.STATUS_UNUSED)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(coupon.getTenantId())
+                    .uid(uid)
+                    .phone(userInfo.getPhone())
+                    .sourceOrderId(userCouponDTO.getSourceOrderNo());
+
+            //优惠券过期时间
+            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+            couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+
+            UserCoupon userCoupon = couponBuild.build();
+            userCouponMapper.insert(userCoupon);
+
+        }catch (Exception e){
+            log.error("Send coupon to user for purchase package error, uid = {}, coupon id = {}, source order number = {}", userCouponDTO.getUid(), userCouponDTO.getCouponId(), userCouponDTO.getSourceOrderNo(), e);
+            throw new BizException("200000", e.getMessage());
+        }finally {
+            redisService.delete(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue);
         }
-
-        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
-                .name(coupon.getName())
-                .source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE)
-                .couponId(coupon.getId())
-                .discountType(coupon.getDiscountType())
-                .status(UserCoupon.STATUS_UNUSED)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(coupon.getTenantId())
-                .uid(uid)
-                .phone(userInfo.getPhone())
-                .sourceOrderId(userCouponDTO.getSourceOrderNo());
-
-        //优惠券过期时间
-        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
-        couponBuild.deadline(TimeUtils.convertTimeStamp(now));
-
-        UserCoupon userCoupon = couponBuild.build();
-        userCouponMapper.insert(userCoupon);
 
     }
 }

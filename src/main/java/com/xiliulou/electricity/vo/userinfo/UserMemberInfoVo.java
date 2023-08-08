@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -45,6 +46,21 @@ public class UserMemberInfoVo implements Serializable {
      * 当前余量
      */
     private Long residue;
+
+    /**
+     * 状态
+     * <pre>
+     *     -1-已过期
+     *     0-待生效
+     *     1-正常
+     *     2-申请冻结
+     *     3-冻结
+     *     4-申请退押
+     *     5-申请退租
+     * </pre>
+     * @see MemberTermStatusEnum
+     */
+    private Integer status;
 
     /**
      * 租车套餐名称

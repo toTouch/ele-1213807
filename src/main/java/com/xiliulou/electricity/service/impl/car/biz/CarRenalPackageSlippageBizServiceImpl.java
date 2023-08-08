@@ -28,6 +28,30 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
 
     /**
+     * 清除滞纳金
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param optUid   操作用户ID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean clearSlippage(Integer tenantId, Long uid, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, optUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询名下当前所有类型的未支付、支付失败的逾期订单
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(slippageEntityList)) {
+            log.info("clearSlippage, not found t_car_rental_package_order_slippage");
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * 根据用户ID查询车辆租赁套餐订单未支付的滞纳金金额
      *
      * @param tenantId 租户ID
