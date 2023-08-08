@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.UserCouponQuery;
 
@@ -80,5 +81,5 @@ public interface UserCouponService {
 
     UserCoupon selectBySourceOrderId(String orderId);
 
-    void sendCouponToUser(Long uid, Long couponId);
+    void sendCouponToUser(UserCouponDTO userCouponDTO);
 }

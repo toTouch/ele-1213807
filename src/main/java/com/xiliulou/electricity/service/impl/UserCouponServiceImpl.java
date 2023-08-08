@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -680,8 +681,11 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
-    public void sendCouponToUser(Long uid, Long couponId) {
+    @Transactional(rollbackFor = Exception.class)
+    public void sendCouponToUser(UserCouponDTO userCouponDTO) {
         Integer tenantId = TenantContextHolder.getTenantId();
+        Long uid = userCouponDTO.getUid();
+        Long couponId = userCouponDTO.getCouponId();
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if(Objects.isNull(userInfo)){
@@ -705,7 +709,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(coupon.getTenantId())
                 .uid(uid)
-                .phone(userInfo.getPhone());
+                .phone(userInfo.getPhone())
+                .sourceOrderId(userCouponDTO.getSourceOrderNo());
 
         //优惠券过期时间
         LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
