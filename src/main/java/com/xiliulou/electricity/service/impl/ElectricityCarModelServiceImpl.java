@@ -65,6 +65,20 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     ElectricityConfigService electricityConfigService;
 
     /**
+     * 根据主键ID进行更新
+     *
+     * @param carModel
+     * @return
+     */
+    @Override
+    public boolean updateById(ElectricityCarModel carModel) {
+        if (ObjectUtils.isEmpty(carModel) || ObjectUtils.isEmpty(carModel.getId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCarModelMapper.updateById(carModel) >= 0;
+    }
+
+    /**
      * 根据门店ID集，获取指定数量的数据，已租数量降序
      *
      * @param size        取值范围
