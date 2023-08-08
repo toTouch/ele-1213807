@@ -1356,31 +1356,27 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 退款规则
             // 0. 计算剩余租期
             long nowTime = System.currentTimeMillis();
-            long useBeginTime = packageOrderEntity.getUseBeginTime().longValue();
+            long useBeginTime = packageOrderEntity.getUseBeginTime();
             if (RentalUnitEnum.DAY.getCode().equals(packageOrderEntity.getTenancyUnit())) {
                 // 已使用天数
-                long diffDay = DateUtils.diffDay(useBeginTime, nowTime);
-                // 剩余租期
-                tenancyResidue = packageOrderEntity.getTenancy() - diffDay;
+                tenancyResidue = DateUtils.diffDay(useBeginTime, nowTime);
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
                 // 已使用分钟数
-                long diffMinute = DateUtils.diffMinute(useBeginTime, nowTime);
-                // 剩余租期
-                tenancyResidue = packageOrderEntity.getTenancy() - diffMinute;
+                tenancyResidue = DateUtils.diffMinute(useBeginTime, nowTime);
             }
 
             // 1. 若限制次数，则根据次数计算退款金额
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
                 // 查询当前套餐的余量
-                long residue = memberTermEntity.getResidue().longValue();
+                long residue = memberTermEntity.getResidue();
                 // 余量为 0，则退款金额为 0
                 if (residue == 0) {
                     refundAmount = BigDecimal.ZERO;
                 } else{
-                    // 余量非 0
-                    confineResidue = packageOrderEntity.getConfineNum().longValue() - residue;
+                    // 已使用数量
+                    confineResidue = packageOrderEntity.getConfineNum() - residue;
                     refundAmount = diffAmount(confineResidue, packageOrderEntity.getRentUnitPrice(), rentPayment);
                 }
             }

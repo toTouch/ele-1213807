@@ -134,6 +134,9 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="isRefund != null">
+                and is_refund = #{isRefund}
+            </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>

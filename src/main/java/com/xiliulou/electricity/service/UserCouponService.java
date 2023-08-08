@@ -23,11 +23,11 @@ public interface UserCouponService {
     List<UserCoupon> listByIds(List<Long> idList);
 
     /**
-     * 根据订单编码作废掉未使用的优惠券
-     * @param orderId 订单编码
+     * 根据来源订单编码作废掉未使用的优惠券
+     * @param sourceOrderId 来源订单编码
      * @return true(成功)、false(失败)
      */
-    boolean cancelByOrderIdAndUnUse(String orderId);
+    boolean cancelBySourceOrderIdAndUnUse(String sourceOrderId);
 
     /**
      * 根据订单编码更新优惠券状态
