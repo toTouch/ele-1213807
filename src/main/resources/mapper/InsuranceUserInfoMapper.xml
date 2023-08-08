@@ -58,6 +58,7 @@
 
     <select id="selectUserInsuranceList" resultType="com.xiliulou.electricity.entity.InsuranceUserInfo">
         select id,  uid,  franchisee_id,  premium,  forehead,  insurance_id,  insurance_order_id,  insurance_expire_time,  is_use,  tenant_id,  type from t_insurance_user_info
+        where del_flag=0 and is_use=0
         limit #{offset},#{size}
     </select>
 
