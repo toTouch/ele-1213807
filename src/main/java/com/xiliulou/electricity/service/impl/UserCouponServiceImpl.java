@@ -102,18 +102,18 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     /**
-     * 根据订单编码作废掉未使用的优惠券
+     * 根据来源订单编码作废掉未使用的优惠券
      *
-     * @param orderId     订单编码
+     * @param sourceOrderId     订单编码
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean cancelByOrderIdAndUnUse(String orderId) {
-        if (!ObjectUtils.allNotNull(orderId)) {
+    public boolean cancelBySourceOrderIdAndUnUse(String sourceOrderId) {
+        if (!ObjectUtils.allNotNull(sourceOrderId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        int num = userCouponMapper.cancelByOrderIdAndUnUse(orderId, System.currentTimeMillis());
+        int num = userCouponMapper.cancelBySourceOrderIdAndUnUse(sourceOrderId, System.currentTimeMillis());
 
         return num >= 0;
     }

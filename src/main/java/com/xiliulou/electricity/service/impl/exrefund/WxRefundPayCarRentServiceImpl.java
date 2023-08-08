@@ -143,7 +143,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 carRentalPackageOrderService.updateUseStateById(packageOrderEntity.getId(), UseStateEnum.RETURNED.getCode(), null);
 
                 // 4. 作废掉赠送给用户的优惠券
-                userCouponService.cancelByOrderIdAndUnUse(orderNo);
+                userCouponService.cancelBySourceOrderIdAndUnUse(orderNo);
 
                 // 5. 异步处理分账
                 DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
