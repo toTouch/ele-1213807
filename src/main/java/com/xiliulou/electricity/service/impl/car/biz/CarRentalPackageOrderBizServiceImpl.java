@@ -1098,7 +1098,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 更新会员状态
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.APPLY_FREEZE.getCode(), uid);
 
-        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum)) {
+        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode())) {
             approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid);
         }
 
