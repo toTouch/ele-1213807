@@ -315,11 +315,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer userTenantId = userInfo.getTenantId();
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
-            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0) {
-                userFranchiseeId = userInfo.getFranchiseeId();
+
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
+                log.error("bindingPackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), buyOptModel.getFranchiseeId());
+                throw new BizException("300036", "所属机构不匹配");
             }
-            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0) {
-                userStoreId = userInfo.getStoreId();
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId().intValue())) {
+                log.error("bindingPackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), buyOptModel.getStoreId());
+                throw new BizException("300036", "所属机构不匹配");
             }
 
             // 5. 获取租车套餐会员期限信息
@@ -1762,11 +1765,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer userTenantId = userInfo.getTenantId();
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
-            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0 && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
                 log.error("buyRentalPackageOrder failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), buyOptModel.getFranchiseeId());
                 throw new BizException("300036", "所属机构不匹配");
             }
-            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0 && !userStoreId.equals(userInfo.getStoreId())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId())) {
                 log.error("buyRentalPackageOrder failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), buyOptModel.getStoreId());
                 throw new BizException("300036", "所属机构不匹配");
             }

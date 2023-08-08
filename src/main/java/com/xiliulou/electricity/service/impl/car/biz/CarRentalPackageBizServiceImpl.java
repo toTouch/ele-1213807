@@ -122,11 +122,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
         }
 
-        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0 && !franchiseeId.equals(userInfo.getFranchiseeId())) {
+        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !franchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
             log.error("queryCanPurchasePackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), qryReq.getFranchiseeId());
             throw new BizException("300036", "所属机构不匹配");
         }
-        if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0 && !storeId.equals(userInfo.getStoreId())) {
+        if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !storeId.equals(userInfo.getStoreId().intValue())) {
             log.error("queryCanPurchasePackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), qryReq.getStoreId());
             throw new BizException("300036", "所属机构不匹配");
         }
