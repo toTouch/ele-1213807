@@ -772,7 +772,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
-        if (!(Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()))) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
 
