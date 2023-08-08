@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
  * @Description:
  */
 @Data
-
 public class CarProtocolQuery {
 
     private Long id;

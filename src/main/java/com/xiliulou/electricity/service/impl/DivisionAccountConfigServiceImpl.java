@@ -349,13 +349,19 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             //2. 根据分账id 查询分账套餐记录表中关联的套餐信息。
             //3. 比对1中套餐信息是否在2中的结果中存在，比较条件为套餐refId和type. 如果这两个条件均满足，则判断为存在。
             List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = null;
-            if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfig.getHierarchy())) {
+
+            //TODO 待移除 3.0版本中查询套餐是否已经被启用时，不再区分二级或者三级分账。只要当前待启用的分账设置中已有的套餐包含在已经启用的套餐中，则禁止启用。
+            /*if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfig.getHierarchy())) {
                 //已启用的二级分帐配置
                 divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null,null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
             } else {
                 //已启用的三级分帐配置
                 divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null, divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
-            }
+            }*/
+
+            //查询当前运营商下已经启用的分账配置及套餐信息
+            divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigWithPackage(null,null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
+
             Triple<Boolean, String, Object> checkResult = checkIsExistDAPackages(divisionAccountConfigRefVOS, divisionAccountConfig);
             if(Boolean.FALSE.equals(checkResult.getLeft())){
                 return checkResult;

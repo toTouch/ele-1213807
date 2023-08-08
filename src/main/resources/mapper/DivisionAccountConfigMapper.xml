@@ -240,22 +240,23 @@
         </if>
     </select>
 
+    <!-- 查询已经启用的分账设置及包含的套餐信息 -->
     <select id="selectDivisionAccountConfigWithPackage" resultType="com.xiliulou.electricity.vo.DivisionAccountConfigRefVO">
         SELECT
-        dac.id,
-        dac.name,
-        dac.type,
-        dac.hierarchy,
-        dac.franchisee_id,
-        dac.store_id,
-        dac.operator_rate,
-        dac.franchisee_rate,
-        dac.operator_rate_other,
-        dac.franchisee_rate_other,
-        dac.store_rate,
-        dac.status,
-        dabm.type as packageType,
-        dabm.ref_id
+            dac.id,
+            dac.name,
+            dac.type,
+            dac.hierarchy,
+            dac.franchisee_id,
+            dac.store_id,
+            dac.operator_rate,
+            dac.franchisee_rate,
+            dac.operator_rate_other,
+            dac.franchisee_rate_other,
+            dac.store_rate,
+            dac.status,
+            dabm.type as packageType,
+            dabm.ref_id
         FROM t_division_account_config dac
         left join t_division_account_battery_membercard dabm on dac.id = dabm.division_account_id
         WHERE dac.del_flag = 0 and dac.status = 0

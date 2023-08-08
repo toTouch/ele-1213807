@@ -692,7 +692,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         try{
 
-            Integer tenantId = TenantContextHolder.getTenantId();
+            //Integer tenantId = TenantContextHolder.getTenantId();
             Long uid = userCouponDTO.getUid();
             Long couponId = userCouponDTO.getCouponId();
 
