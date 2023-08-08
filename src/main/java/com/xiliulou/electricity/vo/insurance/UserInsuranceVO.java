@@ -70,5 +70,13 @@ public class UserInsuranceVO implements Serializable {
      */
     private Long payInsuranceTime;
 
+    /**
+     * 保险类型
+     * 0-电
+     * 1-车
+     * 2-车电
+     */
+    private Integer type;
+
 
 }
