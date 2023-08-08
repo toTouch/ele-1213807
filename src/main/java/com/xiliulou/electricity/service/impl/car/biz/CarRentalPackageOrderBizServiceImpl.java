@@ -1580,7 +1580,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
         rentalPackageVO.setStatus(memberTerm.getStatus());
         // 判定是否过期
-        if (memberTerm.getDueTimeTotal() <= System.currentTimeMillis()) {
+        if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
+                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue().longValue() <= 0L)) {
             rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
 

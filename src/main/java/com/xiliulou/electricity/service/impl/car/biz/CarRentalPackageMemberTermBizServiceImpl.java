@@ -180,6 +180,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setDueTime(memberTermEntity.getDueTime());
         userMemberInfoVo.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setStatus(memberTermEntity.getStatus());
         userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
         userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
         userMemberInfoVo.setStoreName(storeEntity.getName());

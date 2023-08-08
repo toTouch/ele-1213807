@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
@@ -42,6 +43,9 @@ import java.util.stream.Collectors;
 public class JsonAdminUserInfoV2Controller {
 
     @Resource
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+
+    @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     @Resource
@@ -52,6 +56,27 @@ public class JsonAdminUserInfoV2Controller {
 
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 清空滞纳金
+     * @param uid 用户UID
+     * @return
+     */
+    @GetMapping("/clearSlippage")
+    public R<Boolean> clearSlippage(Long uid) {
+        if (ObjectUtils.isEmpty(uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRenalPackageSlippageBizService.clearSlippage(tenantId, uid, user.getUid()));
+    }
 
     /**
      * 启用冻结套餐订单
