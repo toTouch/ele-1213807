@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
@@ -753,6 +754,33 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         userBatteryDepositVO.setDepositType(userBatteryDeposit.getDepositType());
 
         return R.ok(userBatteryDepositVO);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId) {
+        EleDepositOrder eleDepositOrder = this.queryByOrderId(orderId);
+        if (Objects.isNull(eleDepositOrder) || !Objects.equals(eleDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "", "押金订单不存在");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!(Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()))) {
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        if (!CollectionUtils.isEmpty(eleRefundOrderService.selectByOrderId(orderId))) {
+            return Triple.of(false, "ELECTRICITY.0042", "订单已退押金");
+        }
+
+        return Triple.of(true, null, insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY));
     }
 
     @Slave

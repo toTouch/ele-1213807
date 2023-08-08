@@ -82,4 +82,6 @@ public interface EleDepositOrderService {
     BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds);
 
     R selectUserBatteryDeposit();
+
+    Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId);
 }

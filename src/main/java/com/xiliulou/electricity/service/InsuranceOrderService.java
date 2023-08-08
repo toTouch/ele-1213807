@@ -50,4 +50,6 @@ public interface InsuranceOrderService {
     Triple<Boolean, String, Object> handleRentBatteryInsurance(Integer insuranceId, UserInfo userInfo);
 
     List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery);
+
+    Integer updateUseStatusByOrderId(String insuranceOrderId, Integer useStatus);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
@@ -36,7 +37,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleDepositOrderController {
+public class JsonAdminEleDepositOrderController extends BaseController {
     /**
      * 服务对象
      */
@@ -256,6 +257,18 @@ public class JsonAdminEleDepositOrderController {
         return eleDepositOrderService.adminPayRentCarDeposit(rentCarDepositAdd);
 
     }
+
+    /**
+     * 查询用户押金是否可退，以及保险信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping(value = "/admin/eleDepositOrder/queryDepositDetail/{orderId}")
+    public R queryDepositAndInsuranceDetail(@PathVariable("orderId") String orderId) {
+
+        return returnTripleResult(eleDepositOrderService.queryDepositAndInsuranceDetail(orderId));
+    }
+
 
 
 }

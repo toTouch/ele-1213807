@@ -69,4 +69,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     Integer checkOrderByMembercardId(@Param("membercardId") Long membercardId);
 
     Integer updateStatusByOrderNo(ElectricityMemberCardOrder memberCardOrder);
+
+    Integer batchUpdateStatusByOrderNo(@Param("orderIds") List<String> orderIds, @Param("useStatus") Integer useStatus);
 }

@@ -113,4 +113,6 @@ public interface EleRefundOrderService {
     
     Triple<Boolean, String, Object> carFreeDepostRefundAudit(Long id, String errMsg, Integer status,
             BigDecimal refundAmount);
+
+    List<EleRefundOrder> selectByOrderId(String orderId);
 }

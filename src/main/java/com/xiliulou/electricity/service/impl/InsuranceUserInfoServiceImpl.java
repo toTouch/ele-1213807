@@ -9,7 +9,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
@@ -209,6 +208,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
+
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceUserInfoVo.getOrderId());
+        insuranceUserInfoVo.setPayInsuranceTime(Objects.isNull(insuranceOrder) ? null : insuranceOrder.getCreateTime());
 
         return insuranceUserInfoVo;
     }

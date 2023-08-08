@@ -109,6 +109,8 @@ public interface UserBatteryMemberCardService {
 
     List<UserBatteryMemberCard> selectList(int offset, int size);
 
+    List<String> selectUserBatteryMemberCardOrder(Long uid);
+
     List<UserBatteryMemberCard> selectUseableList(int offset, int size);
 
     Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);

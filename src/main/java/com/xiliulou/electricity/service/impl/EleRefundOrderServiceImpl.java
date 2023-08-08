@@ -123,6 +123,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
+
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
     /**
      * 新增数据
      *
@@ -272,6 +278,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
+
+                //更新用户套餐订单为已失效
+                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
     
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
@@ -282,6 +291,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    //更新用户保险订单为已失效
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 //退押金解绑用户所属加盟商
@@ -588,6 +599,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
             userBatteryService.deleteByUid(userInfo.getUid());
@@ -595,7 +609,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
+
+                //更新用户保险订单为已失效
+                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
+
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
 
             return Triple.of(true, "", "免押解冻成功");
@@ -1111,6 +1129,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
             userBatteryService.deleteByUid(userInfo.getUid());
@@ -1118,6 +1139,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
+
+                //更新用户保险订单为已失效
+                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
 
             //退押金解绑用户所属加盟商
@@ -1393,6 +1417,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
+        //更新用户套餐订单为已失效
+        electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+
         userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
         userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
         userBatteryService.deleteByUid(userInfo.getUid());
@@ -1400,6 +1427,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(insuranceUserInfo)) {
             insuranceUserInfoService.deleteById(insuranceUserInfo);
+
+            //更新用户保险订单为已失效
+            insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
         }
 
         //退押金解绑用户所属加盟商
@@ -1635,16 +1665,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("admin payRentCarDeposit  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
@@ -1730,7 +1758,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
-
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderService.insert(eleRefundOrder);
@@ -1740,7 +1767,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-    
+
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
@@ -1750,6 +1780,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
+                //更新用户保险订单为已失效
+                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
 
             userInfoService.unBindUserFranchiseeId(uid);
@@ -2039,4 +2071,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return Pair.of(true, depositOrderNO);
     }
 
+    @Override
+    public List<EleRefundOrder> selectByOrderId(String orderId) {
+        return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
+    }
 }
