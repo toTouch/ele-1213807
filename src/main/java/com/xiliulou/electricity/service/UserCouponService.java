@@ -79,4 +79,6 @@ public interface UserCouponService {
     Integer updateUserCouponStatus(UserCoupon userCoupon);
 
     UserCoupon selectBySourceOrderId(String orderId);
+
+    void sendCouponToUser(Long uid, Long couponId);
 }
