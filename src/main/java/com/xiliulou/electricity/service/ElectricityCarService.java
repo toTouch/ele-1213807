@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
 
 import java.util.List;
 
@@ -72,8 +73,18 @@ public interface ElectricityCarService {
 
     R queryCount(ElectricityCarQuery electricityCarQuery);
 
+    /**
+     * 废弃此方法 <br />
+     * 替代方法：{@link CarRentalOrderBizServiceImpl#unBindingCar}
+     */
+    @Deprecated
     R bindUser(ElectricityCarBindUser electricityCarBindUser);
 
+    /**
+     * 废弃此方法 <br />
+     * 替代方法：{@link CarRentalOrderBizServiceImpl#bindingCar}
+     */
+    @Deprecated
     R unBindUser(ElectricityCarBindUser electricityCarBindUser);
 
     ElectricityCar queryInfoByUid(Long uid);
