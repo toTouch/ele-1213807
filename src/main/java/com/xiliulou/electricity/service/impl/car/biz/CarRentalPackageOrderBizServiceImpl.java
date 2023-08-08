@@ -1746,11 +1746,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer userTenantId = userInfo.getTenantId();
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
-            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0) {
-                userFranchiseeId = userInfo.getFranchiseeId();
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0 && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
+                log.error("buyRentalPackageOrder failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
+                throw new BizException("100235", "未找到用户的第三方授权信息");
             }
-            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0) {
-                userStoreId = userInfo.getStoreId();
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0 && !userStoreId.equals(userInfo.getStoreId())) {
+                log.error("buyRentalPackageOrder failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
+                throw new BizException("100235", "未找到用户的第三方授权信息");
             }
 
             Integer rentalPackageConfine = null;
@@ -1947,9 +1949,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 2）保险处理
             InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(userInfo, buyInsurance, payType);
-            if (ObjectUtils.isNotEmpty(insuranceOrderInsertEntity)) {
-                insuranceOrderService.insert(insuranceOrderInsertEntity);
-            }
             // 保险费用
             BigDecimal insuranceAmount = ObjectUtils.isNotEmpty(buyInsurance) ? buyInsurance.getPremium() : BigDecimal.ZERO;
 
@@ -1977,6 +1976,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 赋值保险订单来源订单编码
             if (ObjectUtils.isNotEmpty(insuranceOrderInsertEntity)) {
                 insuranceOrderInsertEntity.setSourceOrderNo(carRentalPackageOrder.getOrderNo());
+                insuranceOrderService.insert(insuranceOrderInsertEntity);
             }
 
             // 5）租车套餐会员期限处理
