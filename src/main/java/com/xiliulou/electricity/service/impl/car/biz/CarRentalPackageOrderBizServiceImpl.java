@@ -1074,10 +1074,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 生成冻结申请
         Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime().longValue(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
-        CarRentalPackageOrderFreezePo freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue, applyReason, systemDefinitionEnum, optUid);
+        CarRentalPackageOrderFreezePo freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue, applyReason, optUid);
 
         // TX 事务
-        saveFreezeInfoTx(freezeEntity, tenantId, uid, optUid);
+        saveFreezeInfoTx(freezeEntity, tenantId, uid, optUid, systemDefinitionEnum);
 
         return true;
     }
@@ -1089,15 +1089,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param optUid 操作用户ID
+     * @param systemDefinitionEnum 操作系统
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveFreezeInfoTx(CarRentalPackageOrderFreezePo freezeEntity, Integer tenantId, Long uid, Long optUid) {
+    public void saveFreezeInfoTx(CarRentalPackageOrderFreezePo freezeEntity, Integer tenantId, Long uid, Long optUid, SystemDefinitionEnum systemDefinitionEnum) {
         // 保存冻结记录
         carRentalPackageOrderFreezeService.insert(freezeEntity);
         // 更新会员状态
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.APPLY_FREEZE.getCode(), uid);
 
-        if (RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(freezeEntity.getStatus())) {
+        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum)) {
             approveFreezeRentOrder(freezeEntity.getOrderNo(), true, null, optUid);
         }
 
@@ -1109,11 +1110,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param packageOrderEntity 套餐购买订单
      * @param applyTerm 申请期限(天)
      * @param residue 余量
-     * @param systemDefinitionEnum 操作系统
      * @param optUid 操作用户ID
      * @return
      */
-    private CarRentalPackageOrderFreezePo buildCarRentalPackageOrderFreeze(Long uid, CarRentalPackageOrderPo packageOrderEntity, Integer applyTerm, Long residue, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid) {
+    private CarRentalPackageOrderFreezePo buildCarRentalPackageOrderFreeze(Long uid, CarRentalPackageOrderPo packageOrderEntity, Integer applyTerm, Long residue, String applyReason, Long optUid) {
         CarRentalPackageOrderFreezePo freezeEntity = new CarRentalPackageOrderFreezePo();
         freezeEntity.setUid(uid);
         freezeEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_SUSPEND, uid));
@@ -1140,10 +1140,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 设置状态
         freezeEntity.setStatus(RentalPackageOrderFreezeStatusEnum.PENDING_APPROVAL.getCode());
-        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode())) {
-            freezeEntity.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode());
-        }
-
         return freezeEntity;
     }
 
