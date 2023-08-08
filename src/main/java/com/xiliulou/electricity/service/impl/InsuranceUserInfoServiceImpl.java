@@ -242,6 +242,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         if(Objects.isNull(insuranceUserInfoCache)){
             insuranceUserInfo.setCreateTime(System.currentTimeMillis());
+            insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             insuranceUserInfoService.insert(insuranceUserInfo);
         }else{
             insuranceUserInfo.setId(insuranceUserInfoCache.getId());
