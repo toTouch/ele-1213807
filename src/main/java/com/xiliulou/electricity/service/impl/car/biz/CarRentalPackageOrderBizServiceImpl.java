@@ -1587,7 +1587,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(insuranceUserInfoVo)) {
             UserInsuranceVO userInsuranceVo = new UserInsuranceVO();
             userInsuranceVo.setInsuranceName(insuranceUserInfoVo.getInsuranceName());
-            userInsuranceVo.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
             userInsuranceVo.setPremium(insuranceUserInfoVo.getPremium());
             userInsuranceVo.setIsUse(insuranceUserInfoVo.getIsUse());
             userInsuranceVo.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
