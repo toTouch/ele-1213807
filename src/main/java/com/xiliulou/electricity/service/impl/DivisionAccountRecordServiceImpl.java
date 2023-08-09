@@ -448,7 +448,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         } else if (DivisionAccountConfig.HIERARCHY_THREE.equals(divisionAccountConfigRefVO.getHierarchy())) {
             //三级分帐
             //扫码 门店、加盟商、运营商分帐
-            if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(orderSource)) {
+            //TODO 代码待删除，3.0版本后 不需要分柜机和非柜机，该处的代码注释掉。
+            /*if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(orderSource)) {
                 operatorIncome = getAmountByRate(userPayAmount, operatorRate);
                 franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
                 storeIncome = getAmountByRate(userPayAmount, storeRate);
@@ -459,7 +460,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 operatorIncome = getAmountByRate(userPayAmount, operatorRate);
                 franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
-            }
+            }*/
+            operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+            franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+            storeIncome = getAmountByRate(userPayAmount, storeRate);
+
         } else {
             log.warn("Division Account error, Division account for electricity member card, not found division account hierarchy, DA config id = {}", divisionAccountConfigRefVO.getId());
             return null;

@@ -721,6 +721,15 @@ public class UnionTradeOrderServiceImpl extends
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                     userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
                     userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
+
+                    //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+                    if(org.apache.commons.lang3.StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())){
+                        ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
+                        electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
+                        electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                        electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
+                        electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
+                    }
                 } else {
 
                     UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
@@ -740,7 +749,6 @@ public class UnionTradeOrderServiceImpl extends
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 }
             }
-
 
             if(Objects.isNull(userBatteryMemberCard)){
                 userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);

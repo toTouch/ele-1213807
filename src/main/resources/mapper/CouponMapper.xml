@@ -25,7 +25,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select
           id, name, status, apply_type,  discount_type, amount, discount, count, days,  description, superposition,
-          uid, user_name, create_time, update_time, del_flag,franchisee_id,type
+          uid, user_name, create_time, update_time, del_flag,franchisee_id, type, specific_packages
         from t_coupon
         <where>
             del_flag=0
