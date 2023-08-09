@@ -1412,7 +1412,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         Integer result = this.userInfoMapper.updateByUid(userInfo);
 
-        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        Boolean delete = redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        log.info("用户 Update 删除redis result is {}", delete);
 
         return result;
     }
