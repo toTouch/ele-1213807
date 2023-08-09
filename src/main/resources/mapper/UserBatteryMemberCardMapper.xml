@@ -103,6 +103,12 @@
             <if test="orderExpireTime != null">
                 order_expire_time = #{orderExpireTime},
             </if>
+            <if test="orderEffectiveTime != null">
+                order_effective_time = #{orderEffectiveTime},
+            </if>
+            <if test="orderRemainingNumber != null">
+                order_remaining_number = #{orderRemainingNumber},
+            </if>
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
             </if>
@@ -143,6 +149,8 @@
             order_id = #{orderId},
             member_card_expire_time = #{memberCardExpireTime},
             order_expire_time = #{orderExpireTime},
+            order_effective_time = #{orderEffectiveTime},
+            order_remaining_number = #{orderRemainingNumber},
             remaining_number = #{remainingNumber},
             member_card_status = #{memberCardStatus},
             disable_member_card_time = #{disableMemberCardTime},
