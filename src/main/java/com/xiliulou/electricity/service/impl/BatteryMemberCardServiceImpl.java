@@ -28,10 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -210,7 +207,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         //将用户当前绑定的套餐放到最前面
         if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
-            for (BatteryMemberCardVO memberCardVO : memberCardVOS) {
+            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
+            while (iterator.hasNext()){
+                BatteryMemberCardVO memberCardVO=iterator.next();
                 if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
                     memberCardVOS.remove(memberCardVO);
                     memberCardVOS.add(0, memberCardVO);
