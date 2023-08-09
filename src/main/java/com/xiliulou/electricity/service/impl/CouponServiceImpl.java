@@ -358,6 +358,7 @@ public class CouponServiceImpl implements CouponService {
         return R.ok(couponMapper.queryList(couponQuery));
     }
 
+    @Slave
     @Override
     public R queryCouponList(CouponQuery couponQuery) {
         List<Coupon> couponList = couponMapper.queryList(couponQuery);
