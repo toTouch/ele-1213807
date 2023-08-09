@@ -20,6 +20,15 @@ import java.util.List;
 public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
     /**
+     * 根据ID更新车辆绑定用户，包含绑定、解绑
+     *
+     * @param electricityCarUpdate
+     * @return 操作条数
+     */
+    int updateCarBindStatusById(ElectricityCar electricityCarUpdate);
+
+
+    /**
      * 根据 uid 查询车辆信息<br />
      * 复合查询，车辆、门店、车辆经纬度
      * @param tenantId 租户ID
@@ -59,4 +68,5 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
             @Param("updateTime") Long updateTime, @Param("tenantId") Integer tenantId);
 
     Integer isUserBindCar(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+
 }

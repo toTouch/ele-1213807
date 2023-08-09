@@ -178,7 +178,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
-        if(Objects.isNull(userBatteryDeposit)){
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("ELE ERROR!not found userBatteryDeposit,uid={}", userInfo.getUid());
             return Collections.emptyList();
         }
@@ -195,17 +195,30 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
+        //获取用户可购买套餐列表
         List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(batteryMemberCardList)) {
             log.error("ELE ERROR!batteryMemberCardList is empty,uid={}", userInfo.getUid());
             return Collections.emptyList();
         }
 
-        return batteryMemberCardList.stream().map(item -> {
+        List<BatteryMemberCardVO> memberCardVOS = batteryMemberCardList.stream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
+
+        //将用户当前绑定的套餐放到最前面
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
+            for (BatteryMemberCardVO memberCardVO : memberCardVOS) {
+                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
+                    memberCardVOS.remove(memberCardVO);
+                    memberCardVOS.add(0, memberCardVO);
+                }
+            }
+        }
+
+        return memberCardVOS;
     }
 
     @Override

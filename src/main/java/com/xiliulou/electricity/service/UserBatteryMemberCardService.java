@@ -116,4 +116,6 @@ public interface UserBatteryMemberCardService {
     Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
 
     Triple<Boolean, String, Object> verifyUserBatteryMembercard(UserInfo userInfo);
+
+    void batteryMembercardExpireUpdateStatusTask();
 }

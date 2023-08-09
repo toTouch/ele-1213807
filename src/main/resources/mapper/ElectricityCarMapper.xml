@@ -7,6 +7,17 @@
        	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type         from t_electricity_car
     </sql>
 
+    <!-- 根据ID更新车辆绑定用户，包含绑定、解绑 -->
+    <update id="updateCarBindStatusById">
+        UPDATE `t_electricity_car`
+        <set>
+            `uid` = #{uid}, `user_info_id` = #{userInfoId}, `user_name` = #{userName}, `phone` = #{phone}, `update_time` = #{updateTime}
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
     <!-- 根据 uid 查询， 复合查询，车辆、门店-->
     <select id="queryByCarId" resultType="com.xiliulou.electricity.domain.car.CarInfoDO">
         SELECT
