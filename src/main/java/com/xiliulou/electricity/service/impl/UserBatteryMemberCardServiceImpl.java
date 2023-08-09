@@ -370,7 +370,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                 return;
             }
 
-            userBatteryMemberCardList.parallelStream().forEach(item -> {
+            userBatteryMemberCardList.forEach(item -> {
                 //如果套餐过期更新订单状态为已失效
                 if (Objects.nonNull(item.getMemberCardExpireTime()) && item.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isNotBlank(item.getOrderId())) {
                     ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
