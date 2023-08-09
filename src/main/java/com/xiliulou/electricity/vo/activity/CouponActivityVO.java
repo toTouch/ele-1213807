@@ -44,7 +44,7 @@ public class CouponActivityVO {
     /**
      * 有效天数
      */
-    private Integer days;
+    private String validDays;
     /**
      * 优惠券描述
      */
@@ -88,6 +88,23 @@ public class CouponActivityVO {
      * @see SpecificPackagesEnum
      */
     private Integer specificPackages;
+
+    /**
+     * 创建人uid
+     */
+    private Long uid;
+    /**
+     * 创建人用户名
+     */
+    private String userName;
+
+    private Long createTime;
+
+    private Long updateTime;
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
 
     /**
      * 换电套餐列表

@@ -355,7 +355,16 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryList(CouponQuery couponQuery) {
-        return R.ok(couponMapper.queryList(couponQuery));
+        List<Coupon> couponList = couponMapper.queryList(couponQuery);
+        List<CouponActivityVO> couponActivityVOList = Lists.newArrayList();
+        for(Coupon coupon : couponList){
+            CouponActivityVO couponActivityVO = new CouponActivityVO();
+            BeanUtils.copyProperties(coupon, couponActivityVO);
+            couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
+            couponActivityVOList.add(couponActivityVO);
+        }
+
+        return R.ok(couponActivityVOList);
     }
 
     @Slave
@@ -377,6 +386,7 @@ public class CouponServiceImpl implements CouponService {
         }
         CouponActivityVO couponActivityVO = new CouponActivityVO();
         BeanUtils.copyProperties(coupon, couponActivityVO);
+        couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
 
         if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())){
 
