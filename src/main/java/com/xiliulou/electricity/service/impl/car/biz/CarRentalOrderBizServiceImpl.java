@@ -206,10 +206,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         // 查询用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
-            log.error("bindingCar, t_user_info is bind car. uid is {}", uid);
-            throw new BizException("100253", "用户已绑定车辆，请先解绑");
-        }
 
         // 查询自己名下是否存在车辆
         ElectricityCar electricityCarUser = carService.selectByUid(tenantId, uid);

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 
 /**
@@ -24,13 +25,11 @@ public interface CarRentalPackageMemberTermBizService {
     /**
      * 编辑会员当前套餐信息
      * @param tenantId 租户ID
-     * @param uid 用户UID
-     * @param dueTime 当前到期时间
-     * @param residue 当前套餐余量
+     * @param optReq 操作数据模型
      * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean updateCurrPackage(Integer tenantId, Long uid, Long dueTime, Long residue, Long optUid);
+    boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid);
 
 
     /**

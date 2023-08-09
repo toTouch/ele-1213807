@@ -514,6 +514,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			getUserCouponVOList(shareActivityVO, user);
 		}
 
+		//设置邀请活动对应的套餐信息
+		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareActivityVO.getInvitationCriteria())){
+			shareActivityVO.setBatteryPackages(getBatteryPackages(shareActivity.getId()));
+			shareActivityVO.setCarRentalPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+			shareActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+		}
+
 		return R.ok(shareActivityVO);
 	}
 

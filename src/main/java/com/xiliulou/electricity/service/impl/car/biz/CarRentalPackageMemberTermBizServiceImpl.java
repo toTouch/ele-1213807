@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
@@ -101,17 +102,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * 编辑会员当前套餐信息
      *
      * @param tenantId 租户ID
-     * @param uid      用户UID
-     * @param dueTime  当前到期时间
-     * @param residue  当前套餐余量
+     * @param optReq  操作数据模型
      * @param optUid   操作用户UID
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean updateCurrPackage(Integer tenantId, Long uid, Long dueTime, Long residue, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, dueTime, optUid)) {
+    public boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, optReq, optReq.getUid(), optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+
+        Long uid = optReq.getUid();
 
         // 查询滞纳金信息
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
@@ -126,7 +127,20 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             throw new BizException("300002", "租车会员状态异常");
         }
 
-    /*    if () {
+        Long dueTime = memberTermEntity.getDueTime();
+        Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
+
+ /*       if (ObjectUtils.isNotEmpty(optReq.getDueTime())) {
+            if (dueTime) {
+
+            }
+
+
+
+
+        }
+
+        if () {
 
         }*/
 
