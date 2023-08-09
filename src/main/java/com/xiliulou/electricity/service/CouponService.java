@@ -44,7 +44,7 @@ public interface CouponService {
 
     R queryList(CouponQuery couponQuery);
 
-
+    R queryCouponList(CouponQuery couponQuery);
 
     R queryCount(CouponQuery couponQuery);
     

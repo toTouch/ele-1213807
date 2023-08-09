@@ -151,7 +151,7 @@ public class JsonAdminCouponController extends BaseController {
                 .applyType(applyType)
                 .superposition(superposition)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-        return couponService.queryList(couponQuery);
+        return couponService.queryCouponList(couponQuery);
     }
 
     //列表查询
