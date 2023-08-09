@@ -253,13 +253,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
         int result = this.userInfoMapper.update(userInfo);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.info("user_info update sleep error:", e);
-        } finally {
-            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
-        }
+        Boolean delete = redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        log.info("删除会员操作结果{}", delete);
         return result;
     }
 
