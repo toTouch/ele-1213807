@@ -199,25 +199,25 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
 
-        List<BatteryMemberCardVO> memberCardVOS = batteryMemberCardList.stream().map(item -> {
+        return batteryMemberCardList.stream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
 
-        //将用户当前绑定的套餐放到最前面
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
-            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
-            while (iterator.hasNext()){
-                BatteryMemberCardVO memberCardVO=iterator.next();
-                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
-                    memberCardVOS.remove(memberCardVO);
-                    memberCardVOS.add(0, memberCardVO);
-                }
-            }
-        }
-
-        return memberCardVOS;
+//        //将用户当前绑定的套餐放到最前面
+//        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
+//            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
+//            while (iterator.hasNext()){
+//                BatteryMemberCardVO memberCardVO=iterator.next();
+//                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
+//                    memberCardVOS.remove(memberCardVO);
+//                    memberCardVOS.add(0, memberCardVO);
+//                }
+//            }
+//        }
+//
+//        return memberCardVOS;
     }
 
     @Override
