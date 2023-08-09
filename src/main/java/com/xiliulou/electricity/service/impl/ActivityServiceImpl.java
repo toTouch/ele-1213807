@@ -131,7 +131,7 @@ public class ActivityServiceImpl implements ActivityService {
                 log.info("Activity flow for battery package, orderNo = {}", orderNo);
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
                 Long uid = electricityMemberCardOrder.getUid();
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
 
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.warn("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
@@ -147,7 +147,7 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
                 //处理渠道活动
@@ -172,7 +172,7 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId(), carRentalPackageOrderPO.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
                 //处理渠道活动
@@ -281,7 +281,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         try{
             //判断该用户是否进行了实名认证
-            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("not finished real name authentication! user not auth,uid = {}", uid);

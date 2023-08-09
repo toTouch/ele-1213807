@@ -93,6 +93,11 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
+    @Override
+    public Coupon queryByIdFromDB(Integer id) {
+        return  couponMapper.selectById(id);
+    }
+
     /**
      * 新增数据
      *
