@@ -10,6 +10,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
+import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.*;
@@ -59,14 +60,12 @@ public class JsonAdminUserInfoV2Controller {
 
     /**
      * 编辑会员当前套餐信息
-     * @param uid 用户ID
-     * @param dueTime 到期时间(毫秒时间戳)
-     * @param residue 余量(次)
+     * @param optReq 操作数据模型
      * @return true(成功)、false(失败)
      */
-    @GetMapping("/updateCurrPackage")
-    public R<Boolean> updateCurrPackage(Long uid, Long dueTime, Long residue) {
-        if (!ObjectUtils.allNotNull(uid, dueTime)) {
+    @PostMapping("/updateCurrPackage")
+    public R<Boolean> updateCurrPackage(@RequestBody MemberCurrPackageOptReq optReq) {
+        if (!ObjectUtils.allNotNull(optReq, optReq.getUid())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -77,7 +76,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageMemberTermBizService.updateCurrPackage(tenantId, uid, dueTime, residue, user.getUid()));
+        return R.ok(carRentalPackageMemberTermBizService.updateCurrPackage(tenantId, optReq, user.getUid()));
 
     }
 

@@ -138,6 +138,9 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             carRentalPackageOrderBizService.enableFreezeRentOrder(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), optUid);
         }
 
+        // TODO JT808
+
+
     }
 
     /**

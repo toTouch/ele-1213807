@@ -32,4 +32,9 @@ public class MemberCurrPackageOptReq implements Serializable {
      * 余量(次)
      */
     private Long residue;
+
+    /**
+     * 用户UID
+     */
+    private Long uid;
 }
