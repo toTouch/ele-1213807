@@ -205,10 +205,21 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("100007", "未找到车辆");
         }
 
-        // 是否被用户绑定
-        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) || uid.equals(electricityCar.getUid())) {
+        // 是否被其它用户绑定
+        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
             log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
-            throw new BizException("100253", "用户已绑定车辆，请先解绑");
+            throw new BizException("300038", "该车已被其他用户绑定");
+        }
+
+        // 查询自己名下是否存在车辆
+        ElectricityCar electricityCarUser = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(electricityCarUser)) {
+            // 先去解绑
+            boolean unBindFlag = unBindingCar(tenantId, uid, optUid);
+            if (!unBindFlag) {
+                log.info("bindingCar, unBindingCar failed. uid is {}", uid);
+                throw new BizException("300039", "车辆绑定失败");
+            }
         }
 
         // 比对车辆是否符合(门店、型号)
