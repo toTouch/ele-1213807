@@ -18,11 +18,14 @@
             <if test="query.franchiseeId != null">
                 and tio.franchisee_id = #{query.franchiseeId}
             </if>
+            <if test="query.status != null">
+                and tio.status = #{query.status}
+            </if>
             <if test="query.isUse != null">
-                and tio.insurance_type = #{query.isUse}
+                and tio.is_use = #{query.isUse}
             </if>
             <if test="query.insuranceType != null">
-                and tio.franchisee_id = #{query.insuranceType}
+                and tio.insurance_type = #{query.insuranceType}
             </if>
             <if test="query.userName != null and query.userName !=''">
                 and tio.user_name = #{query.userName}
