@@ -22,6 +22,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -130,6 +132,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
             return null;
         });
+
+        Executors.newSingleThreadScheduledExecutor().schedule(()->{
+            if(redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid())){
+                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            }
+        },1, TimeUnit.SECONDS);
 
         return update;
     }
