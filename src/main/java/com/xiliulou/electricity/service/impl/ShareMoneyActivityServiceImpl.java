@@ -389,7 +389,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             shareMoneyActivityVO.setBatteryPackages(getBatteryPackages(shareMoneyActivity.getId()));
 
             shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-            shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.compareTo()).getCode()));
+            shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
         }
 
         return R.ok(shareMoneyActivityVO);
