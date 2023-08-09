@@ -2208,13 +2208,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        userInfo.setUpdateTime(System.currentTimeMillis());
+
         if (ObjectUtils.isEmpty(userInfo)) {
             log.error("handBuyRentalPackageOrderSuccess failed, not found user_info, uid is {}", uid);
             return Pair.of(false, "未找到用户信息");
         }
 
         if (YesNoEnum.NO.getCode().equals(userInfo.getCarBatteryDepositStatus()) || UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
-            userInfo.setUpdateTime(System.currentTimeMillis());
             userInfo.setFranchiseeId(Long.valueOf(carRentalPackageOrderEntity.getFranchiseeId()));
             userInfo.setStoreId(Long.valueOf(carRentalPackageOrderEntity.getStoreId()));
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
