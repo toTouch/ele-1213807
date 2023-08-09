@@ -171,13 +171,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 查询用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
-            log.error("bindingCar, t_user_info is bind car. uid is {}", uid);
-            throw new BizException("100253", "用户已绑定车辆，请先解绑");
-        }
-
         // 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
@@ -209,6 +202,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
             log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
             throw new BizException("300038", "该车已被其他用户绑定");
+        }
+
+        // 查询用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
+            log.error("bindingCar, t_user_info is bind car. uid is {}", uid);
+            throw new BizException("100253", "用户已绑定车辆，请先解绑");
         }
 
         // 查询自己名下是否存在车辆
