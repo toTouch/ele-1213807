@@ -353,19 +353,19 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     private ElectricityCar buildElectricityCar(ElectricityCar car, Long uid, UserInfo userInfo, Integer rentalType) {
         ElectricityCar carUpdate = new ElectricityCar();
-        car.setId(car.getId());
-        car.setUpdateTime(System.currentTimeMillis());
+        carUpdate.setId(car.getId());
+        carUpdate.setUpdateTime(System.currentTimeMillis());
         if (RentalTypeEnum.RENTAL.getCode().equals(rentalType)) {
-            car.setUid(uid);
-            car.setUserInfoId(userInfo.getId());
-            car.setUserName(userInfo.getName());
-            car.setPhone(userInfo.getPhone());
+            carUpdate.setUid(uid);
+            carUpdate.setUserInfoId(userInfo.getId());
+            carUpdate.setUserName(userInfo.getName());
+            carUpdate.setPhone(userInfo.getPhone());
         }
         if (RentalTypeEnum.RETURN.getCode().equals(rentalType)) {
-            car.setUid(null);
-            car.setUserInfoId(null);
-            car.setUserName(null);
-            car.setPhone(null);
+            carUpdate.setUid(null);
+            carUpdate.setUserInfoId(null);
+            carUpdate.setUserName(null);
+            carUpdate.setPhone(null);
         }
         return carUpdate;
     }
