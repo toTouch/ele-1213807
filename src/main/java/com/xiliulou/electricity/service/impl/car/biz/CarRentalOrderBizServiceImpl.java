@@ -206,14 +206,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 是否被用户绑定
-        if ((ObjectUtils.isNotEmpty(electricityCar.getUid()) && electricityCar.getUid() != 0L) || uid.equals(electricityCar.getUid())) {
+        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) || uid.equals(electricityCar.getUid())) {
             log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
             throw new BizException("100253", "用户已绑定车辆，请先解绑");
         }
 
-        // 比对车辆是否符合(加盟商、门店、型号)
-        if (!rentalPackageEntity.getFranchiseeId().equals(electricityCar.getFranchiseeId().intValue()) || !rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue())
-                || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
+        // 比对车辆是否符合(门店、型号)
+        if (!rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue()) || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
             log.error("bindingCar, t_electricity_car carModel or organization is wrong", electricityCar.getUid());
             throw new BizException("100007", "未找到车辆");
         }
@@ -279,7 +278,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @return
      */
     private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Integer rentalType) {
-        //用户解绑加锁
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
@@ -444,6 +442,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
     }
 
+    /**
+     * JT 808 控制锁
+     * @param sn
+     * @param lockType
+     * @param retryCount
+     * @return
+     */
+    @Override
     public Boolean retryCarLockCtrl(String sn, Integer lockType, Integer retryCount) {
         if (Objects.isNull(retryCount)) {
             retryCount = 1;

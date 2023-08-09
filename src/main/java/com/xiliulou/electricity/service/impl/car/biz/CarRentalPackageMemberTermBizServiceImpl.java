@@ -7,7 +7,9 @@ import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
@@ -27,6 +29,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +38,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
 
     @Resource
     private BatteryModelService batteryModelService;
@@ -298,6 +313,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
 
             for (CarRentalPackageMemberTermPo memberTermEntity : memberTermEntityList) {
+                CarLockCtrlHistory carLockCtrlHistory = null;
                 try {
                     // 根据用户ID查询第一条未使用的支付成功的订单信息
                     CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
@@ -337,9 +353,15 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                             long diffDay = DateUtils.diffDay(memberTermEntity.getDueTime(), slippageFreezeEntity.getLateFeeStartTime());
                             slippageFreezeEntity.setLateFeePay(slippageFreezeEntity.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
                         }
+                        // JT808
+                        ElectricityCar electricityCar = carService.selectByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                        if (ObjectUtils.isNotEmpty(electricityCar)) {
+                            UserInfo userInfo = userInfoService.queryByUidFromCache(memberTermEntity.getUid());
+                            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+                        }
                     }
                     // 数据落库处理
-                    saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity, memberTermEntity.getRentalPackageOrderNo());
+                    saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity, memberTermEntity.getRentalPackageOrderNo(), carLockCtrlHistory);
                 } catch (Exception e) {
                     log.error("CarRentalPackageMemberTermBizService.expirePackageOrder skip. error. ", e);
                     continue;
@@ -349,9 +371,45 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
     }
 
+    /**
+     * 构建JT808
+     * @param electricityCar
+     * @param userInfo
+     * @return
+     */
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+
+            boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
+            log.info("buildCarLockCtrlHistory, carRentalOrderBizService.retryCarLockCtrl result is {}", result);
+
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+
+            return carLockCtrlHistory;
+        }
+        return null;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePo slippageEntityInsert, CarRentalPackageOrderPo packageOrderEntityNew,
-                                         CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderSlippagePo slippageFreezeEntity, String oriRentalPackageOrderNo) {
+                                         CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderSlippagePo slippageFreezeEntity,
+                                         String oriRentalPackageOrderNo, CarLockCtrlHistory carLockCtrlHistory) {
         // 生成逾期订单
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
@@ -391,6 +449,10 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 更改原订单状态及新订单状态
             carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null);
             carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+        }
+
+        if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
     }
 
