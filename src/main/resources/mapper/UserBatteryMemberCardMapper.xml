@@ -248,6 +248,7 @@
     <select id="selectUseableList" resultMap="UserBatteryMemberCardMap">
         select
         ubmc.uid,
+        ubmc.order_id,
         ubmc.member_card_id,
         ubmc.member_card_expire_time,
         ubmc.order_expire_time,

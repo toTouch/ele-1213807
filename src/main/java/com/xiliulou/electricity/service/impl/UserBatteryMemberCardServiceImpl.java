@@ -3,10 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
@@ -14,6 +11,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -354,5 +352,36 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
 
         return Triple.of(true, null, null);
+    }
+
+    /**
+     * 换电套餐过期  将订单状态更新为已失效
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batteryMembercardExpireUpdateStatusTask() {
+        int offset = 0;
+        int size = 200;
+
+        while (true) {
+            List<UserBatteryMemberCard> userBatteryMemberCardList = this.selectUseableList(offset, size);
+            if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
+                return;
+            }
+
+            userBatteryMemberCardList.parallelStream().forEach(item -> {
+                //如果套餐过期更新订单状态为已失效
+                if (item.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isNotBlank(item.getOrderId())) {
+                    ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+                    electricityMemberCardOrder.setOrderId(item.getOrderId());
+                    electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                    electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+                    electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrder);
+                }
+
+            });
+
+            offset += size;
+        }
     }
 }
