@@ -127,9 +127,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         int update = this.userBatteryMemberCardMapper.updateByUid(userBatteryMemberCard);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
+            log.error("===========================删除缓存============================================================{}",userBatteryMemberCard.getUid());
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
             return null;
         });
+        redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
 
         return update;
     }
