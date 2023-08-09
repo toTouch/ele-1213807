@@ -257,8 +257,7 @@
         tui.card_pay_count
         from t_user_battery_member_card ubmc
         left join t_user_info tui on tui.uid=ubmc.uid
-        where tui.uid = #{uid}
-        and tui.battery_deposit_status=1
+        where tui.battery_deposit_status=1
         limit #{offset},#{size}
     </select>
 
