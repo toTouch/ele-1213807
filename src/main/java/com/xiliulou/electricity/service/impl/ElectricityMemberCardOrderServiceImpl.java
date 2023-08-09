@@ -3207,8 +3207,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
 
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
         ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
-        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
         serviceFeeUserInfoInsert.setUid(userBatteryMemberCardUpdate.getUid());
         serviceFeeUserInfoInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         serviceFeeUserInfoInsert.setUpdateTime(System.currentTimeMillis());
@@ -3216,7 +3217,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoInsert.setCreateTime(System.currentTimeMillis());
         serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
         serviceFeeUserInfoInsert.setDisableMemberCardNo("");
-        serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        if (Objects.nonNull(serviceFeeUserInfo)) {
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsert);
+        } else {
+            serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        }
 
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
