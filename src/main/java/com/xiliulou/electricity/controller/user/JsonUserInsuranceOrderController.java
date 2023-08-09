@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
@@ -63,6 +64,7 @@ public class JsonUserInsuranceOrderController {
                 .uid(SecurityUtils.getUid())
                 .size(size)
                 .offset(offset)
+                .status(InsuranceOrder.STATUS_SUCCESS)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return insuranceOrderService.queryList(query);
