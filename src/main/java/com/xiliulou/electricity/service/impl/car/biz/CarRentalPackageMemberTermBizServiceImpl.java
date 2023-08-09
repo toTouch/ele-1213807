@@ -7,6 +7,7 @@ import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +39,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
+
+    @Resource
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     @Resource
     private UserInfoService userInfoService;
@@ -92,6 +96,46 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    /**
+     * 编辑会员当前套餐信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @param dueTime  当前到期时间
+     * @param residue  当前套餐余量
+     * @param optUid   操作用户UID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean updateCurrPackage(Integer tenantId, Long uid, Long dueTime, Long residue, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, dueTime, optUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询滞纳金信息
+        boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
+        if (exitUnpaid) {
+            throw new BizException("300006", "未缴纳押金");
+        }
+
+        // 查询会员当前信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
+            throw new BizException("300002", "租车会员状态异常");
+        }
+
+    /*    if () {
+
+        }*/
+
+
+
+
+
+        return false;
+    }
 
     /**
      * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）
@@ -202,7 +246,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
         userMemberInfoVo.setStoreId(storeEntity.getId().intValue());
         userMemberInfoVo.setStoreName(storeEntity.getName());
-        userMemberInfoVo.setCarModeId(carModelEntity.getId());
+        userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
             List<String> batteryVShortList = batteryModelEntityList.stream().map(BatteryModel::getBatteryVShort).collect(Collectors.toList());

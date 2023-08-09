@@ -23,6 +23,11 @@ public class CarRentalPackageOrderVo implements Serializable {
     private String orderNo;
 
     /**
+     * 套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
      * 套餐类型
      * <pre>
      *     1-单车
