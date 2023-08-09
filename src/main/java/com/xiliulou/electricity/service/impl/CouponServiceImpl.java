@@ -172,7 +172,8 @@ public class CouponServiceImpl implements CouponService {
         }
 
         //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
-        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())){
+        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())
+                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())){
             //获取页面传递进来的套餐信息
             Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
             if (Boolean.FALSE.equals(packagesResult.getLeft())) {
@@ -187,6 +188,7 @@ public class CouponServiceImpl implements CouponService {
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
+        coupon.setDays(Integer.parseInt(couponQuery.getValidDays()));
 
         if(Objects.isNull(coupon.getStatus())){
             coupon.setStatus(Coupon.STATUS_OFF);
@@ -356,6 +358,20 @@ public class CouponServiceImpl implements CouponService {
         return R.ok(couponMapper.queryList(couponQuery));
     }
 
+    @Override
+    public R queryCouponList(CouponQuery couponQuery) {
+        List<Coupon> couponList = couponMapper.queryList(couponQuery);
+        List<CouponActivityVO> couponActivityVOList = Lists.newArrayList();
+        for(Coupon coupon : couponList){
+            CouponActivityVO couponActivityVO = new CouponActivityVO();
+            BeanUtils.copyProperties(coupon, couponActivityVO);
+            couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
+            couponActivityVOList.add(couponActivityVO);
+        }
+
+        return R.ok(couponActivityVOList);
+    }
+
     @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
@@ -375,6 +391,7 @@ public class CouponServiceImpl implements CouponService {
         }
         CouponActivityVO couponActivityVO = new CouponActivityVO();
         BeanUtils.copyProperties(coupon, couponActivityVO);
+        couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
 
         if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())){
 
