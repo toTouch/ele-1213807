@@ -363,7 +363,22 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
-		return R.ok(shareActivityList);
+		List<ShareActivityVO> shareActivityVOList = Lists.newArrayList();
+
+		for(ShareActivity shareActivity : shareActivityList){
+			ShareActivityVO shareActivityVO = new ShareActivityVO();
+			BeanUtil.copyProperties(shareActivity, shareActivityVO);
+
+			if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareActivity.getInvitationCriteria())){
+				shareActivityVO.setBatteryPackages(getBatteryPackages(shareActivity.getId()));
+				shareActivityVO.setCarRentalPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+				shareActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+			}
+			shareActivityVOList.add(shareActivityVO);
+
+		}
+
+		return R.ok(shareActivityVOList);
 	}
 
 	@Override
