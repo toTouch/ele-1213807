@@ -23,6 +23,14 @@ import java.util.List;
 public interface ElectricityCarService {
 
     /**
+     * 根据ID更新车辆绑定用户，包含绑定、解绑
+     * @param electricityCarUpdate
+     * @return true(成功)、false(失败)
+     */
+    boolean updateCarBindStatusById(ElectricityCar electricityCarUpdate);
+
+
+    /**
      * 根据用户ID查询车辆信息
      * @param tenantId 租户ID
      * @param uid 用户ID
@@ -121,4 +129,5 @@ public interface ElectricityCarService {
     R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
     
     Boolean retryCarLockCtrl(String str, Integer lockType, Integer retryCount);
+
 }

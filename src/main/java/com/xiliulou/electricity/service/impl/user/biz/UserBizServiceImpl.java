@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.user.biz;
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -9,7 +8,6 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
-import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
@@ -100,7 +98,7 @@ public class UserBizServiceImpl implements UserBizService {
         }
 
         // 定义数据
-        ElectricityCarBindUser unBindCar = null;
+        ElectricityCar electricityCarUpdate = null;
 
         // 待更新的数据
         UserInfo userInfoEntity = new UserInfo();
@@ -112,9 +110,12 @@ public class UserBizServiceImpl implements UserBizService {
             // 解绑用户车辆
             if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
                 ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
-                unBindCar = new ElectricityCarBindUser();
-                unBindCar.setUid(uid);
-                unBindCar.setCarId(electricityCar.getId());
+                electricityCarUpdate = new ElectricityCar();
+                electricityCarUpdate.setId(electricityCar.getId());
+                electricityCarUpdate.setUid(null);
+                electricityCarUpdate.setUserName(null);
+                electricityCarUpdate.setUserInfoId(null);
+                electricityCarUpdate.setPhone(null);
             }
 
             // 设置用户租赁状态
@@ -132,9 +133,12 @@ public class UserBizServiceImpl implements UserBizService {
             // 解绑用户车辆
             if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
                 ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
-                unBindCar = new ElectricityCarBindUser();
-                unBindCar.setUid(uid);
-                unBindCar.setCarId(electricityCar.getId());
+                electricityCarUpdate = new ElectricityCar();
+                electricityCarUpdate.setId(electricityCar.getId());
+                electricityCarUpdate.setUid(null);
+                electricityCarUpdate.setUserName(null);
+                electricityCarUpdate.setUserInfoId(null);
+                electricityCarUpdate.setPhone(null);
             }
 
             // TODO 解绑用户电池
@@ -165,8 +169,8 @@ public class UserBizServiceImpl implements UserBizService {
         }
 
         // 事务处理
-        log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, unBindCar is {}", JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(unBindCar));
-        saveDepositRefundUnbindTx(userInfoEntity, unBindCar);
+        log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, electricityCarUpdate is {}", JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(electricityCarUpdate));
+        saveDepositRefundUnbindTx(userInfoEntity, electricityCarUpdate);
 
         return true;
     }
@@ -174,19 +178,15 @@ public class UserBizServiceImpl implements UserBizService {
     /**
      * 退押解绑用户信息事务操作
      * @param userInfoEntity 更新用户实体信息
-     * @param unBindCar 解绑用户车辆信息
+     * @param electricityCarUpdate 解绑用户车辆信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCarBindUser unBindCar) {
+    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCar electricityCarUpdate) {
         // 解绑用户信息
         userInfoService.update(userInfoEntity);
         // 解绑用户车辆
-        if (ObjectUtils.isNotEmpty(unBindCar)) {
-            R unBindUserRep = carService.unBindUser(unBindCar);
-            log.info("depositRefundUnbind. carService.unBindUser response is {}", JsonUtil.toJson(unBindUserRep));
-            if (!unBindUserRep.isSuccess()) {
-                throw new BizException(unBindUserRep.getErrCode(), unBindUserRep.getErrMsg());
-            }
+        if (ObjectUtils.isNotEmpty(electricityCarUpdate)) {
+            carService.updateCarBindStatusById(electricityCarUpdate);
         }
         // TODO 解绑用户电池
     }

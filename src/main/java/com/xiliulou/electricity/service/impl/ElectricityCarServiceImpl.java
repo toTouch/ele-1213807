@@ -113,6 +113,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     private CarMoveRecordMapper carMoveRecordMapper;
 
     /**
+     * 根据ID更新车辆绑定用户，包含绑定、解绑
+     *
+     * @param electricityCarUpdate
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean updateCarBindStatusById(ElectricityCar electricityCarUpdate) {
+        if (!ObjectUtils.allNotNull(electricityCarUpdate, electricityCarUpdate.getId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        return electricityCarMapper.updateCarBindStatusById(electricityCarUpdate) >= 0;
+    }
+
+    /**
      * 根据用户ID查询车辆信息
      *
      * @param tenantId 租户ID
