@@ -172,7 +172,8 @@ public class CouponServiceImpl implements CouponService {
         }
 
         //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
-        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())){
+        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())
+                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())){
             //获取页面传递进来的套餐信息
             Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
             if (Boolean.FALSE.equals(packagesResult.getLeft())) {
