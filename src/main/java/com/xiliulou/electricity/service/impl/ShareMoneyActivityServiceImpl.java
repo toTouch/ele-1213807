@@ -20,11 +20,13 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -382,7 +384,42 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivityVO.setCount(count);
         shareMoneyActivityVO.setTotalMoney(totalMoney);
 
+        //设置对应的套餐信息
+        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareMoneyActivityVO.getInvitationCriteria())){
+            shareMoneyActivityVO.setBatteryPackages(getBatteryPackages(shareMoneyActivity.getId()));
+
+            shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+            shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.compareTo()).getCode()));
+        }
+
         return R.ok(shareMoneyActivityVO);
+    }
+
+    private List<BatteryMemberCardVO> getBatteryPackages(Integer activityId){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<ShareMoneyActivityPackage> batteryPackageList = shareMoneyActivityPackageService.findPackagesByActivityIdAndType(activityId.longValue(), PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        for(ShareMoneyActivityPackage shareMoneyActivityPackage : batteryPackageList){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareMoneyActivityPackage.getPackageId());
+            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+        return memberCardVOList;
+    }
+
+    private List<BatteryMemberCardVO> getCarBatteryPackages(Integer activityId, Integer packageType){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<ShareMoneyActivityPackage> carBatteryPackageList = shareMoneyActivityPackageService.findPackagesByActivityIdAndType(activityId.longValue(), packageType);
+        for(ShareMoneyActivityPackage shareMoneyActivityPackage : carBatteryPackageList){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareMoneyActivityPackage.getPackageId());
+            batteryMemberCardVO.setId(carRentalPackagePO.getId());
+            batteryMemberCardVO.setName(carRentalPackagePO.getName());
+            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+
+        return memberCardVOList;
     }
 
     @Override

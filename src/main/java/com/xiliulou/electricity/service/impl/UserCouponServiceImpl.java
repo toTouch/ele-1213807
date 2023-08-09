@@ -412,7 +412,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         userCouponQuery.setTypeList(typeList);
         List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
 
-        //若是不可叠加的优惠券,则将对应的套餐信息设置到优惠券中
+        //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
         for(UserCouponVO userCouponVO : userCouponVOList){
             if(Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition())
                     && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(userCouponVO.getSpecificPackages())){
