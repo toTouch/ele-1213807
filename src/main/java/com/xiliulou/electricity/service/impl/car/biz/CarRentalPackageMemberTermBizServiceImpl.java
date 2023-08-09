@@ -127,7 +127,20 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             throw new BizException("300002", "租车会员状态异常");
         }
 
-    /*    if () {
+        Long dueTime = memberTermEntity.getDueTime();
+        Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
+
+ /*       if (ObjectUtils.isNotEmpty(optReq.getDueTime())) {
+            if (dueTime) {
+
+            }
+
+
+
+
+        }
+
+        if () {
 
         }*/
 

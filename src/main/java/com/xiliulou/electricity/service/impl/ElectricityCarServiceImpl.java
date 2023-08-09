@@ -124,7 +124,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return electricityCarMapper.updateCarBindStatusById(electricityCarUpdate) >= 0;
+        Integer num = electricityCarMapper.updateCarBindStatusById(electricityCarUpdate);
+        redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCarUpdate.getId());
+
+        return num >= 0;
     }
 
     /**

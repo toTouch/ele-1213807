@@ -1176,14 +1176,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
-            // 免审，根据支付方式不一致，决定程序的先后执行顺序
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                // TODO 免押，先代扣，再解除授权，最后落库
-                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
-            } else {
-                // 线下：直接落库
-                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
-            }
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
         }
 
         return true;
