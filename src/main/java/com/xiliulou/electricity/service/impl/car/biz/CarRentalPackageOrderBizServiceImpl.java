@@ -2249,32 +2249,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
 
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(orderNo);
-        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(orderNo);
-        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
-
-        // 10. 发放优惠券
-        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
-            UserCouponDTO userCouponDTO = new UserCouponDTO();
-            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
-            userCouponDTO.setUid(uid);
-            userCouponDTO.setSourceOrderNo(orderNo);
-            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-            userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
-        }
-
         // 11. 车辆解锁
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
         if (ObjectUtils.isNotEmpty(electricityCar)) {
@@ -2301,6 +2275,33 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
+        }
+
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(orderNo);
+        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(orderNo);
+        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+        // 10. 发放优惠券
+        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+            userCouponDTO.setUid(uid);
+            userCouponDTO.setSourceOrderNo(orderNo);
+            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+            userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
         }
 
         return Pair.of(true, userInfo.getPhone());
