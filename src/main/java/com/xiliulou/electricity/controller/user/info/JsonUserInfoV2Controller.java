@@ -70,7 +70,7 @@ public class JsonUserInfoV2Controller extends BasicController {
             UserBatteryMemberCard batteryMemberCard = batteryMemberCardService.selectByUidFromCache(uid);
             Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
 
-            if (ObjectUtils.isNotEmpty(orderExpireTime) && orderExpireTime.longValue() != 0L) {
+            if (ObjectUtils.isNotEmpty(orderExpireTime) && orderExpireTime != 0L) {
                 UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
                 batteryPackage.setDueTime(orderExpireTime);
                 batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
@@ -85,7 +85,7 @@ public class JsonUserInfoV2Controller extends BasicController {
             Long dueTime = memberTermEntity.getDueTime();
 
             if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
-                if (ObjectUtils.isNotEmpty(dueTime) && dueTime.longValue() != 0L) {
+                if (ObjectUtils.isNotEmpty(dueTime) && dueTime != 0L) {
                     UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
                     carPackage.setDueTime(dueTime);
                     carPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
@@ -94,7 +94,7 @@ public class JsonUserInfoV2Controller extends BasicController {
             }
 
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
-                if (ObjectUtils.isNotEmpty(dueTime) && dueTime.longValue() != 0L) {
+                if (ObjectUtils.isNotEmpty(dueTime) && dueTime != 0L) {
                     UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
                     carBatteryPackage.setDueTime(dueTime);
                     carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());

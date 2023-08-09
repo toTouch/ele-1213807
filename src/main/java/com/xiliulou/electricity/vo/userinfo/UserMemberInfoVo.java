@@ -95,7 +95,7 @@ public class UserMemberInfoVo implements Serializable {
     /**
      * 车辆型号ID
      */
-    private Integer carModeId;
+    private Integer carModelId;
 
     /**
      * 车辆型号名称

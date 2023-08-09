@@ -1597,6 +1597,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 套餐订单信息
         CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
+        carRentalPackageOrderVO.setRentalPackageId(memberTerm.getRentalPackageId());
         carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
         carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
         carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
