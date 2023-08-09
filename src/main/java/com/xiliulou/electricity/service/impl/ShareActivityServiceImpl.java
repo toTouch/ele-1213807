@@ -163,7 +163,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//检查所选套餐是否可用
-		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())){
+		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())){
 			//检查是否有选择（换电,租车,车电一体）套餐信息
 			if(CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getBatteryPackages())
 					&& CollectionUtils.isEmpty(shareActivityAddAndUpdateQuery.getCarRentalPackages())
@@ -515,7 +515,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//设置邀请活动对应的套餐信息
-		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareActivityVO.getInvitationCriteria())){
+		if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareActivityVO.getInvitationCriteria())){
 			shareActivityVO.setBatteryPackages(getBatteryPackages(shareActivity.getId()));
 			shareActivityVO.setCarRentalPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
 			shareActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));

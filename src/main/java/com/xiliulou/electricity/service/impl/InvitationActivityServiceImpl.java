@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -136,6 +137,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
             //创建套餐信息并保存至数据库
             List<InvitationActivityMemberCard> shareActivityMemberCards = buildShareActivityPackages(invitationActivity.getId(), query);
+            log.info("Add the invitation activity, selected packages = {}", JsonUtil.toJson(shareActivityMemberCards));
 
             if (CollectionUtils.isNotEmpty(shareActivityMemberCards)) {
                 invitationActivityMemberCardService.batchInsert(shareActivityMemberCards);

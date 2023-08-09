@@ -297,7 +297,7 @@ public class ActivityServiceImpl implements ActivityService {
                 ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
                 //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
                 if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareActivity.getInvitationCriteria())){
+                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivity.getInvitationCriteria())){
 
                     //修改邀请状态
                     joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
@@ -322,7 +322,7 @@ public class ActivityServiceImpl implements ActivityService {
             if (Objects.nonNull(joinShareMoneyActivityRecord)) {
                 ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
                 if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareMoneyActivity.getInvitationCriteria())){
+                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
                     //修改邀请状态
                     joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
                     joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
