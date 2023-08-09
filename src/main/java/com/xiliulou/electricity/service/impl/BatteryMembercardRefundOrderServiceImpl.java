@@ -258,6 +258,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100285", "电池套餐已失效");
             }
 
+            UserCoupon userCoupon = userCouponService.selectBySourceOrderId(electricityMemberCardOrder.getOrderId());
+            if (Objects.nonNull(userCoupon) && (Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_USED))) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", userInfo.getUid());
+                return Triple.of(false, "100291", "套餐绑定的优惠券已使用，无法退租");
+            }
+
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMemberCard,uid={},mid={}", user.getUid(), electricityMemberCardOrder.getMemberCardId());
@@ -370,6 +376,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Triple.of(false, "100281", "电池套餐订单不存在");
+        }
+
+        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(electricityMemberCardOrder.getOrderId());
+        if (Objects.nonNull(userCoupon) && (Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_USED))) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", electricityMemberCardOrder.getUid());
+            return Triple.of(false, "100291", "套餐绑定的优惠券已使用，无法退租");
         }
 
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.selectLatestByMembercardOrderNo(orderNo);
