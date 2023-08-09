@@ -63,9 +63,19 @@ public class UserMemberInfoVo implements Serializable {
     private Integer status;
 
     /**
+     * 租车套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
      * 租车套餐名称
      */
     private String rentalPackageName;
+
+    /**
+     * 加盟商ID
+     */
+    private Integer franchiseeId;
 
     /**
      * 加盟商名称
@@ -73,9 +83,19 @@ public class UserMemberInfoVo implements Serializable {
     private String franchiseeName;
 
     /**
+     * 门店ID
+     */
+    private Integer storeId;
+
+    /**
      * 门店名称
      */
     private String storeName;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
 
     /**
      * 车辆型号名称

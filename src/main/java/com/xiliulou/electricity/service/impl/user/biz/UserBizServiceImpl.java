@@ -10,7 +10,9 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -31,6 +33,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserBizServiceImpl implements UserBizService {
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
 
     @Resource
     private ElectricityBatteryService batteryService;
@@ -99,6 +110,7 @@ public class UserBizServiceImpl implements UserBizService {
 
         // 定义数据
         ElectricityCar electricityCarUpdate = null;
+        CarLockCtrlHistory carLockCtrlHistory = null;
 
         // 待更新的数据
         UserInfo userInfoEntity = new UserInfo();
@@ -116,6 +128,9 @@ public class UserBizServiceImpl implements UserBizService {
                 electricityCarUpdate.setUserName(null);
                 electricityCarUpdate.setUserInfoId(null);
                 electricityCarUpdate.setPhone(null);
+
+                // JT808 加锁
+                carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
             }
 
             // 设置用户租赁状态
@@ -126,7 +141,6 @@ public class UserBizServiceImpl implements UserBizService {
                 userInfoEntity.setFranchiseeId(0L);
                 userInfoEntity.setStoreId(0L);
             }
-
         }
 
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(type)) {
@@ -139,6 +153,10 @@ public class UserBizServiceImpl implements UserBizService {
                 electricityCarUpdate.setUserName(null);
                 electricityCarUpdate.setUserInfoId(null);
                 electricityCarUpdate.setPhone(null);
+
+                // JT808 加锁
+                carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+
             }
 
             // TODO 解绑用户电池
@@ -152,6 +170,7 @@ public class UserBizServiceImpl implements UserBizService {
             // 置空加盟商、门店
             userInfoEntity.setFranchiseeId(0L);
             userInfoEntity.setStoreId(0L);
+
         }
 
         // TODO 志龙检查一下
@@ -169,8 +188,9 @@ public class UserBizServiceImpl implements UserBizService {
         }
 
         // 事务处理
-        log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, electricityCarUpdate is {}", JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(electricityCarUpdate));
-        saveDepositRefundUnbindTx(userInfoEntity, electricityCarUpdate);
+        log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, electricityCarUpdate is {}, carLockCtrlHistory is {}",
+                JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(electricityCarUpdate), JsonUtil.toJson(carLockCtrlHistory));
+        saveDepositRefundUnbindTx(userInfoEntity, electricityCarUpdate, carLockCtrlHistory);
 
         return true;
     }
@@ -181,12 +201,16 @@ public class UserBizServiceImpl implements UserBizService {
      * @param electricityCarUpdate 解绑用户车辆信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCar electricityCarUpdate) {
+    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCar electricityCarUpdate, CarLockCtrlHistory carLockCtrlHistory) {
         // 解绑用户信息
         userInfoService.update(userInfoEntity);
         // 解绑用户车辆
         if (ObjectUtils.isNotEmpty(electricityCarUpdate)) {
             carService.updateCarBindStatusById(electricityCarUpdate);
+        }
+        // 加解锁记录
+        if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
         // TODO 解绑用户电池
     }
@@ -307,7 +331,41 @@ public class UserBizServiceImpl implements UserBizService {
         }catch (Exception e){
             log.error("share money activity process issue, uid = {}, packageId = {}", joinUid, packageId, e);
         }
+    }
 
+
+    /**
+     * 构建JT808
+     * @param electricityCar
+     * @param userInfo
+     * @return
+     */
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+
+            boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
+
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+
+            return carLockCtrlHistory;
+        }
+        return null;
     }
 
     @Override

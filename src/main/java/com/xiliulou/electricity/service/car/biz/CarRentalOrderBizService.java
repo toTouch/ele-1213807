@@ -26,4 +26,13 @@ public interface CarRentalOrderBizService {
      */
     boolean bindingCar(Integer tenantId, Long uid, String carSn, Long optUid);
 
+    /**
+     * JT 808 控制锁
+     * @param sn
+     * @param lockType
+     * @param retryCount
+     * @return
+     */
+    Boolean retryCarLockCtrl(String sn, Integer lockType, Integer retryCount);
+
 }

@@ -171,13 +171,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 查询用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
-            log.error("bindingCar, t_user_info is bind car. uid is {}", uid);
-            throw new BizException("100253", "用户已绑定车辆，请先解绑");
-        }
-
         // 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
@@ -205,15 +198,28 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("100007", "未找到车辆");
         }
 
-        // 是否被用户绑定
-        if ((ObjectUtils.isNotEmpty(electricityCar.getUid()) && electricityCar.getUid() != 0L) || uid.equals(electricityCar.getUid())) {
+        // 是否被其它用户绑定
+        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
             log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
-            throw new BizException("100253", "用户已绑定车辆，请先解绑");
+            throw new BizException("300038", "该车已被其他用户绑定");
         }
 
-        // 比对车辆是否符合(加盟商、门店、型号)
-        if (!rentalPackageEntity.getFranchiseeId().equals(electricityCar.getFranchiseeId().intValue()) || !rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue())
-                || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
+        // 查询用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        // 查询自己名下是否存在车辆
+        ElectricityCar electricityCarUser = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(electricityCarUser)) {
+            // 先去解绑
+            boolean unBindFlag = unBindingCar(tenantId, uid, optUid);
+            if (!unBindFlag) {
+                log.info("bindingCar, unBindingCar failed. uid is {}", uid);
+                throw new BizException("300039", "车辆绑定失败");
+            }
+        }
+
+        // 比对车辆是否符合(门店、型号)
+        if (!rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue()) || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
             log.error("bindingCar, t_electricity_car carModel or organization is wrong", electricityCar.getUid());
             throw new BizException("100007", "未找到车辆");
         }
@@ -279,7 +285,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @return
      */
     private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Integer rentalType) {
-        //用户解绑加锁
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
@@ -355,19 +360,19 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     private ElectricityCar buildElectricityCar(ElectricityCar car, Long uid, UserInfo userInfo, Integer rentalType) {
         ElectricityCar carUpdate = new ElectricityCar();
-        car.setId(car.getId());
-        car.setUpdateTime(System.currentTimeMillis());
+        carUpdate.setId(car.getId());
+        carUpdate.setUpdateTime(System.currentTimeMillis());
         if (RentalTypeEnum.RENTAL.getCode().equals(rentalType)) {
-            car.setUid(uid);
-            car.setUserInfoId(userInfo.getId());
-            car.setUserName(userInfo.getName());
-            car.setPhone(userInfo.getPhone());
+            carUpdate.setUid(uid);
+            carUpdate.setUserInfoId(userInfo.getId());
+            carUpdate.setUserName(userInfo.getName());
+            carUpdate.setPhone(userInfo.getPhone());
         }
         if (RentalTypeEnum.RETURN.getCode().equals(rentalType)) {
-            car.setUid(null);
-            car.setUserInfoId(null);
-            car.setUserName(null);
-            car.setPhone(null);
+            carUpdate.setUid(null);
+            carUpdate.setUserInfoId(null);
+            carUpdate.setUserName(null);
+            carUpdate.setPhone(null);
         }
         return carUpdate;
     }
@@ -444,6 +449,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
     }
 
+    /**
+     * JT 808 控制锁
+     * @param sn
+     * @param lockType
+     * @param retryCount
+     * @return
+     */
+    @Override
     public Boolean retryCarLockCtrl(String sn, Integer lockType, Integer retryCount) {
         if (Objects.isNull(retryCount)) {
             retryCount = 1;

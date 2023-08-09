@@ -3207,8 +3207,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
 
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
         ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
-        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
         serviceFeeUserInfoInsert.setUid(userBatteryMemberCardUpdate.getUid());
         serviceFeeUserInfoInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         serviceFeeUserInfoInsert.setUpdateTime(System.currentTimeMillis());
@@ -3216,7 +3217,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoInsert.setCreateTime(System.currentTimeMillis());
         serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
         serviceFeeUserInfoInsert.setDisableMemberCardNo("");
-        serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        if (Objects.nonNull(serviceFeeUserInfo)) {
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsert);
+        } else {
+            serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        }
 
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -3298,8 +3303,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             } else {
-                userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getOrderExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             }
         } else {
             //限次套餐
@@ -3311,7 +3316,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }else{
                 userBatteryMemberCardUpdate.setOrderRemainingNumber(query.getUseCount());
                 userBatteryMemberCardUpdate.setRemainingNumber(query.getUseCount());
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             }
         }
 
@@ -3446,6 +3451,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
+
+            //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+            if(StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())){
+                ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
+                electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
+                electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
+                electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
+            }
         } else {
 
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();

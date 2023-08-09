@@ -253,12 +253,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
         int result = this.userInfoMapper.update(userInfo);
-        DbUtils.dbOperateSuccessThen(result, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
-            return null;
-        });
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         return result;
-
     }
 
     @Override
@@ -1415,10 +1411,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         Integer result = this.userInfoMapper.updateByUid(userInfo);
 
-        DbUtils.dbOperateSuccessThen(result, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
-            return null;
-        });
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+
         return result;
     }
 

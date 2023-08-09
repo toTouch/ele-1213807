@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
@@ -624,7 +625,7 @@ public class UnionTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
-
+        redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
         return Pair.of(true, null);
     }
 
@@ -721,6 +722,15 @@ public class UnionTradeOrderServiceImpl extends
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                     userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
                     userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
+
+                    //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+                    if(org.apache.commons.lang3.StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())){
+                        ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
+                        electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
+                        electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                        electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
+                        electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
+                    }
                 } else {
 
                     UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
@@ -740,7 +750,6 @@ public class UnionTradeOrderServiceImpl extends
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 }
             }
-
 
             if(Objects.isNull(userBatteryMemberCard)){
                 userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);

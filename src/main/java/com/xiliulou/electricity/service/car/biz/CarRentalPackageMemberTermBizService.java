@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 
 /**
@@ -9,6 +10,8 @@ import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
  **/
 public interface CarRentalPackageMemberTermBizService {
 
+
+
     /**
      * TODO 扣减余量次数待定实现
      * @param tenantId
@@ -17,6 +20,17 @@ public interface CarRentalPackageMemberTermBizService {
      * @return
      */
     /*boolean substractResidue(Integer tenantId, Long uid, Long packageId)*/
+
+
+    /**
+     * 编辑会员当前套餐信息
+     * @param tenantId 租户ID
+     * @param optReq 操作数据模型
+     * @param optUid 操作用户UID
+     * @return true(成功)、false(失败)
+     */
+    boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid);
+
 
     /**
      * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）

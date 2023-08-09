@@ -1,11 +1,17 @@
 package com.xiliulou.electricity.service.impl.exrefund;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
@@ -45,6 +51,9 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
     @Autowired
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
+
+    @Autowired
+    private DivisionAccountProducer divisionAccountProducer;
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
@@ -113,6 +122,14 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
             //更新套餐绑定的优惠券为已失效
             batteryMembercardRefundOrderService.updateUserCouponStatus(electricityMemberCardOrder.getOrderId());
+
+            // 8. 处理分账
+            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+            divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
+            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());

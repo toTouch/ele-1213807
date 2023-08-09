@@ -712,8 +712,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 return;
             }
 
-            list.parallelStream().forEach(item->{
-                insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(),InsuranceOrder.EXPIRED);
+            list.parallelStream().forEach(item -> {
+                if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+                    insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+                }
             });
 
             offset += size;

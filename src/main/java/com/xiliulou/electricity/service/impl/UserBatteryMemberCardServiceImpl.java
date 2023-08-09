@@ -22,6 +22,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +133,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return null;
         });
 
+        Executors.newSingleThreadScheduledExecutor().schedule(()->{
+            if(redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid())){
+                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            }
+        },1, TimeUnit.SECONDS);
+
         return update;
     }
 
@@ -154,7 +162,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
         return delete;
     }
-    
+
     @Override
     public Integer unbindMembercardInfoByUid(Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
@@ -171,9 +179,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         userBatteryMemberCard.setDisableMemberCardTime(null);
         userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
         userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-    
+
         int update = this.userBatteryMemberCardMapper.unbindMembercardInfoByUid(userBatteryMemberCard);
-    
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             return null;
@@ -306,16 +314,16 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      */
     @Override
     public List<String> selectUserBatteryMemberCardOrder(Long uid) {
-        List<String> orderList=new ArrayList<>();
+        List<String> orderList = new ArrayList<>();
 
         UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(uid);
-        if(!Objects.isNull(userBatteryMemberCard)){
+        if (!Objects.isNull(userBatteryMemberCard)) {
             orderList.add(userBatteryMemberCard.getOrderId());
         }
 
 
         List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(uid);
-        if(!CollectionUtils.isEmpty(userBatteryMemberCardPackages)){
+        if (!CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
             orderList.addAll(userBatteryMemberCardPackages.stream().map(UserBatteryMemberCardPackage::getOrderId).collect(Collectors.toList()));
         }
 
@@ -324,6 +332,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     /**
      * 检查用户套餐是否可用
+     *
      * @param userInfo
      * @return
      */
@@ -369,9 +378,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                 return;
             }
 
-            userBatteryMemberCardList.parallelStream().forEach(item -> {
+            userBatteryMemberCardList.forEach(item -> {
                 //如果套餐过期更新订单状态为已失效
-                if (item.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isNotBlank(item.getOrderId())) {
+                if (Objects.nonNull(item.getMemberCardExpireTime()) && item.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isNotBlank(item.getOrderId())) {
                     ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
                     electricityMemberCardOrder.setOrderId(item.getOrderId());
                     electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);

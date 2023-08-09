@@ -23,12 +23,10 @@ import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.mq.producer.UserCouponProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
-import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
-import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.car.biz.*;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -72,6 +70,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
 
     @Resource
     private UserCouponProducer userCouponProducer;
@@ -316,11 +323,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
 
-            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
                 log.error("bindingPackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), buyOptModel.getFranchiseeId());
                 throw new BizException("300036", "所属机构不匹配");
             }
-            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId().intValue())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId())) {
                 log.error("bindingPackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), buyOptModel.getStoreId());
                 throw new BizException("300036", "所属机构不匹配");
             }
@@ -1590,6 +1597,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 套餐订单信息
         CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
+        carRentalPackageOrderVO.setRentalPackageId(memberTerm.getRentalPackageId());
         carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
         carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
         carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
@@ -2073,13 +2081,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 1. 处理租车套餐购买订单
         CarRentalPackageOrderPo carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_order, order_no is {}", orderNo);
+            log.error("handBuyRentalPackageOrderSuccess failed, not found car_rental_package_order, order_no is {}", orderNo);
             return Pair.of(false, "未找到租车套餐购买订单");
         }
 
         // 订单支付状态不匹配
         if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), carRentalPackageOrderEntity.getPayState())) {
-            log.error("NotifyCarRenalPackageOrder failed, car_rental_package_order processed, order_no is {}", orderNo);
+            log.error("handBuyRentalPackageOrderSuccess failed, car_rental_package_order processed, order_no is {}", orderNo);
             return Pair.of(false, "租车套餐购买订单已处理");
         }
 
@@ -2087,7 +2095,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(depositPayEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_deposit_pay, order_no is {}", depositPayOrderNo);
+            log.error("handBuyRentalPackageOrderSuccess failed, not found car_rental_package_deposit_pay, order_no is {}", depositPayOrderNo);
             return Pair.of(false, "未找到租车套餐押金缴纳订单");
         }
 
@@ -2101,7 +2109,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 3. 处理租车套餐会员期限
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_member_term, uid is {}", uid);
+            log.error("handBuyRentalPackageOrderSuccess failed, not found car_rental_package_member_term, uid is {}", uid);
             return Pair.of(false, "未找到租车会员记录信息");
         }
 
@@ -2201,7 +2209,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (ObjectUtils.isEmpty(userInfo)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found user_info, uid is {}", uid);
+            log.error("handBuyRentalPackageOrderSuccess failed, not found user_info, uid is {}", uid);
             return Pair.of(false, "未找到用户信息");
         }
 
@@ -2228,8 +2236,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         } else {
             userCouponService.updateStatusByOrderId(orderNo, UserCoupon.STATUS_USED);
         }
-
-        // 6. TODO 车辆断启电
 
         // 7. 处理保险购买订单
         InsuranceOrder insuranceOrder = insuranceOrderService.selectBySourceOrderNoAndType(orderNo, carRentalPackageOrderEntity.getRentalPackageType());
@@ -2268,6 +2274,33 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
         }
 
+        // 11. 车辆解锁
+        ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(electricityCar)) {
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                Boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+                log.info("handBuyRentalPackageOrderSuccess, carRentalOrderBizService.retryCarLockCtrl result is {}", result);
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory
+                        .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                carLockCtrlHistory.setType(CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
+            }
+        }
 
         return Pair.of(true, userInfo.getPhone());
     }
