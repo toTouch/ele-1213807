@@ -2207,6 +2207,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         if (YesNoEnum.NO.getCode().equals(userInfo.getCarBatteryDepositStatus()) || UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
             userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfo.setFranchiseeId(Long.valueOf(carRentalPackageOrderEntity.getFranchiseeId()));
+            userInfo.setStoreId(Long.valueOf(carRentalPackageOrderEntity.getStoreId()));
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
                 userInfo.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             } else {
