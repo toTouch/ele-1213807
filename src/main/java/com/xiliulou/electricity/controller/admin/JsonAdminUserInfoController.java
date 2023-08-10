@@ -173,6 +173,9 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                             @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateBeginTime,
                             @RequestParam(value = "userCreateEndTime", required = false) Long userCreateEndTime,
+                            @RequestParam(value = "carMemberCardExpireType", required = false) Integer carMemberCardExpireType,
+                            @RequestParam(value = "carMemberCardExpireTimeBegin", required = false) Long carMemberCardExpireTimeBegin,
+                            @RequestParam(value = "carMemberCardExpireTimeEnd", required = false) Long carMemberCardExpireTimeEnd,
                             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
@@ -201,6 +204,9 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireType(memberCardExpireType)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .carMemberCardExpireType(carMemberCardExpireType)
+                .carMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd)
                 .uid(uid)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
@@ -209,6 +215,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
 
         userInfoService.exportExcel(userInfoQuery, response);
     }
