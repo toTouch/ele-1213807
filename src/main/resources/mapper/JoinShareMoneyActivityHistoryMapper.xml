@@ -236,7 +236,7 @@
         </where>
     </select>
 
-    <select id="selectJoinShareMoneyActivityHistory" resultMap="JoinShareMoneyActivityHistoryMap">
+    <select id="queryUserJoinedShareMoneyActivity" resultMap="JoinShareMoneyActivityHistoryMap">
         <include refid="selectJoinShareMoneyActivityHistory"/>
         <where>
             status in (1,2)

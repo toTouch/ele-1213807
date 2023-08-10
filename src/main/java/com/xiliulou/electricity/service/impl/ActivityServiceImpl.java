@@ -92,6 +92,7 @@ public class ActivityServiceImpl implements ActivityService {
         return Triple.of(true, "", activityUserInfoVO);
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> updateCouponByPackage(String orderNo, Integer packageType) {
 
