@@ -24,6 +24,8 @@ public interface CouponService {
      */
     Coupon queryByIdFromCache(Integer id);
 
+    Coupon queryByIdFromDB(Integer id);
+
     /**
      * 新增数据
      *

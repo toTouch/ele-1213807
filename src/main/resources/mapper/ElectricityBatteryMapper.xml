@@ -321,6 +321,7 @@
         select teb.id                     as id,
                teb.sn                     as sn,
                teb.power                  as power,
+               teb.model                  as model,
                teb.voltage                as voltage,
                teb.capacity               as capacity,
                teb.physics_status         as physicsStatus,

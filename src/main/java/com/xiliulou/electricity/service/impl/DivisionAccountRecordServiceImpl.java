@@ -5,6 +5,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
@@ -25,6 +27,7 @@ import com.xiliulou.electricity.vo.DivisionAccountRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -293,7 +296,10 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void handleDivisionAccountByPackage(String orderNo, Integer type){
+    public void handleDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO){
+        String orderNo = divisionAccountOrderDTO.getOrderNo();
+        Integer type = divisionAccountOrderDTO.getType();
+        MDC.put(CommonConstant.TRACE_ID, divisionAccountOrderDTO.getTraceId());
 
         String value = orderNo + "_" + type;
         if (!redisService
@@ -419,6 +425,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             throw new BizException("100000", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value);
+            MDC.clear();
         }
     }
 
@@ -524,12 +531,15 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
     /**
      * 处理退款时的分账业务
-     * @param orderNo 退款订单号
-     * @param type 套餐类型
+     * @param divisionAccountOrderDTO 退款订单号及套餐类型信息对象
+     *
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void handleRefundDivisionAccountByPackage(String orderNo, Integer type){
+    public void handleRefundDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO){
+        String orderNo = divisionAccountOrderDTO.getOrderNo();
+        Integer type = divisionAccountOrderDTO.getType();
+        MDC.put(CommonConstant.TRACE_ID, divisionAccountOrderDTO.getTraceId());
 
         String value = orderNo + "_" + type;
         if (!redisService
@@ -599,6 +609,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             throw new BizException("100001", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value);
+            MDC.clear();
         }
 
     }

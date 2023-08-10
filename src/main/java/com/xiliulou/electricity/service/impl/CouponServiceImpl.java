@@ -93,6 +93,11 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
+    @Override
+    public Coupon queryByIdFromDB(Integer id) {
+        return  couponMapper.selectById(id);
+    }
+
     /**
      * 新增数据
      *
@@ -228,8 +233,8 @@ public class CouponServiceImpl implements CouponService {
         Coupon coupon = new Coupon();
         coupon.setName(couponName);
         coupon.setTenantId(tenantId);
-        Coupon result = couponMapper.selectCouponByQuery(coupon);
-        if(Objects.nonNull(result)){
+        List<Coupon> result = couponMapper.selectCouponByQuery(coupon);
+        if(!CollectionUtils.isEmpty(result)){
             return Boolean.TRUE;
         }
         return Boolean.FALSE;

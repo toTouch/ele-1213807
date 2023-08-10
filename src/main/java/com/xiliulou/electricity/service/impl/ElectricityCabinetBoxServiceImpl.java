@@ -138,7 +138,11 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 return;
             }
 
-            ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+            String sn = item.getSn();
+            if (item.getSn().contains("UNKNOW")) {
+                sn = item.getSn().substring(6);
+            }
+            ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(sn);
             item.setPower(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getPower() : 0);
             item.setChargeStatus(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getChargeStatus() : -1);
             item.setBatteryA(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryChargeA() : 0);

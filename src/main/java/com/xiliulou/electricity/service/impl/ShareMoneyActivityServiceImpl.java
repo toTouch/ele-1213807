@@ -139,7 +139,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
 
         //检查选择邀请标准为购买套餐时，当前所选的套餐是否存在
-        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareMoneyActivityAddAndUpdateQuery.getInvitationCriteria())){
+        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareMoneyActivityAddAndUpdateQuery.getInvitationCriteria())){
             //检查是否有选择（换电,租车,车电一体）套餐信息
             if(CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getBatteryPackages())
                     && CollectionUtils.isEmpty(shareMoneyActivityAddAndUpdateQuery.getCarRentalPackages())
@@ -298,7 +298,24 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Override
     public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
         List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareMoneyActivityQuery);
-        return R.ok(shareMoneyActivityList);
+        List<ShareMoneyActivityVO> shareMoneyActivityVOList = Lists.newArrayList();
+
+        for(ShareMoneyActivity shareMoneyActivity : shareMoneyActivityList){
+            ShareMoneyActivityVO shareMoneyActivityVO = new ShareMoneyActivityVO();
+            BeanUtil.copyProperties(shareMoneyActivity, shareMoneyActivityVO);
+
+            if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
+                shareMoneyActivityVO.setBatteryPackages(getBatteryPackages(shareMoneyActivity.getId()));
+
+                shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }
+
+            shareMoneyActivityVOList.add(shareMoneyActivityVO);
+
+        }
+
+        return R.ok(shareMoneyActivityVOList);
     }
 
 
@@ -385,7 +402,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivityVO.setTotalMoney(totalMoney);
 
         //设置对应的套餐信息
-        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.equals(shareMoneyActivityVO.getInvitationCriteria())){
+        if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareMoneyActivityVO.getInvitationCriteria())){
             shareMoneyActivityVO.setBatteryPackages(getBatteryPackages(shareMoneyActivity.getId()));
 
             shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));

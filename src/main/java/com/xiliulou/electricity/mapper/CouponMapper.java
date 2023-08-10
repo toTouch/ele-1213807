@@ -35,6 +35,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
 
     List<SearchVo> search(CouponQuery query);
 
-    Coupon selectCouponByQuery(Coupon coupon);
+    List<Coupon> selectCouponByQuery(Coupon coupon);
 
 }

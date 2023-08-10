@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -15,6 +17,7 @@ import com.xiliulou.electricity.vo.ActivityUserInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,9 +117,18 @@ public class ActivityServiceImpl implements ActivityService {
         return null;
     }
 
+    /**
+     * 购买套餐后处理活动业务
+     * @param activityProcessDTO
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleActivityByPackage(String orderNo, Integer packageType) {
+    public Triple<Boolean, String, Object> handleActivityByPackage(ActivityProcessDTO activityProcessDTO) {
+
+        String orderNo = activityProcessDTO.getOrderNo();
+        Integer packageType = activityProcessDTO.getType();
+        MDC.put(CommonConstant.TRACE_ID, activityProcessDTO.getTraceId());
         log.info("Activity by package flow start, orderNo = {}, package type = {}", orderNo, packageType);
 
         String value = orderNo + "_" + packageType;
@@ -131,7 +143,7 @@ public class ActivityServiceImpl implements ActivityService {
                 log.info("Activity flow for battery package, orderNo = {}", orderNo);
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
                 Long uid = electricityMemberCardOrder.getUid();
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
 
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.warn("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
@@ -147,7 +159,7 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
                 //处理渠道活动
@@ -172,7 +184,7 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId(), carRentalPackageOrderPO.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
                 //处理渠道活动
@@ -182,9 +194,10 @@ public class ActivityServiceImpl implements ActivityService {
 
         }catch(Exception e){
             log.error("handle activity for purchase package error, order number = {}, package type = {}", orderNo, packageType, e);
-            throw new BizException("200000", e.getMessage());
+            throw new BizException("200010", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value);
+            MDC.clear();
         }
 
         return Triple.of(true, "", null);
@@ -192,102 +205,24 @@ public class ActivityServiceImpl implements ActivityService {
 
     /**
      * 登录注册时 活动处理, 该方法在3.0版本中先不启用
-     * @param uid
+     * @param activityProcessDTO
      * @return
      */
     @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleActivityByLogon(Long uid) {
-        log.info("Activity by logon flow start, uid = {}", uid);
-        //TODO 如何判定当前用户属于新用户
-        //获取参与邀请活动记录
-        JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
-
-        //是否有人邀请参与该活动
-        if(Objects.nonNull(joinShareActivityRecord)){
-            //查询对应的活动邀请标准
-            ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
-           //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
-            if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
-                    && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareActivity.getInvitationCriteria())){
-
-                //修改邀请状态
-                joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                joinShareActivityRecordService.update(joinShareActivityRecord);
-
-                //修改历史记录状态
-                JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), uid);
-                if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                    oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                    oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
-                }
-
-                //给邀请人增加邀请成功人数
-                shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
-            }
-        }
-
-        //是否有人返现邀请
-        JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(uid);
-        if (Objects.nonNull(joinShareMoneyActivityRecord)) {
-            ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
-            if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
-                    && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareMoneyActivity.getInvitationCriteria())){
-                //修改邀请状态
-                joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
-                joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-                joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
-
-                //修改历史记录状态
-                JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), uid);
-                if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-                    oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
-                    oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-                    joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-                }
-
-                if (Objects.nonNull(shareMoneyActivity)) {
-                    //给邀请人增加邀请成功人数
-                    shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
-                }
-
-                //返现
-                userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), shareMoneyActivity.getTenantId());
-            }
-
-        }
-
-        return Triple.of(true, "", null);
-    }
-
-
-    /**
-     * 实名认证后的 活动处理
-     * @param uid
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleActivityByRealName(Long uid) {
-        log.info("Activity by real name authentication flow start, uid = {}", uid);
+    public Triple<Boolean, String, Object> handleActivityByLogon(ActivityProcessDTO activityProcessDTO) {
+        Long uid = activityProcessDTO.getUid();
+        MDC.put(CommonConstant.TRACE_ID, activityProcessDTO.getTraceId());
+        log.info("Activity by register flow start, uid = {}", uid);
 
         if (!redisService
-                .setNx(CacheConstant.CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY + uid, String.valueOf(uid), 10 * 1000L, false)) {
-            log.error("Handle activity for real name auth error, operations frequently, uid = {}", uid);
+                .setNx(CacheConstant.CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY + uid, String.valueOf(uid), 10 * 1000L, false)) {
+            log.error("Handle activity for user register error, operations frequently, uid = {}", uid);
         }
 
         try{
-            //判断该用户是否进行了实名认证
-            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-            //未实名认证
-            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("not finished real name authentication! user not auth,uid = {}", uid);
-                return Triple.of(false, "000100", "未进行实名认证");
-            }
-
+            //TODO 如何判定当前用户属于新用户
             //获取参与邀请活动记录
             JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
 
@@ -297,7 +232,7 @@ public class ActivityServiceImpl implements ActivityService {
                 ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
                 //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
                 if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareActivity.getInvitationCriteria())){
+                        && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareActivity.getInvitationCriteria())){
 
                     //修改邀请状态
                     joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
@@ -322,7 +257,103 @@ public class ActivityServiceImpl implements ActivityService {
             if (Objects.nonNull(joinShareMoneyActivityRecord)) {
                 ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
                 if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
-                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.equals(shareMoneyActivity.getInvitationCriteria())){
+                        && ActivityEnum.INVITATION_CRITERIA_LOGON.equals(shareMoneyActivity.getInvitationCriteria())){
+                    //修改邀请状态
+                    joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+                    joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+                    joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+
+                    //修改历史记录状态
+                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), uid);
+                    if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+                        oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+                        oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+                        joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+                    }
+
+                    if (Objects.nonNull(shareMoneyActivity)) {
+                        //给邀请人增加邀请成功人数
+                        shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+                    }
+
+                    //返现
+                    userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), shareMoneyActivity.getTenantId());
+                }
+
+            }
+        } catch (Exception e) {
+            log.error("handle activity for user register error, uid = {}", uid, e);
+            throw new BizException("200011", e.getMessage());
+        } finally {
+            redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY + uid);
+            MDC.clear();
+        }
+
+        return Triple.of(true, "", null);
+    }
+
+
+    /**
+     * 实名认证后的 活动处理
+     * @param activityProcessDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> handleActivityByRealName(ActivityProcessDTO activityProcessDTO) {
+        Long uid = activityProcessDTO.getUid();
+        MDC.put(CommonConstant.TRACE_ID, activityProcessDTO.getTraceId());
+        log.info("Activity by real name authentication flow start, uid = {}", uid);
+
+        if (!redisService
+                .setNx(CacheConstant.CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY + uid, String.valueOf(uid), 10 * 1000L, false)) {
+            log.error("Handle activity for real name auth error, operations frequently, uid = {}", uid);
+        }
+
+        try{
+            //判断该用户是否进行了实名认证
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            //未实名认证
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("not finished real name authentication! user not auth,uid = {}", uid);
+                return Triple.of(false, "000100", "未进行实名认证");
+            }
+
+            //获取参与邀请活动记录
+            JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(uid);
+
+            //是否有人邀请参与该活动
+            if(Objects.nonNull(joinShareActivityRecord)){
+                //查询对应的活动邀请标准
+                ShareActivity shareActivity = shareActivityService.queryByIdFromCache(joinShareActivityRecord.getActivityId());
+                //检查该活动是否参与过, 没有参与过，并且活动邀请标准为登录注册，则处理该活动
+                if(JoinShareActivityRecord.STATUS_INIT.equals(joinShareActivityRecord.getStatus())
+                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivity.getInvitationCriteria())){
+
+                    //修改邀请状态
+                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                    joinShareActivityRecordService.update(joinShareActivityRecord);
+
+                    //修改历史记录状态
+                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), uid);
+                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                    }
+
+                    //给邀请人增加邀请成功人数
+                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+                }
+            }
+
+            //是否有人返现邀请
+            JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(uid);
+            if (Objects.nonNull(joinShareMoneyActivityRecord)) {
+                ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
+                if(JoinShareMoneyActivityRecord.STATUS_INIT.equals(joinShareMoneyActivityRecord.getStatus())
+                        && ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
                     //修改邀请状态
                     joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
                     joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
@@ -349,9 +380,10 @@ public class ActivityServiceImpl implements ActivityService {
 
         }catch (Exception e){
             log.error("handle activity for real name auth error, uid = {}",uid, e);
-            throw new BizException("200000", e.getMessage());
+            throw new BizException("200012", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY + uid);
+            MDC.clear();
         }
 
         return Triple.of(true, "", null);

@@ -194,7 +194,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
         }
 
         long now = System.currentTimeMillis();
@@ -323,11 +323,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
 
-            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userFranchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
                 log.error("bindingPackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), buyOptModel.getFranchiseeId());
                 throw new BizException("300036", "所属机构不匹配");
             }
-            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId())) {
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !userStoreId.equals(userInfo.getStoreId().intValue())) {
                 log.error("bindingPackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), buyOptModel.getStoreId());
                 throw new BizException("300036", "所属机构不匹配");
             }
@@ -2208,13 +2208,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        userInfo.setUpdateTime(System.currentTimeMillis());
+
         if (ObjectUtils.isEmpty(userInfo)) {
             log.error("handBuyRentalPackageOrderSuccess failed, not found user_info, uid is {}", uid);
             return Pair.of(false, "未找到用户信息");
         }
 
         if (YesNoEnum.NO.getCode().equals(userInfo.getCarBatteryDepositStatus()) || UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
-            userInfo.setUpdateTime(System.currentTimeMillis());
             userInfo.setFranchiseeId(Long.valueOf(carRentalPackageOrderEntity.getFranchiseeId()));
             userInfo.setStoreId(Long.valueOf(carRentalPackageOrderEntity.getStoreId()));
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
@@ -2248,32 +2249,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
 
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(orderNo);
-        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(orderNo);
-        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
-
-        // 10. 发放优惠券
-        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
-            UserCouponDTO userCouponDTO = new UserCouponDTO();
-            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
-            userCouponDTO.setUid(uid);
-            userCouponDTO.setSourceOrderNo(orderNo);
-            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-            userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
-        }
-
         // 11. 车辆解锁
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
         if (ObjectUtils.isNotEmpty(electricityCar)) {
@@ -2300,6 +2275,33 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
+        }
+
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(orderNo);
+        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(orderNo);
+        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+        // 10. 发放优惠券
+        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+            userCouponDTO.setUid(uid);
+            userCouponDTO.setSourceOrderNo(orderNo);
+            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+            userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
         }
 
         return Pair.of(true, userInfo.getPhone());
