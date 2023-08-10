@@ -54,7 +54,7 @@
                 and teco.tenant_id = #{query.tenantId}
             </if>
         </where>
-        order by teco.update_time desc
+        order by teco.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
