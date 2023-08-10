@@ -517,8 +517,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @GetMapping("/admin/battery/selectByBatteryName")
     public R batteryInfo(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-                         @RequestParam(value = "batteryName") String batteryName) {
-        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
+                         @RequestParam(value = "name") String name) {
+        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(name).offset(offset)
                 .size(size).tenantId(TenantContextHolder.getTenantId()).build();
 
         List<ElectricityBattery> electricityBatterys = electricityBatteryService.selectBatteryInfoByBatteryName(
