@@ -319,7 +319,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         try{
             //判断该用户是否进行了实名认证
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("not finished real name authentication! user not auth, user info = {}", JsonUtil.toJson(userInfo));
