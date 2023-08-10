@@ -665,8 +665,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         //使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
-            refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
-            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000);
+            refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
+            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 60 / 1000);
         }
     }
 
@@ -684,8 +684,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         //使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
-            batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
-            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000);
+            batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
+            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 60 / 1000);
         }
     }
 

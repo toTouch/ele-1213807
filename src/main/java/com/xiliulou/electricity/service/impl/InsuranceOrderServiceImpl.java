@@ -156,7 +156,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-
         Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", userInfo.getFranchiseeId());
