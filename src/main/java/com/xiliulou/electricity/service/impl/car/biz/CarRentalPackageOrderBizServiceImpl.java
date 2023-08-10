@@ -770,6 +770,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
                     // 线下，直接设置为退款成功
                     rentRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
+                    callBackResource.setRefundStatus("SUCCESS");
+                    callBackResource.setOutRefundNo(refundRentOrderNo);
+                    wxRefundPayService.process(callBackResource);
                 } else {
                     try {
                         // 根据购买订单编码获取当初的支付流水
