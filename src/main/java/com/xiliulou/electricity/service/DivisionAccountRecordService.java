@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.DivisionAccountRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -62,9 +63,9 @@ public interface DivisionAccountRecordService {
 
     void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder);
 
-    void handleDivisionAccountByPackage(String orderNo, Integer type);
+    void handleDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO);
 
-    void handleRefundDivisionAccountByPackage(String orderNo, Integer type);
+    void handleRefundDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO);
 
     void updateDivisionAccountStatusForFreezeOrder();
     

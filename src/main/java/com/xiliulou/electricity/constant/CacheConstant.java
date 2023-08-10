@@ -347,6 +347,11 @@ public interface CacheConstant {
     String CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY = "cache_handle_activity_real_name_auth_key:";
 
     /**
+     * 用户登录注册后处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY = "cache_handle_activity_user_register_key:";
+
+    /**
      * 购买套餐后发放优惠券给用户缓存锁
      */
     String CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY = "cache_send_coupon_package_purchase_key:";
