@@ -64,12 +64,13 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and teco.order_id = #{query.orderId}
+                and teco.order_id =#{query.orderId}
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and teco.phone = #{query.phone}

@@ -16,7 +16,7 @@
         <result property="monthSumPower" column="month_sum_power" jdbcType="NUMERIC"/>
         <result property="monthSumCharge" column="month_sum_charge" jdbcType="NUMERIC"/>
         <result property="jsonCharge" column="json_charge" jdbcType="VARCHAR"/>
-        <result property="date" column="date" jdbcType="OTHER"/>
+        <result property="date" column="date" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
@@ -164,8 +164,7 @@
         json_charge, date, create_time
         from t_ele_power_month_record
         <where>
-            date = #{date}
-            and tenant_id = #{tenantId}
+            tenant_id = #{tenantId}
             <if test="eid != null">
                 and eid = #{eid}
             </if>
@@ -174,6 +173,13 @@
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null and startDate != ''">
+                and date &lt; #{endDate}
             </if>
         </where>
         order by id desc
@@ -182,11 +188,10 @@
 
     <select id="queryCount" resultType="java.lang.Integer">
         select
-            count(1)
+        count(1)
         from t_ele_power_month_record
         <where>
-            date = #{date}
-            and tenant_id = #{tenantId}
+            tenant_id = #{tenantId}
             <if test="eid != null">
                 and eid = #{eid}
             </if>
@@ -195,6 +200,13 @@
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null and startDate != ''">
+                and date &lt; #{endDate}
             </if>
         </where>
     </select>
