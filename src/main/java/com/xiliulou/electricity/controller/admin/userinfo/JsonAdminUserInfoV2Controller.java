@@ -65,7 +65,7 @@ public class JsonAdminUserInfoV2Controller {
      */
     @PostMapping("/updateCurrPackage")
     public R<Boolean> updateCurrPackage(@RequestBody MemberCurrPackageOptReq optReq) {
-        if (!ObjectUtils.allNotNull(optReq, optReq.getUid(), optReq.getPackageOrderNo())) {
+        if (!ObjectUtils.allNotNull(optReq, optReq.getUid(), optReq.getPackageOrderNo(), optReq.getType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 

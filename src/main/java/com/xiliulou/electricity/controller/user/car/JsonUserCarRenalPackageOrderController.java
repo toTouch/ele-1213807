@@ -138,9 +138,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid());
-
-        return R.ok(refundFlag);
+        return R.ok(carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid()));
     }
 
     /**
