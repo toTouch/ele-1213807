@@ -18,9 +18,6 @@ import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
-import com.xiliulou.electricity.mq.producer.ActivityProducer;
-import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
-import com.xiliulou.electricity.mq.producer.UserCouponProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.*;
@@ -81,7 +78,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalOrderBizService carRentalOrderBizService;
 
     @Resource
-    private UserCouponProducer userCouponProducer;
+    private UserCouponService userCouponService;
 
     @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
@@ -90,10 +87,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private InsuranceUserInfoService insuranceUserInfoService;
 
     @Resource
-    private ActivityProducer activityProducer;
+    private ActivityService activityService;
 
     @Resource
-    private DivisionAccountProducer divisionAccountProducer;
+    private DivisionAccountRecordService divisionAccountRecordService;
 
     @Resource
     private ElectricityCarModelService carModelService;
@@ -142,9 +139,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private UserInfoService userInfoService;
-
-    @Resource
-    private UserCouponService userCouponService;
 
     @Resource
     private UserOauthBindService userOauthBindService;
@@ -2287,7 +2281,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
         divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
         // 9. 处理活动
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -2295,7 +2289,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+        activityService.asyncProcessActivity(activityProcessDTO);
 
         // 10. 发放优惠券
         if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
@@ -2304,7 +2298,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userCouponDTO.setUid(uid);
             userCouponDTO.setSourceOrderNo(orderNo);
             userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-            userCouponProducer.sendSyncMessage(JsonUtil.toJson(userCouponDTO));
+            userCouponService.asyncSendCoupon(userCouponDTO);
         }
 
         return Pair.of(true, userInfo.getPhone());

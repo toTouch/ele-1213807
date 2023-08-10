@@ -484,7 +484,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 查询套餐信息
         Long rentalPackageId = freeDepositOptReq.getRentalPackageId();
         CarRentalPackagePo carRentalPackage = carRentalPackageService.selectById(rentalPackageId);
-        if (ObjectUtils.isEmpty(carRentalPackage) || UpDownEnum.DOWN.getCode().equals(carRentalPackage)) {
+        if (ObjectUtils.isEmpty(carRentalPackage) || UpDownEnum.DOWN.getCode().equals(carRentalPackage.getStatus())) {
             log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. not found t_car_rental_package or status is wrong. rentalPackageId is {}", rentalPackageId);
             throw new BizException("300000", "数据有误");
         }
@@ -526,12 +526,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         log.info("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder result is {}", JsonUtil.toJson(callPxzRsp));
 
         if (ObjectUtils.isEmpty(callPxzRsp)) {
-            log.error("PCarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
             throw new BizException("100401", "免押生成失败");
         }
 
         if (!callPxzRsp.isSuccess()) {
-            log.error("PCarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
+            log.error("CarRenalPackageDepositBizService createFreeDeposit, pxzDepositService.freeDepositOrder", uid, freeDepositOrder.getOrderId());
             throw new BizException("100401", callPxzRsp.getRespDesc());
         }
 
@@ -606,7 +606,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
             depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY;
         }
-        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder()
+        return FreeDepositOrder.builder()
                 .uid(uid)
                 .authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
                 .idCard(freeDepositOptReq.getIdCard())
@@ -621,7 +621,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
                 .depositType(depositType)
                 .build();
-        return freeDepositOrder;
     }
 
     /**
@@ -1177,7 +1176,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (BigDecimal.ZERO.compareTo(memberTermEntity.getDeposit()) == 0) {
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             Integer zeroDepositAuditEnabled = electricityConfig.getIsZeroDepositAuditEnabled();
-            depositAuditFlag = ElectricityConfig.ENABLE_ZERO_DEPOSIT_AUDIT.equals(zeroDepositAuditEnabled) ? true : false;
+            depositAuditFlag = ElectricityConfig.ENABLE_ZERO_DEPOSIT_AUDIT.equals(zeroDepositAuditEnabled);
         }
 
         Integer payType = depositPayEntity.getPayType();
