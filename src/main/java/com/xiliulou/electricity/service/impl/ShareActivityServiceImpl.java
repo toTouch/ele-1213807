@@ -24,6 +24,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -634,10 +635,26 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(shareActivityRuleList)) {
-			shareActivityVO.setShareActivityRuleQueryList(shareActivityRuleList);
+			shareActivityVO.setShareActivityRuleQueryList(getShareActivityRules(shareActivityRuleList));
 		}
 
 		return Triple.of(true, "", shareActivityVO);
+	}
+
+	private List<ShareActivityRuleVO> getShareActivityRules(List<ShareActivityRule> shareActivityRuleList){
+		List<ShareActivityRuleVO> shareActivityRuleVOList = Lists.newArrayList();
+		for(ShareActivityRule shareActivityRule : shareActivityRuleList){
+			ShareActivityRuleVO shareActivityRuleVO = new ShareActivityRuleVO();
+			BeanUtil.copyProperties(shareActivityRule, shareActivityRuleVO);
+			Integer couponId = shareActivityRule.getCouponId();
+			Coupon coupon = couponService.queryByIdFromCache(couponId);
+			shareActivityRuleVO.setCouponName(coupon.getName());
+
+			shareActivityRuleVOList.add(shareActivityRuleVO);
+		}
+
+		return shareActivityRuleVOList;
+
 	}
 
 	private List<BatteryMemberCardVO> getBatteryPackages(Integer activityId){

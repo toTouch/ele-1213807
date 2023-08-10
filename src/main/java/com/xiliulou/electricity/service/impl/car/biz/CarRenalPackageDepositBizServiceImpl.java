@@ -214,10 +214,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
         // 作废所有的套餐购买订单（未使用、使用中）、
         carRentalPackageOrderService.refundDepositByUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
+        // 查询用户保险
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
         // 按照人+类型，作废保险
         insuranceUserInfoService.deleteByUidAndType(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
         // 作废保险订单
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
         if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
             insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
         }
@@ -929,10 +930,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
                     // 作废所有的套餐购买订单（未使用、使用中）、
                     carRentalPackageOrderService.refundDepositByUid(depositPayEntity.getTenantId(), depositPayEntity.getUid(), apploveUid);
+                    // 查询用户保险
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     // 按照人+类型，作废保险
                     insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType());
                     // 作废保险订单
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                         insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                     }
@@ -1040,10 +1042,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
                     // 作废所有的套餐购买订单（未使用、使用中）、
                     carRentalPackageOrderService.refundDepositByUid(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
+                    // 查询用户保险
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     // 按照人+类型，作废保险
                     insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     // 作废保险订单
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                     if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                         insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                     }
@@ -1216,10 +1219,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         } else {
             // 作废所有的套餐购买订单（未使用、使用中）、
             carRentalPackageOrderService.refundDepositByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
+            // 查询用户保险
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
             // 按照人+类型，作废用户保险
             insuranceUserInfoService.deleteByUidAndType(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
             // 作废保险订单
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
             if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                 insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
@@ -1279,6 +1283,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             if (!depositAuditFlag) {
                 // 线上、线下 退款成功
                 refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                refundDepositInsertEntity.setRealAmount(BigDecimal.ZERO);
                 // 免押，退款中
                 if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                     refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
