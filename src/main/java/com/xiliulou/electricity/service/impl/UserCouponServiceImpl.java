@@ -53,7 +53,7 @@ import java.util.Objects;
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_CONSUMER_POOL", 4, "send_coupon_consumer_thread");
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 4, "send_coupon_to_user_thread");
 
     @Resource
     private UserCouponMapper userCouponMapper;

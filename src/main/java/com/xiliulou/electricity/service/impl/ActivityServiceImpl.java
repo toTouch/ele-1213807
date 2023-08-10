@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Service("activityService")
 public class ActivityServiceImpl implements ActivityService {
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_CONSUMER_POOL", 4, "activity_handle_thread");
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_THREAD_POOL", 4, "activity_handle_thread");
 
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;

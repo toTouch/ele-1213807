@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordService {
 
     private static final ExecutorService divisionAccountExecutorService = XllThreadPoolExecutors
-            .newFixedThreadPool("eleDivisionAccount", 4, "ele_division_account");
+            .newFixedThreadPool("DIVISION_ACCOUNT_THREAD_POOL", 4, "division_account_thread");
 
     @Resource
     private DivisionAccountRecordMapper divisionAccountRecordMapper;
