@@ -149,4 +149,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo();
 
     List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
+
+    void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 }
