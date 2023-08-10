@@ -805,10 +805,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             // 实际退款0元，则直接成功，不调用退款接口
             if (BigDecimal.ZERO.compareTo(realAmount) == 0) {
-                // 线上，退款中，先落库，在调用退款接口
+                // 退款中，先落库
                 saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
             } else {
-                // 线上，退款中，先落库，在调用退款接口
+                // 退款中，先落库，在调用退款接口
                 saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
 
                 // 组装微信退款参数
@@ -830,14 +830,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 }
             }
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
-            // 成功，线下或者免押
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                // TODO 免押，先代扣，再解除授权，最后落库
-                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
-            } else {
-                // 线下：直接落库
-                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
-            }
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
         }
 
         return true;
@@ -1217,7 +1210,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             // 处理状态
             carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode(), optId);
         } else {
-            // 作废所有的套餐购买订单（未使用、使用中）、
+            // 作废所有的套餐购买订单（未使用、使用中）
             carRentalPackageOrderService.refundDepositByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
             // 查询用户保险
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());

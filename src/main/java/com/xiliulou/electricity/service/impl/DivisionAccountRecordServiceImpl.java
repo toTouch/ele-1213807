@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordService {
 
-    private static final ExecutorService divisionAccountExecutorService = XllThreadPoolExecutors
+    protected XllThreadPoolExecutorService divisionAccountExecutorService = XllThreadPoolExecutors
             .newFixedThreadPool("DIVISION_ACCOUNT_THREAD_POOL", 4, "division_account_thread");
 
     @Resource
