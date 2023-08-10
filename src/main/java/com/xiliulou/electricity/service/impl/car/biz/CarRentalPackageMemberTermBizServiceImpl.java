@@ -176,11 +176,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (tenancyReq != 0) {
                 // 天
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                    dueTimeNew = tenancyReq * TimeConstant.DAY_MILLISECOND;
+                    dueTimeNew = now + (tenancyReq * TimeConstant.DAY_MILLISECOND);
                 }
                 // 分钟
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTimeNew = tenancyReq * TimeConstant.MINUTE_MILLISECOND;
+                    dueTimeNew = (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
                 }
             }
             // 总到期时间
