@@ -181,6 +181,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     ActivityProducer activityProducer;
+    
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+
+    @Autowired
+    UserExtraService userExtraService;
 
     /**
      * 分页查询
@@ -261,19 +267,92 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     public R queryList(UserInfoQuery userInfoQuery) {
 
-        List<UserBatteryInfoVO> userBatteryInfoVOS ;
+        List<UserBatteryInfoVO> userBatteryInfoVOS;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
-        } else if(Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)){
+        } else if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)) {
             userBatteryInfoVOS = userInfoMapper.queryListByCarMemberCardExpireTime(userInfoQuery);
-        }else {
+        } else {
             userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
         }
 
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
-            return R.ok(Collections.EMPTY_LIST);
+            return R.ok(Collections.emptyList());
         }
 
+        //获取用户电池套餐相关信息
+        CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                //获取用户所属加盟商
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
+                //获取用户电池信息
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                item.setNowElectricityBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+                item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
+
+                //获取用户当前绑定的套餐
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                item.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user battery membercard info error!", e);
+            return null;
+        });
+
+        //获取用户保险信息
+        CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                List<InsuranceUserInfo> list = insuranceUserInfoService.selectByUid(item.getUid());
+                if (CollectionUtils.isEmpty(list)) {
+                    return;
+                }
+
+                List<String> insuranceNames = new ArrayList<>(list.size());
+                list.forEach(e -> {
+                    FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(e.getInsuranceId());
+                    if (Objects.nonNull(franchiseeInsurance)) {
+                        insuranceNames.add(franchiseeInsurance.getName());
+                    }
+                });
+
+                item.setInsuranceNames(insuranceNames);
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user insurance info error!", e);
+            return null;
+        });
+
+        //获取用户基础信息
+        CompletableFuture<Void> queryUserBasicInfo = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                //获取邀请人信息
+                UserExtra userExtra = userExtraService.queryByIdFromCache(item.getUid());
+                if (Objects.nonNull(userExtra)) {
+                    UserInfo inviter = this.queryByUidFromCache(userExtra.getInviter());
+                    item.setInviterUserName(Objects.isNull(inviter) ? "" : inviter.getName());
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user insurance info error!", e);
+            return null;
+        });
+
+
+        //获取用户车辆信息  TODO
+
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo, queryUserBasicInfo);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+
+
+/*
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
 
@@ -399,6 +478,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
+        */
 
         return R.ok(userBatteryInfoVOS);
     }
@@ -2126,7 +2206,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryInfoVO.getUid());
 
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryInfoVO.getMemberCardId())?0:userBatteryInfoVO.getMemberCardId().intValue());
 
             UserInfoExcelVO excelVo = new UserInfoExcelVO();
             excelVo.setId(index);

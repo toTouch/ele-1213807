@@ -722,6 +722,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
     }
 
+    @Override
+    public List<InsuranceUserInfo> selectByUid(Long uid) {
+        return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid,uid));
+    }
+
     private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
         return baseMapper.selectUserInsuranceList(offset,size);
     }
