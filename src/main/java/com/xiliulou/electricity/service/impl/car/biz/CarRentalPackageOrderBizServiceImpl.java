@@ -1555,11 +1555,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 4. 查询用户车辆信息
+        ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
         CarInfoDO carInfo = null;
-        UserCar userCar = userCarService.selectByUidFromCache(uid);
-        if (ObjectUtils.isNotEmpty(userCar)) {
+        if (ObjectUtils.isNotEmpty(electricityCar)) {
             // 5. 查询车辆相关信息
-            carInfo = carService.queryByCarId(tenantId, userCar.getCid());
+            carInfo = carService.queryByCarId(tenantId, Long.valueOf(electricityCar.getId()));
         }
 
 

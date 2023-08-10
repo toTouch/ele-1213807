@@ -133,12 +133,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return null;
         });
 
-        Executors.newSingleThreadScheduledExecutor().schedule(()->{
-            if(redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid())){
-                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            }
-        },1, TimeUnit.SECONDS);
-
         return update;
     }
 

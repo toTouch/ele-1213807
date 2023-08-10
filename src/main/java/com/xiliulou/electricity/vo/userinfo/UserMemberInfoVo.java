@@ -2,11 +2,9 @@ package com.xiliulou.electricity.vo.userinfo;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
-import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
-import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -118,19 +116,8 @@ public class UserMemberInfoVo implements Serializable {
     private CarRentalPackageDepositPayVo carRentalPackageDepositPay;
 
     /**
-     * 用户保险信息
-     */
-    private UserInsuranceVO userInsurance;
-
-    /**
      * 车辆信息
      * */
     private CarVo car;
-
-    /**
-     * 电池信息
-     */
-    private ElectricityUserBatteryVo userBattery;
-
 
 }
