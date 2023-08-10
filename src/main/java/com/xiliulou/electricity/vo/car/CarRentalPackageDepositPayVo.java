@@ -20,6 +20,11 @@ public class CarRentalPackageDepositPayVo implements Serializable {
     private static final long serialVersionUID = 1718767898763254057L;
 
     /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
      * 订单编码
      */
     private String orderNo;
