@@ -11,7 +11,6 @@ import javax.annotation.Resource;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -74,7 +73,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     @Autowired
-    ActivityProducer activityProducer;
+    ActivityService activityService;
 
     /**
      * 新增数据
@@ -200,7 +199,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             activityProcessDTO.setUid(user.getUid());
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+            log.info("hand activity for auto review success: {}", JsonUtil.toJson(activityProcessDTO));
+
+            activityService.asyncProcessActivity(activityProcessDTO);
         }
 
         return R.ok();
