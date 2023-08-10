@@ -570,10 +570,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR ) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
