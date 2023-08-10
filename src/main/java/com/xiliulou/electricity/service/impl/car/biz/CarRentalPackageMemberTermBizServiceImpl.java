@@ -367,6 +367,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setStoreName(storeEntity.getName());
         userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        // 更改状态
+        if (memberTermEntity.getDueTime() <= System.currentTimeMillis() || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+            userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+        }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
             List<String> batteryVShortList = batteryModelEntityList.stream().map(BatteryModel::getBatteryVShort).collect(Collectors.toList());
             userMemberInfoVo.setBatteryVShortList(batteryVShortList);

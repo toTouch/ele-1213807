@@ -1588,7 +1588,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setStatus(memberTerm.getStatus());
         // 判定是否过期
         if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
-                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue().longValue() <= 0L)) {
+                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue() <= 0L)) {
             rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
 
