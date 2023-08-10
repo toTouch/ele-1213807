@@ -59,12 +59,14 @@ public class JsonUserInsuranceOrderController {
      * 用户保险订单分页
      */
     @GetMapping(value = "/user/insuranceOrder/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                  @RequestParam("type") Integer type) {
         InsuranceOrderQuery query = InsuranceOrderQuery.builder()
                 .uid(SecurityUtils.getUid())
                 .size(size)
                 .offset(offset)
                 .status(InsuranceOrder.STATUS_SUCCESS)
+                .type(type)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return insuranceOrderService.queryList(query);

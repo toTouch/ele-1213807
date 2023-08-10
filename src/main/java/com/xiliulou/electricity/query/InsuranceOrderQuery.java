@@ -41,6 +41,8 @@ public class InsuranceOrderQuery {
 
     private Integer payType;
 
+    private Integer type;
+
     private Integer insuranceType;
 
     private List<Long> franchiseeIds;
