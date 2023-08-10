@@ -496,10 +496,13 @@ public class CouponServiceImpl implements CouponService {
             return Triple.of(false, "", "删除失败，优惠券已绑定新用户活动");
         }
 
-        //需要增加套餐绑定检验， 优惠券会和套餐进行绑定
-        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findActivityPackagesByCouponId(id.longValue());
-        if(!CollectionUtils.isEmpty(couponActivityPackages)){
-            return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
+        //需要增加套餐绑定检验， 优惠券会和套餐进行绑定. 不可叠加，并且为指定了套餐的状态下需要判定
+        if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())
+                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(coupon.getSpecificPackages())){
+            List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findActivityPackagesByCouponId(id.longValue());
+            if(!CollectionUtils.isEmpty(couponActivityPackages)){
+                return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
+            }
         }
 
         Coupon couponUpdate = new Coupon();

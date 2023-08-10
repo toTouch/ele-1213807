@@ -21,6 +21,8 @@ import java.util.Objects;
  *
  * @author xiaohui.song
  **/
+
+@Deprecated
 @Slf4j
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.ACTIVITY_COMMON_TOPIC, consumerGroup = MqConsumerConstant.ACTIVITY_COMMON_CONSUMER_GROUP)

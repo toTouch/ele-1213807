@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
@@ -35,6 +38,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service("activityService")
 public class ActivityServiceImpl implements ActivityService {
+
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_CONSUMER_POOL", 4, "activity_handle_thread");
 
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;
@@ -388,6 +393,21 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         return Triple.of(true, "", null);
+    }
+
+    @Override
+    public void asyncProcessActivity(ActivityProcessDTO activityProcessDTO) {
+
+        executorService.execute(() -> {
+            if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(activityProcessDTO.getActivityType())){
+                //处理购买套餐后的活动
+                handleActivityByPackage(activityProcessDTO);
+            }else if(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(activityProcessDTO.getActivityType())){
+                //处理实名认证后的活动
+                handleActivityByRealName(activityProcessDTO);
+            }
+        });
+
     }
 
 }

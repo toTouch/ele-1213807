@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.DivisionAccountRecordMapper;
@@ -790,5 +791,22 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         }
 
         return Triple.of(true, "", "");
+    }
+
+    @Override
+    public void asyncHandleDivisionAccount(DivisionAccountOrderDTO divisionAccountOrderDTO) {
+
+        divisionAccountExecutorService.execute(() -> {
+
+            if(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
+                //处理购买套餐时的分账业务
+                handleDivisionAccountByPackage(divisionAccountOrderDTO);
+
+            } else if(DivisionAccountEnum.DA_TYPE_REFUND.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
+                //处理退租时的分账业务
+                handleRefundDivisionAccountByPackage(divisionAccountOrderDTO);
+            }
+
+        });
     }
 }
