@@ -181,6 +181,9 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     ActivityProducer activityProducer;
 
+    @Autowired
+    ActivityService activityService;
+
     /**
      * 租车套餐购买回调
      *
@@ -399,7 +402,7 @@ public class ElectricityTradeOrderServiceImpl extends
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
             // 9. 处理活动
             ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -407,7 +410,7 @@ public class ElectricityTradeOrderServiceImpl extends
             activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+            activityService.asyncProcessActivity(activityProcessDTO);
             //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
 
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);

@@ -53,7 +53,8 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Autowired
-    private DivisionAccountProducer divisionAccountProducer;
+    private DivisionAccountRecordService divisionAccountRecordService;
+
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
@@ -129,7 +130,7 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());

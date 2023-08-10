@@ -210,6 +210,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ActivityProducer activityProducer;
 
+    @Autowired
+    ActivityService activityService;
+
     /**
      * 根据用户ID查询对应状态的记录
      *
@@ -3232,7 +3235,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
         divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
         // 9. 处理活动
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -3240,7 +3243,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+        activityService.asyncProcessActivity(activityProcessDTO);
 
         sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
 
@@ -3528,7 +3531,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
         divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-        divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
         // 9. 处理活动
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -3536,7 +3539,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+        activityService.asyncProcessActivity(activityProcessDTO);
 
         sendUserCoupon(batteryMemberCard, memberCardOrder);
 

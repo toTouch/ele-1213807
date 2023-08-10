@@ -188,6 +188,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     ActivityProducer activityProducer;
 
+    @Autowired
+    private ActivityService activityService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -604,7 +607,7 @@ public class UnionTradeOrderServiceImpl extends
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
             // 9. 处理活动
             ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -612,7 +615,7 @@ public class UnionTradeOrderServiceImpl extends
             activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+            activityService.asyncProcessActivity(activityProcessDTO);
 
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         }else{
@@ -792,7 +795,7 @@ public class UnionTradeOrderServiceImpl extends
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
             // 9. 处理活动
             ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
@@ -800,7 +803,7 @@ public class UnionTradeOrderServiceImpl extends
             activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+            activityService.asyncProcessActivity(activityProcessDTO);
 
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         }else{
