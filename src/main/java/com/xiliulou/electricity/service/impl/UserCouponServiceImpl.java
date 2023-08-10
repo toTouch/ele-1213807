@@ -9,6 +9,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
@@ -28,6 +29,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -683,7 +685,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sendCouponToUser(UserCouponDTO userCouponDTO) {
-
+        MDC.put(CommonConstant.TRACE_ID, userCouponDTO.getTraceId());
         String lockValue = userCouponDTO.getSourceOrderNo() + "_" + userCouponDTO.getCouponId() + "_" + userCouponDTO.getUid();
         if (!redisService
                 .setNx(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue, lockValue, 10 * 1000L, false)) {
@@ -733,6 +735,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             throw new BizException("200000", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue);
+            MDC.clear();
         }
 
     }
