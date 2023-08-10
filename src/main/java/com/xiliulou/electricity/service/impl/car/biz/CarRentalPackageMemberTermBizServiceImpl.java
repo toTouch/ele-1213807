@@ -180,7 +180,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 }
                 // 分钟
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTimeNew = (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
+                    dueTimeNew = now + (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
                 }
             }
             // 总到期时间
