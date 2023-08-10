@@ -410,6 +410,7 @@ public class ElectricityTradeOrderServiceImpl extends
             activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
             //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
 
+            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
 
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         } else {

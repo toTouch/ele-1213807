@@ -613,6 +613,8 @@ public class UnionTradeOrderServiceImpl extends
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
             activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
@@ -799,6 +801,8 @@ public class UnionTradeOrderServiceImpl extends
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
             activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+
+            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){

@@ -3242,6 +3242,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
 
+        sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+
         return Triple.of(true, null, null);
     }
 
@@ -3536,7 +3538,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
 
+        sendUserCoupon(batteryMemberCard, memberCardOrder);
+
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
+        if (Objects.isNull(batteryMemberCard.getCouponId())) {
+            return;
+        }
+
+        //发送优惠券  batteryMemberCard.getCouponId()   memberCardOrder.getOrderId()   memberCardOrder.getUid()
+
+
     }
 
     @Override

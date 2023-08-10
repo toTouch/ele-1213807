@@ -1283,6 +1283,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             if (!depositAuditFlag) {
                 // 线上、线下 退款成功
                 refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                refundDepositInsertEntity.setRealAmount(BigDecimal.ZERO);
                 // 免押，退款中
                 if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                     refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());

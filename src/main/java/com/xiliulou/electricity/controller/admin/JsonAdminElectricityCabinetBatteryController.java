@@ -511,19 +511,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
 
     /**
      * 根据电池名字获取电池详情
-     *
-     * @param batteryName
      * @return
      */
     @GetMapping("/admin/battery/selectByBatteryName")
     public R batteryInfo(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-                         @RequestParam(value = "batteryName") String batteryName) {
-        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
+                         @RequestParam(value = "name") String name) {
+        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(name).offset(offset)
                 .size(size).tenantId(TenantContextHolder.getTenantId()).build();
 
-        List<ElectricityBattery> electricityBatterys = electricityBatteryService.selectBatteryInfoByBatteryName(
-                batteryQuery);
-        return R.ok(electricityBatterys);
+        return R.ok(electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery));
     }
 
 
