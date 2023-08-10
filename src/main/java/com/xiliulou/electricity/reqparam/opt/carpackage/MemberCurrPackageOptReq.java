@@ -14,6 +14,11 @@ public class MemberCurrPackageOptReq implements Serializable {
     private static final long serialVersionUID = 8969242143973747351L;
 
     /**
+     * 套餐购买编码
+     */
+    private String packageOrderNo;
+
+    /**
      * 租期
      */
     private Integer tenancy;

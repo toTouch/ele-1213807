@@ -13,12 +13,9 @@ import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
-import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
-import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -130,29 +127,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Long dueTime = memberTermEntity.getDueTime();
         Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
 
- /*       if (ObjectUtils.isNotEmpty(optReq.getDueTime())) {
-            if (dueTime) {
-
-            }
-
-
-
-
-        }
-
-        if () {
-
-        }*/
-
-
-
-
-
         return false;
     }
 
     /**
-     * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）
+     * 根据用户ID获取会员的全量信息（套餐订单信息、车辆信息）
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
@@ -194,9 +173,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 车辆型号信息
         ElectricityCarModel carModelEntity = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
 
-        // 用户保险信息
-        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
-
         // 用户车辆信息
         ElectricityCar carEntity = carService.selectByUid(tenantId, uid);
 
@@ -209,21 +185,16 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 套餐对应的电池型号信息、用户电池信息
         List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = null;
         List<BatteryModel> batteryModelEntityList = null;
-        ElectricityBattery batteryEntity = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
             if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
                 List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 batteryModelEntityList = batteryModelService.selectByBatteryTypes(tenantId, batteryTypes);
             }
-
-
-            // 用户电池信息
-            batteryEntity = batteryService.queryByUid(uid);
         }
 
         UserMemberInfoVo memberInfoVo = buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity,
-                depositPayEntity, carModelEntity, insuranceUserInfoVo, carEntity, batteryEntity, franchiseeEntity, storeEntity);
+                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity);
 
 
         return memberInfoVo;
@@ -237,16 +208,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @param rentalPackageOrderEntity 套餐购买订单
      * @param depositPayEntity 押金缴纳信息
      * @param carModelEntity 车辆型号信息
-     * @param insuranceUserInfoVo 保险信息
      * @param carEntity 车辆信息
-     * @param batteryEntity 电池信息
      * @param franchiseeEntity 加盟商信息
      * @param storeEntity 门店信息
      * @return 会员信息
      */
     private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
                                                    CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity, ElectricityCarModel carModelEntity,
-                                                   InsuranceUserInfoVo insuranceUserInfoVo, ElectricityCar carEntity, ElectricityBattery batteryEntity, Franchisee franchiseeEntity, Store storeEntity) {
+                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity) {
 
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
         userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
@@ -282,27 +251,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
         }
 
-        // 用户保险
-        if (ObjectUtils.isNotEmpty(insuranceUserInfoVo)) {
-            UserInsuranceVO userInsurance = new UserInsuranceVO();
-            BeanUtils.copyProperties(insuranceUserInfoVo, userInsurance);
-            userMemberInfoVo.setUserInsurance(userInsurance);
-        }
-
         // 车辆信息
         if (ObjectUtils.isNotEmpty(carEntity)) {
             CarVo car = new CarVo();
             car.setCarSn(carEntity.getSn());
             car.setCarModelName(carEntity.getModel());
             userMemberInfoVo.setCar(car);
-        }
-
-        // 电池信息
-        if (ObjectUtils.isNotEmpty(batteryEntity)) {
-            ElectricityUserBatteryVo userBattery = new ElectricityUserBatteryVo();
-            userBattery.setSn(batteryEntity.getSn());
-            userBattery.setModel(batteryEntity.getModel());
-            userMemberInfoVo.setUserBattery(userBattery);
         }
 
         return userMemberInfoVo;

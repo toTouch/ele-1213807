@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -202,15 +201,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (ObjectUtils.isEmpty(carInfoDO)) {
             return null;
         }
-
-        Pair<Boolean, Object> carDevicePair = jt808CarService.queryDeviceInfo(carInfoDO.getCarSn());
-        if (!carDevicePair.getLeft()) {
-            return carInfoDO;
-        }
-
-        Jt808DeviceInfoVo deviceInfoVo = (Jt808DeviceInfoVo) carDevicePair.getRight();
-        carInfoDO.setLatitude(deviceInfoVo.getLatitude());
-        carInfoDO.setLongitude(deviceInfoVo.getLongitude());
 
         return carInfoDO;
     }

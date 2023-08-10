@@ -268,7 +268,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 
 	@Override
 	public List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
-		return joinShareMoneyActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
+		return joinShareMoneyActivityHistoryMapper.queryUserJoinedShareMoneyActivity(joinUid, tenantId);
 	}
 
 	private String queryStatus(Integer status) {
