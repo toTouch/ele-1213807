@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.reqparam.opt.carpackage;
 
+import com.xiliulou.electricity.enums.MemberOptTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -37,4 +38,14 @@ public class MemberCurrPackageOptReq implements Serializable {
      * 用户UID
      */
     private Long uid;
+
+    /**
+     * 操作类型
+     * <pre>
+     *     0-剩余租期
+     *     1-剩余时间戳
+     * </pre>
+     * @see MemberOptTypeEnum
+     */
+    private Integer type;
 }

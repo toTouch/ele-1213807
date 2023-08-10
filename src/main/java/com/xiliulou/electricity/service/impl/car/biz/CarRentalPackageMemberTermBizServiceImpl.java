@@ -4,6 +4,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.service.*;
@@ -106,7 +107,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     @Override
     public boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, optReq, optReq.getUid(), optUid, optReq.getPackageOrderNo())) {
+        if (!ObjectUtils.allNotNull(tenantId, optReq, optReq.getUid(), optUid, optReq.getPackageOrderNo(), optReq.getType()) || !BasicEnum.isExist(optReq.getType(), MemberOptTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -152,14 +153,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Integer rentalPackageType = memberTermEntity.getRentalPackageType();
         Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
 
-        if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
-            if (ObjectUtils.isEmpty(tenancyReq) && ObjectUtils.isEmpty(dueTimeReq)) {
-                throw new BizException("ELECTRICITY.0007", "不合法的参数");
-            }
-        }
-
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
-            if (ObjectUtils.isEmpty(tenancyReq) && ObjectUtils.isEmpty(dueTimeReq) && ObjectUtils.isEmpty(residueReq)) {
+            if (ObjectUtils.isEmpty(residueReq)) {
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
         }
@@ -173,7 +168,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Long dueTimeTotalNew = dueTimeTotal;
         Long residueNew = residue;
 
-        if (ObjectUtils.isNotEmpty(tenancyReq)) {
+        Integer type = optReq.getType();
+        if (MemberOptTypeEnum.NUMBER.getCode().equals(type)) {
+            if (ObjectUtils.isEmpty(tenancyReq)) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
             if (tenancyReq != 0) {
                 // 天
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
@@ -186,7 +185,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
             // 总到期时间
             dueTimeTotalNew = dueTimeTotal - (dueTime - dueTimeNew);
-        } else  {
+        }
+
+        if (MemberOptTypeEnum.TIME.getCode().equals(type)) {
+            if (ObjectUtils.isEmpty(type)) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
             dueTimeNew = dueTimeReq;
             dueTimeTotalNew = dueTimeTotal - dueTimeNew;
         }
@@ -367,6 +371,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setStoreName(storeEntity.getName());
         userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        // 更改状态
+        if (memberTermEntity.getDueTime() <= System.currentTimeMillis() || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+            userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+        }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
             List<String> batteryVShortList = batteryModelEntityList.stream().map(BatteryModel::getBatteryVShort).collect(Collectors.toList());
             userMemberInfoVo.setBatteryVShortList(batteryVShortList);
