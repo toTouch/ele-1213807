@@ -16,6 +16,7 @@ import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
@@ -74,6 +75,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+
+    @Autowired
+    CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -513,8 +517,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 storeId = userInfo.getStoreId();
             }
 
-// TODO           carModelId
+            //获取用户绑定的车辆型号
+            Integer carModelByUid = carRentalPackageMemberTermBizService.queryCarModelByUid(userInfo.getTenantId(), uid);
+            if (Objects.isNull(carModelByUid)) {
+                return Triple.of(false, "100005", "未找到车辆型号");
+            }
 
+            carModelId=carModelByUid.longValue();
         } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR)) {
             simpleBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(uid);
 
@@ -522,10 +531,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 storeId = userInfo.getStoreId();
             }
 
-// TODO           carModelId
-            if (Objects.isNull(carModelId)) {
+            //获取用户绑定的车辆型号
+            Integer carModelByUid = carRentalPackageMemberTermBizService.queryCarModelByUid(userInfo.getTenantId(), uid);
+            if (Objects.isNull(carModelByUid)) {
                 return Triple.of(false, "100005", "未找到车辆型号");
             }
+
+            carModelId=carModelByUid.longValue();
         }
 
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
