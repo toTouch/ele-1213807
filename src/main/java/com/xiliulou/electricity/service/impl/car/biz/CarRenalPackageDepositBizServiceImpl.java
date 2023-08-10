@@ -112,7 +112,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private ElectricityBatteryService electricityBatteryService;
 
     @Resource
-    private UserCarService userCarService;
+    private ElectricityCarService carService;
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
@@ -1300,10 +1300,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 查询设备(车辆)
-        UserCar userCar = userCarService.selectByUidFromCache(uid);
+        ElectricityCar userCar = carService.selectByUid(tenantId, uid);
         if (ObjectUtils.isNotEmpty(userCar) && StringUtils.isNotBlank(userCar.getSn())) {
             log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are vehicles that have not been returned. uid is {}", uid);
-            throw new BizException("300018", "存在未归还的车辆");
+            throw new BizException("300041", "需先退还资产再退押金");
         }
 
         // 车电一体，查询设备(电池)
@@ -1311,7 +1311,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
                 log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are unreturned batteries. uid is {}", uid);
-                throw new BizException("300019", "存在未归还的电池");
+                throw new BizException("300041", "需先退还资产再退押金");
             }
         }
     }
