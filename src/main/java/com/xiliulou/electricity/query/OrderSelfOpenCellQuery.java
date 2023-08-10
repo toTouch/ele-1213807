@@ -15,12 +15,6 @@ public class OrderSelfOpenCellQuery {
 
 
     /**
-     * 换电柜id
-     */
-    @NotNull(message = "换电柜id不能为空!", groups = {UpdateGroup.class})
-    private Integer electricityCabinetId;
-
-    /**
      * 订单id
      */
     @NotNull(message = "换电订单id不能为空!", groups = {CreateGroup.class})
