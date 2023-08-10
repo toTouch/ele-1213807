@@ -3,25 +3,22 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.PxzConfigMapper;
 import com.xiliulou.electricity.query.PxzConfigQuery;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (PxzConfig)表服务实现类
@@ -157,5 +154,18 @@ public class PxzConfigServiceImpl implements PxzConfigService {
         update(pxzConfig);
         return Pair.of(true, null);
     }
-    
+
+    @Override
+    public Pair<Boolean, Object> check() {
+        PxzConfig pxzConfig = queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig)) {
+            return Pair.of(true, Boolean.FALSE);
+        }
+
+        if (StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode()) || pxzConfig.getAesKey().length() != 16 || pxzConfig.getMerchantCode().length() != 7) {
+            return Pair.of(true, Boolean.FALSE);
+        }
+
+        return Pair.of(true, Boolean.TRUE);
+    }
 }
