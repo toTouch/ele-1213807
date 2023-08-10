@@ -153,7 +153,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Integer rentalPackageType = memberTermEntity.getRentalPackageType();
         Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
 
-        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        Integer rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType) && RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine)) {
             if (ObjectUtils.isEmpty(residueReq)) {
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
@@ -161,7 +162,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         Long dueTime = memberTermEntity.getDueTime();
         Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
-        Integer rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
         Long residue = memberTermEntity.getResidue();
 
         Long dueTimeNew = now;
