@@ -6,7 +6,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
         teco.id, teco.order_id, teco.phone, teco.uid, teco.pay_amount, teco.electricity_cabinet_id,
-        teco.old_electricity_battery_sn,
+        teco.old_electricity_battery_sn,tec.name as electricityCabinetName
         teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method,
         teco.source, teco.remark, teco.switch_begin_time,
         teco.switch_end_time, teco.create_time, teco.update_time, ui.name as u_name
@@ -60,7 +60,7 @@
                 and teco.tenant_id = #{query.tenantId}
             </if>
         </where>
-        order by teco.update_time desc
+        order by teco.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
