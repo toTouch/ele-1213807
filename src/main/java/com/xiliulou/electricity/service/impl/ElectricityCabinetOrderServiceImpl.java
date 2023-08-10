@@ -1049,7 +1049,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //换电柜
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderSelfOpenCellQuery.getElectricityCabinetId());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("self open cell ERROR! not found electricityCabinet ！electricityCabinetId={}", orderSelfOpenCellQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -1154,7 +1154,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
         if (Objects.isNull(electricityCabinetBox)) {
             log.error("self open cell order  ERROR! not find cellNO! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
