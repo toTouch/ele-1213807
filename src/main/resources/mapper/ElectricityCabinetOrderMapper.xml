@@ -6,7 +6,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
         teco.id, teco.order_id, teco.phone, teco.uid, teco.pay_amount, teco.electricity_cabinet_id,
-        teco.old_electricity_battery_sn,
+        teco.old_electricity_battery_sn,tec.name as electricityCabinetName,
         teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method,
         teco.source, teco.remark, teco.switch_begin_time,
         teco.switch_end_time, teco.create_time, teco.update_time, ui.name as u_name
@@ -15,7 +15,7 @@
         left join t_user_info ui on teco.uid = ui.uid
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and teco.order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and teco.order_id = #{query.orderId}
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and teco.phone = #{query.phone}
@@ -44,9 +44,15 @@
             <if test="query.uid != null">
                 and teco.uid = #{query.uid}
             </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and teco.electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+            <if test="query.franchiseeIds != null">
+                and teco.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and teco.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -54,7 +60,7 @@
                 and teco.tenant_id = #{query.tenantId}
             </if>
         </where>
-        order by teco.update_time desc
+        order by teco.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
