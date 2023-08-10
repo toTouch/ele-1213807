@@ -20,7 +20,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
-import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -180,7 +179,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
 
     @Autowired
-    ActivityProducer activityProducer;
+    ActivityService activityService;
     
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
@@ -729,7 +728,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         activityProcessDTO.setUid(userInfo.getUid());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
+        log.info("hand activity for manual review success: {}", JsonUtil.toJson(activityProcessDTO));
+
+        activityService.asyncProcessActivity(activityProcessDTO);
 
         return R.ok();
     }
