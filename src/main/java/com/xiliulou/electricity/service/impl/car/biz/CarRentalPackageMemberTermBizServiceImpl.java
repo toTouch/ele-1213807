@@ -244,7 +244,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
         } else {
             newMemberTermEntity.setId(memberTermEntity.getId());
-            newMemberTermEntity.setRentalPackageOrderNo(memberTermEntity.getRentalPackageOrderNo());
             newMemberTermEntity.setDueTime(dueTimeNew);
             newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             newMemberTermEntity.setResidue(residueNew);
@@ -264,7 +263,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     @Transactional(rollbackFor = Exception.class)
     public void saveUpdateCurrPackageTx(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageMemberTermPo newMemberTermEntity, Long optUid) {
         carRentalPackageMemberTermService.updateById(newMemberTermEntity);
-        if (!memberTermEntity.getRentalPackageOrderNo().equals(newMemberTermEntity.getRentalPackageOrderNo())) {
+        if (StringUtils.isNotEmpty(newMemberTermEntity.getRentalPackageOrderNo())) {
             carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid);
             carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid);
         }
