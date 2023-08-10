@@ -253,8 +253,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
         int result = this.userInfoMapper.update(userInfo);
-        Boolean delete = redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
-        log.info("删除会员操作结果{}", delete);
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         return result;
     }
 
@@ -432,6 +431,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public UserInfo queryByUidFromCache(Long uid) {
         UserInfo cache = redisService.getWithHash(CacheConstant.CACHE_USER_INFO + uid, UserInfo.class);
+
         if (Objects.nonNull(cache)) {
             return cache;
         }
@@ -1409,12 +1409,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Integer updateByUid(UserInfo userInfo) {
-
         Integer result = this.userInfoMapper.updateByUid(userInfo);
-
-        Boolean delete = redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
-        log.info("用户 Update 删除redis result is {}", delete);
-
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         return result;
     }
 

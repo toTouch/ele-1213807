@@ -696,13 +696,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             Long uid = userCouponDTO.getUid();
             Long couponId = userCouponDTO.getCouponId();
 
-            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
             if(Objects.isNull(userInfo)){
                 log.error("send coupon failed! not found user,uid = {}",uid);
                 return;
             }
 
-            Coupon coupon = couponService.queryByIdFromCache(couponId.intValue());
+            Coupon coupon = couponService.queryByIdFromDB(couponId.intValue());
             if (Objects.isNull(coupon)) {
                 log.error("query coupon issue! not found coupon ! couponId = {} ", couponId);
                 return;
