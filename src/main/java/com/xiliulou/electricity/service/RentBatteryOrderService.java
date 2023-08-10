@@ -52,7 +52,6 @@ public interface RentBatteryOrderService {
 
     Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery);
 
-    R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
     RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId);
 
