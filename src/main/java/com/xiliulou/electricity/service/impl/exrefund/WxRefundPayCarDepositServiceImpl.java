@@ -172,12 +172,13 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
                 // 作废所有的套餐购买订单（未使用、使用中）、
                 carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+                // 查询用户保险
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermUpdateEntity.getUid(), memberTermUpdateEntity.getRentalPackageType());
                 // 按照人+类型，作废保险
                 insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                 // 删除会员期限表信息
                 carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
                 // 作废保险订单
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermUpdateEntity.getUid(), memberTermUpdateEntity.getRentalPackageType());
                 if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                     insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }

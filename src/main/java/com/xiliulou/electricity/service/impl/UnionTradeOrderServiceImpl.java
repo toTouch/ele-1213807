@@ -635,6 +635,7 @@ public class UnionTradeOrderServiceImpl extends
      * @param orderStatus
      * @return
      */
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus) {
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
