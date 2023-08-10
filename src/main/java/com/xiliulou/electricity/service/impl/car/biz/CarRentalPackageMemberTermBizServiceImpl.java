@@ -176,11 +176,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             if (tenancyReq != 0) {
                 // 天
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                    dueTimeNew = tenancyReq * TimeConstant.DAY_MILLISECOND;
+                    dueTimeNew = now + (tenancyReq * TimeConstant.DAY_MILLISECOND);
                 }
                 // 分钟
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                    dueTimeNew = tenancyReq * TimeConstant.MINUTE_MILLISECOND;
+                    dueTimeNew = (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
                 }
             }
             // 总到期时间
@@ -206,7 +206,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         newMemberTermEntity.setUpdateTime(now);
 
         // 判定是否过期, 过期自动提订单
-        if (dueTimeNew < dueTime || (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) || residueNew <= 0L)) {
+        if (dueTimeNew < now || (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && residueNew <= 0L)) {
             // 根据用户ID查询第一条未使用的支付成功的订单信息
             CarRentalPackageOrderPo packageOrderEntityUnUse = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
             if (ObjectUtils.isNotEmpty(packageOrderEntityUnUse)) {
@@ -373,7 +373,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
         // 更改状态
-        if (memberTermEntity.getDueTime() <= System.currentTimeMillis() || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
+        if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L
+                && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
             userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
         }
         if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
