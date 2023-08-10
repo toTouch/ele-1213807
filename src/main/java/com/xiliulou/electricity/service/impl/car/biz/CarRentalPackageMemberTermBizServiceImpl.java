@@ -19,6 +19,7 @@ import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +106,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     @Override
     public boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, optReq, optReq.getUid(), optUid)) {
+        if (!ObjectUtils.allNotNull(tenantId, optReq, optReq.getUid(), optUid, optReq.getPackageOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -120,12 +121,72 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 查询会员当前信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.error("updateCurrPackage failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300002", "租车会员状态异常");
+        }
+
+        String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
+        if (StringUtils.isBlank(rentalPackageOrderNo) || !optReq.getPackageOrderNo().equals(rentalPackageOrderNo)) {
+            log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is null or mismatching. params rentalPackageOrderNo is {}, member's rentalPackageOrderNo is {}", optReq.getPackageOrderNo(), rentalPackageOrderNo);
+            throw new BizException("300002", "租车会员状态异常");
+        }
+
+        // 查询订单信息
+        CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
+        if (ObjectUtils.isEmpty(packageOrderEntity)) {
+            log.error("updateCurrPackage failed. t_car_rental_package_order not found. rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            throw new BizException("300008", "未找到租车套餐购买订单");
+        }
+
+        Integer tenancyReq = optReq.getTenancy();
+        Long dueTimeReq = optReq.getDueTime();
+        Long residueReq = optReq.getResidue();
+
+        Integer rentalPackageType = memberTermEntity.getRentalPackageType();
+        Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
+
+        if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
+            if (ObjectUtils.isEmpty(tenancyReq) && ObjectUtils.isEmpty(dueTimeReq)) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
+        }
+
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            if (ObjectUtils.isEmpty(tenancyReq) && ObjectUtils.isEmpty(dueTimeReq) && ObjectUtils.isEmpty(residueReq)) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
         }
 
         Long dueTime = memberTermEntity.getDueTime();
         Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
+        Integer rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
+
+        if (ObjectUtils.isNotEmpty(tenancyReq)) {
+
+        }
+
+        Long dueTimeNew = System.currentTimeMillis();
+/*        // 天
+        if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+            dueTimeNew = tenancyUnit
+        }
+
+        // 分钟
+        if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+
+        }*/
+
+
+
+
+
+
+
+
+
+
+
+
 
         return false;
     }

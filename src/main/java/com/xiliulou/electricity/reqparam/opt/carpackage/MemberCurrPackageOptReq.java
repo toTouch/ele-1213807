@@ -24,11 +24,6 @@ public class MemberCurrPackageOptReq implements Serializable {
     private Integer tenancy;
 
     /**
-     * 租期单位
-     */
-    private Integer residueUnit;
-
-    /**
      * 到期时间
      */
     private Long dueTime;
