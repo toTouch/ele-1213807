@@ -100,7 +100,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
         Boolean oldUserFlag = false;
         BigDecimal deposit = null;
-        List<String> batteryModelTypeList = null;
+        List<String> batteryModelTypeList = new ArrayList<>();
         Integer confine = null;
 
         // 0. 获取用户信息
