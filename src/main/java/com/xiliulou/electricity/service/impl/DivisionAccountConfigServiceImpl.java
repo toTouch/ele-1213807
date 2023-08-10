@@ -844,8 +844,10 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
-                batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
-                batteryMemberCardVO.setName(batteryMemberCard.getName());
+                if(Objects.nonNull(batteryMemberCard)){
+                    batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
+                    batteryMemberCardVO.setName(batteryMemberCard.getName());
+                }
                 list.add(batteryMemberCardVO);
             }
         }else{
@@ -853,8 +855,10 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
-                batteryMemberCardVO.setId(carRentalPackagePO.getId());
-                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                if(Objects.nonNull(carRentalPackagePO)){
+                    batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                    batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                }
                 list.add(batteryMemberCardVO);
             }
         }
