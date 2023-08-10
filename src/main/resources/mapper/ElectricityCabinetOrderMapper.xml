@@ -44,15 +44,9 @@
             <if test="query.uid != null">
                 and teco.uid = #{query.uid}
             </if>
-            <if test="query.franchiseeIds != null">
-                and teco.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="query.storeIds != null">
-                and teco.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and teco.electricity_cabinet_id in
+                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -60,16 +54,17 @@
                 and teco.tenant_id = #{query.tenantId}
             </if>
         </where>
-        order by teco.create_time desc
+        order by teco.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
+
 
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and teco.order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and teco.order_id =#{query.orderId}
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and teco.phone = #{query.phone}
