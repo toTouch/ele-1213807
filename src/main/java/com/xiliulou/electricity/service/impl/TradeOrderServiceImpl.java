@@ -479,7 +479,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
 
                 String memberCardOrderId = orderList.get(index);
-                unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
+//                unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
+                unionTradeOrderService.manageMemberCardOrderV2(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
             }
 
             //电池保险
