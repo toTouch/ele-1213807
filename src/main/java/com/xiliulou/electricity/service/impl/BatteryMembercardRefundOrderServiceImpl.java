@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -377,7 +378,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request) {
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -589,6 +589,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
         return Triple.of(true, "", null);
+    }
+
+    @Slave
+    @Override
+    public List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid) {
+        return this.batteryMembercardRefundOrderMapper.selectList(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_AUDIT, BatteryMembercardRefundOrder.STATUS_REFUND));
     }
 
     @Override

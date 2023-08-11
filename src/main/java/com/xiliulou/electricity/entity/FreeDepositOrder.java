@@ -57,6 +57,16 @@ public class FreeDepositOrder {
      * 授权免押的状态
      */
     private Integer payStatus;
+
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+
+    /**
+     * 门店Id
+     */
+    private Long storeId;
     
     private Integer tenantId;
     /**

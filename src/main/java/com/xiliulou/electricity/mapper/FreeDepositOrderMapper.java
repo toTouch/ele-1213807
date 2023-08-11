@@ -41,14 +41,6 @@ public interface FreeDepositOrderMapper extends BaseMapper<FreeDepositOrder> {
     List<FreeDepositOrder> queryAll(FreeDepositOrder freeDepositOrder);
 
     /**
-     * 新增数据
-     *
-     * @param freeDepositOrder 实例对象
-     * @return 影响行数
-     */
-    int insertOne(FreeDepositOrder freeDepositOrder);
-
-    /**
      * 修改数据
      *
      * @param freeDepositOrder 实例对象

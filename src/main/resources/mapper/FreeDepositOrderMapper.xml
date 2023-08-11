@@ -48,7 +48,7 @@
         tfdo.deposit_type,
         tfdo.create_time,
         tfdo.update_time
-        from t_free_deposit_order tfdo left join t_user_info tui on tui.uid=tfdo.uid
+        from t_free_deposit_order tfdo
         where tfdo.tenant_id=#{tenantId}
         <if test="authStatus != null">
             and tfdo.auth_status = #{authStatus}
@@ -75,13 +75,13 @@
             and tfdo.create_time &lt;= #{endTime}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
-            and tui.franchisee_id in
+            and tfdo.franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="storeIds != null and storeIds.size()>0">
-            and tui.store_id in
+            and tfdo.store_id in
             <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
@@ -93,7 +93,7 @@
     <select id="selectByPageCount" resultType="int">
         select
         count(1)
-        from t_free_deposit_order tfdo left join t_user_info tui on tui.uid=tfdo.uid
+        from t_free_deposit_order tfdo
         where tfdo.tenant_id=#{tenantId}
         <if test="authStatus != null">
             and tfdo.auth_status = #{authStatus}
@@ -120,13 +120,13 @@
             and tfdo.create_time &lt;= #{endTime}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
-            and tui.franchisee_id in
+            and tfdo.franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="storeIds != null and storeIds.size()>0">
-            and tui.store_id in
+            and tfdo.store_id in
             <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
@@ -190,12 +190,6 @@
             </if>
         </where>
     </select>
-
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_free_deposit_order(uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, deposit_type, create_time, update_time)
-        values (#{uid}, #{orderId}, #{authNo}, #{phone}, #{idCard}, #{realName}, #{transAmt}, #{payTransAmt}, #{authStatus}, #{payStatus}, #{tenantId}, #{type}, #{depositType}, #{createTime}, #{updateTime})
-    </insert>
 
     <!--通过主键修改数据-->
     <update id="update">

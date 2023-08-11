@@ -214,6 +214,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ActivityService activityService;
 
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
     /**
      * 根据用户ID查询对应状态的记录
      *
@@ -1543,10 +1546,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     }
 
-
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid) {
+    public R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid, Integer days) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -1594,9 +1596,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100018", "押金退款审核中");
         }
 
+        //是否有正在进行的退租
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+            log.error("admin disable UserMemberCard  ERROR! battery membercard refund review userId={}", userInfo.getUid());
+            return R.fail("100018", "套餐租金退款审核中");
+        }
+
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("admin saveUserMemberCard  ERROR! disable review userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_REFUND)) {
+            log.error("admin saveUserMemberCard  ERROR! refund battery membercard review userId={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100001", "用户套餐退租中");
         }
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
@@ -1665,6 +1679,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .franchiseeId(userInfo.getFranchiseeId())
                     .storeId(userInfo.getStoreId())
                     .chargeRate(batteryMemberCard.getServiceCharge())
+                    .chooseDays(days)
                     .cardDays((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -3093,7 +3108,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -3122,6 +3136,32 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
         }
 
+        ElectricityMemberCardOrder electricityMemberCardOrder = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard);
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityService.asyncProcessActivity(activityProcessDTO);
+
+        //赠送优惠券
+        sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+
+        return Triple.of(true, null, null);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo,BatteryMemberCard batteryMemberCard,UserBatteryMemberCard userBatteryMemberCard){
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid()))
                 .uid(userInfo.getUid())
@@ -3224,25 +3264,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
         }
 
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
-        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
-        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityService.asyncProcessActivity(activityProcessDTO);
-
-        sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
-
-        return Triple.of(true, null, null);
+        return electricityMemberCardOrder;
     }
 
     @Override
