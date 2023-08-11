@@ -3675,7 +3675,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+            return Triple.of(false, null, null);
         }
 
         BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
