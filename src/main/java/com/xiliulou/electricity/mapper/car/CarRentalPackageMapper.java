@@ -92,4 +92,11 @@ public interface CarRentalPackageMapper {
      */
     int insert(CarRentalPackagePo entity);
 
+    /**
+     * 根据coupon Id 查询套餐信息
+     * @param couponId
+     * @return
+     */
+    List<CarRentalPackagePo> selectByCouponId(@Param("couponId") Long couponId);
+
 }

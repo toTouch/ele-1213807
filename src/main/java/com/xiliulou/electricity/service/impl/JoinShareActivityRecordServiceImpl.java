@@ -101,6 +101,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return R.ok();
         }
 
+        //判断是否为重复扫邀请人的码
+        Boolean isJoinedActivityFromSameInviter = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+        if(isJoinedActivityFromSameInviter){
+            return R.ok();
+        }
+
         //2、别人点击链接登录
 
         //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页

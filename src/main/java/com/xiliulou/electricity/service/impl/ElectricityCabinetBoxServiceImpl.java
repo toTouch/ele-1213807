@@ -152,6 +152,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
                 String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
                 item.setBatteryShortType(batteryShortType);
+                item.setBatteryType(batteryShortType);
             }
         }).collect(Collectors.toList());
     

@@ -250,5 +250,23 @@
         </where>
     </select>
 
+    <select id="queryJoinedActivityByJoinerAndInviter" resultMap="JoinShareMoneyActivityHistoryMap">
+        <include refid="selectJoinShareMoneyActivityHistory"/>
+        <where>
+            status in (1,2)
+            <if test="joinUid != null">
+                and join_uid = #{joinUid}
+            </if>
+
+            <if test="inviterUid != null">
+                and uid = #{inviterUid}
+            </if>
+
+            <if test="activityId != null">
+                and  activity_id = #{activityId}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

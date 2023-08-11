@@ -272,4 +272,12 @@
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 
+    <!-- 根据couponId查询套餐信息 -->
+    <select id="selectByCouponId" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `coupon_id` = #{couponId} and `del_flag` = 0
+        </where>
+    </select>
+
 </mapper>

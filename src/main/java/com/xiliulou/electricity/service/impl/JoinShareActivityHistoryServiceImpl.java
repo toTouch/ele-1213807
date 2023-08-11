@@ -22,6 +22,7 @@ import com.xiliulou.electricity.vo.JoinShareActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -257,6 +258,16 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	@Override
 	public List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryUserJoinedActivity(joinUid, tenantId);
+	}
+
+	@Override
+	public Boolean checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
+		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryMapper.queryActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
+		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
+			return Boolean.TRUE;
+		}
+
+		return Boolean.FALSE;
 	}
 
 	private String queryStatus(Integer status) {
