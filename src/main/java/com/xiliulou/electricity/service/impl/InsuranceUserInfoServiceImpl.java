@@ -718,6 +718,16 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
             list.parallelStream().forEach(item -> {
                 if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+                    //更新用户绑定保险状态
+                    InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
+                    insuranceUserInfo.setId(item.getId());
+                    insuranceUserInfo.setUid(item.getUid());
+                    insuranceUserInfo.setType(item.getType());
+                    insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+                    insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+                    this.updateInsuranceUserInfoById(insuranceUserInfo);
+
+                    //更新订单状态
                     insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 }
             });

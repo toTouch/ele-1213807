@@ -681,7 +681,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
 
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
-            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : (userBatteryMemberCardPackage.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000);
+            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
         }
 
         //使用中
@@ -700,7 +700,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
 
             batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
-            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : (userBatteryMemberCardPackage.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000);
+            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
         }
 
         //使用中
