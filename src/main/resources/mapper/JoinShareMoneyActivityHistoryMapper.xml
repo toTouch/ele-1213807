@@ -149,6 +149,7 @@
             tjsmah.activity_id as activityId,
             tsma.invitation_criteria as invitationCriteria,
             tsma.name as activityName,
+            tsma.money as money,
             tjsmah.uid as inviterUid,
             tjsmah.join_uid as joinUid,
             tui.name as joinName,

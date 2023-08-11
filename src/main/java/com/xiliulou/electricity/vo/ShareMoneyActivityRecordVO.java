@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 发起邀请活动记录(ShareActivityRecord)实体类
  *
@@ -67,6 +69,11 @@ public class ShareMoneyActivityRecordVO {
      * 总邀请人数
      */
     private Integer totalCount;
+
+    /**
+     * 总金额
+     */
+    private BigDecimal totalMoney;
 
 
     //初始化
