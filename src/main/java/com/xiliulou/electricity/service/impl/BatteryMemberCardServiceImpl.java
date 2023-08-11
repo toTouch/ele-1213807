@@ -404,10 +404,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
 
-        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))) {
-            return Triple.of(false, "100100", "删除失败，该套餐已有用户使用");
-        }
-
         if (Objects.nonNull(electricityMemberCardOrderService.checkOrderByMembercardId(id))) {
             return Triple.of(false, "100272", "删除失败，该套餐已生成订单");
         }
