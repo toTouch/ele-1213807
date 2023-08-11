@@ -616,9 +616,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
         if(Objects.nonNull(oldInsuranceUserOrder)){
-            InsuranceOrder insuranceUserOrderUpdate=new InsuranceOrder();
+            InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
             insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
-            insuranceUserOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+            insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
             insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
             insuranceOrderService.update(insuranceUserOrderUpdate);
         }
