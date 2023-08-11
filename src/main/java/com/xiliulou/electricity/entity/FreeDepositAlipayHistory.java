@@ -52,6 +52,16 @@ public class FreeDepositAlipayHistory {
     private Long createTime;
     
     private Long updateTime;
+
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+
+    /**
+     * 门店Id
+     */
+    private Long storeId;
     
     private Integer tenantId;
     

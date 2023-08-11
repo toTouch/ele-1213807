@@ -73,4 +73,6 @@ public interface BatteryMembercardRefundOrderService {
     Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request);
 
     WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException;
+
+    List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid);
 }
