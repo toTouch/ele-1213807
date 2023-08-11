@@ -35,13 +35,6 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
                   @RequestParam(value = "name", required = false) String name) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-
-        if (offset < 0) {
-            offset = 0L;
-        }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .size(size)
