@@ -696,8 +696,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     }
 
     private BigDecimal getAmountByRate(BigDecimal userPayAmount, BigDecimal rate){
-        BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
-        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));
+       /* BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
+        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));*/
+        log.info("Calculate user pay amount by division account rate, user pay amount = {}, rate = {}", userPayAmount, rate);
+        BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN);
+        return userPayAmount.multiply(ratePercent).setScale(2, RoundingMode.DOWN);
     }
 
     @Deprecated
