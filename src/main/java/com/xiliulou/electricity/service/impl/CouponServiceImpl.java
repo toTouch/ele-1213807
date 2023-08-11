@@ -496,13 +496,18 @@ public class CouponServiceImpl implements CouponService {
             return Triple.of(false, "", "删除失败，优惠券已绑定新用户活动");
         }
 
-        //需要增加套餐绑定检验， 优惠券会和套餐进行绑定. 不可叠加，并且为指定了套餐的状态下需要判定
-        if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())
-                && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(coupon.getSpecificPackages())){
-            List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findActivityPackagesByCouponId(id.longValue());
-            if(!CollectionUtils.isEmpty(couponActivityPackages)){
-                return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
-            }
+        //需要增加套餐绑定检验，是指在创建套餐时是否指定了套餐关联的优惠券。并非是新建优惠券时所关联的套餐。
+        //检查是否绑定到换电套餐
+        List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(coupon.getId().longValue());
+        if(!CollectionUtils.isEmpty(batteryMemberCardList)){
+            log.info("find the battery packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
+            return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
+        }
+        //检查是否绑定到租车或车电一体套餐
+        List<CarRentalPackagePo>  carRentalPackagePos = carRentalPackageService.findByCouponId(coupon.getId().longValue());
+        if(!CollectionUtils.isEmpty(carRentalPackagePos)){
+            log.info("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
+            return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
 
         Coupon couponUpdate = new Coupon();

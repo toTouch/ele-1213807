@@ -97,4 +97,11 @@ public interface CarRentalPackageService {
      */
     Long insert(CarRentalPackagePo entity);
 
+    /**
+     *
+     * @param couponId
+     * @return
+     */
+    List<CarRentalPackagePo> findByCouponId(Long couponId);
+
 }

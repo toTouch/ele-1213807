@@ -100,6 +100,13 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return R.ok();
 		}
 
+		//检查是否重复扫描同一邀请人的二维码
+		Boolean isExist = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+		if(isExist){
+			return R.ok();
+		}
+		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
+
 		//3.0版本修改为邀请返券和邀请返现活动只能参加一个，且只是针对新用户参加
 		//查询当前用户是否参与了邀请返现活动
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
