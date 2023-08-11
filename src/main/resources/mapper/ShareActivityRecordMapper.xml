@@ -9,7 +9,7 @@
         tsar.id as id, tsar.activity_id as activityId, tsar.count as count,
 		tsar.create_time as createTime, tsar.update_time as updateTime,
 		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
-		tui.phone as phone,tui.name as name,tsa.name as activityName
+		tui.phone as phone,tui.name as name,tsa.name as activityName,tsar.uid as uid
 		from t_share_activity_record as tsar
 		left join t_user_info as tui on tui.uid=tsar.uid
 		left join t_share_activity as tsa on tsar.activity_id=tsa.id
