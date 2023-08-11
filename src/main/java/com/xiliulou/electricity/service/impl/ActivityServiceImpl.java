@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -318,10 +319,11 @@ public class ActivityServiceImpl implements ActivityService {
 
         try{
             //判断该用户是否进行了实名认证
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            log.info("get user info by uid for activity, auth status = {}", userInfo.getAuthStatus());
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("not finished real name authentication! user not auth,uid = {}", uid);
+                log.warn("not finished real name authentication! user not auth, user info = {}", JsonUtil.toJson(userInfo));
                 return Triple.of(false, "000100", "未进行实名认证");
             }
 
