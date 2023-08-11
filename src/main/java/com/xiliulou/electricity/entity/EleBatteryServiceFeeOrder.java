@@ -85,7 +85,7 @@ public class EleBatteryServiceFeeOrder {
     private String sn;
 
     /**
-     * 电池服务费
+     * 电池服务费单价
      */
     private BigDecimal batteryServiceFee;
 
