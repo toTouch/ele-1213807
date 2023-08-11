@@ -3459,7 +3459,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> renewalUserBatteryMemberCard(UserBatteryMembercardQuery query) {
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(user)) {
@@ -3512,6 +3511,41 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
         }
 
+        ElectricityMemberCardOrder memberCardOrder=saveRenewalUserBatteryMemberCardOrder(user,userInfo,batteryMemberCard,userBatteryMemberCard,userBindbatteryMemberCard);
+
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
+        }
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(memberCardOrder.getOrderId());
+        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+
+        // 9. 处理活动
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityService.asyncProcessActivity(activityProcessDTO);
+
+        sendUserCoupon(batteryMemberCard, memberCardOrder);
+
+        return Triple.of(true, null, null);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard) {
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
         memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
         memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
@@ -3534,7 +3568,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NOT_USE);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() ||Objects.isNull (userBindbatteryMemberCard) || Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0) {
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindbatteryMemberCard) || Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0) {
 
             memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
@@ -3555,7 +3589,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
 
             //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
-            if(StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())){
+            if (StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
                 ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
                 electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
                 electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
@@ -3607,37 +3641,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
 
-        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
-        if (Objects.nonNull(channelActivityHistory) && Objects
-                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
-            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
-            updateChannelActivityHistory.setId(channelActivityHistory.getId());
-            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
-            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
-            channelActivityHistoryService.update(updateChannelActivityHistory);
-        }
-
-        //TODO 发送MQ消息  分帐  活动
-
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(memberCardOrder.getOrderId());
-        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
-        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityService.asyncProcessActivity(activityProcessDTO);
-
-        sendUserCoupon(batteryMemberCard, memberCardOrder);
-
-        return Triple.of(true, null, null);
+        return memberCardOrder;
     }
 
     @Override
@@ -3671,7 +3675,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+            return Triple.of(false, null, null);
         }
 
         BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
