@@ -126,7 +126,7 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
             // 8. 处理分账
             DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-            divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+            divisionAccountOrderDTO.setOrderNo(batteryMembercardRefundOrder.getRefundOrderNo());
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());

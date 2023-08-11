@@ -1599,12 +1599,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-            log.error("admin saveUserMemberCard  ERROR! uid={} ", userInfo.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
-        }
-
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
             log.error("admin saveUserMemberCard ERROR! not found user,uid={} ", user.getUid());

@@ -1,13 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.service.*;
@@ -99,6 +103,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Autowired
     WechatConfig wechatConfig;
+
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
 
     @Override
     public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException {
@@ -572,6 +579,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         //更新套餐绑定的优惠券为已失效
         updateUserCouponStatus(electricityMemberCardOrder.getOrderId());
+
+        // 8. 处理分账
+        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+        divisionAccountOrderDTO.setOrderNo(batteryMembercardRefundOrder.getRefundOrderNo());
+        divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
+        divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
         return Triple.of(true, "", null);
     }
