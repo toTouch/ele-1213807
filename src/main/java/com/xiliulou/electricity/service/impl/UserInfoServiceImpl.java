@@ -1038,42 +1038,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-        Long now = System.currentTimeMillis();
-        long cardDays = 0;
-
-        //用户套餐过期服务费
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(oldUserInfo.getUid());
-
-        if (Objects.nonNull(serviceFeeUserInfo) || Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(oldUserInfo, null, cardDays);
-            userChangeServiceFee = serviceFee;
-        }
-
-        //判断用户是否产生停卡电池服务费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-            cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-
-            //不足一天按一天计算
-            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
-            }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldUserInfo, uid, cardDays, null, serviceFeeUserInfo);
-            userChangeServiceFee = serviceFee;
-        }
-
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userChangeServiceFee);
-        }
-
         //解绑电池
         ElectricityBattery electricityBattery = new ElectricityBattery();
         electricityBattery.setId(oldElectricityBattery.getId());
