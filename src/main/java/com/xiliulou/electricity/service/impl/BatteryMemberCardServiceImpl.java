@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -28,7 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -229,6 +233,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
+    }
+
+    @Slave
+    @Override
+    public List<BatteryMemberCard> selectListByCouponId(Long couponId) {
+        return this.batteryMemberCardMapper.selectList(new LambdaQueryWrapper<BatteryMemberCard>().eq(BatteryMemberCard::getCouponId, couponId).eq(BatteryMemberCard::getDelFlag, BatteryMemberCard.DEL_NORMAL));
     }
 
     @Slave
