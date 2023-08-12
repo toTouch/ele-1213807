@@ -129,7 +129,7 @@
 
 
     <select id="selectElectricityCabinetByAddress" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select tec.id,tec.name,tec.address, tec.longitude, tec.latitude, ROUND( 6378.138 * 2 * ASIN( SQRT( POW( SIN( ( #{lat} * PI() / 180 - tec.latitude * PI() / 180
+        select tec.id,tec.sn , tec.service_phone ,tec.business_time, tec.name,tec.address, tec.longitude, tec.latitude, ROUND( 6378.138 * 2 * ASIN( SQRT( POW( SIN( ( #{lat} * PI() / 180 - tec.latitude * PI() / 180
         ) / 2 ), 2 ) + COS(#{lat} * PI() / 180) * COS(tec.latitude * PI() / 180) * POW( SIN( ( #{lon} * PI() / 180 - tec.longitude * PI() / 180 ) / 2
         ), 2 ) ) ) * 1000 ) AS distance
         from t_electricity_cabinet tec

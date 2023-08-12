@@ -4060,6 +4060,57 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return electricityCabinets.parallelStream().peek(item -> {
+
+            //营业时间
+            if (Objects.nonNull(item.getBusinessTime())) {
+                String businessTime = item.getBusinessTime();
+                if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                    item.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    item.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                } else {
+                    item.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                    int index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 0) {
+                        item.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long beginTime = getTime(totalBeginTime);
+                        Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long endTime = getTime(totalEndTime);
+                        item.setBeginTime(totalBeginTime);
+                        item.setEndTime(totalEndTime);
+                        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                        long now = System.currentTimeMillis();
+                        if (firstToday + beginTime > now || firstToday + endTime < now) {
+                            item.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                        } else {
+                            item.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                        }
+                    }
+                }
+            }
+
+
+            Double fullyCharged = item.getFullyCharged();
+
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(item.getId().intValue());
+            if (!CollectionUtils.isEmpty(cabinetBoxList)) {
+                //空仓
+                long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+                //有电池仓门
+                long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+                //可换电数量
+                long exchangeableNumber = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).count();
+
+                item.setNoElectricityBattery((int) emptyCellNumber);
+                item.setFullyElectricityBattery((int) exchangeableNumber);
+                item.setBatteryInElectricity((int) haveBatteryNumber);
+
+
+                Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && StringUtils.isNotBlank(e.getBatteryType()))
+                        .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.groupingBy(a -> a, Collectors.counting()));
+                item.setBatteryTypeMapes(batteryTypeMapes);
+            }
+
             //获取柜机图片
             List<String> electricityCabinetPicture = getElectricityCabinetPicture(item.getId().longValue());
             if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
