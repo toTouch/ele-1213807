@@ -18,8 +18,6 @@ public interface ServiceFeeUserInfoService {
 
     int insert(ServiceFeeUserInfo serviceFeeUserInfo);
 
-    int update(ServiceFeeUserInfo serviceFeeUserInfo);
-
     ServiceFeeUserInfo queryByUidFromCache(Long uid);
 
     void updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);

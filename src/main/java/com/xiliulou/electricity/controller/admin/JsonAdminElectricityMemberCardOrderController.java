@@ -284,8 +284,8 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
      */
     @PutMapping("/admin/memberCard/disableUserMemberCard")
 	@Log(title = "暂停用户套餐")
-	public R adminDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid, @RequestParam("days") Integer days) {
-        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid, days);
+	public R adminDisableMemberCard(@RequestParam("uid") Long uid, @RequestParam("days") Integer days) {
+        return electricityMemberCardOrderService.adminDisableMemberCard(uid, days);
     }
 
     /**
@@ -294,8 +294,9 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
      */
     @PutMapping("/admin/memberCard/enableUserMemberCard")
     @Log(title = "启用用户套餐")
-    public R adminEnableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
-        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid,null);
+    public R adminEnableMemberCard(@RequestParam("uid") Long uid) {
+//        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid,null);
+        return electricityMemberCardOrderService.adminEnableMemberCard(uid);
     }
 
     /**

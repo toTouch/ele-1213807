@@ -2,16 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper">
 
-    <update id="update">
-        update t_service_fee_user_info
-        <set>
-            <if test="disableMemberCardNo != null">
-                disable_member_card_no = #{disableMemberCardNo},
-            </if>
-        </set>
-        where id = #{id} and tenant_id = #{tenantId}
-    </update>
-
     <update id="updateByUid">
         update t_service_fee_user_info
         <set>
@@ -34,7 +24,7 @@
                 service_fee_generate_time = #{serviceFeeGenerateTime},
             </if>
         </set>
-        where uid = #{uid} and tenant_id = #{tenantId}
+        where uid = #{uid}
     </update>
 
     <delete id="deleteByUid">
