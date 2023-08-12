@@ -2637,7 +2637,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             eleDisableMemberCardRecordList.parallelStream().forEach(item -> {
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
-                if(Objects.isNull(userBatteryMemberCard) ||  Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getDisableMemberCardTime())){
+                if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getDisableMemberCardTime()) ||Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())){
                     return;
                 }
 
@@ -2649,7 +2649,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (Objects.isNull(electricityMemberCard)) {
                     return;
                 }
-
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
                 if (Objects.isNull(userInfo)) {
                     log.error("ELE ERROR! not found useeInfo,uid={}", item.getUid());

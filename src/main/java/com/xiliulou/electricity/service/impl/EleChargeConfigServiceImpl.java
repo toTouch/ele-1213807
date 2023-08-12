@@ -115,6 +115,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     @Transactional(rollbackFor = Exception.class)
     public EleChargeConfig insert(EleChargeConfig eleChargeConfig) {
         this.eleChargeConfigMapper.insertOne(eleChargeConfig);
+        delConfigCache(eleChargeConfig);
         return eleChargeConfig;
     }
 
@@ -129,6 +130,8 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     public Integer update(EleChargeConfig eleChargeConfig, EleChargeConfig originalConfig) {
         return DbUtils.dbOperateSuccessThenHandleCache(this.eleChargeConfigMapper.update(eleChargeConfig), id -> {
             delConfigCache(originalConfig);
+            //这里需要删除新的配置，因为旧的配置有可能存在
+            delConfigCache(eleChargeConfig);
         });
 
     }
@@ -142,7 +145,6 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             case EleChargeConfig.TYPE_ALL_STORE:
                 redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
                 redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
-
                 break;
             case EleChargeConfig.TYPE_ALL_CABINET:
                 redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_CABINET, originalConfig.getStoreId()));
@@ -259,33 +261,35 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         switch (configType) {
             case EleChargeConfig.TYPE_ALL_FRANCHISEE:
                 EleChargeConfig config = queryByTenantIdFromDb(tenantId);
-                if (Objects.nonNull(config)) {
-                    //这里排除自己
-                    return Objects.nonNull(chargeId) && !Objects.equals(config.getId(), chargeId);
+                if (Objects.isNull(config)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(config.getId(), chargeId);
             case EleChargeConfig.TYPE_ALL_STORE:
                 EleChargeConfig franchiseeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), null, null, EleChargeConfig.TYPE_ALL_STORE);
-                if (Objects.nonNull(franchiseeConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(franchiseeConfig.getId(), chargeId);
+                if (Objects.isNull(franchiseeConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(franchiseeConfig.getId(), chargeId);
             case EleChargeConfig.TYPE_ALL_CABINET:
                 EleChargeConfig storeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), null, EleChargeConfig.TYPE_ALL_CABINET);
-                if (Objects.nonNull(storeConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(storeConfig.getId(), chargeId);
+                if (Objects.isNull(storeConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(storeConfig.getId(), chargeId);
             case EleChargeConfig.TYPE_SINGLE_CABINET:
                 EleChargeConfig cabinetConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), chargeConfigQuery.getEid(), EleChargeConfig.TYPE_SINGLE_CABINET);
-                if (Objects.nonNull(cabinetConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(cabinetConfig.getId(), chargeId);
+                if (Objects.isNull(cabinetConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(cabinetConfig.getId(), chargeId);
             default:
                 return false;
         }
-        return false;
     }
 
     @Override
@@ -332,6 +336,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             updateConfig.setType(configType);
             updateConfig.setUpdateTime(System.currentTimeMillis());
             updateConfig.setJsonRule(chargeConfigQuery.getJsonRule());
+            updateConfig.setTenantId(TenantContextHolder.getTenantId());
 
             update(updateConfig, config);
         } finally {

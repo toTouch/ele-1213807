@@ -1179,9 +1179,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //换电柜
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderSelfOpenCellQuery.getElectricityCabinetId());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
-            log.error("self open cell ERROR! not found electricityCabinet ！electricityCabinetId={}", orderSelfOpenCellQuery.getElectricityCabinetId());
+            log.error("self open cell ERROR! not found electricityCabinet ！electricityCabinetId={}", rentBatteryOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
@@ -1266,7 +1266,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(rentBatteryOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
         if (Objects.isNull(electricityCabinetBox)) {
             log.error("self open cell order  ERROR! not find cellNO,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
@@ -1316,7 +1316,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
         } finally {
-            redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderSelfOpenCellQuery.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNo());
+            redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryOrder.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNo());
         }
     }
 

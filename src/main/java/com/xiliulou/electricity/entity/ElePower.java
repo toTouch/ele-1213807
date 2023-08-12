@@ -19,41 +19,45 @@ import lombok.NoArgsConstructor;
 @Builder
 @TableName("t_ele_power")
 public class ElePower {
-    
+
     private Long id;
-    
+
     private String sn;
-    
+
     private String eName;
-    
+
     private Long eid;
-    
+
     private Long storeId;
-    
+
     private Long franchiseeId;
-    
+
     private Integer tenantId;
     /**
-    * 上报时间
-    */
+     * 上报时间
+     */
     private Long reportTime;
-    
+
     private Long createTime;
     /**
-    * 耗电类别 0--平用电 1--峰用电 2--谷用电
-    */
+     * 耗电类别 0--平用电 1--峰用电 2--谷用电
+     */
     private Integer type;
     /**
-    * 总共使用电量
-    */
+     * 总共使用电量
+     */
     private Double sumPower;
     /**
-    * 每小时耗电量
-    */
+     * 单价
+     */
+    private Double unitPrice;
+    /**
+     * 每小时耗电量
+     */
     private Double hourPower;
     /**
-    * 每小时电费
-    */
+     * 每小时电费
+     */
     private Double electricCharge;
 
     public static final Integer DEL_NORMAL = 0;

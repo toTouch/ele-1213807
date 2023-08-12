@@ -160,7 +160,8 @@
     <select id="queryList" resultMap="CarRefundOrderMap">
         select
         id, order_id, uid, `name`, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time ,
-        deposit_order_id, update_time, store_id, tenant_id
+        deposit_order_id,
+        update_time, store_id, tenant_id
         from t_car_refund_order
         <where>
             <if test="orderId != null and orderId != ''">
