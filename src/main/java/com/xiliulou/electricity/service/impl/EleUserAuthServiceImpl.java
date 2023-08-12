@@ -72,8 +72,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     RocketMqService rocketMqService;
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
-    @Autowired
-    ActivityService activityService;
 
     /**
      * 新增数据
@@ -191,17 +189,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         
         if (flag) {
             sendAuthenticationAuditMessage(userInfo);
-        }
-
-        //实名认证审核通过后，触发活动处理流程
-        if(EleUserAuth.STATUS_REVIEW_PASSED.equals(userInfo.getAuthStatus())){
-            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-            activityProcessDTO.setUid(user.getUid());
-            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
-            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            log.info("hand activity for auto review success: {}", JsonUtil.toJson(activityProcessDTO));
-
-            activityService.asyncProcessActivity(activityProcessDTO);
         }
 
         return R.ok();

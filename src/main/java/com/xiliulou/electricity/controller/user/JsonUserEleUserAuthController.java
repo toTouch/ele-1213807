@@ -2,10 +2,14 @@ package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +42,9 @@ public class JsonUserEleUserAuthController {
 	@Autowired
 	RedisService redisService;
 
+	@Autowired
+	ActivityService activityService;
+
 	//实名认证
 	@PostMapping("/user/auth")
 	public R webAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
@@ -55,7 +62,18 @@ public class JsonUserEleUserAuthController {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
-		return eleUserAuthService.webAuth(eleUserAuthList);
+		R result = eleUserAuthService.webAuth(eleUserAuthList);
+
+		//实名认证审核通过后，触发活动处理流程
+		ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+		activityProcessDTO.setUid(uid);
+		activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
+		activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+		log.info("hand activity for auto review success: {}", JsonUtil.toJson(activityProcessDTO));
+
+		activityService.asyncProcessActivity(activityProcessDTO);
+
+		return result;
 
 	}
 
