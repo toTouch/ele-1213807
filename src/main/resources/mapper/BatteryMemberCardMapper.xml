@@ -52,8 +52,11 @@
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
-            <if test="rentType != null">
-                and rent_type = #{rentType}
+            <if test="rentType != null and rentType==1">
+                and rent_type in (1,0)
+            </if>
+            <if test="rentType != null and rentType==2">
+                and rent_type in (2,0)
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}

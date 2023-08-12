@@ -179,13 +179,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.error("ELE ERROR!not found userBatteryDeposit,uid={}", userInfo.getUid());
-            return Collections.emptyList();
+        if (Objects.nonNull(userBatteryDeposit)) {
+            query.setDeposit(userBatteryDeposit.getBatteryDeposit());
         }
 
         query.setFranchiseeId(userInfo.getFranchiseeId());
-        query.setDeposit(userBatteryDeposit.getBatteryDeposit());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
@@ -402,10 +400,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(id);
         if (Objects.isNull(batteryMemberCard) || !Objects.equals(batteryMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
-        }
-
-        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))) {
-            return Triple.of(false, "100100", "删除失败，该套餐已有用户使用");
         }
 
         if (Objects.nonNull(electricityMemberCardOrderService.checkOrderByMembercardId(id))) {
