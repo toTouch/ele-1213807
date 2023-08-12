@@ -179,13 +179,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.error("ELE ERROR!not found userBatteryDeposit,uid={}", userInfo.getUid());
-            return Collections.emptyList();
+        if (Objects.nonNull(userBatteryDeposit)) {
+            query.setDeposit(userBatteryDeposit.getBatteryDeposit());
         }
 
         query.setFranchiseeId(userInfo.getFranchiseeId());
-        query.setDeposit(userBatteryDeposit.getBatteryDeposit());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
