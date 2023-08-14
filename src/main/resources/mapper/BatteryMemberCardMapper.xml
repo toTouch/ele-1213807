@@ -292,6 +292,7 @@
     <update id="update">
         update t_battery_member_card
         <set>
+            coupon_id = #{couponId},
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
@@ -327,9 +328,6 @@
             </if>
             <if test="useCount != null">
                 use_count = #{useCount},
-            </if>
-            <if test="couponId != null">
-                coupon_id = #{couponId},
             </if>
             <if test="isRefund != null">
                 is_refund = #{isRefund},

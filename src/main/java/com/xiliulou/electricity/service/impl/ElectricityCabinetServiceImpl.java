@@ -2324,6 +2324,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
     }
 
+    @Override
+    public boolean isFullBattery(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.nonNull(electricityCabinetBox.getPower()) && electricityCabinetBox.getPower() == 100d;
+    }
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -4092,19 +4097,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             Double fullyCharged = item.getFullyCharged();
 
-            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(item.getId().intValue());
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(item.getId());
             if (!CollectionUtils.isEmpty(cabinetBoxList)) {
                 //空仓
                 long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
-                //有电池仓门
-                long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+                //满电数量
+                long fullBatteryNumber = cabinetBoxList.stream().filter(this::isFullBattery).count();
                 //可换电数量
                 long exchangeableNumber = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).count();
 
                 item.setNoElectricityBattery((int) emptyCellNumber);
-                item.setFullyElectricityBattery((int) exchangeableNumber);
-                item.setBatteryInElectricity((int) haveBatteryNumber);
-
+                item.setFullyElectricityBattery((int) fullBatteryNumber);
+                item.setExchangeBattery((int) exchangeableNumber);
 
                 Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && StringUtils.isNotBlank(e.getBatteryType()))
                         .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.groupingBy(a -> a, Collectors.counting()));
