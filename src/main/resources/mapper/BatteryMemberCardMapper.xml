@@ -29,6 +29,36 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
+    <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="deposit" column="deposit" jdbcType="NUMERIC"/>
+        <result property="rentPrice" column="rent_price" jdbcType="NUMERIC"/>
+        <result property="rentPriceUnit" column="rent_price_unit" jdbcType="NUMERIC"/>
+        <result property="validDays" column="valid_days" jdbcType="INTEGER"/>
+        <result property="rentUnit" column="rent_unit" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="rentType" column="rent_type" jdbcType="INTEGER"/>
+        <result property="sendCoupon" column="send_coupon" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
+        <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
+        <result property="freeDeposite" column="free_deposite" jdbcType="INTEGER"/>
+        <result property="serviceCharge" column="service_charge" jdbcType="NUMERIC"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <collection property="batteryType" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+            <result column="battery_type"  property="batteryType"/>
+        </collection>
+    </resultMap>
+
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMemberCardMap">
         select
@@ -156,7 +186,7 @@
         </if>
     </select>
 
-    <select id="selectByPageForUser" resultMap="BatteryMemberCardMap">
+    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
         select
         bmc.id,
         bmc.name,
@@ -178,7 +208,7 @@
         bmc.service_charge
         from t_battery_member_card bmc
         <if test="batteryV != null and batteryV != ''">
-        left join (select battery_v,mid from t_member_card_battery_type group by battery_v,mid ) mcbt on bmc.id=mcbt.mid
+        left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         </if>
         <where>
             bmc.business_type=0 and bmc.status=0 and bmc.del_flag=0
