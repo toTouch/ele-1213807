@@ -77,6 +77,18 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     /**
+     * 用户还车申请
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean refundCarOrderApply(Integer tenantId, Long uid) {
+        return false;
+    }
+
+    /**
      * 用户扫码绑定车辆
      *
      * @param tenantId 租户ID
