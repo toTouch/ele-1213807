@@ -195,7 +195,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             dueTimeTotalNew = dueTimeTotal - (dueTime -  dueTimeNew);
         }
 
-        if (ObjectUtils.isNotEmpty(residueReq)) {
+        if (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && ObjectUtils.isNotEmpty(residueReq)) {
             residueNew = residueReq;
         }
 
@@ -241,9 +241,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     dueTimeNow = now + (tenancyUnUse * TimeConstant.MINUTE_MILLISECOND);
                 }
                 newMemberTermEntity.setDueTime(dueTimeNow);
+            } else {
+                newMemberTermEntity.setResidue(residueNew);
+                newMemberTermEntity.setDueTime(dueTimeNew);
+                newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             }
         } else {
-            newMemberTermEntity.setId(memberTermEntity.getId());
             newMemberTermEntity.setDueTime(dueTimeNew);
             newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             newMemberTermEntity.setResidue(residueNew);

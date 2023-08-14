@@ -1562,7 +1562,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 6. 查询用户保险信息
         Integer rentalPackageType = memberTerm.getRentalPackageType();
-        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceInfo(uid, rentalPackageType);
 
         // 7. 电池消息
         ElectricityUserBatteryVo userBatteryVo = null;
@@ -1604,6 +1604,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
         carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackage.getName());
         carRentalPackageOrderVO.setDeposit(memberTerm.getDeposit());
+        carRentalPackageOrderVO.setBatteryVoltage(carRentalPackage.getBatteryVoltage());
         carRentalPackageOrderVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
         // 赋值套餐订单信息
         rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);

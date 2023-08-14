@@ -120,7 +120,7 @@
     <update id="rentRefundByUidAndPackageOrderNo">
         UPDATE <include refid="table_name" />
         <set>
-            `update_time` = #{optTime}, `rental_package_order_no` = NULL, `rental_package_id` = NULL, `rental_package_confine` = NULL, `due_time` = NULL, `due_time_total` = NULL, `residue` = NULL, `status` = 1
+            `update_time` = #{optTime}, `rental_package_order_no` = NULL, `rental_package_id` = NULL, `due_time` = NULL, `due_time_total` = NULL, `residue` = NULL, `status` = 1
             <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
         </set>
         <where>
