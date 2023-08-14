@@ -3,14 +3,11 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.enums.ApplicableTypeEnum;
-import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -18,6 +15,7 @@ import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
@@ -44,6 +42,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     @Resource
     private  CouponActivityPackageService couponActivityPackageService;
@@ -175,6 +176,13 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             }
         } else {
             oldUserFlag = userBizService.isOldUser(tenantId, uid);
+
+            // 是否缴纳过租车的押金（单车、车电一体）
+            if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.equals(userInfo.getCarBatteryDepositStatus())) {
+                // 查询保险缴纳信息
+                CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
+                confine = depositPayPo.getRentalPackageType();
+            }
         }
 
         // 结合如上两点，从数据库中筛选合适的套餐
