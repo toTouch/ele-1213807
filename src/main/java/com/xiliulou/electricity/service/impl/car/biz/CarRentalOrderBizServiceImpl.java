@@ -77,6 +77,108 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     /**
+     * 用户扫码绑定车辆
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @param carSn    车辆SN码
+     * @param optUid   操作用户UID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean bindingCarByQR(Integer tenantId, Long uid, String carSn, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询租车会员信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
+        }
+
+        Long rentalPackageId = memberTermEntity.getRentalPackageId();
+        if (ObjectUtils.isEmpty(rentalPackageId)) {
+            log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
+            throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
+        }
+
+        // 通过套餐ID找到套餐
+        CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
+        if (ObjectUtils.isEmpty(rentalPackageEntity)) {
+            log.error("bindingCar, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
+            throw new BizException("300000", "数据有误");
+        }
+
+        // 查询车辆
+        ElectricityCar electricityCar = carService.selectBySn(carSn, tenantId);
+        if (ObjectUtils.isEmpty(electricityCar)) {
+            log.error("bindingCar, not found t_electricity_car. carSn is {}, tenantId is {}", rentalPackageId, tenantId);
+            throw new BizException("100007", "未找到车辆");
+        }
+
+        // 是否被其它用户绑定
+        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
+            log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
+            throw new BizException("300038", "该车已被其他用户绑定");
+        }
+
+        // 查询用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("bindingCar, user is disable. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("bindingCar, user not auth. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0041", "未实名认证");
+        }
+
+        // 查询自己名下是否存在车辆
+        ElectricityCar electricityCarUser = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(electricityCarUser)) {
+            throw new BizException("ELECTRICITY.0031", "用户已绑定车辆，请解绑后再绑定");
+        }
+
+        // 比对车辆是否符合(门店、型号)
+        if (!rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue()) || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
+            log.error("bindingCar, t_electricity_car carModel or organization is wrong", electricityCar.getUid());
+            throw new BizException("100007", "未找到车辆");
+        }
+
+        // 生成租赁订单
+        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, memberTermEntity, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode());
+
+        // 生成用户租赁状态
+        UserInfo userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RENTAL.getCode());
+
+        // 构建车辆型号的已租数量
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(electricityCar.getModelId());
+        ElectricityCarModel carModelUpdate = buildElectricityCarModel(carModel, RentalTypeEnum.RENTAL.getCode());
+
+        // 生成车辆绑定用户信息
+        ElectricityCar electricityCarUpdate = buildElectricityCar(electricityCar, uid, userInfo, RentalTypeEnum.RENTAL.getCode());
+
+        // 生成车辆记录
+        User user = userService.queryByUidFromCache(optUid);
+        EleBindCarRecord eleBindCarRecord = buildEleBindCarRecord(electricityCar, userInfo, user, RentalTypeEnum.RENTAL.getCode());
+
+        // JT808
+        CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RENTAL.getCode());
+
+        // 处理事务层
+        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory);
+
+        return true;
+    }
+
+    /**
      * 解绑用户车辆
      *
      * @param tenantId 租户ID
@@ -206,6 +308,19 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         // 查询用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("bindingCar, user is disable. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("bindingCar, user not auth. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0041", "未实名认证");
+        }
 
         // 查询自己名下是否存在车辆
         ElectricityCar electricityCarUser = carService.selectByUid(tenantId, uid);
