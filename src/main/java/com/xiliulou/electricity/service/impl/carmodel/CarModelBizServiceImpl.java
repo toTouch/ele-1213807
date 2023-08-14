@@ -146,7 +146,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
             if (!unleasedCarFlag) {
                 log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
-                return false;
+                throw new BizException("300043", "无可租车辆");
             }
         }
 
@@ -155,7 +155,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         if (ObjectUtils.isNotEmpty(memberTermEntity) &&
                 !(MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus()) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus()))) {
             log.info("CarModelBizService.checkBuyByCarModelId, The t_car_rental_package_member_term abnormal status. uid is {}", uid);
-            return false;
+            throw new BizException("300035", "您有正在审核中流程，不可购买套餐");
         }
 
         // 4. 获取车辆型号、押金、套餐类型
@@ -164,7 +164,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         Integer rentalPackageTypeExit = null;
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
             Long rentalPackageId = memberTermEntity.getRentalPackageId();
-            if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId.longValue() == 0) {
+            if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId == 0) {
                 String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
                 rentalPackageId = carRenalPackageDepositBizService.queryRentalPackageIdByDepositPayOrderNo(depositPayOrderNo);
             }
@@ -190,6 +190,11 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             qryModel.setType(rentalPackageTypeExit);
         }
         Integer count = carRentalPackageService.count(qryModel);
+
+        if (count == 0) {
+            throw new BizException("300044", "无可用套餐");
+        }
+
 
         return count > 0;
     }
