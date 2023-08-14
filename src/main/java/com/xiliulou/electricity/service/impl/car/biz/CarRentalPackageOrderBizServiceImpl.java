@@ -1804,7 +1804,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 6. 获取套餐信息
             // 6.1 套餐不存在
             CarRentalPackagePo buyPackageEntity = carRentalPackageService.selectById(buyRentalPackageId);
-            if (ObjectUtils.isEmpty(buyPackageEntity)) {
+            if (ObjectUtils.isEmpty(buyPackageEntity) || DelFlagEnum.DEL.getCode().equals(buyPackageEntity.getDelFlag())) {
                 log.error("buyRentalPackageOrder failed. Package does not exist, buyRentalPackageId is {}", buyRentalPackageId);
                 return R.fail("300003", "套餐不存在");
             }
