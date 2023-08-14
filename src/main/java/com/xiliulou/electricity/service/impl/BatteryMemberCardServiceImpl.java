@@ -291,31 +291,22 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
         }
 
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
-
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
 
-        List<BatteryMemberCardVO> result = new ArrayList<>(list.size());
+        return list.stream().map(item->{
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
 
-        for (BatteryMemberCard batteryMemberCard : list) {
-            List<String> memberCardBatteryType = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-            if (CollectionUtils.isNotEmpty(userBatteryTypes) && CollectionUtils.isNotEmpty(memberCardBatteryType) && userBatteryTypes.contains(memberCardBatteryType)) {
-                BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-
-                if (Objects.nonNull(batteryMemberCard.getCouponId())) {
-                    Coupon coupon = couponService.queryByIdFromCache(batteryMemberCard.getCouponId());
-                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
-                }
-
-                result.add(batteryMemberCardVO);
+            if (Objects.nonNull(item.getCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
-        }
 
-        return result;
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
     }
 
     @Override
