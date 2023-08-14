@@ -517,7 +517,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("Invitation activity info! invite fail,activityId={}, package Id={},uid={}", activityJoinHistory.getActivityId(), packageId, userInfo.getUid());
             return;
         }
-
+        log.info("invitation activity start, package type = {}, package id = {}, pay count = {}", packageType, packageId, payCount);
         //返现金额
         BigDecimal rewardAmount = null;
 
@@ -529,6 +529,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 return;
             }
 
+            log.info("handle invitation activity for first purchase package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(), activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
             rewardAmount = invitationActivity.getFirstReward();
             //修改参与状态
             InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
@@ -548,6 +549,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 return;
             }
 
+            log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(), activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
             rewardAmount = invitationActivity.getOtherReward();
             //保存参与记录
             InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
@@ -567,12 +569,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
             //给邀请人增加返现金额
             this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
+
         }
 
         //处理返现
         userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
-    }
+        log.info("handle invitation activity for package end. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(), activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
 
+    }
 
     private static String codeEnCoder(Long activityId, Long uid) {
         String encrypt = AESUtils.encrypt(activityId + ":" + uid);
