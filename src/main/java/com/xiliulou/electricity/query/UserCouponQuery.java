@@ -53,4 +53,6 @@ public class UserCouponQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+
+    private Integer superposition;
 }

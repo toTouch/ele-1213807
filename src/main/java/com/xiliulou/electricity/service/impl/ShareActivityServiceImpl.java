@@ -25,6 +25,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -227,7 +228,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 			//3.0版本，针对套餐需要做区分，新版的本的套餐多了租车和车电一体。之前只有换电套餐一种
 			List<ActivityPackageVO> activityPackageVOS = getActivityPackages(shareActivityMemberCards);
-			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(), activityPackageVOS));
+			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
+			shareActivityPackageVO.setPackages(activityPackageVOS);
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(), shareActivityPackageVO));
 
 			return null;
 		});
@@ -757,12 +760,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return shareActivityOperateRecord;
 	}
 
-	private ShareActivityOperateRecord buildActivityOperateRecord(Long id, String name, List<ActivityPackageVO> activityPackageVOList) {
+	private ShareActivityOperateRecord buildActivityOperateRecord(Long id, String name, ShareActivityPackageVO shareActivityPackageVO) {
 		ShareActivityOperateRecord shareActivityOperateRecord = new ShareActivityOperateRecord();
 		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
 		shareActivityOperateRecord.setShareActivityId(id);
 		shareActivityOperateRecord.setName(name);
-		shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(activityPackageVOList));
+		shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
 		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
 		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());

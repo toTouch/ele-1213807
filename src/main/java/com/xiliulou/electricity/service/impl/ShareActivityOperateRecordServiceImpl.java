@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.vo.ShareActivityOperateRecordVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -134,7 +135,7 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
         return packageNames;
     }
 
-    private Boolean isJsonStr(String str){
+    private boolean isJsonStr(String str){
         boolean isJSONString = false;
         Gson gson = new Gson();
         try {
@@ -148,7 +149,8 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
     }
 
     private List<String> getPackageNames(String packageInfo){
-        List<ActivityPackageVO> activityPackageVOList = JsonUtil.fromJson(packageInfo, List.class);
+        ShareActivityPackageVO shareActivityPackageVO = JsonUtil.fromJson(packageInfo, ShareActivityPackageVO.class);
+        List<ActivityPackageVO> activityPackageVOList = shareActivityPackageVO.getPackages();
         List<String> packageNames = Lists.newArrayList();
         for(ActivityPackageVO activityPackageVO : activityPackageVOList){
             Long packageId = activityPackageVO.getPackageId();
