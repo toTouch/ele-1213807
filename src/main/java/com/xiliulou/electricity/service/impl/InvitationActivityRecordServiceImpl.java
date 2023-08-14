@@ -353,6 +353,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return Triple.of(true, null, null);
     }
 
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleInvitationActivity(UserInfo userInfo, String orderId) {

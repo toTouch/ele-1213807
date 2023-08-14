@@ -127,6 +127,7 @@
         select count(*)
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
