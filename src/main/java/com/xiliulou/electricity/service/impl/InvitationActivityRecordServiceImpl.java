@@ -353,6 +353,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return Triple.of(true, null, null);
     }
 
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleInvitationActivity(UserInfo userInfo, String orderId) {
@@ -456,26 +457,26 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //是否参与过套餐返现活动
         InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(userInfo.getUid());
         if (Objects.isNull(activityJoinHistory)) {
-            log.info("INVITATION ACTIVITY INFO!not found activityJoinHistory,uid={}", userInfo.getUid());
+            log.info("Invitation activity info! not found activityJoinHistory,uid={}", userInfo.getUid());
             return;
         }
 
         InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
         if (Objects.isNull(invitationActivity)) {
-            log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), invitationActivity.getId());
+            log.error("Invitation activity info! not found invitationActivity,uid={},activityId={}", userInfo.getUid(), invitationActivity.getId());
             return;
         }
 
         //是否有上架的套餐返现活动
-        List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
-        if (CollectionUtils.isEmpty(invitationActivitys)) {
-            log.info("INVITATION ACTIVITY INFO!invitationActivitys is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
+        if (CollectionUtils.isEmpty(invitationActivities)) {
+            log.info("Invitation activity info! invitationActivities is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return;
         }
 
-        List<Long> activityIds = invitationActivitys.stream().map(InvitationActivity::getId).collect(Collectors.toList());
+        List<Long> activityIds = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toList());
         if (!activityIds.contains(invitationActivity.getId())) {
-            log.info("INVITATION ACTIVITY INFO!enable invitationActivitys not contains user join activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
+            log.info("Invitation activity info! enable invitationActivities not contains user join activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
             return;
         }
 
@@ -483,13 +484,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Long packageId = null;
         Integer payCount = null;
         if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
-            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
-            if (Objects.isNull(electricityMemberCardOrder)) {
-                log.info("Invitation activity info， not found electricityMemberCardOrder,orderId={},uid={}", orderNo, userInfo.getUid());
+            //ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.info("Invitation activity info, not found user battery package ,orderId={},uid={}", orderNo, userInfo.getUid());
                 return;
             }
-            packageId = electricityMemberCardOrder.getMemberCardId().longValue();
-            payCount = electricityMemberCardOrder.getPayCount();
+            packageId = userBatteryMemberCard.getMemberCardId().longValue();
+            payCount = userBatteryMemberCard.getCardPayCount();
         }else{
             //获取租车或者车电一体订单信息
             CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
@@ -501,7 +504,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             //根据当前用户uid, 订单号, 购买成功等条件查询，当前套餐的购买记录
             CarRentalPackageOrderQryModel queryModel = new CarRentalPackageOrderQryModel();
             queryModel.setUid(userInfo.getUid());
-            queryModel.setRentalPackageId(carRentalPackageOrderPO.getRentalPackageId());
+            //queryModel.setRentalPackageId(carRentalPackageOrderPO.getRentalPackageId());
             queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
 
             packageId = carRentalPackageOrderPO.getRentalPackageId();
@@ -511,7 +514,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //是否购买的是活动指定的套餐
         List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
         if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(packageId)) {
-            log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), packageId, userInfo.getUid());
+            log.info("Invitation activity info! invite fail,activityId={}, package Id={},uid={}", activityJoinHistory.getActivityId(), packageId, userInfo.getUid());
             return;
         }
 
@@ -522,7 +525,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (payCount == 1) {
             //首次购买需要判断活动是否过期
             if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
-                log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                log.error("Invitation activity error! activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
                 return;
             }
 
@@ -541,7 +544,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         } else {
             //非首次购买需要判断 首次购买是否成功
             if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
+                log.error("Invitation activity error! Unsuccessful join the first activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
                 return;
             }
 

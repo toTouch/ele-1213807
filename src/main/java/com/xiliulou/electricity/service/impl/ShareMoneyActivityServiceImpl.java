@@ -80,6 +80,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
 
+    @Autowired
+    private JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+
+    @Autowired
+    private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -286,6 +292,24 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
+
+            //如果是下架活动，则将参与记录中为已参与的状态修改为已下架
+            if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareMoneyActivity.STATUS_OFF)) {
+                //修改邀请状态
+                JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
+                joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_OFF);
+                joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+                joinShareMoneyActivityRecord.setActivityId(shareMoneyActivity.getId());
+                joinShareMoneyActivityRecordService.updateByActivityId(joinShareMoneyActivityRecord);
+
+                //修改历史记录状态
+                JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
+                joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_OFF);
+                joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+                joinShareMoneyActivityHistory.setActivityId(shareMoneyActivity.getId());
+                joinShareMoneyActivityHistoryService.updateByActivityId(joinShareMoneyActivityHistory);
+            }
+
             return null;
         });
 

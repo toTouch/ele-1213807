@@ -307,7 +307,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             
             date.setTime(item.getCreateTime());
             vo.setCreateTime(sdf.format(date));
-            vo.setStatus(getStatusName(item.getStatus()));
+            //vo.setStatus(getStatusName(item.getStatus()));
+
+            Integer couponCount = getReceivedCouponCount(item);
+            vo.setCouponCount(String.valueOf(couponCount));
             
             voList.add(vo);
         });
