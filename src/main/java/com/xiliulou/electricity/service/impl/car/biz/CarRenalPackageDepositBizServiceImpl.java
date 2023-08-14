@@ -1045,7 +1045,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
                     // 清理user信息/解绑车辆/解绑电池
-                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getType());
+                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                 }
 
                 // 免押
