@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -273,7 +272,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
-            if(Objects.isNull(userBatteryDeposit)){
+            if (Objects.isNull(userBatteryDeposit)) {
                 log.error("USER BATTERY MEMBERCARD ERROR!not found userBatteryDeposit,uid={}", SecurityUtils.getUid());
                 return Collections.emptyList();
             }
@@ -297,8 +296,26 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-log.error("==========================={}", JsonUtil.toJson(list));
-        return list.stream().map(item->{
+
+        //用户绑定的电池型号串数
+        List<String> userBindBatteryType = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
+        if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+            userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+        }
+
+        List<BatteryMemberCardVO> result = new ArrayList<>();
+        for (BatteryMemberCardAndTypeVO item : list) {
+
+            List<String> number = null;
+            if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
+                //套餐电池型号串数 number
+                number = item.getBatteryType().stream().map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+
+            if (!(CollectionUtils.isNotEmpty(userBindBatteryType) && CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))) {
+                continue;
+            }
+
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 
@@ -307,8 +324,10 @@ log.error("==========================={}", JsonUtil.toJson(list));
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
 
-            return batteryMemberCardVO;
-        }).collect(Collectors.toList());
+            result.add(batteryMemberCardVO);
+        }
+
+        return result;
     }
 
     @Override
