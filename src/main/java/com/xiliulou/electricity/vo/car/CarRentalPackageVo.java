@@ -198,6 +198,11 @@ public class CarRentalPackageVo implements Serializable {
     private List<String> batteryModelTypes;
 
     /**
+     * 电池型号编码集，短型号
+     */
+    private List<String> batteryModelTypeShorts;
+
+    /**
      * 赠送的优惠券名称
      */
     private String couponName;
