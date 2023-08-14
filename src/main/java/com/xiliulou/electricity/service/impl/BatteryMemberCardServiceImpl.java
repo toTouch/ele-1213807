@@ -384,12 +384,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
 
-        BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
-        batteryMemberCardUpdate.setId(batteryMemberCard.getId());
-        batteryMemberCardUpdate.setStatus(batteryModelQuery.getStatus());
-        batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-
-        this.update(batteryMemberCardUpdate);
+        batteryMemberCard.setStatus(batteryModelQuery.getStatus());
+        batteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        this.update(batteryMemberCard);
 
         return Triple.of(true, null, null);
     }
