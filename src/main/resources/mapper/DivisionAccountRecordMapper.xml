@@ -261,6 +261,8 @@
         division_account_config_id
         from t_division_account_record
         where tenant_id = #{tenantId}
+        and type = 0
+        and division_account_status in (0,1)
         <if test="membercardName != null and membercardName != ''">
             and membercard_name = #{membercardName}
         </if>
