@@ -136,7 +136,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
             totalBatteryTypes = userBindBatteryTypes;
         }
 
-        if (CollectionUtils.isEmpty(userBindBatteryTypes) && CollectionUtils.isEmpty(membercardBatteryTypes)) {
+        if (CollectionUtils.isNotEmpty(userBindBatteryTypes) && CollectionUtils.isNotEmpty(membercardBatteryTypes)) {
             totalBatteryTypes = (List<String>) CollectionUtils.union(userBindBatteryTypes, membercardBatteryTypes);
         }
 
