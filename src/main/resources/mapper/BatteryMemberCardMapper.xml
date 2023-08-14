@@ -322,9 +322,7 @@
             <if test="status != null">
                 status = #{status},
             </if>
-            <if test="couponId != null">
-                coupon_id = #{couponId},
-            </if>
+            coupon_id = #{couponId},
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
