@@ -1299,7 +1299,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 是否存在正常的退押申请单
         CarRentalPackageDepositRefundPo depositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
-        if (ObjectUtils.isNotEmpty(depositRefundPo) && (!RefundStateEnum.FAILED.getCode().equals(depositRefundPo.getRefundState()) || !RefundStateEnum.AUDIT_REJECT.getCode().equals(depositRefundPo.getRefundState()))) {
+        if (ObjectUtils.isNotEmpty(depositRefundPo) && !RefundStateEnum.getRefundStateList().contains(depositRefundPo.getRefundState())) {
             throw new BizException("100031", "不能重复退押金");
         }
 
