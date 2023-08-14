@@ -76,7 +76,7 @@ public class UserBatteryMemberCard {
     private Integer memberCardStatus;
 
     /**
-     * 套餐暂停启用更新时间
+     * 套餐暂停时间
      */
     private Long disableMemberCardTime;
 
