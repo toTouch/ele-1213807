@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -106,5 +107,5 @@ public class BatteryMemberCardAndTypeVO {
 
     private Long updateTime;
 
-    private List<String> batteryType;
+    private List<MemberCardBatteryType> batteryType;
 }
