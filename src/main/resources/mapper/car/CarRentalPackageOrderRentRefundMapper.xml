@@ -22,7 +22,7 @@
         <result property="tenancyResidue" column="tenancy_residue" jdbcType="BIGINT" />
         <result property="tenancyResidueUnit" column="tenancy_residue_unit" jdbcType="INTEGER" />
         <result property="confine" column="confine" jdbcType="INTEGER" />
-        <result property="confineResidue" column="confine_residue" jdbcType="INTEGER" />
+        <result property="confineResidue" column="confine_residue" jdbcType="BIGINT" />
         <result property="refundAmount" column="refund_amount" jdbcType="DECIMAL" />
         <result property="refundState" column="refund_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
