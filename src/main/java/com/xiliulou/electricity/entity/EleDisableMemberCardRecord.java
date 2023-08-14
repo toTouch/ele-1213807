@@ -116,6 +116,11 @@ public class EleDisableMemberCardRecord {
      */
     private Long batteryMemberCardId;
 
+    /**
+     * 停卡原因
+     */
+    private String applyReason;
+
     private Long franchiseeId;
 
     private Long storeId;

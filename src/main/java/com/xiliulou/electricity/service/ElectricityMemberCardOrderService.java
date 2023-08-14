@@ -50,7 +50,7 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline);
+    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline ,String applyReason);
 
     R enableMemberCardForLimitTime();
 

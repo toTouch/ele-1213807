@@ -145,8 +145,10 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
      * @return
      */
     @PutMapping("user/memberCard/disableMemberCardForLimitTime")
-    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays, @RequestParam(value = "disableDeadline",required = false) Long disableDeadline) {
-        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline);
+    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays,
+                                           @RequestParam(value = "disableDeadline",required = false) Long disableDeadline,
+                                           @RequestParam(value = "applyReason",required = false) String applyReason) {
+        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline,applyReason);
     }
 
     /**
