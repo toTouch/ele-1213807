@@ -109,6 +109,9 @@ public class EleOperateQueueHandler {
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
 
 
@@ -772,7 +775,13 @@ public class EleOperateQueueHandler {
             return;
         }
 
-        if (Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || !Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("EXCHANGE ORDER ERROR! batteryMemberCard is null!uid={},orderId={}", rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());
+            return;
+        }
+
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
             return;
         }
 
