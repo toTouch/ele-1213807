@@ -46,7 +46,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      * @param optModel 操作实体类
      * @return true(成功)、false(失败)
      */
-    @GetMapping("/create")
+    @PostMapping("/create")
     public R<Boolean> create(@RequestBody CarRentalPackageDepositRefundOptModel optModel) {
         if (!ObjectUtils.allNotNull(optModel, optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
