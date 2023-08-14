@@ -1168,6 +1168,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
 
+        Integer payType = depositPayEntity.getPayType();
+        if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+            log.error("CarRenalPackageDepositBizService.refundDeposit failed. t_car_rental_package_deposit_pay pay type is {}, depositPayOrderNo is {}", payType, depositPayOrderNo);
+            throw new BizException("300045", "请前往门店退押金");
+        }
+
         // 退押检测
         checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
 
@@ -1178,8 +1184,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             Integer zeroDepositAuditEnabled = electricityConfig.getIsZeroDepositAuditEnabled();
             depositAuditFlag = ElectricityConfig.ENABLE_ZERO_DEPOSIT_AUDIT.equals(zeroDepositAuditEnabled);
         }
-
-        Integer payType = depositPayEntity.getPayType();
 
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.WX_APPLET,

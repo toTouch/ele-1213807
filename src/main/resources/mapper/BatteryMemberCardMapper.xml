@@ -292,7 +292,6 @@
     <update id="update">
         update t_battery_member_card
         <set>
-            coupon_id = #{couponId},
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
@@ -323,6 +322,7 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            coupon_id = #{couponId},
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
