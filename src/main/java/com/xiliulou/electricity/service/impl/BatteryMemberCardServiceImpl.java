@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
@@ -192,7 +194,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         //获取用户可购买套餐列表
-        List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(batteryMemberCardList)) {
             log.error("ELE ERROR!batteryMemberCardList is empty,uid={}", userInfo.getUid());
             return Collections.emptyList();
@@ -291,11 +293,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
         }
 
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-
+log.error("==========================={}", JsonUtil.toJson(list));
         return list.stream().map(item->{
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
