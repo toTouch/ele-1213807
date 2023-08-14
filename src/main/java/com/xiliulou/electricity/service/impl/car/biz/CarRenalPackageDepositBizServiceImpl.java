@@ -791,7 +791,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
 
         Integer payType = depositPayEntity.getPayType();
 
@@ -1175,7 +1175,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
 
         // 判定是否退押审核
         boolean depositAuditFlag = true;
@@ -1295,7 +1295,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param tenantId 租户ID
      * @param uid 用户ID
      */
-    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType) {
+    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType, String depositPayOrderNo) {
+
+        // 是否存在正常的退押申请单
+        CarRentalPackageDepositRefundPo depositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isNotEmpty(depositRefundPo) && (!RefundStateEnum.FAILED.getCode().equals(depositRefundPo.getRefundState()) || !RefundStateEnum.AUDIT_REJECT.getCode().equals(depositRefundPo.getRefundState()))) {
+            throw new BizException("100031", "不能重复退押金");
+        }
 
         // 检测是否存在滞纳金
         if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
