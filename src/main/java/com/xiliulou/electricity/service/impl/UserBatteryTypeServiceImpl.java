@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * (UserBatteryType)表服务实现类
@@ -122,22 +120,18 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserBatteryType(ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
-        List<String> totalBatteryTypes = new ArrayList<>();
+        Set<String> totalBatteryTypes = new HashSet<>();
 
         List<String> userBindBatteryTypes = this.selectByUid(electricityMemberCardOrder.getUid());
 
         List<String> membercardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
 
         if (CollectionUtils.isEmpty(userBindBatteryTypes)) {
-            totalBatteryTypes = membercardBatteryTypes;
+            totalBatteryTypes.addAll(userBindBatteryTypes);
         }
 
         if (CollectionUtils.isEmpty(membercardBatteryTypes)) {
-            totalBatteryTypes = userBindBatteryTypes;
-        }
-
-        if (CollectionUtils.isNotEmpty(userBindBatteryTypes) && CollectionUtils.isNotEmpty(membercardBatteryTypes)) {
-            totalBatteryTypes = (List<String>) CollectionUtils.union(userBindBatteryTypes, membercardBatteryTypes);
+            totalBatteryTypes.addAll(membercardBatteryTypes);
         }
 
         if (CollectionUtils.isEmpty(totalBatteryTypes)) {
@@ -147,6 +141,6 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
 
         this.deleteByUid(electricityMemberCardOrder.getUid());
 
-        this.batchInsert(buildUserBatteryType(totalBatteryTypes, userInfo));
+        this.batchInsert(buildUserBatteryType(new ArrayList<>(totalBatteryTypes), userInfo));
     }
 }
