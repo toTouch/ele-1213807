@@ -69,7 +69,7 @@ public class JsonUserEleUserAuthController {
 		activityProcessDTO.setUid(uid);
 		activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
 		activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-		log.info("hand activity for auto review success: {}", JsonUtil.toJson(activityProcessDTO));
+		log.info("handle activity after auto review success: {}", JsonUtil.toJson(activityProcessDTO));
 
 		activityService.asyncProcessActivity(activityProcessDTO);
 

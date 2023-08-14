@@ -10,7 +10,6 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
@@ -398,6 +397,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void asyncProcessActivity(ActivityProcessDTO activityProcessDTO) {
 
         executorService.execute(() -> {
