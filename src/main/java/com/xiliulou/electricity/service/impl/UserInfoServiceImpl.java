@@ -180,9 +180,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
 
     @Autowired
-    ActivityService activityService;
-    
-    @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
 
     @Autowired
@@ -723,16 +720,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         update(userInfo);
         //修改资料项
         eleUserAuthService.updateByUid(oldUserInfo.getUid(), authStatus);
-
-        //人工审核成功后，触发活动处理流程
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setUid(userInfo.getUid());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
-        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        log.info("hand activity for manual review success: {}", JsonUtil.toJson(activityProcessDTO));
-
-        activityService.asyncProcessActivity(activityProcessDTO);
-
         return R.ok();
     }
 

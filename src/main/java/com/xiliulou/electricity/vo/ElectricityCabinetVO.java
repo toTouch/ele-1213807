@@ -118,6 +118,11 @@ public class ElectricityCabinetVO {
      */
     private Integer batteryInElectricity;
 
+    /**
+     * 可换电
+     */
+    private Integer exchangeBattery;
+
 
     private Double distance;
 

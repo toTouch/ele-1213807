@@ -322,14 +322,14 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="couponId != null">
+                coupon_id = #{couponId},
+            </if>
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
             <if test="useCount != null">
                 use_count = #{useCount},
-            </if>
-            <if test="couponId != null">
-                coupon_id = #{couponId},
             </if>
             <if test="isRefund != null">
                 is_refund = #{isRefund},

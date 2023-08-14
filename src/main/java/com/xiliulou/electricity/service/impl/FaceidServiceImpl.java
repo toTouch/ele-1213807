@@ -96,9 +96,6 @@ public class FaceidServiceImpl implements FaceidService {
     @Autowired
     private EleUserAuthService eleUserAuthService;
 
-    @Autowired
-    ActivityService activityService;
-
     /**
      * 获取人脸核身token
      *
@@ -333,15 +330,6 @@ public class FaceidServiceImpl implements FaceidService {
             userInfoService.update(userInfoUpdate);
 
             uploadIdcardInfo(userInfo,faceidResultRsp);
-
-            //人脸核身成功后，异步触发活动处理流程
-            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-            activityProcessDTO.setUid(userInfo.getUid());
-            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
-            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            log.info("hand activity for face id auth success: {}", JsonUtil.toJson(activityProcessDTO));
-
-            activityService.asyncProcessActivity(activityProcessDTO);
 
             return Triple.of(true, "", null);
         } catch (Exception e) {

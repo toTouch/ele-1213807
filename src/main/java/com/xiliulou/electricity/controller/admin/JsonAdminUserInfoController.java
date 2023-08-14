@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
@@ -60,6 +65,8 @@ public class JsonAdminUserInfoController extends BaseController {
     UserTypeFactory userTypeFactory;
     @Autowired
     UserDataScopeService userDataScopeService;
+    @Autowired
+    ActivityService activityService;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -308,7 +315,17 @@ public class JsonAdminUserInfoController extends BaseController {
     @PostMapping(value = "/admin/userInfo/verifyAuth")
     @Log(title = "实名认证审核")
     public R verifyAuth(@RequestParam("id") Long id, @RequestParam("authStatus") Integer authStatus) {
-        return userInfoService.verifyAuth(id, authStatus);
+        R result= userInfoService.verifyAuth(id, authStatus);
+
+        //人工审核成功后，触发活动处理流程
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setUid(id);
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        log.info("handle activity after manual review success: {}", JsonUtil.toJson(activityProcessDTO));
+        activityService.asyncProcessActivity(activityProcessDTO);
+
+        return result;
     }
 
     //编辑实名认证

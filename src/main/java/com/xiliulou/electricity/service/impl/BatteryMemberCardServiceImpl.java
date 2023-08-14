@@ -384,12 +384,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
 
-        BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
-        batteryMemberCardUpdate.setId(batteryMemberCard.getId());
-        batteryMemberCardUpdate.setStatus(batteryModelQuery.getStatus());
-        batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-
-        this.update(batteryMemberCardUpdate);
+        batteryMemberCard.setStatus(batteryModelQuery.getStatus());
+        batteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        this.update(batteryMemberCard);
 
         return Triple.of(true, null, null);
     }
@@ -440,7 +437,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setValidDays(query.getValidDays());
         batteryMemberCardUpdate.setRentUnit(query.getRentUnit());
         batteryMemberCardUpdate.setRentType(query.getRentType());
-        batteryMemberCardUpdate.setSendCoupon(query.getSendCoupon());
+        batteryMemberCardUpdate.setSendCoupon(Objects.equals(query.getSendCoupon(), BatteryMemberCard.NO) ? query.getSendCoupon() : null);
         batteryMemberCardUpdate.setStatus(query.getStatus());
         batteryMemberCardUpdate.setUseCount(query.getUseCount());
         batteryMemberCardUpdate.setCouponId(query.getCouponId());
