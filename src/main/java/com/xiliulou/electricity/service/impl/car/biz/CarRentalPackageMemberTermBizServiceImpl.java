@@ -188,11 +188,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         if (MemberOptTypeEnum.TIME.getCode().equals(type)) {
-            if (ObjectUtils.isEmpty(type)) {
+            if (ObjectUtils.isEmpty(dueTimeReq)) {
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
             dueTimeNew = dueTimeReq;
-            dueTimeTotalNew = dueTimeTotal - dueTimeNew;
+            dueTimeTotalNew = dueTimeTotal - (dueTime -  dueTimeNew);
         }
 
         if (ObjectUtils.isNotEmpty(residueReq)) {
@@ -228,7 +228,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setRentalPackageConfine(packageOrderEntityUnUse.getConfine());
 
                 if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityUnUse.getConfine())) {
-                    newMemberTermEntity.setResidue(oriMemberTermEntity.getResidue() + packageOrderEntityUnUse.getConfineNum());
+                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum());
                 }
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
