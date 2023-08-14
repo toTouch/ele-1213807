@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,12 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -135,8 +143,14 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
         userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
 
+        if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+            return R.ok();
+        }
+
         //审核通过 生成滞纳金订单
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+
+        List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
 
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
@@ -152,10 +166,16 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                 .franchiseeId(franchisee.getId())
                 .storeId(userInfo.getStoreId())
                 .modelType(franchisee.getModelType())
-                .batteryType("")
+                .batteryType(CollectionUtils.isEmpty(batteryTypes) ? "" : JsonUtil.toJson(batteryTypes))
                 .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                 .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
         eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+        serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+        serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         return R.ok();
     }
