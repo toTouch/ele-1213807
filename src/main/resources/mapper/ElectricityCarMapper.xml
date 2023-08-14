@@ -11,7 +11,7 @@
     <update id="updateCarBindStatusById">
         UPDATE `t_electricity_car`
         <set>
-            `uid` = #{uid}, `user_info_id` = #{userInfoId}, `user_name` = #{userName}, `phone` = #{phone}, `update_time` = #{updateTime}
+            `uid` = #{uid}, `user_info_id` = #{userInfoId}, `user_name` = #{userName}, `phone` = #{phone}, `update_time` = #{updateTime}, `status` = #{status}
         </set>
         <where>
             `id` = #{id}

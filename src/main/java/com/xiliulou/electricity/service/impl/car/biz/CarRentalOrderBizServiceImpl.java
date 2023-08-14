@@ -482,12 +482,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             carUpdate.setUserInfoId(userInfo.getId());
             carUpdate.setUserName(userInfo.getName());
             carUpdate.setPhone(userInfo.getPhone());
+            carUpdate.setStatus(ElectricityCar.STATUS_IS_RENT);
         }
         if (RentalTypeEnum.RETURN.getCode().equals(rentalType)) {
             carUpdate.setUid(null);
             carUpdate.setUserInfoId(null);
             carUpdate.setUserName(null);
             carUpdate.setPhone(null);
+            carUpdate.setStatus(ElectricityCar.STATUS_NOT_RENT);
         }
         return carUpdate;
     }
