@@ -1192,7 +1192,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline) {
+    public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline,String applyReason) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -1283,6 +1283,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
                 .chargeRate(batteryMemberCard.getServiceCharge())
+                .applyReason(applyReason)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
