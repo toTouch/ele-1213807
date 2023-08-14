@@ -136,7 +136,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         if (memberTermEntity.getDueTime() <= now || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
             log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is null or mismatching. params rentalPackageOrderNo is {}, member's rentalPackageOrderNo is {}", optReq.getPackageOrderNo(), rentalPackageOrderNo);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("300042", "该套餐已过期，请返回上一步进行续费套餐");
         }
 
         // 查询订单信息

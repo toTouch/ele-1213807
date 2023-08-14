@@ -421,7 +421,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
 
             }
-
+            eleRefundOrderService.insert(eleRefundOrder);
             return R.ok("SUCCESS");
         }
 

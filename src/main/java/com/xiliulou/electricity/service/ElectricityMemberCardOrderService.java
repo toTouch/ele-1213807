@@ -56,7 +56,9 @@ public interface ElectricityMemberCardOrderService {
 
     R enableOrDisableMemberCardIsLimitTime();
 
-    R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid, Integer days);
+    R adminDisableMemberCard(Long uid, Integer days);
+
+    R adminEnableMemberCard(Long uid);
 
     R cleanBatteryServiceFee(Long uid);
 

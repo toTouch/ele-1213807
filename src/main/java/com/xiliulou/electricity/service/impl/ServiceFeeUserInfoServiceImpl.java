@@ -60,11 +60,6 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     }
 
     @Override
-    public int update(ServiceFeeUserInfo serviceFeeUserInfo) {
-        return serviceFeeUserInfoMapper.update(serviceFeeUserInfo);
-    }
-
-    @Override
     public ServiceFeeUserInfo queryByUidFromCache(Long uid) {
         ServiceFeeUserInfo cache = redisService.getWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, ServiceFeeUserInfo.class);
         if (Objects.nonNull(cache)) {

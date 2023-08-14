@@ -2037,7 +2037,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        vo.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
         vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        vo.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
 

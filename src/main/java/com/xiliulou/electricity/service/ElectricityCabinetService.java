@@ -205,6 +205,8 @@ public interface ElectricityCabinetService {
 
     boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox);
 
+    boolean isFullBattery(ElectricityCabinetBox electricityCabinetBox);
+
     boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged);
 
     Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery);
