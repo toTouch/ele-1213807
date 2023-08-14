@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -77,6 +78,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -130,52 +132,65 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
         eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
 
-        UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
-        updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
-        updateUserBatteryMemberCard.setMemberCardStatus(status);
-        updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+        if(Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)){
+            //拒绝停卡
+            UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
+            updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-        }
-        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
+
+            //停卡拒绝，解绑停卡信息
+            ServiceFeeUserInfo updateServiceFeeUserInfo = new ServiceFeeUserInfo();
+            updateServiceFeeUserInfo.setUid(userInfo.getUid());
+            updateServiceFeeUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateServiceFeeUserInfo.setDisableMemberCardNo("");
+            updateServiceFeeUserInfo.setOrderNo("");
+            serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
+        }else{
+            //同意停卡
+            UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
+            updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
+            updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
+            updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
             updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
+
+            //用户是否绑定电池
+            if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+                return R.ok();
+            }
+
+            //审核通过 生成滞纳金订单
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+
+            List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
+                    .uid(userInfo.getUid())
+                    .phone(userInfo.getPhone())
+                    .name(userInfo.getName())
+                    .payAmount(BigDecimal.ZERO)
+                    .status(EleDepositOrder.STATUS_INIT)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenantId)
+                    .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)
+                    .franchiseeId(franchisee.getId())
+                    .storeId(userInfo.getStoreId())
+                    .modelType(franchisee.getModelType())
+                    .batteryType(CollectionUtils.isEmpty(batteryTypes) ? "" : JsonUtil.toJson(batteryTypes))
+                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                    .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+            eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+            serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
-
-        userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
-
-        if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
-            return R.ok();
-        }
-
-        //审核通过 生成滞纳金订单
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-
-        List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
-                .uid(userInfo.getUid())
-                .phone(userInfo.getPhone())
-                .name(userInfo.getName())
-                .payAmount(BigDecimal.ZERO)
-                .status(EleDepositOrder.STATUS_INIT)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId)
-                .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD)
-                .franchiseeId(franchisee.getId())
-                .storeId(userInfo.getStoreId())
-                .modelType(franchisee.getModelType())
-                .batteryType(CollectionUtils.isEmpty(batteryTypes) ? "" : JsonUtil.toJson(batteryTypes))
-                .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
-                .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
-        eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
-
-        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-        serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-        serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
-        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         return R.ok();
     }

@@ -14,7 +14,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -32,6 +31,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -40,7 +41,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -601,23 +601,28 @@ public class UnionTradeOrderServiceImpl extends
 
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
-            // 8. 处理分账
-            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-            divisionAccountOrderDTO.setOrderNo(orderNo);
-            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    // 8. 处理分账
+                    DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                    divisionAccountOrderDTO.setOrderNo(orderNo);
+                    divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+                    divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+                    divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+                    divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
-            // 9. 处理活动
-            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-            activityProcessDTO.setOrderNo(orderNo);
-            activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityService.asyncProcessActivity(activityProcessDTO);
+                    // 9. 处理活动
+                    ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+                    activityProcessDTO.setOrderNo(orderNo);
+                    activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+                    activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+                    activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+                    activityService.asyncProcessActivity(activityProcessDTO);
 
-            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                    electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                }
+            });
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
@@ -788,24 +793,28 @@ public class UnionTradeOrderServiceImpl extends
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    // 8. 处理分账
+                    DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                    divisionAccountOrderDTO.setOrderNo(orderNo);
+                    divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+                    divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+                    divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
+                    divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
-            // 8. 处理分账
-            DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-            divisionAccountOrderDTO.setOrderNo(orderNo);
-            divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-            divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-            divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+                    // 9. 处理活动
+                    ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+                    activityProcessDTO.setOrderNo(orderNo);
+                    activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+                    activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+                    activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+                    activityService.asyncProcessActivity(activityProcessDTO);
 
-            // 9. 处理活动
-            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-            activityProcessDTO.setOrderNo(orderNo);
-            activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityService.asyncProcessActivity(activityProcessDTO);
-
-            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                    electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+                }
+            });
         }else{
             //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){

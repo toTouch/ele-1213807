@@ -312,6 +312,35 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return R.ok(insuranceUserInfoVo);
     }
 
+    /**
+     * 兼容租车和车电一体
+     */
+    @Override
+    public InsuranceUserInfoVo selectUserInsuranceInfo(Long uid,Integer type) {
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
+            return null;
+        }
+
+        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
+        if (Objects.isNull(insuranceUserInfo)) {
+            log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}", uid, type);
+            return null;
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+
+        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
+            return null;
+        }
+
+        return insuranceUserInfoVo;
+    }
+
     @Override
     public R queryInsuranceByStatus(Integer status, Long offset, Long size) {
         Integer tenantId = TenantContextHolder.getTenantId();
