@@ -118,6 +118,14 @@
                 and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
             </if>
 
+            <if test="payCount != null and payCount == 1">
+                and iajh.pay_count = 1
+            </if>
+
+            <if test="payCount != null and payCount == 2">
+                and iajh.pay_count > 1
+            </if>
+
         </where>
         order by iajh.id desc
         limit #{offset}, #{size}
@@ -167,6 +175,13 @@
             </if>
             <if test="activityName != null and activityName != ''">
                 and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="payCount != null and payCount == 1">
+                and iajh.pay_count = 1
+            </if>
+
+            <if test="payCount != null and payCount == 2">
+                and iajh.pay_count > 1
             </if>
         </where>
     </select>
