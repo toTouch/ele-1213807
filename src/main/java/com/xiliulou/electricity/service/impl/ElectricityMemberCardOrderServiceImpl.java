@@ -3696,6 +3696,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCardOrder memberCardOrder=saveRenewalUserBatteryMemberCardOrder(user,userInfo,batteryMemberCard,userBatteryMemberCard,userBindbatteryMemberCard);
 
+        //更新用户电池型号
+        userBatteryTypeService.updateUserBatteryType(memberCardOrder, userInfo);
+
         ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(channelActivityHistory) && Objects
                 .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {

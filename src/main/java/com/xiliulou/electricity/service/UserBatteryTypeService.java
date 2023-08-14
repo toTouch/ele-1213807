@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 
@@ -34,4 +35,6 @@ public interface UserBatteryTypeService {
     String selectUserMaxBatteryType(Long uid);
 
     String selectUserSimpleBatteryType(Long uid);
+
+    void updateUserBatteryType(ElectricityMemberCardOrder electricityMemberCardOrder,UserInfo userInfo);
 }

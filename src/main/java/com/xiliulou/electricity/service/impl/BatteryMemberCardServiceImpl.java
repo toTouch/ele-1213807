@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -206,20 +203,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
-
-//        //将用户当前绑定的套餐放到最前面
-//        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
-//            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
-//            while (iterator.hasNext()){
-//                BatteryMemberCardVO memberCardVO=iterator.next();
-//                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
-//                    memberCardVOS.remove(memberCardVO);
-//                    memberCardVOS.add(0, memberCardVO);
-//                }
-//            }
-//        }
-//
-//        return memberCardVOS;
     }
 
     @Override
@@ -286,6 +269,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.error("USER BATTERY MEMBERCARD ERROR!not found userBatteryDeposit,uid={}", SecurityUtils.getUid());
+                return Collections.emptyList();
+            }
+
+            query.setDeposit(userBatteryDeposit.getBatteryDeposit());
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -300,19 +291,31 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
         }
 
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
+
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
 
-        return list.parallelStream().map(item -> {
-            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            BeanUtils.copyProperties(item, batteryMemberCardVO);
+        List<BatteryMemberCardVO> result = new ArrayList<>(list.size());
 
-            if (Objects.nonNull(item.getCouponId())) {
-                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
-                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+        for (BatteryMemberCard batteryMemberCard : list) {
+            List<String> memberCardBatteryType = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+            if (CollectionUtils.isNotEmpty(userBatteryTypes) && CollectionUtils.isNotEmpty(memberCardBatteryType) && userBatteryTypes.contains(memberCardBatteryType)) {
+                BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+
+                if (Objects.nonNull(batteryMemberCard.getCouponId())) {
+                    Coupon coupon = couponService.queryByIdFromCache(batteryMemberCard.getCouponId());
+                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+                }
+
+                result.add(batteryMemberCardVO);
             }
+        }
 
-            return batteryMemberCardVO;
-        }).collect(Collectors.toList());
+        return result;
     }
 
     @Override
