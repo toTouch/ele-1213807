@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -195,7 +194,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         //获取用户可购买套餐列表
-        List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(batteryMemberCardList)) {
             log.error("ELE ERROR!batteryMemberCardList is empty,uid={}", userInfo.getUid());
             return Collections.emptyList();
@@ -206,20 +205,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
-
-//        //将用户当前绑定的套餐放到最前面
-//        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
-//            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
-//            while (iterator.hasNext()){
-//                BatteryMemberCardVO memberCardVO=iterator.next();
-//                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
-//                    memberCardVOS.remove(memberCardVO);
-//                    memberCardVOS.add(0, memberCardVO);
-//                }
-//            }
-//        }
-//
-//        return memberCardVOS;
     }
 
     @Override
@@ -286,6 +271,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.error("USER BATTERY MEMBERCARD ERROR!not found userBatteryDeposit,uid={}", SecurityUtils.getUid());
+                return Collections.emptyList();
+            }
+
+            query.setDeposit(userBatteryDeposit.getBatteryDeposit());
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -300,9 +293,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
         }
 
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
-
-        return list.parallelStream().map(item -> {
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+log.error("==========================={}", JsonUtil.toJson(list));
+        return list.stream().map(item->{
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 

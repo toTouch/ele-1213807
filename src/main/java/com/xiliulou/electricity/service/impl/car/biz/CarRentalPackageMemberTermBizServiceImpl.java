@@ -197,6 +197,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         if (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && ObjectUtils.isNotEmpty(residueReq)) {
             residueNew = residueReq;
+            dueTimeNew = now;
+            dueTimeTotalNew = dueTimeTotal - (dueTime -  dueTimeNew);
         }
 
         // 待更新数据
@@ -299,6 +301,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Integer franchiseeId = memberTermEntity.getFranchiseeId();
         Integer storeId = memberTermEntity.getStoreId();
 
+        boolean rentalPackageEntityFlag = true;
         // 套餐信息
         CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
 
@@ -308,9 +311,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 押金缴纳信息
         CarRentalPackageDepositPayPo depositPayEntity= carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
+            rentalPackageEntityFlag = false;
             rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
         }
-
 
         // 车辆型号信息
         ElectricityCarModel carModelEntity = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
@@ -336,8 +339,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
 
         UserMemberInfoVo memberInfoVo = buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity,
-                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity);
-
+                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity, rentalPackageEntityFlag);
 
         return memberInfoVo;
     }
@@ -357,7 +359,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
                                                    CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity, ElectricityCarModel carModelEntity,
-                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity) {
+                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag) {
 
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
         userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
@@ -365,8 +367,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
         userMemberInfoVo.setStatus(memberTermEntity.getStatus());
-        userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());
-        userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
         userMemberInfoVo.setFranchiseeId(franchiseeEntity.getId().intValue());
         userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
         userMemberInfoVo.setStoreId(storeEntity.getId().intValue());
@@ -374,6 +374,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        // 退租不退押，不显示套餐信息
+        if (rentalPackageEntityFlag) {
+            userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());
+            userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
+        }
         // 更改状态
         if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L
                 && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {

@@ -594,7 +594,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Slave
     @Override
     public List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid) {
-        return this.batteryMembercardRefundOrderMapper.selectList(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_AUDIT, BatteryMembercardRefundOrder.STATUS_REFUND));
+        return this.batteryMembercardRefundOrderMapper.selectList(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getUid,uid).in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_AUDIT, BatteryMembercardRefundOrder.STATUS_REFUND));
     }
 
     @Override

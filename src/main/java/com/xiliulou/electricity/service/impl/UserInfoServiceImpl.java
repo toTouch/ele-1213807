@@ -1195,8 +1195,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, userBatteryMemberCard);
         userInfoDetailVO.setUserFrontDetection(userFrontDetection);
 
-        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
-        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+//        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
+//        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
         return userInfoDetailVO;
     }
 

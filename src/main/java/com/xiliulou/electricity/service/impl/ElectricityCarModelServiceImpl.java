@@ -75,7 +75,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (ObjectUtils.isEmpty(carModel) || ObjectUtils.isEmpty(carModel.getId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return electricityCarModelMapper.updateById(carModel) >= 0;
+        int num = electricityCarModelMapper.updateById(carModel);
+        if (num > 0) {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + carModel.getId());
+        }
+
+        return true;
     }
 
     /**

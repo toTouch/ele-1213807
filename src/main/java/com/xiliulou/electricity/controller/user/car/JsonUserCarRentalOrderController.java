@@ -28,6 +28,21 @@ public class JsonUserCarRentalOrderController {
     private CarRentalOrderBizService carRentalOrderBizService;
 
     /**
+     * 还车申请
+     * @return true(成功)、false(失败)
+     */
+    @GetMapping("/refundCarOrderApply")
+    public R<Boolean> refundCarOrderApply() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(carRentalOrderBizService.refundCarOrderApply(tenantId, user.getUid()));
+    }
+
+    /**
      * 扫码绑定车辆
      * @param sn 车辆SN码
      * @return true(成功)、false(失败)

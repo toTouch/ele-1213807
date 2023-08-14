@@ -214,7 +214,16 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
             Map<Long, List<CarRentalPackageCarBatteryRelPo>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPo::getRentalPackageId));
 
-            List<String> batteryModelTypeDbList = null;
+            // TODO 临时处理
+            List<String> batteryModelTypeSimpleList = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(batteryModelTypeList)) {
+                batteryModelTypeSimpleList = batteryModelTypeList.stream().map(n -> {
+                    StringJoiner simpleModel = new StringJoiner("_");
+                    String[] strings = n.split("_");
+                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                    return simpleModel.toString();
+                }).collect(Collectors.toList());
+            }
 
             // 迭代器处理
             Iterator<CarRentalPackagePo> iterator = packageEntityList.iterator();
@@ -224,8 +233,15 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                 if (CollectionUtils.isEmpty(carBatteryRels)) {
                     continue;
                 }
-                batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
-                if (!batteryModelTypeDbList.containsAll(batteryModelTypeList)) {
+                List<String> batteryModelTypeDbList = carBatteryRels.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
+                // TODO 临时处理
+                List<String> batteryModelTypeDbSimpleList = batteryModelTypeDbList.stream().map(n -> {
+                    StringJoiner simpleModel = new StringJoiner("_");
+                    String[] strings = n.split("_");
+                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                    return simpleModel.toString();
+                }).collect(Collectors.toList());
+                if (!batteryModelTypeDbSimpleList.containsAll(batteryModelTypeSimpleList)) {
                     iterator.remove();
                 }
             }

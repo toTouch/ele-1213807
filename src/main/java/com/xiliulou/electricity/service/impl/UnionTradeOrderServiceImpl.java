@@ -784,6 +784,9 @@ public class UnionTradeOrderServiceImpl extends
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
 
+            //更新用户电池型号
+            userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+
             //更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
                 Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
