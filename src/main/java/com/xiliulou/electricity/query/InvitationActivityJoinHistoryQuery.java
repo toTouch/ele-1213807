@@ -41,4 +41,6 @@ public class InvitationActivityJoinHistoryQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+
+    private Integer payCount;
 }
