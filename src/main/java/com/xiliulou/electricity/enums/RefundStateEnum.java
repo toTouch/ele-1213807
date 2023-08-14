@@ -4,6 +4,9 @@ import com.xiliulou.electricity.enums.basic.BasicEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 退款单状态枚举
  *
@@ -24,4 +27,15 @@ public enum RefundStateEnum implements BasicEnum<Integer, String> {
     private final Integer code;
 
     private final String desc;
+
+    /**
+     * 允许退款的状态
+     * @return
+     */
+    public static List<Integer> getRefundStateList() {
+        List<Integer> list = new ArrayList<>();
+        list.add(RefundStateEnum.AUDIT_REJECT.getCode());
+        list.add(RefundStateEnum.FAILED.getCode());
+        return list;
+    }
 }
