@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.carmodel;
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
@@ -139,15 +138,11 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             throw new BizException("300000", "数据有误");
         }
 
-        // 用户名下没有绑定车辆的时候
-        ElectricityCar electricityCar = carService.queryInfoByUid(uid);
-        if (ObjectUtils.isEmpty(electricityCar)) {
-            // 2. 查询是否存在可租的车辆
-            boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
-            if (!unleasedCarFlag) {
-                log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
-                throw new BizException("300043", "无可租车辆");
-            }
+        // 2. 查询是否存在可租的车辆
+        boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
+        if (!unleasedCarFlag) {
+            log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
+            throw new BizException("300043", "无可租车辆");
         }
 
         // 3. 查询租车会员信息
@@ -162,6 +157,10 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         Integer carModelIdExit = carModelId;
         BigDecimal depositExit = null;
         Integer rentalPackageTypeExit = null;
+        Integer confineExit = null;
+        Integer franchiseeIdExit = null;
+        Integer storeIdExit = null;
+        Integer freeDepositExit = null;
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
             Long rentalPackageId = memberTermEntity.getRentalPackageId();
             if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId == 0) {
@@ -174,15 +173,23 @@ public class CarModelBizServiceImpl implements CarModelBizService {
                 throw new BizException("300000", "数据有误");
             }
             carModelIdExit = rentalPackage.getCarModelId();
+            confineExit = rentalPackage.getConfine();
+            freeDepositExit = rentalPackage.getFreeDeposit();
             depositExit = memberTermEntity.getDeposit();
             rentalPackageTypeExit = memberTermEntity.getRentalPackageType();
+            franchiseeIdExit = memberTermEntity.getFranchiseeId();
+            storeIdExit = memberTermEntity.getStoreId();
         }
 
         // 5. 查询是否存在此型号、押金、套餐类型一致的上架套餐
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         qryModel.setTenantId(tenantId);
+        qryModel.setFranchiseeId(franchiseeIdExit);
+        qryModel.setStoreId(storeIdExit);
         qryModel.setCarModelId(carModelIdExit);
         qryModel.setStatus(UpDownEnum.UP.getCode());
+        qryModel.setConfine(confineExit);
+        qryModel.setFreeDeposit(freeDepositExit);
         if (ObjectUtils.isNotEmpty(depositExit)) {
             qryModel.setDeposit(depositExit);
         }
