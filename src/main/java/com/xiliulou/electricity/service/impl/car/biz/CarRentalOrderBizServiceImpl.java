@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -39,6 +41,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
+
+    @Resource
+    private RedisService redisService;
 
     @Resource
     private CarLockCtrlHistoryService carLockCtrlHistoryService;
@@ -85,7 +90,106 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     @Override
     public boolean refundCarOrderApply(Integer tenantId, Long uid) {
-        return false;
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        String cacheKey = CacheConstant.CACHE_USER_RETURN_CAR_LOCK + uid;
+        try {
+            if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10000L, false)) {
+                log.error("refundCarOrderApply failed. frequent operations. uid is {}", uid);
+                throw new BizException("100002", "操作频繁");
+            }
+
+            // 判定会员
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+                log.error("refundCarOrderApply failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+                throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            }
+
+            // 判定用户
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+            if (ObjectUtils.isEmpty(userInfo)) {
+                log.error("refundCarOrderApply failed. not found userInfo, uid is {}", uid);
+                throw new BizException("ELECTRICITY.0019", "未找到用户");
+            }
+
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("refundCarOrderApply failed. user is disable, uid is {}", uid);
+                throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+            }
+
+            // 判定用户绑定车辆
+            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isEmpty(electricityCar)) {
+                log.error("refundCarOrderApply failed. user is unbound vehicle, uid is {}", uid);
+                throw new BizException("100015", "用户未绑定车辆");
+            }
+
+            // 判定是否存在审核中的还车订单
+            CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+            if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
+                log.error("refundCarOrderApply failed. Returning the vehicle under review, uid is {}", uid);
+                throw new BizException("100265", "还车审核中，请耐心等待");
+            }
+
+            CarRentalOrderPo carRentalOrderPoInsert = buildCarRentalOrderPo(userInfo, RentalTypeEnum.RETURN.getCode(), memberTermEntity, electricityCar);
+
+            // 事务处理
+            refundCarOrderApplyTx(carRentalOrderPoInsert);
+        } catch (Exception e) {
+            log.error("refundCarOrderApply failed.", e);
+        } finally {
+            redisService.delete(cacheKey);
+        }
+
+        return true;
+    }
+
+    /**
+     * 还车申请事务处理
+     * @param carRentalOrderPoInsert 车辆租赁订单
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void refundCarOrderApplyTx(CarRentalOrderPo carRentalOrderPoInsert) {
+        carRentalOrderService.insert(carRentalOrderPoInsert);
+    }
+
+    /**
+     * 构建车辆租赁订单
+     * @param userInfo 用户会员信息
+     * @param type 租赁类型
+     * @param memberTermEntity 租车会员信息
+     * @param electricityCar 车辆信息
+     * @return 租赁订单
+     */
+    private CarRentalOrderPo buildCarRentalOrderPo(UserInfo userInfo, Integer type, CarRentalPackageMemberTermPo memberTermEntity, ElectricityCar electricityCar) {
+        CarRentalOrderPo carRentalOrderPoInsert = new CarRentalOrderPo();
+        carRentalOrderPoInsert.setUid(userInfo.getUid());
+
+        if (RentalTypeEnum.RENTAL.getCode().equals(type)) {
+            carRentalOrderPoInsert.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, userInfo.getUid()));
+        }
+
+        if (RentalTypeEnum.RETURN.getCode().equals(type)) {
+            carRentalOrderPoInsert.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, userInfo.getUid()));
+        }
+        carRentalOrderPoInsert.setRentalPackageOrderNo(memberTermEntity.getRentalPackageOrderNo());
+        carRentalOrderPoInsert.setType(type);
+        carRentalOrderPoInsert.setCarModelId(electricityCar.getModelId());
+        carRentalOrderPoInsert.setCarSn(electricityCar.getSn());
+        carRentalOrderPoInsert.setPayType(type);
+        carRentalOrderPoInsert.setRentalState(CarRentalStateEnum.AUDIT_ING.getCode());
+        carRentalOrderPoInsert.setTenantId(userInfo.getTenantId());
+        carRentalOrderPoInsert.setFranchiseeId(userInfo.getFranchiseeId().intValue());
+        carRentalOrderPoInsert.setStoreId(userInfo.getStoreId().intValue());
+        carRentalOrderPoInsert.setCreateUid(userInfo.getUid());
+        carRentalOrderPoInsert.setCreateTime(System.currentTimeMillis());
+
+        return carRentalOrderPoInsert;
+
     }
 
     /**

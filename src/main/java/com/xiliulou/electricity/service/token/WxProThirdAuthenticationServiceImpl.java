@@ -148,7 +148,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(), tenantId);
             //检查手机号是否存在
             Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber, tenantId);
-
+            log.info("new user logon, existsOpenId = {}, existPhone = {}", JsonUtil.toJson(existsOpenId), JsonUtil.toJson(existPhone));
             //如果两个都不存在，创建用户
             if (!existPhone.getLeft() && !existsOpenId.getLeft()) {
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
