@@ -482,7 +482,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
         //增加换电套餐和租车及车电一体套餐的判断逻辑
         Long packageId = null;
-        Integer payCount = null;
+        Integer payCount = userInfo.getPayCount();
         if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
             //ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
@@ -492,7 +492,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 return;
             }
             packageId = userBatteryMemberCard.getMemberCardId().longValue();
-            payCount = userBatteryMemberCard.getCardPayCount();
+            //payCount = userBatteryMemberCard.getCardPayCount();
         }else{
             //获取租车或者车电一体订单信息
             CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
@@ -508,7 +508,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
 
             packageId = carRentalPackageOrderPO.getRentalPackageId();
-            payCount = carRentalPackageOrderService.count(queryModel);
+            //payCount = carRentalPackageOrderService.count(queryModel);
         }
 
         //是否购买的是活动指定的套餐
