@@ -16,6 +16,17 @@ import java.util.List;
 public interface CarRentalOrderMapper {
 
     /**
+     * 根据用户UID、车辆SN码、类型查询最后一条数据
+     *
+     * @param tenantId    租户ID
+     * @param uid         用户UID
+     * @param type        订单类型，1-租车、2-还车
+     * @param carSn       车辆编码
+     * @return 车辆租赁订单
+     */
+    CarRentalOrderPo selectLastByUidAndSnAndType(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("type") Integer type, @Param("carSn") String carSn);
+
+    /**
      * 根据ID进行数据更新
      * @param entity
      * @return 操作总数
@@ -23,7 +34,7 @@ public interface CarRentalOrderMapper {
     int updateById(CarRentalOrderPo entity);
 
     /**
-     * 根据用户UID、车辆SN码、状态查询最后一条数据
+     * 根据用户UID、车辆SN码、类型、状态查询最后一条数据
      *
      * @param tenantId    租户ID
      * @param uid         用户UID
@@ -32,7 +43,7 @@ public interface CarRentalOrderMapper {
      * @param carSn       车辆编码
      * @return 车辆租赁订单
      */
-    CarRentalOrderPo selectLastByUidAndSnAndState(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("type") Integer type,
+    CarRentalOrderPo selectLastByUidAndSnAndTypeAndState(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("type") Integer type,
                                                   @Param("rentalState") Integer rentalState, @Param("carSn") String carSn);
 
     /**

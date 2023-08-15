@@ -30,6 +30,24 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
     private CarRentalOrderMapper carRentalOrderMapper;
 
     /**
+     * 根据用户UID、车辆SN码、类型最后一条数据
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @param type     订单类型，1-租车、2-还车
+     * @param carSn    车辆编码
+     * @return 车辆租赁订单
+     */
+    @Slave
+    @Override
+    public CarRentalOrderPo selectLastByUidAndSnAndType(Integer tenantId, Long uid, Integer type, String carSn) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, type, carSn)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalOrderMapper.selectLastByUidAndSnAndType(tenantId, uid, type, carSn);
+    }
+
+    /**
      * 根据ID进行数据更新
      *
      * @param entity 更新数据集
@@ -55,11 +73,11 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      */
     @Slave
     @Override
-    public CarRentalOrderPo selectLastByUidAndSnAndState(Integer tenantId, Long uid, Integer type, Integer rentalState, String carSn) {
+    public CarRentalOrderPo selectLastByUidAndSnAndTypeAndState(Integer tenantId, Long uid, Integer type, Integer rentalState, String carSn) {
         if (!ObjectUtils.allNotNull(tenantId, uid, type, rentalState, carSn)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return carRentalOrderMapper.selectLastByUidAndSnAndState(tenantId, uid, type, rentalState, carSn);
+        return carRentalOrderMapper.selectLastByUidAndSnAndTypeAndState(tenantId, uid, type, rentalState, carSn);
     }
 
     /**
