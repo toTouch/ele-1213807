@@ -126,11 +126,11 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
 
         List<String> membercardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
 
-        if (CollectionUtils.isEmpty(userBindBatteryTypes)) {
+        if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
             totalBatteryTypes.addAll(userBindBatteryTypes);
         }
 
-        if (CollectionUtils.isEmpty(membercardBatteryTypes)) {
+        if (CollectionUtils.isNotEmpty(membercardBatteryTypes)) {
             totalBatteryTypes.addAll(membercardBatteryTypes);
         }
 
