@@ -76,6 +76,11 @@ public class CarRentalOrderPo extends BasicCarPo {
     private Integer rentalState;
 
     /**
+     * 审核时间
+     */
+    private Long auditTime;
+
+    /**
      * 备注
      */
     private String remark;
