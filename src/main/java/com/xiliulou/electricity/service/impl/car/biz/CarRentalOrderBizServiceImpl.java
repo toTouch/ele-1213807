@@ -238,7 +238,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                 log.error("refundCarOrderApply failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-                throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
             }
 
             // 判定用户
