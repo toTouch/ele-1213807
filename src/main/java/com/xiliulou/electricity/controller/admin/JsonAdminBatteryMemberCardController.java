@@ -301,8 +301,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                                        @RequestParam(value = "franchiseeId", required = false) long franchiseeId,
                                        @RequestParam(value = "name", required = false) String name) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                .size(size)
-                .offset(offset)
+                .size(100L)
+                .offset(0L)
                 .name(name)
                 .uid(uid)
                 .franchiseeId(franchiseeId)
