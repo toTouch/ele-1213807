@@ -399,8 +399,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     number = item.getBatteryType().stream().filter(i->StringUtils.isNotBlank(i.getBatteryType())).map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
                 }
 
-                if (!(CollectionUtils.isNotEmpty(userBindBatteryType) && CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))) {
-                    continue;
+                if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                    if(!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))){
+                        continue;
+                    }
                 }
             }
 
