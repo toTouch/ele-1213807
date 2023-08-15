@@ -9,9 +9,14 @@ import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalOrderQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalOrderVo;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -34,6 +39,9 @@ import java.util.stream.Collectors;
 public class JsonAdminCarRentalOrderController extends BasicController {
 
     @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
     private CarRentalOrderService carRentalOrderService;
 
     /**
@@ -43,8 +51,17 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo()) || StringUtils.isBlank(optReq.getReason())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalOrderBizService.approveRefundCarOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
     }
 
     /**
@@ -54,8 +71,17 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      */
     @PostMapping("/approved")
     public R<Boolean> approved(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalOrderBizService.approveRefundCarOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid()));
     }
 
     /**

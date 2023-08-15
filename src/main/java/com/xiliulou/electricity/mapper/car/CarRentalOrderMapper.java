@@ -16,6 +16,13 @@ import java.util.List;
 public interface CarRentalOrderMapper {
 
     /**
+     * 根据ID进行数据更新
+     * @param entity
+     * @return 操作总数
+     */
+    int updateById(CarRentalOrderPo entity);
+
+    /**
      * 根据用户UID、车辆SN码、状态查询最后一条数据
      *
      * @param tenantId    租户ID

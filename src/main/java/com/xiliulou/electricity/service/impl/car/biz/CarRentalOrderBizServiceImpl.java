@@ -82,6 +82,139 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     /**
+     * 还车申请审批
+     *
+     * @param carRentalOrderNo 车辆租赁订单编码，还车
+     * @param approveFlag      审批标识：true(通过)、false(驳回)
+     * @param apploveDesc      审批意见
+     * @param apploveUid       审批人
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean approveRefundCarOrder(String carRentalOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+        if (!ObjectUtils.allNotNull(carRentalOrderNo, approveFlag)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询车辆租赁订单
+        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectByOrderNo(carRentalOrderNo);
+        if (ObjectUtils.isEmpty(carRentalOrderPo)) {
+            log.info("approveRefundCarOrder failed. not found t_car_rental_order. carRentalOrderNo is {}", carRentalOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+
+        if (!RentalTypeEnum.RETURN.getCode().equals(carRentalOrderPo.getType()) || !CarRentalStateEnum.AUDIT_ING.getCode().equals(carRentalOrderPo.getRentalState())) {
+            log.info("approveRefundCarOrder failed. t_car_rental_order type or state is wrong. carRentalOrderNo is {}", carRentalOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+
+        Integer tenantId = carRentalOrderPo.getTenantId();
+        Long uid = carRentalOrderPo.getUid();
+
+        // 判定用户车辆
+        ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(electricityCar)) {
+            log.info("approveRefundCarOrder failed. User not bound to vehicle. uid is {}", uid);
+            throw new BizException("100015", "用户未绑定车辆");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        // 构建还车审批数据
+        CarRentalOrderPo rentalOrderApprove = buildApproveCarRentalOrderPo(carRentalOrderPo, approveFlag, apploveDesc, apploveUid);
+
+        UserInfo userInfoUpdate = null;
+        ElectricityCarModel carModelUpdate = null;
+        ElectricityCar electricityCarUpdate = null;
+        EleBindCarRecord eleBindCarRecord = null;
+        CarLockCtrlHistory carLockCtrlHistory = null;
+        if (approveFlag) {
+            // 处理人用户租赁状态
+            userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RETURN.getCode());
+
+            // 减少车辆型号的已租数量
+            ElectricityCarModel carModel = carModelService.queryByIdFromCache(electricityCar.getModelId());
+            carModelUpdate = buildElectricityCarModel(carModel, RentalTypeEnum.RETURN.getCode());
+
+            // 撤销车辆绑定用户信息
+            electricityCarUpdate = buildElectricityCar(electricityCar, uid, userInfo, RentalTypeEnum.RETURN.getCode());
+
+            // 生成车辆记录
+            User user = userService.queryByUidFromCache(apploveUid);
+            eleBindCarRecord = buildEleBindCarRecord(electricityCar, userInfo, user, RentalTypeEnum.RETURN.getCode());
+
+            // JT808
+            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RETURN.getCode());
+        } else {
+            // JT808
+            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RENTAL.getCode());
+        }
+
+        // 处理事务
+        approveRefundCarOrderTx(approveFlag, rentalOrderApprove, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory);
+
+        return true;
+    }
+
+    /**
+     * 还车审核事务处理
+     * @param approveFlag
+     * @param rentalOrderApprove
+     * @param userInfoUpdate
+     * @param carModelUpdate
+     * @param electricityCarUpdate
+     * @param eleBindCarRecord
+     * @param carLockCtrlHistory
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void approveRefundCarOrderTx(boolean approveFlag, CarRentalOrderPo rentalOrderApprove, UserInfo userInfoUpdate, ElectricityCarModel carModelUpdate,
+                                        ElectricityCar electricityCarUpdate, EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory) {
+        // 更改车辆租赁订单
+        carRentalOrderService.updateById(rentalOrderApprove);
+
+        // JT808
+        if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
+        }
+
+        // 审核通过
+        if (approveFlag) {
+            // 更改用户租赁状态
+            userInfoService.updateByUid(userInfoUpdate);
+            // 更改车辆型号的已租数量
+            carModelService.updateById(carModelUpdate);
+            // 更新车辆的归属人
+            carService.updateCarBindStatusById(electricityCarUpdate);
+            // 车辆操作记录
+            eleBindCarRecordService.insert(eleBindCarRecord);
+        }
+    }
+
+    /**
+     * 构建租赁订单的审批数据
+     * @param carRentalOrderPo 还车审批订单
+     * @param approveFlag 审批标识：true(通过)、false(驳回)
+     * @param apploveDesc 审批意见
+     * @param apploveUid 审批人UID
+     * @return 租赁订单审批数据集
+     */
+    private CarRentalOrderPo buildApproveCarRentalOrderPo(CarRentalOrderPo carRentalOrderPo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+        CarRentalOrderPo rentalOrderApprove = new CarRentalOrderPo();
+        rentalOrderApprove.setId(carRentalOrderPo.getId());
+        carRentalOrderPo.setUpdateTime(System.currentTimeMillis());
+        carRentalOrderPo.setUpdateUid(apploveUid);
+        carRentalOrderPo.setRemark(apploveDesc);
+        carRentalOrderPo.setAuditTime(System.currentTimeMillis());
+        if (approveFlag) {
+            carRentalOrderPo.setRentalState(CarRentalStateEnum.SUCCESS.getCode());
+        } else {
+            carRentalOrderPo.setRentalState(CarRentalStateEnum.AUDIT_REJECT.getCode());
+        }
+
+        return rentalOrderApprove;
+    }
+
+    /**
      * 用户还车申请
      *
      * @param tenantId 租户ID
@@ -523,11 +656,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @return
      */
     private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Integer rentalType) {
+        // 是否开通JT808
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
 
+            // 调用 JT808 服务
             boolean result = false;
             if (RentalTypeEnum.RENTAL.getCode().equals(rentalType)) {
                 result = retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
