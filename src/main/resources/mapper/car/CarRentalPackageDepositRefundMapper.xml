@@ -123,7 +123,7 @@
     <select id="selectRefundableByDepositPayOrderNoList" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `del_flag` = 0 AND `refund_state` IN (3, 6) AND `deposit_pay_order_no` IN
+            `del_flag` = 0 AND `refund_state` IN (1, 2, 4, 5) AND `deposit_pay_order_no` IN
              <foreach collection="depositPayOrderNoList" item="depositPayOrderNo" open="(" close=")" separator=",">
                  #{depositPayOrderNo}
              </foreach>

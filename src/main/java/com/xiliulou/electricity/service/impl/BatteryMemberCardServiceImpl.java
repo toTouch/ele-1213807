@@ -233,7 +233,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
 
                 if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
-                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))) {
+                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
                         continue;
                     }
                 }
@@ -406,7 +406,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
 
                 if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
-                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))) {
+                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
                         continue;
                     }
                 }

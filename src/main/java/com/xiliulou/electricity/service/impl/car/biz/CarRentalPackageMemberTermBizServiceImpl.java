@@ -125,13 +125,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("updateCurrPackage failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         if (StringUtils.isBlank(rentalPackageOrderNo) || !optReq.getPackageOrderNo().equals(rentalPackageOrderNo)) {
             log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is expire. member's rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         if (memberTermEntity.getDueTime() <= now || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
@@ -337,8 +337,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
         }
 
+        // 获取滞纳金
+        BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+
         UserMemberInfoVo memberInfoVo = buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity,
-                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity, rentalPackageEntityFlag);
+                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount);
 
         return memberInfoVo;
     }
@@ -358,7 +361,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
                                                    CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity, ElectricityCarModel carModelEntity,
-                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag) {
+                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag, BigDecimal lateFeeAmount) {
 
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
         userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
@@ -373,6 +376,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setLateFeeAmount(lateFeeAmount);
         // 退租不退押，不显示套餐信息
         if (rentalPackageEntityFlag) {
             userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());

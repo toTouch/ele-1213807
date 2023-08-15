@@ -150,7 +150,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         if (ObjectUtils.isNotEmpty(memberTermEntity) &&
                 !(MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus()) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus()))) {
             log.info("CarModelBizService.checkBuyByCarModelId, The t_car_rental_package_member_term abnormal status. uid is {}", uid);
-            throw new BizException("300035", "您有正在审核中流程，不可购买套餐");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         // 4. 获取车辆型号、押金、套餐类型
@@ -172,7 +172,10 @@ public class CarModelBizServiceImpl implements CarModelBizService {
                 log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
                 throw new BizException("300000", "数据有误");
             }
-            carModelIdExit = rentalPackage.getCarModelId();
+            if (!carModelId.equals(rentalPackage.getCarModelId())) {
+                log.error("CarModelBizService.checkBuyByCarModelId, Vehicle model mismatch. rentalPackage carModelId is {}, request carModelId is {}", rentalPackage.getCarModelId(), carModelId);
+                throw new BizException("300056", "车辆型号不匹配");
+            }
             confineExit = rentalPackage.getConfine();
             freeDepositExit = rentalPackage.getFreeDeposit();
             depositExit = memberTermEntity.getDeposit();
