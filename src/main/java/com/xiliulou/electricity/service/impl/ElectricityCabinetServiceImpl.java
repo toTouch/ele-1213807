@@ -1569,12 +1569,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             dataMap = Maps.newHashMap();
         } else {
             dataMap = eleOuterCommandQuery.getData();
-
-            //3.0版本需要检查充电停止上限及下限的值。页面传入的上限值不能低于下限值
-            Pair<Boolean, String> result = verifyChargeCondition(dataMap);
-            if(!result.getLeft()){
-                return R.fail("000380", result.getRight());
-            }
         }
         
         dataMap.put("uid", SecurityUtils.getUid());
@@ -1609,24 +1603,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(sessionId);
     }
 
-    private Pair<Boolean, String> verifyChargeCondition(Map<String, Object> dataMap){
-        String chargeMaxCondition = (String) dataMap.get("chargeMaxCondition");
-        String chargeMinCondition = (String) dataMap.get("chargeMinCondition");
-        log.info("verify the charge condition, charge max = {}, charge min = {}", chargeMaxCondition, chargeMinCondition);
-        try{
-            double chargeMin = Double.parseDouble(chargeMinCondition);
-            double chargeMax = Double.parseDouble(chargeMaxCondition);
-
-            if(chargeMin >= chargeMax){
-                return Pair.of(false, "充电停止上限不能低于充电停止下限");
-            }
-        }catch (Exception e){
-            log.error("invalid parameter for charge max condition or charge min condition, max = {}, min = {}", chargeMaxCondition, chargeMinCondition, e);
-            return Pair.of(false, "充电停止上下限参数格式不正确");
-        }
-
-        return Pair.of(true, null);
-    }
 
     @Override
     public R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery) {

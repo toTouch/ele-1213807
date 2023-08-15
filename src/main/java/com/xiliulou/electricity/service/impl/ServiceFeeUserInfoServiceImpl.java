@@ -200,10 +200,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
 
-        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
-
         eleBatteryServiceFeeVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
-        eleBatteryServiceFeeVO.setUserBatteryServiceFee(acquireUserBatteryServiceFeeResult.getLeft()?acquireUserBatteryServiceFeeResult.getRight():BigDecimal.ZERO);
+        eleBatteryServiceFeeVO.setUserBatteryServiceFee(BigDecimal.ZERO);
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if(Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())){
+            eleBatteryServiceFeeVO.setUserBatteryServiceFee(acquireUserBatteryServiceFeeResult.getRight());
+        }
 
         return eleBatteryServiceFeeVO;
     }
@@ -280,15 +283,15 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
             pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
             type = EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD;
-            log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
+            log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
         }
 
         //是否存在套餐过期电池服务费
-        if (System.currentTimeMillis() - userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > 0) {
+        if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
             int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
             expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
             type = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
-            log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+            log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
         }
 
         BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee);
