@@ -174,7 +174,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             }
             if (!carModelId.equals(rentalPackage.getCarModelId())) {
                 log.error("CarModelBizService.checkBuyByCarModelId, Vehicle model mismatch. rentalPackage carModelId is {}, request carModelId is {}", rentalPackage.getCarModelId(), carModelId);
-                throw new BizException("300000", "数据有误");
+                throw new BizException("300056", "车辆型号不匹配");
             }
             confineExit = rentalPackage.getConfine();
             freeDepositExit = rentalPackage.getFreeDeposit();
