@@ -639,7 +639,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         DivisionAccountRecord accountRecord = new DivisionAccountRecord();
         accountRecord.setId(divisionAccountRecord.getId());
         accountRecord.setDivisionAccountStatus(status);
-        divisionAccountRecordMapper.update(accountRecord);
+        divisionAccountRecordMapper.updateDAStatus(accountRecord);
     }
 
     @Transactional(rollbackFor = Exception.class)

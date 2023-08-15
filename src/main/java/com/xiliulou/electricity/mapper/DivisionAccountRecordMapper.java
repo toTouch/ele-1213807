@@ -78,4 +78,6 @@ public interface DivisionAccountRecordMapper extends BaseMapper<DivisionAccountR
     DivisionAccountRecord selectByOrderId(@Param("orderId") String orderId);
 
     List<DivisionAccountRecord> selectDAFreezeStatusRecordsByTime(@Param("time") Long time);
+
+    int updateDAStatus(DivisionAccountRecord divisionAccountRecord);
 }
