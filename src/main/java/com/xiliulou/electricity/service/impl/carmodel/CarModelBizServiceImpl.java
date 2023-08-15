@@ -172,7 +172,10 @@ public class CarModelBizServiceImpl implements CarModelBizService {
                 log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
                 throw new BizException("300000", "数据有误");
             }
-            carModelIdExit = rentalPackage.getCarModelId();
+            if (!carModelId.equals(rentalPackage.getCarModelId())) {
+                log.error("CarModelBizService.checkBuyByCarModelId, Vehicle model mismatch. rentalPackage carModelId is {}, request carModelId is {}", rentalPackage.getCarModelId(), carModelId);
+                throw new BizException("300000", "数据有误");
+            }
             confineExit = rentalPackage.getConfine();
             freeDepositExit = rentalPackage.getFreeDeposit();
             depositExit = memberTermEntity.getDeposit();
