@@ -809,35 +809,36 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             } else {
                 // 退款中，先落库，在调用退款接口
                 saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+                // 线上，调用微信
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                    try {
+                        // 根据购买订单编码获取当初的支付流水
+                        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(depositPayEntity.getRentalPackageOrderNo());
+                        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
+                            log.error("refundDepositCreate faild. not find t_electricity_trade_order. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
+                            throw new BizException("300000", "数据有误");
+                        }
+                        Integer status = electricityTradeOrder.getStatus();
+                        if (ElectricityTradeOrder.STATUS_INIT.equals(status) || ElectricityTradeOrder.STATUS_FAIL.equals(status)) {
+                            log.error("refundDepositCreate faild. t_electricity_trade_order status is wrong. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
+                            throw new BizException("300000", "数据有误");
+                        }
 
-                try {
-                    // 根据购买订单编码获取当初的支付流水
-                    ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(depositPayEntity.getRentalPackageOrderNo());
-                    if (ObjectUtils.isEmpty(electricityTradeOrder)) {
-                        log.error("refundDepositCreate faild. not find t_electricity_trade_order. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
-                        throw new BizException("300000", "数据有误");
+                        // 调用微信支付，进行退款
+                        RefundOrder refundOrder = RefundOrder.builder()
+                                .orderId(electricityTradeOrder.getOrderNo())
+                                .payAmount(electricityTradeOrder.getTotalFee())
+                                .refundOrderNo(refundDepositInsertEntity.getOrderNo())
+                                .refundAmount(refundDepositInsertEntity.getRealAmount()).build();
+                        log.info("refundDepositCreate, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
+                        WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
+                        log.info("refundDepositCreate, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+
+                    } catch (WechatPayException e) {
+                        log.error("refundDepositCreate failed.", e);
+                        throw new BizException(e.getMessage());
                     }
-                    Integer status = electricityTradeOrder.getStatus();
-                    if (ElectricityTradeOrder.STATUS_INIT.equals(status) || ElectricityTradeOrder.STATUS_FAIL.equals(status)) {
-                        log.error("refundDepositCreate faild. t_electricity_trade_order status is wrong. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
-                        throw new BizException("300000", "数据有误");
-                    }
-
-                    // 调用微信支付，进行退款
-                    RefundOrder refundOrder = RefundOrder.builder()
-                            .orderId(electricityTradeOrder.getOrderNo())
-                            .payAmount(electricityTradeOrder.getTotalFee())
-                            .refundOrderNo(refundDepositInsertEntity.getOrderNo())
-                            .refundAmount(refundDepositInsertEntity.getRealAmount()).build();
-                    log.info("refundDepositCreate, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
-                    WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
-                    log.info("refundDepositCreate, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-
-                } catch (WechatPayException e) {
-                    log.error("refundDepositCreate failed.", e);
-                    throw new BizException(e.getMessage());
                 }
-
             }
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);

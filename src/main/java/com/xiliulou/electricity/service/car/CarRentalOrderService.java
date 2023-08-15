@@ -12,6 +12,13 @@ import java.util.List;
 public interface CarRentalOrderService {
 
     /**
+     * 根据ID进行数据更新
+     * @param entity 更新数据集
+     * @return true(成功)、false(失败)
+     */
+    boolean updateById(CarRentalOrderPo entity);
+
+    /**
      * 根据用户UID、车辆SN码、状态查询最后一条数据
      * @param tenantId 租户ID
      * @param uid 用户UID
