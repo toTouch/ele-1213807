@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -39,6 +41,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
+
+    @Resource
+    private RedisService redisService;
 
     @Resource
     private CarLockCtrlHistoryService carLockCtrlHistoryService;
@@ -85,6 +90,18 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     @Override
     public boolean refundCarOrderApply(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        String cacheKey = CacheConstant.CACHE_USER_RETURN_CAR_LOCK + uid;
+
+        if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10000L, false)) {
+            log.error("refundCarOrderApply, ");
+            throw new BizException("100002", "操作频繁");
+        }
+
+
         return false;
     }
 

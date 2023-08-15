@@ -39,4 +39,9 @@ public class CarVo implements Serializable {
      */
     private Double latitude;
 
+    /**
+     * 地址更新时间
+     */
+    private Long pointUpdateTime;
+
 }
