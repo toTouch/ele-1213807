@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
@@ -10,10 +11,8 @@ import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +57,12 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Override
     public EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo) {
@@ -196,11 +201,20 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     return;
                 }
 
-               //套餐过期生成滞纳金订单
+                ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(serviceFeeUserInfo)) {
+                    log.warn("BATTERY SERVICE FEE ORDER WARN! not found serviceFeeUserInfo,uid={}", item.getUid());
+                    return;
+                }
+
+                //套餐过期生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
 
+                //用户绑定的电池型号
+                List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
                         .uid(item.getUid())
                         .phone(userInfo.getPhone())
                         .name(userInfo.getName())
@@ -213,10 +227,16 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                         .franchiseeId(userInfo.getFranchiseeId())
                         .storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType())
-                        .batteryType("")
+                        .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                         .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
                 eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
+
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             });
 
             offset += size;
