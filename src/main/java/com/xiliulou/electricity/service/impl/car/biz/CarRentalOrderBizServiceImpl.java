@@ -311,7 +311,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         // 查询用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (UserInfo.CAR_RENT_STATUS_NO.equals(userInfo.getCarRentStatus())) {
-            log.error("bindingCar, t_user_info is unBind. uid is {}", uid);
+            log.error("unBindingCar, t_user_info is unBind. uid is {}", uid);
             throw new BizException("100015", "用户未绑定车辆");
         }
 
@@ -324,28 +324,35 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         // 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+            log.error("unBindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
-            log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
+            log.error("unBindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
             throw new BizException("100015", "用户未绑定车辆");
         }
 
         // 通过套餐ID找到套餐
         CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
-            log.error("bindingCar, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
+            log.error("unBindingCar, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
             throw new BizException("300000", "数据有误");
         }
 
         // 查询车辆
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
         if (ObjectUtils.isEmpty(electricityCar)) {
-            log.error("bindingCar, not found t_electricity_car. uid is {}, tenantId is {}", uid, tenantId);
+            log.error("unBindingCar, not found t_electricity_car. uid is {}, tenantId is {}", uid, tenantId);
             throw new BizException("100015", "用户未绑定车辆");
+        }
+
+        // 判定是否存在审核中的还车订单
+        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+        if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
+            log.error("unBindingCar failed. The user has submitted a return request, please review it. uid is {}", uid);
+            throw new BizException("300055", "用户已提交还车申请，请审核");
         }
 
         // 生成租赁还车订单
