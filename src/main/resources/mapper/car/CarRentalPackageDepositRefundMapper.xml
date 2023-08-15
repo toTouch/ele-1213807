@@ -119,6 +119,17 @@
         </trim>
     </sql>
 
+    <!-- 根据押金缴纳订单编码，查询复合状态的退押订单 -->
+    <select id="selectRefundableByDepositPayOrderNoList" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `refund_state` IN (3, 6) AND `deposit_pay_order_no` IN
+             <foreach collection="depositPayOrderNoList" item="depositPayOrderNo" open="(" close=")" separator=",">
+                 #{depositPayOrderNo}
+             </foreach>
+        </where>
+    </select>
+
     <!-- 根据押金缴纳订单编码，查询最后一笔的退押订单信息 -->
     <select id="selectLastByDepositPayOrderNo" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
