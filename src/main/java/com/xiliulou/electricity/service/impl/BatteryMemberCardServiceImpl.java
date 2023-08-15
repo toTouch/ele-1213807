@@ -309,7 +309,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             List<String> number = null;
             if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
                 //套餐电池型号串数 number
-                number = item.getBatteryType().stream().map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+                number = item.getBatteryType().stream().filter(i->StringUtils.isNotBlank(i.getBatteryType())).map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
             }
 
             if (!(CollectionUtils.isNotEmpty(userBindBatteryType) && CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(userBindBatteryType, number))) {
