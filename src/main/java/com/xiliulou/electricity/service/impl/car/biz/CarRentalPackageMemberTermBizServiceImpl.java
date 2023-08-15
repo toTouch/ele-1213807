@@ -206,7 +206,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         newMemberTermEntity.setUpdateTime(now);
 
         // 判定是否过期, 过期自动提订单
-        if (dueTimeNew < now || (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && residueNew <= 0L)) {
+        if (dueTimeNew <= now || (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && residueNew <= 0L)) {
             // 根据用户ID查询第一条未使用的支付成功的订单信息
             CarRentalPackageOrderPo packageOrderEntityUnUse = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
             if (ObjectUtils.isNotEmpty(packageOrderEntityUnUse)) {
@@ -241,6 +241,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     dueTimeNow = now + (tenancyUnUse * TimeConstant.MINUTE_MILLISECOND);
                 }
                 newMemberTermEntity.setDueTime(dueTimeNow);
+                newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             } else {
                 newMemberTermEntity.setResidue(residueNew);
                 newMemberTermEntity.setDueTime(dueTimeNew);
