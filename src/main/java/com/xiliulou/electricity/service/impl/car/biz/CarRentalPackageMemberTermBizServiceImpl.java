@@ -337,8 +337,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
         }
 
+        // 获取滞纳金
+        BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+
         UserMemberInfoVo memberInfoVo = buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity,
-                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity, rentalPackageEntityFlag);
+                depositPayEntity, carModelEntity, carEntity, franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount);
 
         return memberInfoVo;
     }
@@ -358,7 +361,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     private UserMemberInfoVo buildUserMemberInfoVo(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity, List<BatteryModel> batteryModelEntityList,
                                                    CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity, ElectricityCarModel carModelEntity,
-                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag) {
+                                                   ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag, BigDecimal lateFeeAmount) {
 
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
         userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
@@ -373,6 +376,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setCarModelId(carModelEntity.getId());
         userMemberInfoVo.setCarModelName(carModelEntity.getName());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setLateFeeAmount(lateFeeAmount);
         // 退租不退押，不显示套餐信息
         if (rentalPackageEntityFlag) {
             userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());

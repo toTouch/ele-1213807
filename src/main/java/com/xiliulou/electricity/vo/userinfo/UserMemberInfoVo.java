@@ -8,6 +8,7 @@ import com.xiliulou.electricity.vo.car.CarVo;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -59,6 +60,11 @@ public class UserMemberInfoVo implements Serializable {
      * @see MemberTermStatusEnum
      */
     private Integer status;
+
+    /**
+     * 滞纳金金额
+     */
+    private BigDecimal lateFeeAmount;
 
     /**
      * 租车套餐ID
@@ -119,5 +125,6 @@ public class UserMemberInfoVo implements Serializable {
      * 车辆信息
      * */
     private CarVo car;
+
 
 }
