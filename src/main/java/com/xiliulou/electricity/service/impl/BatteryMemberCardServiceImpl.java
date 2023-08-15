@@ -346,6 +346,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
+
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());

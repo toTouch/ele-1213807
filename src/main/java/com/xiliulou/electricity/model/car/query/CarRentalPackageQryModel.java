@@ -157,4 +157,14 @@ public class CarRentalPackageQryModel implements Serializable {
      */
     private List<Integer> storeIdList;
 
+    /**
+     * 免押
+     * <pre>
+     *     0-是
+     *     1-否
+     * </pre>
+     * @see YesNoEnum
+     */
+    private Integer freeDeposit;
+
 }

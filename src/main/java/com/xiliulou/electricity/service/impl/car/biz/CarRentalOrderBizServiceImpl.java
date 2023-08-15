@@ -262,7 +262,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             }
 
             // 判定是否存在审核中的还车订单
-            CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+            CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndTypeAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
             if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
                 log.error("refundCarOrderApply failed. Returning the vehicle under review, uid is {}", uid);
                 throw new BizException("100265", "还车审核中，请耐心等待");
@@ -346,6 +346,12 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
             throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
         }
+
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("bindingCar, You have a process under review and cannot be operated. uid is {}", uid);
+            throw new BizException("300056", "该用户有正在审核中流程，不可操作");
+        }
+
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
@@ -482,7 +488,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 判定是否存在审核中的还车订单
-        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndTypeAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
         if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
             log.error("unBindingCar failed. The user has submitted a return request, please review it. uid is {}", uid);
             throw new BizException("300055", "用户已提交还车申请，请审核");
