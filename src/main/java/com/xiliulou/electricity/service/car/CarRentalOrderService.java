@@ -12,6 +12,17 @@ import java.util.List;
 public interface CarRentalOrderService {
 
     /**
+     * 根据用户UID、车辆SN码、状态查询最后一条数据
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @param type 订单类型，1-租车、2-还车
+     * @param rentalState 状态，1-审核中、2-成功、3-审核拒绝
+     * @param carSn 车辆编码
+     * @return 车辆租赁订单
+     */
+    CarRentalOrderPo selectLastByUidAndSnAndState(Integer tenantId, Long uid, Integer type, Integer rentalState, String carSn);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型
