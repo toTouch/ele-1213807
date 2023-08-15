@@ -54,12 +54,10 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <collection property="batteryType" resultMap="memberCardBatteryType"/>
-    </resultMap>
-
-    <resultMap id="memberCardBatteryType" type="com.xiliulou.electricity.entity.MemberCardBatteryType">
-        <id column="id" property="id"/>
-        <result column="battery_type" property="batteryType"/>
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+            <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
+            <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        </collection>
     </resultMap>
 
     <!--查询单个-->
@@ -209,6 +207,7 @@
         bmc.refund_limit,
         bmc.free_deposite,
         bmc.service_charge,
+        mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
