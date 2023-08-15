@@ -175,13 +175,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
-
-        query.setFranchiseeId(userInfo.getFranchiseeId());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
