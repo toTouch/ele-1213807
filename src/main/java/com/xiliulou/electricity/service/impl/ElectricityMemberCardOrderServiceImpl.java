@@ -3798,6 +3798,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + memberCardOrder.getMaxUseCount());
+            userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         }
 

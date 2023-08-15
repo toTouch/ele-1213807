@@ -758,6 +758,7 @@ public class UnionTradeOrderServiceImpl extends
                     userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                     userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
                     userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + electricityMemberCardOrder.getMaxUseCount());
+                    userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 }
             }
