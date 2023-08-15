@@ -117,6 +117,15 @@
         </trim>
     </sql>
 
+    <!-- 据用户UID、车辆SN码、状态查询最后一条数据 -->
+    <select id="selectLastByUidAndSnAndType" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `type` = #{type} AND `car_sn` = #{carSn}
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+
     <!-- 根据ID进行数据更新 -->
     <update id="updateById">
         UPDATE <include refid="table_name" />
@@ -132,8 +141,8 @@
         </where>
     </update>
 
-    <!-- 据用户UID、车辆SN码、状态查询最后一条数据 -->
-    <select id="selectLastByUidAndSnAndState" resultMap="entityMap">
+    <!-- 据用户UID、车辆SN码、类型、状态查询最后一条数据 -->
+    <select id="selectLastByUidAndSnAndTypeAndState" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
             `del_flag` = 0 AND `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `type` = #{type} AND `rental_state` = #{rentalState} AND `car_sn` = #{carSn}

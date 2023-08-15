@@ -262,7 +262,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             }
 
             // 判定是否存在审核中的还车订单
-            CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+            CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndTypeAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
             if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
                 log.error("refundCarOrderApply failed. Returning the vehicle under review, uid is {}", uid);
                 throw new BizException("100265", "还车审核中，请耐心等待");
@@ -482,7 +482,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 判定是否存在审核中的还车订单
-        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
+        CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndTypeAndState(tenantId, uid, RentalTypeEnum.RETURN.getCode(), CarRentalStateEnum.AUDIT_ING.getCode(), electricityCar.getSn());
         if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
             log.error("unBindingCar failed. The user has submitted a return request, please review it. uid is {}", uid);
             throw new BizException("300055", "用户已提交还车申请，请审核");
