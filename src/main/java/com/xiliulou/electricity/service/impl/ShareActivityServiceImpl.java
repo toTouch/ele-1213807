@@ -299,9 +299,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
 			}
 			//获取已选择的套餐
-			List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
+			//List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
 
-			shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivityAddAndUpdateQuery.getId().longValue(),shareActivityAddAndUpdateQuery.getName(), packageList));
+			//3.0版本，针对套餐需要做区分，新版的本的套餐多了租车和车电一体。之前只有换电套餐一种
+			List<ActivityPackageVO> activityPackageVOS = getActivityPackages(shareActivityMemberCards);
+			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
+			shareActivityPackageVO.setPackages(activityPackageVOS);
+
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivityAddAndUpdateQuery.getId().longValue(),shareActivityAddAndUpdateQuery.getName(), shareActivityPackageVO));
 		});
 
 		return Triple.of(true,"","");
