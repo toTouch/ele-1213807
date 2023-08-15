@@ -200,13 +200,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
 
-        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
-        if(Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())){
-            eleBatteryServiceFeeVO.setBatteryServiceFee(acquireUserBatteryServiceFeeResult.getRight());
-        }
-
         eleBatteryServiceFeeVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         eleBatteryServiceFeeVO.setUserBatteryServiceFee(BigDecimal.ZERO);
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if(Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())){
+            eleBatteryServiceFeeVO.setUserBatteryServiceFee(acquireUserBatteryServiceFeeResult.getRight());
+        }
 
         return eleBatteryServiceFeeVO;
     }
