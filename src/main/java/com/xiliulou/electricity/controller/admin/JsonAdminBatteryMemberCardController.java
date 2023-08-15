@@ -298,7 +298,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset,
                                        @RequestParam("uid") long uid,
-                                       @RequestParam("franchiseeId") long franchiseeId,
+                                       @RequestParam(value = "franchiseeId", required = false) long franchiseeId,
                                        @RequestParam(value = "name", required = false) String name) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .size(size)
