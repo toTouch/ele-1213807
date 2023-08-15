@@ -125,13 +125,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("updateCurrPackage failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         if (StringUtils.isBlank(rentalPackageOrderNo) || !optReq.getPackageOrderNo().equals(rentalPackageOrderNo)) {
             log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is expire. member's rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            throw new BizException("300002", "租车会员状态异常");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         if (memberTermEntity.getDueTime() <= now || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {

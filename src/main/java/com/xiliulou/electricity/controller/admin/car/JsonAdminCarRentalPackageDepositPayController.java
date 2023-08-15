@@ -111,7 +111,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
             // 判定退款状态
             if (refundPoMap.containsKey(depositPayEntity.getOrderNo())) {
-                depositPayVO.setRefundFlag(true);
+                depositPayVO.setRefundFlag(false);
             }
             return depositPayVO;
         }).collect(Collectors.toList());

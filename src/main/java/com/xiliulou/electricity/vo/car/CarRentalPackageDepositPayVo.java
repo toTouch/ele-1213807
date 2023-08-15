@@ -123,6 +123,6 @@ public class CarRentalPackageDepositPayVo implements Serializable {
     /**
      * 可退标识
      */
-    private boolean refundFlag = false;
+    private boolean refundFlag = true;
 
 }

@@ -15,8 +15,10 @@ public interface CarRentalPackageDepositRefundService {
     /**
      * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
      * <pre>
-     *     3-审核拒绝
-     *     6-退款失败
+     *     1-待审核
+     *     2-审核通过
+     *     4-退款中
+     *     5-退款成功
      * </pre>
      * @param depositPayOrderNoList 押金缴纳订单编码集
      * @return 退押订单编码集
