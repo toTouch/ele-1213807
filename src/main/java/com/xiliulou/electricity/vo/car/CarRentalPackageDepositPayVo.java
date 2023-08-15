@@ -120,4 +120,9 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      */
     private Integer carModelId;
 
+    /**
+     * 可退标识
+     */
+    private boolean refundFlag = false;
+
 }

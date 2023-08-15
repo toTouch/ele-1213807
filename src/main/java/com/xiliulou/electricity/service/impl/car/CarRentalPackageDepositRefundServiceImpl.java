@@ -13,8 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,6 +29,25 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageDepositRefundMapper carRentalPackageDepositRefundMapper;
+
+    /**
+     * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
+     * <pre>
+     *     3-审核拒绝
+     *     6-退款失败
+     * </pre>
+     *
+     * @param depositPayOrderNoList 押金缴纳订单编码集
+     * @return 退押订单编码集
+     */
+    @Slave
+    @Override
+    public List<CarRentalPackageDepositRefundPo> selectRefundableByDepositPayOrderNoList(List<String> depositPayOrderNoList) {
+        if (CollectionUtils.isEmpty(depositPayOrderNoList)) {
+            return Collections.emptyList();
+        }
+        return carRentalPackageDepositRefundMapper.selectRefundableByDepositPayOrderNoList(depositPayOrderNoList);
+    }
 
     /**
      * 根据押金缴纳订单编码，查询最后一笔的退押订单信息
