@@ -201,14 +201,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private CarRentalOrderPo buildApproveCarRentalOrderPo(CarRentalOrderPo carRentalOrderPo, boolean approveFlag, String apploveDesc, Long apploveUid) {
         CarRentalOrderPo rentalOrderApprove = new CarRentalOrderPo();
         rentalOrderApprove.setId(carRentalOrderPo.getId());
-        carRentalOrderPo.setUpdateTime(System.currentTimeMillis());
-        carRentalOrderPo.setUpdateUid(apploveUid);
-        carRentalOrderPo.setRemark(apploveDesc);
-        carRentalOrderPo.setAuditTime(System.currentTimeMillis());
+        rentalOrderApprove.setUpdateTime(System.currentTimeMillis());
+        rentalOrderApprove.setUpdateUid(apploveUid);
+        rentalOrderApprove.setRemark(apploveDesc);
+        rentalOrderApprove.setAuditTime(System.currentTimeMillis());
         if (approveFlag) {
-            carRentalOrderPo.setRentalState(CarRentalStateEnum.SUCCESS.getCode());
+            rentalOrderApprove.setRentalState(CarRentalStateEnum.SUCCESS.getCode());
         } else {
-            carRentalOrderPo.setRentalState(CarRentalStateEnum.AUDIT_REJECT.getCode());
+            rentalOrderApprove.setRentalState(CarRentalStateEnum.AUDIT_REJECT.getCode());
         }
 
         return rentalOrderApprove;
