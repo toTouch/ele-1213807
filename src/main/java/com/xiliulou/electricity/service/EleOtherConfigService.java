@@ -33,4 +33,6 @@ public interface EleOtherConfigService {
     EleOtherConfig queryByEidFromCache(Integer eid);
 
     R updateEleOtherConfig(EleOtherConfig eleOtherConfig);
+
+    Integer updateByEid(EleOtherConfig eleOtherConfig);
 }

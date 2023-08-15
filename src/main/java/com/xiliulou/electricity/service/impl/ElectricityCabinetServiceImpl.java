@@ -236,6 +236,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     CabinetMoveHistoryService cabinetMoveHistoryService;
 
+    @Autowired
+    EleOtherConfigService eleOtherConfigService;
+
 
     /**
      * 通过ID查询单条数据从缓存
@@ -4342,6 +4345,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinetInsert), i -> {
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinetInsert.getId());
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinetInsert, electricityCabinetInsert);
+            EleOtherConfig eleOtherConfig = new EleOtherConfig();
+            eleOtherConfig.setEid(electricityCabinetInsert.getId());
+            eleOtherConfig.setTenantId(electricityCabinetInsert.getTenantId());
+            eleOtherConfig.setUpdateTime(System.currentTimeMillis());
+            eleOtherConfigService.updateByEid(eleOtherConfig);
         });
 
         //生成迁移记录
