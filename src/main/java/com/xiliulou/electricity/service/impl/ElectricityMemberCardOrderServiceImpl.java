@@ -3888,6 +3888,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        userBatteryMemberCardInfoVO.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
         userBatteryMemberCardInfoVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         userBatteryMemberCardInfoVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
         userBatteryMemberCardInfoVO.setFranchiseeId(userInfo.getFranchiseeId());
