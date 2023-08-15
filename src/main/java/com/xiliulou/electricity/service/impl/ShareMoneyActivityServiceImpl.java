@@ -442,8 +442,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : batteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareMoneyActivityPackage.getPackageId());
-            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(batteryMemberCard)){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
         return memberCardVOList;
     }
@@ -454,10 +456,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : carBatteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareMoneyActivityPackage.getPackageId());
-            batteryMemberCardVO.setId(carRentalPackagePO.getId());
-            batteryMemberCardVO.setName(carRentalPackagePO.getName());
-            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(carRentalPackagePO)){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
+
         }
 
         return memberCardVOList;
