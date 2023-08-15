@@ -178,7 +178,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             oldUserFlag = userBizService.isOldUser(tenantId, uid);
 
             // 是否缴纳过租车的押金（单车、车电一体）
-            if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.equals(userInfo.getCarBatteryDepositStatus())) {
+            if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
                 // 查询保险缴纳信息
                 CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastPaySucessByUid(tenantId, uid);
                 confine = depositPayPo.getRentalPackageType();
@@ -241,6 +241,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
                     return simpleModel.toString();
                 }).collect(Collectors.toList());
+
                 if (!batteryModelTypeDbSimpleList.containsAll(batteryModelTypeSimpleList)) {
                     iterator.remove();
                 }
