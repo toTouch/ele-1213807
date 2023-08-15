@@ -347,6 +347,12 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
         }
 
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("bindingCar, You have a process under review and cannot be operated. uid is {}", uid);
+            throw new BizException("300056", "该用户有正在审核中流程，不可操作");
+        }
+
+
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
             log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
