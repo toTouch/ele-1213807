@@ -180,7 +180,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
                 // 作废保险订单
                 if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
-                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
                 // 清理user信息/解绑车辆/解绑电池
                 userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());

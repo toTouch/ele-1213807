@@ -314,6 +314,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100296", "请先退未使用的套餐");
             }
 
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! user batteryMemberCard already expire,uid={}", userInfo.getUid());
+                return Triple.of(false, "100374", "换电套餐已过期");
+            }
+
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(serviceFeeUserInfo)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found serviceFeeUserInfo,uid={}", user.getUid());
@@ -419,10 +424,21 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100296", "请先退未使用的套餐");
         }
 
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! user batteryMemberCard already expire,uid={}", userInfo.getUid());
+            return Triple.of(false, "100374", "换电套餐已过期");
+        }
+
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), electricityMemberCardOrder.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+
+        //是否超过套餐退租时间
+        if (System.currentTimeMillis() > electricityMemberCardOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not allow refund,uid={},mid={}", userInfo.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return Triple.of(false, "100287", "电池套餐订单已超过退租时间");
         }
 
         BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);

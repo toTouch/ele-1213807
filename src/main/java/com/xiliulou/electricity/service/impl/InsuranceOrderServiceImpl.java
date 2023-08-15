@@ -355,6 +355,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return insuranceOrderMapper.updateUseStatusByOrderId(insuranceOrderId,useStatus);
     }
 
+    @Override
+    public Integer updateUseStatusForRefund(String insuranceOrderId, Integer useStatus) {
+        if(StringUtils.isBlank(insuranceOrderId)){
+            return NumberConstant.ZERO;
+        }
+        return insuranceOrderMapper.updateUseStatusForRefund(insuranceOrderId,useStatus);
+    }
+
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid +
                 RandomUtil.randomNumbers(4);

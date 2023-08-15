@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query.car;
 
 import com.xiliulou.electricity.enums.RentalTypeEnum;
+import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -60,7 +61,28 @@ public class CarRentalOrderQryReq implements Serializable {
     private Integer type;
 
     /**
-     * 车辆SN码
+     * 订单状态
+     * <pre>
+     *     1-审核中
+     *     2-成功
+     *     3-审核拒绝
+     * </pre>
+     * @see CarRentalStateEnum
+     */
+    private Integer rentalState;
+
+    /**
+     * 车辆SN码(模糊搜索)
      */
     private String carSn;
+
+    /**
+     * 创建时间起始
+     */
+    private Long beginCreateTime;
+
+    /**
+     * 创建时间截止
+     */
+    private Long endCreateTime;
 }

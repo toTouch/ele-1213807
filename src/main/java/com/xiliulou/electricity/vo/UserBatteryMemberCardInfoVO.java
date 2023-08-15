@@ -77,6 +77,8 @@ public class UserBatteryMemberCardInfoVO {
 
     private Long franchiseeId;
 
+    private Integer modelType;
+
     private Long storeId;
 
     public static final Integer NO = 0;
