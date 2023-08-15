@@ -346,6 +346,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
+        log.info("join new user activity for logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
         if (Objects.nonNull(newUserActivity)) {
 
 
@@ -369,7 +370,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 //                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
 //                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
 //            }
-            log.info("new user activity for logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
+            log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
             //优惠券
             if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(
                     newUserActivity.getCouponId())) {
