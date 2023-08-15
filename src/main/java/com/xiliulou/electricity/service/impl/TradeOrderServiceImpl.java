@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
@@ -191,6 +192,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
 
+            if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
+                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
+                return Triple.of(false, "", "用户加盟商与套餐加盟商不一致");
+            }
+
             //获取扫码柜机
             ElectricityCabinet electricityCabinet = null;
             if (StringUtils.isNotBlank(integratedPaymentAdd.getProductKey()) && StringUtils.isNotBlank(integratedPaymentAdd.getDeviceName())) {
@@ -351,6 +357,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100275", "电池套餐不可用");
+            }
+
+            if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
+                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberId());
+                return Triple.of(false, "", "用户加盟商与套餐加盟商不一致");
             }
 
             //获取扫码柜机
