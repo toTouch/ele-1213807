@@ -314,6 +314,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100296", "请先退未使用的套餐");
             }
 
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! user batteryMemberCard already expire,uid={}", userInfo.getUid());
+                return Triple.of(false, "100374", "换电套餐已过期");
+            }
+
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(serviceFeeUserInfo)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found serviceFeeUserInfo,uid={}", user.getUid());
@@ -417,6 +422,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.nonNull(userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! exist not use batteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(false, "100296", "请先退未使用的套餐");
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! user batteryMemberCard already expire,uid={}", userInfo.getUid());
+            return Triple.of(false, "100374", "换电套餐已过期");
         }
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());

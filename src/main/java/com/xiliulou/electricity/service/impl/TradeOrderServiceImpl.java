@@ -194,7 +194,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
             if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
-                return Triple.of(false, "", "用户加盟商与套餐加盟商不一致");
+                return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
 
             //获取扫码柜机
@@ -361,7 +361,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
             if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-                return Triple.of(false, "", "用户加盟商与套餐加盟商不一致");
+                return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
 
             //获取扫码柜机
