@@ -186,6 +186,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.warn("ELE DEPOSIT WARN! user haven't memberCard uid={}", userInfo.getUid());
+            return R.fail("100210", "用户未开通套餐");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.warn("ELE DEPOSIT WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
+            return R.fail( "ELECTRICITY.00121", "套餐不存在");
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(serviceFeeUserInfo)){
+            log.error("ELE DEPOSIT WARN!not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+            return R.fail( "100247", "未找到用户信息");
+        }
 
         //是否存在换电次数欠费情况
         Integer packageOwe = null;
@@ -251,39 +267,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
-        Long now = System.currentTimeMillis();
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-        long cardDays = 0;
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            userChangeServiceFee = serviceFee;
-        }
-
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
-
-            //判断用户是否产生电池服务费
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-
-                cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
-
-                //不足一天按一天计算
-                double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
-                if (time < 24) {
-                    cardDays = 1;
-                }
-                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
-                userChangeServiceFee = serviceFee;
-            }
-        }
-
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
+        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
+            return R.fail( "100220", "用户存在电池服务费");
         }
 
         //判断是否退电池
@@ -420,9 +407,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 //删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
 
+                eleRefundOrderService.insert(eleRefundOrder);
+                return R.ok("SUCCESS");
             }
-            eleRefundOrderService.insert(eleRefundOrder);
-            return R.ok("SUCCESS");
         }
 
         eleRefundOrderService.insert(eleRefundOrder);
