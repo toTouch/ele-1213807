@@ -195,7 +195,7 @@
         bmc.rent_price,
         bmc.rent_price_unit,
         bmc.valid_days,
-        bmc.remark
+        bmc.remark,
         bmc.rent_unit,
         bmc.franchisee_id,
         bmc.rent_type,
