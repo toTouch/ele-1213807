@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -348,7 +349,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100220", "用户存在电池服务费");
             }
 
-            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userInfo.getUid());
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)&& CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", user.getUid());
                 return Triple.of(false, "100284", "未归还电池");
             }
@@ -470,6 +472,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (System.currentTimeMillis() > electricityMemberCardOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not allow refund,uid={},mid={}", userInfo.getUid(), electricityMemberCardOrder.getMemberCardId());
             return Triple.of(false, "100287", "电池套餐订单已超过退租时间");
+        }
+
+        List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userInfo.getUid());
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)&& CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", userInfo.getUid());
+            return Triple.of(false, "100284", "未归还电池");
         }
 
         BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
@@ -600,11 +608,30 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
-
         if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {
             //使用中
-            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-            serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+            List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userBatteryMemberCard.getUid());
+            if(CollectionUtils.isEmpty(userBatteryMemberCardPackages)){
+                //退最后一个套餐
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                serviceFeeUserInfoService.unbindServiceFeeInfoByUid(userInfo.getUid());
+            }else{
+                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+                userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+                userBatteryMemberCardUpdate.setOrderRemainingNumber(NumberConstant.ZERO_L);
+                userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()-userBatteryMemberCard.getOrderRemainingNumber());
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()-userBatteryMemberCard.getOrderExpireTime());
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+
+                ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime()-userBatteryMemberCard.getOrderExpireTime());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
+            }
         } else {
             //未使用
             userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());

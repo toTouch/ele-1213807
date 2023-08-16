@@ -137,8 +137,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
             updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+            updateUserBatteryMemberCard.setDisableMemberCardTime(null);
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
+            userBatteryMemberCardService.updateByUidForDisableCard(updateUserBatteryMemberCard);
 
             //停卡拒绝，解绑停卡信息
             ServiceFeeUserInfo updateServiceFeeUserInfo = new ServiceFeeUserInfo();
@@ -153,7 +154,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-            updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
+//            updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
 
             //用户是否绑定电池
