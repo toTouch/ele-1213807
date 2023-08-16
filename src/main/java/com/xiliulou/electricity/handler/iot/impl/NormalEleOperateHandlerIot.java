@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -36,6 +39,16 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return ;
         }
+
+        //3.0 同步修改柜机信息
+        try{
+            ElectricityCabinet cabinet = JsonUtil.fromJson(receiverMessage.getOriginContent(), ElectricityCabinet.class);
+            electricityCabinet.setFullyCharged(cabinet.getFullyCharged());
+            electricityCabinetService.update(electricityCabinet);
+        }catch (Exception e){
+            log.error("convert json to electricity cabinet error, EID = {}, session id = {}", electricityCabinet.getId(), sessionId);
+        }
+
         Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
 
 //        //操作回调的放在redis中
