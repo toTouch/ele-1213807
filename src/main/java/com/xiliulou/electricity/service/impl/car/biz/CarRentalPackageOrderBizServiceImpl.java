@@ -1588,10 +1588,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
         rentalPackageVO.setStatus(memberTerm.getStatus());
-        // 判定是否过期
-        if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
-                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue() <= 0L)) {
-            rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+        if (ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && ObjectUtils.isNotEmpty(memberTerm.getRentalPackageConfine()) && ObjectUtils.isNotEmpty(memberTerm.getResidue())) {
+            // 判定是否过期
+            if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
+                    (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue() <= 0L)) {
+                rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+            }
         }
 
         // 套餐订单信息
