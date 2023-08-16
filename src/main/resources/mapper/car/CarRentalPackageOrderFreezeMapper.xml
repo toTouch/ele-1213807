@@ -144,7 +144,6 @@
         UPDATE <include refid="table_name" />
         <set>
             `update_time` = #{updateTime}
-            <if test=" realTerm != null "> , `real_term` = #{realTerm} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
             <if test=" enableTime != null "> , `enable_time` = #{enableTime} </if>
             <if test=" status != null "> , `status` = #{status} </if>
