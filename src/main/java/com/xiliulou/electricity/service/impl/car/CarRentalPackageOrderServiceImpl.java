@@ -135,6 +135,27 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     }
 
     /**
+     * 根据用户ID查询是否存在未使用且可退的订单<br />
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param rentRebateEndTime      可退截止时间，可为空，若为空，则默认取当前时间
+     * @return true(存在未使用的订单)、false(不存在未使用的订单)
+     */
+    @Slave
+    @Override
+    public boolean isExitUnUseAndRefund(Integer tenantId, Long uid, Long rentRebateEndTime) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        if (ObjectUtils.isEmpty(rentRebateEndTime)) {
+            rentRebateEndTime = System.currentTimeMillis();
+        }
+        Integer count = carRentalPackageOrderMapper.isExitUnUseAndRefund(tenantId, uid, rentRebateEndTime);
+        return count > 0;
+    }
+
+    /**
      * 根据用户ID查询是否存在未使用状态的订单<br />
      *
      * @param tenantId 租户ID

@@ -213,6 +213,14 @@
         </where>
     </update>
 
+    <!-- 根据用户ID查询是否存在未使用且可退的订单 -->
+    <select id="isExitUnUseAndRefund" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `pay_state` = 2 AND `rent_rebate` = 0 AND `rent_rebate_end_time` > #{rentRebateEndTime} AND `del_flag` = 0
+        </where>
+    </select>
+
     <!-- 根据用户ID查询未使用的订单总数 -->
     <select id="countByUnUseByUid" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
