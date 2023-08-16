@@ -46,7 +46,7 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinet.setFullyCharged(Double.parseDouble(cabinet.getExchangeCondition()));
             electricityCabinetService.update(electricityCabinet);
         }catch (Exception e){
-            log.error("convert json to electricity cabinet error, EID = {}, session id = {}", electricityCabinet.getId(), sessionId);
+            log.error("convert json to electricity cabinet error, EID = {}, session id = {}", electricityCabinet.getId(), sessionId, e);
         }
 
         Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
