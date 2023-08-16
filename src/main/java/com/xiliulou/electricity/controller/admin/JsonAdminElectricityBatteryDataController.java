@@ -3,14 +3,11 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.ElectricityBatteryDataService;
-import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -151,6 +148,35 @@ public class JsonAdminElectricityBatteryDataController {
                                           @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
                                           @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         return electricityBatteryDataService.selectOverdueBatteryDataCount(sn, franchiseeId, electricityCabinetId);
+    }
+
+    /**
+     * 获取库存电池的分页数据
+     * @param offset 启示页
+     * @param size 每页大小
+     * @param sn 电池编码
+     * @param franchiseeId
+     * @param electricityCabinetId
+     * @return
+     */
+    @GetMapping(value = "/admin/batteryData/stockBattery/page")
+    public R getStockBatteryPageDate( @RequestParam("offset") long offset,
+                                      @RequestParam("size") long size,
+                                      @RequestParam(value = "sn", required =  false) String sn,
+                                      @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                      @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId){
+
+
+        return electricityBatteryDataService.queryStockBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId);
+    }
+    /**
+     * 获取库存电池的数据总数
+     */
+    @GetMapping(value = "/admin/batteryData/stockBattery/count")
+    public R getStockBatteryDataCount(  @RequestParam(value = "sn", required =  false) String sn,
+                                          @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                          @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
+        return electricityBatteryDataService.queryStockBatteryPageDataCount(sn, franchiseeId, electricityCabinetId);
     }
 
 
