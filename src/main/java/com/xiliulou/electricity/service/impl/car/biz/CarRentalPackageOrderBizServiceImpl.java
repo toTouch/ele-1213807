@@ -2173,7 +2173,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         // 套餐购买总次数
                         memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
                         if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
-                            memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                            if (memberTermEntity.getResidue() >= 0) {
+                                memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum());
+                            } else {
+                                memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum() + memberTermEntity.getResidue());
+                            }
                         }
 
                     } else {
@@ -2182,7 +2186,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
                         if (RenalPackageConfineEnum.NUMBER.getCode().equals(carRentalPackageOrderEntity.getConfine())) {
-                            memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                            if (memberTermEntity.getResidue() >= 0) {
+                                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                            } else {
+                                memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum() + memberTermEntity.getResidue());
+                            }
                         }
                         // 计算到期时间
                         Integer tenancy = carRentalPackageOrderEntity.getTenancy();
