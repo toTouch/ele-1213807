@@ -193,7 +193,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer packageOwe = null;
         //套餐欠费次数
         Integer memberCardOweNumber = null;
-        if (Objects.nonNull(userBatteryMemberCard)) {
+        if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(),NumberConstant.ZERO_L)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("ELE DEPOSIT WARN! disable member card is reviewing userId={}", user.getUid());
                 return R.fail("ELECTRICITY.100003", "停卡正在审核中");
@@ -1031,12 +1031,25 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.100000", "不存在电池服务费");
         }
 
+        if (acquireUserBatteryServiceFeeResult.getRight().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            log.error("admin saveUserMemberCard ERROR! service fee illegal,uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100000", "电池服务费不合法");
+        }
+
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
         if(StringUtils.isNotBlank(serviceFeeUserInfo.getOrderNo())){
             eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getOrderNo());
+
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate=new EleBatteryServiceFeeOrder();
+            eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+            eleBatteryServiceFeeOrderUpdate.setPayAmount(acquireUserBatteryServiceFeeResult.getRight());
+            eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
         }else{
 
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(user.getUid());
 
             eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
@@ -1052,7 +1065,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .franchiseeId(franchisee.getId())
                     .storeId(userInfo.getStoreId())
                     .modelType(franchisee.getModelType())
-                    .batteryType("")
+                    .batteryType(CollectionUtils.isEmpty(userBatteryTypes)?"":JsonUtil.toJson(userBatteryTypes))
                     .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                     .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
@@ -1062,14 +1075,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
                     .orderId(eleBatteryServiceFeeOrder.getOrderId())
                     .uid(user.getUid())
-                    .payAmount(eleBatteryServiceFeeOrder.getPayAmount())
+                    .payAmount(acquireUserBatteryServiceFeeResult.getRight())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_BATTERY_SERVICE_FEE)
                     .attach(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)
                     .description("电池服务费收费")
                     .tenantId(tenantId).build();
 
-            WechatJsapiOrderResultDTO resultDTO =
-                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
             log.error("payEleBatteryServiceFee ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
