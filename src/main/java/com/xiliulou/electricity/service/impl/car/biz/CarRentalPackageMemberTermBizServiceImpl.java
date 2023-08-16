@@ -164,7 +164,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
         Long residue = memberTermEntity.getResidue();
 
-        Long dueTimeNew = now;
+        Long dueTimeNew = dueTime;
         Long dueTimeTotalNew = dueTimeTotal;
         Long residueNew = residue;
 
@@ -233,7 +233,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
                 Integer tenancyUnitUnUse = packageOrderEntityUnUse.getTenancyUnit();
-                Long dueTimeNow = now;
+                long dueTimeNow = now;
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnitUnUse)) {
                     dueTimeNow = now + (tenancyUnUse * TimeConstant.DAY_MILLISECOND);
                 }
