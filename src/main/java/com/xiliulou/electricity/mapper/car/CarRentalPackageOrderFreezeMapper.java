@@ -37,12 +37,11 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @param optUid 操作人(可为空)
      * @param optTime 操作时间
      * @param enableTime 启用时间
-     * @param realTerm 实际期限(天)
      * @return int
      * @author xiaohui.song
      **/
     int enableByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo, @Param("status") Integer status, @Param("optUid") Long optUid,
-                                     @Param("optTime") Long optTime, @Param("enableTime") Long enableTime, @Param("realTerm") Integer realTerm);
+                                     @Param("optTime") Long optTime, @Param("enableTime") Long enableTime);
 
     /**
      * 根据用户ID和套餐购买订单编号查询冻结中的订单

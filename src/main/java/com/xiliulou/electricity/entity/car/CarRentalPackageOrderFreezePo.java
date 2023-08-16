@@ -78,11 +78,6 @@ public class CarRentalPackageOrderFreezePo extends BasicCarPo {
     private Integer applyTerm;
 
     /**
-     * 实际期限(天)
-     */
-    private Integer realTerm;
-
-    /**
      * 申请时间
      */
     private Long applyTime;

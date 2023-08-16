@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
@@ -8,11 +12,17 @@ import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,6 +33,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 逾期业务聚合 BizServiceImpl
@@ -32,6 +44,21 @@ import java.util.List;
 @Slf4j
 @Service
 public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSlippageBizService {
+
+    @Resource
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+
+    @Resource
+    private ElectricityCarService carService;
 
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
@@ -65,17 +92,16 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             log.info("clearSlippage, not found t_car_rental_package_order_slippage. uid is {}", uid);
             return true;
         }
+        // 查询会员详情
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
+        }
 
         if (slippageEntityList.size() == 1 && SlippageTypeEnum.EXPIRE.getCode().equals(slippageEntityList.get(0).getType())) {
-            saveClearSlippageTx(slippageEntityList, null, optUid);
+            saveClearSlippageTx(slippageEntityList, null, optUid, memberTermEntity);
         } else {
-            // 查询会员详情
-            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-            if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-                log.error("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
-                throw new BizException("300000", "数据有误");
-            }
-
             // 查询冻结订单
             CarRentalPackageOrderFreezePo freezeEntity = null;
             if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
@@ -85,7 +111,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                     throw new BizException("300000", "数据有误");
                 }
             }
-            saveClearSlippageTx(slippageEntityList, freezeEntity, optUid);
+            saveClearSlippageTx(slippageEntityList, freezeEntity, optUid, memberTermEntity);
         }
 
         return true;
@@ -97,8 +123,9 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
      * @param freezeEntity 冻结订单
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveClearSlippageTx(List<CarRentalPackageOrderSlippagePo> slippageEntityList, CarRentalPackageOrderFreezePo freezeEntity, Long optUid) {
+    public void saveClearSlippageTx(List<CarRentalPackageOrderSlippagePo> slippageEntityList, CarRentalPackageOrderFreezePo freezeEntity, Long optUid, CarRentalPackageMemberTermPo memberTermEntity) {
         long now = System.currentTimeMillis();
+        AtomicBoolean jt808Flag = new AtomicBoolean(false);
         // 处理逾期
         slippageEntityList.forEach(slippageEntity -> {
             CarRentalPackageOrderSlippagePo slippageUpdateEntity = new CarRentalPackageOrderSlippagePo();
@@ -112,9 +139,16 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             if (SlippageTypeEnum.EXPIRE.getCode().equals(slippageEntity.getType())) {
                 slippageUpdateEntity.setLateFeeEndTime(now);
                 // 转换天
-                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), now);
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime(), now);
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
+
+                // 更改会员期限表数据
+                CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
+                memberTermEntityUpdate.setDueTime(now);
+                memberTermEntityUpdate.setDueTimeTotal(now);
+                memberTermEntityUpdate.setId(memberTermEntity.getId());
+                carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
             }
 
             // 冻结
@@ -126,21 +160,81 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                     endTime = now;
                 }
                 // 转换天
-                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), endTime.longValue());
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime(), endTime);
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
+
+                // 1. 更改订单冻结表数据
+                carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
+
+                // 赋值会员更新
+                CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
+                memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
+                memberTermUpdateEntity.setId(memberTermEntity.getId());
+                memberTermUpdateEntity.setUpdateUid(optUid);
+                memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+                // 提前启用、计算差额
+                long diffTime = System.currentTimeMillis() - freezeEntity.getCreateTime();
+                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
+
+                carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
+
+                jt808Flag.set(true);
             }
             carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
         });
 
-        // 处理冻结
-        if (ObjectUtils.isNotEmpty(freezeEntity)) {
-            carRentalPackageOrderBizService.enableFreezeRentOrder(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), optUid);
+        // JT808
+        if (jt808Flag.get()) {
+            // 查询车辆
+            ElectricityCar electricityCar = carService.selectByUid(freezeEntity.getTenantId(), freezeEntity.getUid());
+            if (ObjectUtils.isNotEmpty(electricityCar)) {
+                // JT808解锁
+                UserInfo userInfo = userInfoService.queryByUidFromCache(freezeEntity.getUid());
+                CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+                // 生成日志
+                if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+                    carLockCtrlHistoryService.insert(carLockCtrlHistory);
+                }
+            }
         }
 
-        // TODO JT808
+    }
 
 
+    /**
+     * 构建JT808
+     * @param electricityCar
+     * @param userInfo
+     * @return
+     */
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+
+            boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+
+            return carLockCtrlHistory;
+        }
+        return null;
     }
 
     /**
@@ -170,15 +264,15 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             }
 
             // 时间比对
-            long lateFeeStartTime = slippageEntity.getLateFeeStartTime().longValue();
+            long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
             // 没有滞纳金产生
-            if (lateFeeStartTime < now) {
+            if (lateFeeStartTime > now) {
                 continue;
             }
 
             // 转换天
-            long diffDay = DateUtils.diffDay(now, lateFeeStartTime);
+            long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
             // 计算滞纳金金额
             BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
             totalAmount.add(amount);

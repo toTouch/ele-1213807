@@ -134,10 +134,6 @@
         where uid = #{uid}
     </update>
 
-    <update id="increaseExpireTime">
-        update t_user_battery_member_card set member_card_expire_time = member_card_expire_time+#{time},update_time = #{updateTime}  where uid = #{uid}
-    </update>
-
     <update id="deductionExpireTime">
         update t_user_battery_member_card set member_card_expire_time = member_card_expire_time-#{time},update_time = #{updateTime}  where uid = #{uid}
     </update>
