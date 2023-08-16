@@ -185,23 +185,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
+        BatteryMemberCard batteryMemberCard = null;
+        ServiceFeeUserInfo serviceFeeUserInfo = null;
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBatteryMemberCard)){
-            log.warn("ELE DEPOSIT WARN! user haven't memberCard uid={}", userInfo.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if(Objects.isNull(batteryMemberCard)){
-            log.warn("ELE DEPOSIT WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
-            return R.fail( "ELECTRICITY.00121", "套餐不存在");
-        }
-
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(serviceFeeUserInfo)){
-            log.error("ELE DEPOSIT WARN!not found serviceFeeUserInfo,uid={}", userInfo.getUid());
-            return R.fail( "100247", "未找到用户信息");
-        }
 
         //是否存在换电次数欠费情况
         Integer packageOwe = null;
@@ -218,12 +204,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 return R.fail("ELECTRICITY.100004", "月卡已暂停");
             }
 
-            ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-            if (Objects.nonNull(bindElectricityMemberCard)) {
-                if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
-                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber().intValue());
-                    packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
-                }
+            batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("ELE DEPOSIT WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
+                return R.fail("ELECTRICITY.00121", "套餐不存在");
+            }
+
+            serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                log.error("ELE DEPOSIT WARN!not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+                return R.fail("100247", "未找到用户信息");
+            }
+
+            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
+                log.error("ELE DEPOSIT WARN!user battery membercard disable,uid={}", userInfo.getUid());
+                return R.fail("", "用户套餐次数欠费");
             }
         }
 

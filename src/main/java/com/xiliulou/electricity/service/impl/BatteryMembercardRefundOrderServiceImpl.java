@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -107,6 +108,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
 
     @Override
     public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException {
@@ -256,6 +260,19 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "ELECTRICITY.0049", "未缴纳电池押金");
             }
 
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.warn("ELE DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            }
+
+            //是否有正在进行中的退押
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            if (refundCount > 0) {
+                log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+                return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
+            }
+
             ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
             if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderNo);
@@ -384,6 +401,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Override
     public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request) {
+
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
@@ -411,6 +429,19 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.isNull(userInfo)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found userInfo,uid={}", electricityMemberCardOrder.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryDeposit)){
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryDeposit,uid={}", electricityMemberCardOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "用户信息不存在");
+        }
+
+        //是否有正在进行中的退押
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+        if (refundCount > 0) {
+            log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

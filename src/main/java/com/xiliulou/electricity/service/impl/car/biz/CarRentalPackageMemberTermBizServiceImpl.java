@@ -164,7 +164,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         Long dueTimeTotal = memberTermEntity.getDueTimeTotal();
         Long residue = memberTermEntity.getResidue();
 
-        Long dueTimeNew = now;
+        Long dueTimeNew = dueTime;
         Long dueTimeTotalNew = dueTimeTotal;
         Long residueNew = residue;
 
@@ -216,7 +216,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     log.info("updateCurrPackage failed. t_car_rental_package_member_term Abnormal old data. skip. id is {}", memberTermEntity.getId());
                     throw new BizException("300002", "租车会员状态异常");
                 }
-                if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
+                if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntityUnUse.getOrderNo())) {
                     log.info("updateCurrPackage failed. t_car_rental_package_member_term processed. skip. id is {}", memberTermEntity.getId());
                     return true;
                 }
@@ -228,7 +228,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setRentalPackageConfine(packageOrderEntityUnUse.getConfine());
 
                 if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityUnUse.getConfine())) {
-                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum());
+                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum() - memberTermEntity.getResidue());
                 }
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
@@ -493,7 +493,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
                         // 判定构建逾期订单
-                        if (nowTime <= (memberTermEntity.getDueTime().longValue() + TimeConstant.DAY_MILLISECOND)) {
+                        if (nowTime <= (memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND)) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
                                 log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());

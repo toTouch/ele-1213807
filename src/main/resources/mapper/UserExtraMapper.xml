@@ -58,12 +58,6 @@
         </where>
     </select>
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="uid" useGeneratedKeys="true">
-        insert into t_user_extra(source, eid, inviter, create_time, update_time, tenant_id)
-        values (#{source}, #{eid}, #{inviter}, #{createTime}, #{updateTime}, #{tenantId})
-    </insert>
-
     <!--通过主键修改数据-->
     <update id="update">
         update t_user_extra
