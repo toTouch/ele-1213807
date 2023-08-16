@@ -228,7 +228,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setRentalPackageConfine(packageOrderEntityUnUse.getConfine());
 
                 if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityUnUse.getConfine())) {
-                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum() - memberTermEntity.getResidue());
+                    if (memberTermEntity.getResidue() >= 0) {
+                        newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum());
+                    } else {
+                        newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum() + memberTermEntity.getResidue());
+                    }
                 }
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
@@ -611,7 +615,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
             // 计算余量
             if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityNew.getConfine())) {
-                memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() - memberTermEntity.getResidue());
+                if (memberTermEntity.getResidue() >= 0) {
+                    memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum());
+                } else {
+                    memberTermEntityUpdate.setResidue(packageOrderEntityNew.getConfineNum() + memberTermEntity.getResidue());
+                }
             } else {
                 memberTermEntityUpdate.setResidue(0L);
             }
