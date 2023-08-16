@@ -935,24 +935,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300020", "订单编码不匹配");
         }
 
-        // 计算时间
-        Integer applyTerm = freezeEntity.getApplyTerm();
-        Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getAuditTime(), false);
-        Integer realTerm = realTermPair.getRight();
-
         // 赋值会员更新
         CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
         memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
         memberTermUpdateEntity.setId(memberTermEntity.getId());
         memberTermUpdateEntity.setUpdateUid(uid);
         memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
-        // 提前启用
-        if (applyTerm.intValue() > realTerm.intValue()) {
-            // 计算差额
-            long diffTime = (applyTerm - realTerm) * TimeConstant.DAY_MILLISECOND;
-            memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime().longValue() - diffTime);
-            memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal().longValue() - diffTime);
-        }
+        // 提前启用、计算差额
+        long diffTime = System.currentTimeMillis() -  (freezeEntity.getCreateTime() * TimeConstant.DAY_MILLISECOND);
+        memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+        memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
         // 事务处理
         enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity);

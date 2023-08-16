@@ -38,11 +38,11 @@ public interface CarRentalPackageOrderFreezeService {
     /**
      * 计算实际冻结期限(时间戳，单位：天)
      * @param applyTerm 申请期限
-     * @param auditTime 审核时间
+     * @param applyTime 申请时间
      * @param autoEnable 是否自动启用
      * @return 启用时间戳，实际冻结期限(时间戳，单位：天)
      */
-    Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long auditTime, boolean autoEnable);
+    Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long applyTime, boolean autoEnable);
 
     /**
      * 根据 uid 和套餐购买订单编码启用冻结订单

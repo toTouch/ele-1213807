@@ -23,7 +23,6 @@
         <result property="residueUnit" column="residue_unit" jdbcType="INTEGER" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="applyTerm" column="apply_term" jdbcType="INTEGER" />
-        <result property="realTerm" column="real_term" jdbcType="INTEGER" />
         <result property="applyTime" column="apply_time" jdbcType="BIGINT" />
         <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
         <result property="enableTime" column="enable_time" jdbcType="BIGINT" />
@@ -42,7 +41,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `apply_time`,
         `audit_time`, `enable_time`, `status`, `remark`, `apply_reason`
     </sql>
 
@@ -95,7 +94,6 @@
             <if test=" residueUnit != null "> `residue_unit`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" applyTerm != null "> `apply_term`, </if>
-            <if test=" realTerm != null "> `real_term`, </if>
             <if test=" applyTime != null "> `apply_time`, </if>
             <if test=" auditTime != null "> `audit_time`, </if>
             <if test=" enableTime != null "> `enable_time`, </if>
@@ -124,7 +122,6 @@
             <if test=" residueUnit != null "> #{residueUnit}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" applyTerm != null "> #{applyTerm}, </if>
-            <if test=" realTerm != null "> #{realTerm}, </if>
             <if test=" applyTime != null "> #{applyTime}, </if>
             <if test=" auditTime != null "> #{auditTime}, </if>
             <if test=" enableTime != null "> #{enableTime}, </if>
@@ -163,7 +160,7 @@
     <update id="enableByUidAndPackageOrderNo">
         UPDATE <include refid="table_name" />
         <set>
-            `status` = #{status}, `update_time` = #{optTime}, `enable_time` = #{enableTime}, `real_term` = #{realTerm}
+            `status` = #{status}, `update_time` = #{optTime}, `enable_time` = #{enableTime}
             <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
         </set>
         <where>
