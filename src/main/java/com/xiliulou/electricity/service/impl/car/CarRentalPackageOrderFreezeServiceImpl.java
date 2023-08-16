@@ -82,13 +82,13 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * 计算实际冻结期限(时间戳，单位：天)
      *
      * @param applyTerm  申请期限
-     * @param auditTime  审核时间
+     * @param applyTime  申请时间
      * @param autoEnable 是否自动启用
      * @return 启用时间戳，实际冻结期限(单位：天)
      */
     @Override
-    public Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long auditTime, boolean autoEnable) {
-        if (!ObjectUtils.allNotNull(applyTerm, auditTime, autoEnable)) {
+    public Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long applyTime, boolean autoEnable) {
+        if (!ObjectUtils.allNotNull(applyTerm, applyTime, autoEnable)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         // 实际期限、启用算法
@@ -97,13 +97,13 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
 
         // 操作时间
         long nowTime = System.currentTimeMillis();
-        // 启用时间：审核通过时间 + 申请期限
-        Long enableTime = auditTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
+        // 启用时间：申请时间 + 申请期限
+        Long enableTime = applyTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
         Integer realTerm = applyTerm;
         // 提前启用
         if (!autoEnable) {
             enableTime = nowTime;
-            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, auditTime)));
+            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, applyTime)));
         }
         return Pair.of(enableTime, realTerm);
     }
@@ -139,20 +139,19 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         long nowTime = System.currentTimeMillis();
         // 申请期限
         Integer applyTerm = freezeEntity.getApplyTerm();
-        Long auditTime = freezeEntity.getAuditTime();
+        Long applyTime = freezeEntity.getApplyTime();
 
-        Pair<Long, Integer> realTermPair = calculateRealTerm(applyTerm, auditTime, autoEnable);
+        Pair<Long, Integer> realTermPair = calculateRealTerm(applyTerm, applyTime, autoEnable);
 
-        // 启用时间：审核通过时间 + 申请期限
+        // 启用时间
         Long enableTime = realTermPair.getLeft();
         Integer status = RentalPackageOrderFreezeStatusEnum.AUTO_ENABLE.getCode();
-        Integer realTerm = realTermPair.getRight();
         // 提前启用
         if (!autoEnable) {
             status = RentalPackageOrderFreezeStatusEnum.EARLY_ENABLE.getCode();
         }
 
-        int num = carRentalPackageOrderFreezeMapper.enableByUidAndPackageOrderNo(uid, packageOrderNo, status, optUid, nowTime, enableTime, realTerm);
+        int num = carRentalPackageOrderFreezeMapper.enableByUidAndPackageOrderNo(uid, packageOrderNo, status, optUid, nowTime, enableTime);
 
         return num >= 0;
     }

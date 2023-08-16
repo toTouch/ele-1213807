@@ -25,6 +25,8 @@ public interface UnionTradeOrderService {
 
     Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus);
 
+    Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus);
+
     Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus);
 
 

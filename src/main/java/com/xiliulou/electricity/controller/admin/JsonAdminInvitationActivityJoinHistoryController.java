@@ -42,7 +42,8 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "joinUserName", required = false) String joinUserName,
-                  @RequestParam(value = "activityName", required = false) String activityName) {
+                  @RequestParam(value = "activityName", required = false) String activityName,
+                  @RequestParam(value = "payCount", required = false) Integer payCount) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -82,6 +83,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .activityId(activityId)
                 .activityName(activityName)
                 .status(status)
+                .payCount(payCount)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -98,7 +100,8 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                    @RequestParam(value = "status", required = false) Integer status,
                    @RequestParam(value = "phone", required = false) String phone,
                    @RequestParam(value = "joinUserName", required = false) String joinUserName,
-                   @RequestParam(value = "activityName", required = false) String activityName) {
+                   @RequestParam(value = "activityName", required = false) String activityName,
+                   @RequestParam(value = "payCount", required = false) Integer payCount) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -129,6 +132,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .activityId(activityId)
                 .activityName(activityName)
                 .status(status)
+                .payCount(payCount)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())

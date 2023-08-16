@@ -3,15 +3,14 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -37,6 +36,9 @@ import java.util.Objects;
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+
+    @Resource
+    private InsuranceOrderService insuranceOrderService;
 
     @Resource
     private UserBizService userBizService;
@@ -170,10 +172,16 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
                 // 作废所有的套餐购买订单（未使用、使用中）、
                 carRentalPackageOrderService.refundDepositByUid(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+                // 查询用户保险
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermUpdateEntity.getUid(), memberTermUpdateEntity.getRentalPackageType());
                 // 按照人+类型，作废保险
                 insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
                 // 删除会员期限表信息
                 carRentalPackageMemberTermService.delByUidAndTenantId(memberTermUpdateEntity.getTenantId(), memberTermUpdateEntity.getUid(), null);
+                // 作废保险订单
+                if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                }
                 // 清理user信息/解绑车辆/解绑电池
                 userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
             }

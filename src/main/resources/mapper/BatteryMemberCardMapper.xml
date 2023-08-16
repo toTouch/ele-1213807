@@ -29,6 +29,37 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
+    <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="deposit" column="deposit" jdbcType="NUMERIC"/>
+        <result property="rentPrice" column="rent_price" jdbcType="NUMERIC"/>
+        <result property="rentPriceUnit" column="rent_price_unit" jdbcType="NUMERIC"/>
+        <result property="validDays" column="valid_days" jdbcType="INTEGER"/>
+        <result property="rentUnit" column="rent_unit" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="rentType" column="rent_type" jdbcType="INTEGER"/>
+        <result property="sendCoupon" column="send_coupon" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
+        <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
+        <result property="freeDeposite" column="free_deposite" jdbcType="INTEGER"/>
+        <result property="serviceCharge" column="service_charge" jdbcType="NUMERIC"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+            <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
+            <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMemberCardMap">
         select
@@ -52,8 +83,11 @@
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
-            <if test="rentType != null">
-                and rent_type = #{rentType}
+            <if test="rentType != null and rentType==1">
+                and rent_type in (1,0)
+            </if>
+            <if test="rentType != null and rentType==2">
+                and rent_type in (2,0)
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
@@ -153,7 +187,7 @@
         </if>
     </select>
 
-    <select id="selectByPageForUser" resultMap="BatteryMemberCardMap">
+    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
         select
         bmc.id,
         bmc.name,
@@ -161,6 +195,7 @@
         bmc.rent_price,
         bmc.rent_price_unit,
         bmc.valid_days,
+        bmc.remark
         bmc.rent_unit,
         bmc.franchisee_id,
         bmc.rent_type,
@@ -172,11 +207,11 @@
         bmc.is_refund,
         bmc.refund_limit,
         bmc.free_deposite,
-        bmc.service_charge
+        bmc.service_charge,
+        mcbt.id as mcbt_id,
+        mcbt.battery_type battery_type
         from t_battery_member_card bmc
-        <if test="batteryV != null and batteryV != ''">
-        left join (select battery_v,mid from t_member_card_battery_type group by battery_v,mid ) mcbt on bmc.id=mcbt.mid
-        </if>
+        left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
             bmc.business_type=0 and bmc.status=0 and bmc.del_flag=0
             <if test="batteryV != null and batteryV != ''">
@@ -319,14 +354,12 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            coupon_id = #{couponId},
             <if test="limitCount != null">
                 limit_count = #{limitCount},
             </if>
             <if test="useCount != null">
                 use_count = #{useCount},
-            </if>
-            <if test="couponId != null">
-                coupon_id = #{couponId},
             </if>
             <if test="isRefund != null">
                 is_refund = #{isRefund},

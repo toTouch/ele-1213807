@@ -52,4 +52,6 @@ public interface InsuranceOrderService {
     List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery);
 
     Integer updateUseStatusByOrderId(String insuranceOrderId, Integer useStatus);
+
+    Integer updateUseStatusForRefund(String insuranceOrderId, Integer useStatus);
 }

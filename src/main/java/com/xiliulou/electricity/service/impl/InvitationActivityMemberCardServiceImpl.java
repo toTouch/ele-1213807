@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
 import com.xiliulou.electricity.mapper.InvitationActivityMemberCardMapper;
 import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
@@ -102,6 +103,7 @@ public class InvitationActivityMemberCardServiceImpl implements InvitationActivi
         return this.invitationActivityMemberCardMapper.deleteByActivityId(id);
     }
 
+    @Slave
     @Override
     public List<InvitationActivityMemberCard> selectPackagesByActivityIdAndType(Long id, Integer packageType) {
         return invitationActivityMemberCardMapper.selectPackagesByActivityIdAndPackageType(id, packageType);
@@ -112,6 +114,7 @@ public class InvitationActivityMemberCardServiceImpl implements InvitationActivi
         return invitationActivityMemberCardMapper.batchInsert(shareActivityMemberCards);
     }
 
+    @Slave
     @Override
     public List<Long> selectMemberCardIdsByActivityId(Long id) {
         return invitationActivityMemberCardMapper.selectMemberCardIdsByActivityId(id);

@@ -86,7 +86,7 @@ public class UserExtraServiceImpl implements UserExtraService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserExtra insert(UserExtra userExtra) {
-        this.userExtraMapper.insertOne(userExtra);
+        this.userExtraMapper.insert(userExtra);
         return userExtra;
     }
 

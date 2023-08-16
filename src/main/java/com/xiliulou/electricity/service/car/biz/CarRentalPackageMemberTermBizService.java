@@ -33,7 +33,7 @@ public interface CarRentalPackageMemberTermBizService {
 
 
     /**
-     * 根据用户ID获取会员的全量信息（套餐订单信息、保险信息、车辆信息、电池信息）
+     * 根据用户ID获取会员的全量信息（套餐订单信息、车辆信息）
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 用户会员全量信息

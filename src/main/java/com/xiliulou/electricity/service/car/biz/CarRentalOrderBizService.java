@@ -8,6 +8,34 @@ package com.xiliulou.electricity.service.car.biz;
 public interface CarRentalOrderBizService {
 
     /**
+     * 还车申请审批
+     * @param carRentalOrderNo 车辆租赁订单编码，还车
+     * @param approveFlag 审批标识：true(通过)、false(驳回)
+     * @param apploveDesc 审批意见
+     * @param apploveUid 审批人
+     * @return true(成功)、false(失败)
+     */
+    boolean approveRefundCarOrder(String carRentalOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+
+    /**
+     * 用户还车申请
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true(成功)、false(失败)
+     */
+    boolean refundCarOrderApply(Integer tenantId, Long uid);
+
+    /**
+     * 用户扫码绑定车辆
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @param carSn 车辆SN码
+     * @param optUid 操作用户UID
+     * @return true(成功)、false(失败)
+     */
+    boolean bindingCarByQR(Integer tenantId, Long uid, String carSn, Long optUid);
+
+    /**
      * 解绑用户车辆
      * @param tenantId 租户ID
      * @param uid 用户UID

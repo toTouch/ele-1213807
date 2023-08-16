@@ -49,7 +49,8 @@ public class JsonAdminUserCouponController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "discountType", required = false) Integer discountType,
-                       @RequestParam(value = "phone", required = false) String phone) {
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "superposition", required = false) Integer superposition) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -88,6 +89,7 @@ public class JsonAdminUserCouponController {
                 .uid(uid)
                 .orderId(orderId)
                 .status(status)
+                .superposition(superposition)
                 .userName(userName)
                 .phone(phone)
                 .discountType(discountType)
@@ -107,7 +109,8 @@ public class JsonAdminUserCouponController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "discountType", required = false) Integer discountType,
-                        @RequestParam(value = "phone", required = false) String phone) {
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "superposition", required = false) Integer superposition) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -139,6 +142,7 @@ public class JsonAdminUserCouponController {
                 .userName(userName)
                 .discountType(discountType)
                 .status(status)
+                .superposition(superposition)
                 .phone(phone)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)

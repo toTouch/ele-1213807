@@ -90,12 +90,6 @@
         </where>
     </select>
     
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_free_deposit_alipay_history(order_id, uid, name, phone, id_card, operate_uid, operate_name, pay_amount, alipay_amount, type, create_time, update_time, tenant_id, remark, pay_status)
-        values (#{orderId}, #{uid}, #{name}, #{phone}, #{idCard}, #{operateUid}, #{operateName}, #{payAmount}, #{alipayAmount}, #{type}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{payStatus})
-    </insert>
-    
     <!--通过主键修改数据-->
     <update id="update">
         update t_free_deposit_alipay_history
@@ -169,7 +163,7 @@
         fdah.tenant_id,
         fdah.remark,
         fdah.pay_status
-        from t_free_deposit_alipay_history fdah left join t_user_info tui on tui.uid=fdah.uid
+        from t_free_deposit_alipay_history
         <where>
             <if test="orderId != null and orderId != ''">
                 and fdah.order_id like concat('%', #{orderId}, '%')
@@ -196,13 +190,13 @@
                 and fdah.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and fdah.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null and storeIds.size()>0">
-                and tui.store_id in
+                and fdah.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -215,7 +209,7 @@
     <select id="queryCount" resultType="long">
         select
         count(*)
-        from t_free_deposit_alipay_history fdah left join t_user_info tui on tui.uid=fdah.uid
+        from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
                 and fdah.order_id like concat('%', #{orderId}, '%')
@@ -242,13 +236,13 @@
                 and fdah.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and fdah.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null and storeIds.size()>0">
-                and tui.store_id in
+                and fdah.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>

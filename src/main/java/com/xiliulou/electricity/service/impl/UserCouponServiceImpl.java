@@ -4,6 +4,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
@@ -50,6 +52,9 @@ import java.util.Objects;
 @Service("userCouponService")
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
+
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 4, "send_coupon_to_user_thread");
+
     @Resource
     private UserCouponMapper userCouponMapper;
     @Autowired
@@ -435,8 +440,10 @@ public class UserCouponServiceImpl implements UserCouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
-            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;
@@ -448,10 +455,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
-            batteryMemberCardVO.setId(carRentalPackagePO.getId());
-            batteryMemberCardVO.setName(carRentalPackagePO.getName());
-            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;
@@ -693,7 +702,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
 
         try{
-
+            log.info("send coupon to user start for purchase package, source order number = {}, coupon id = {}, uid = {}",userCouponDTO.getSourceOrderNo(), userCouponDTO.getCouponId(), userCouponDTO.getUid());
             //Integer tenantId = TenantContextHolder.getTenantId();
             Long uid = userCouponDTO.getUid();
             Long couponId = userCouponDTO.getCouponId();
@@ -730,6 +739,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             UserCoupon userCoupon = couponBuild.build();
             userCouponMapper.insert(userCoupon);
 
+            log.info("send coupon to user end for purchase package, source order number = {}, coupon id = {}, uid = {}",userCouponDTO.getSourceOrderNo(), userCouponDTO.getCouponId(), userCouponDTO.getUid());
+
         }catch (Exception e){
             log.error("Send coupon to user for purchase package error, uid = {}, coupon id = {}, source order number = {}", userCouponDTO.getUid(), userCouponDTO.getCouponId(), userCouponDTO.getSourceOrderNo(), e);
             throw new BizException("200000", e.getMessage());
@@ -738,5 +749,14 @@ public class UserCouponServiceImpl implements UserCouponService {
             MDC.clear();
         }
 
+    }
+
+    @Override
+    public void asyncSendCoupon(UserCouponDTO userCouponDTO) {
+
+        executorService.execute(() -> {
+            //购买套餐后发送优惠券给用户
+            sendCouponToUser(userCouponDTO);
+        });
     }
 }

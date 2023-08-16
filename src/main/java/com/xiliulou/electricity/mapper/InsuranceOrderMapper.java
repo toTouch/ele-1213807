@@ -24,4 +24,6 @@ public interface InsuranceOrderMapper extends BaseMapper<InsuranceOrder> {
     int updateIsUseByOrderId(InsuranceOrder insuranceOrder);
 
     Integer updateUseStatusByOrderId(@Param("orderId") String orderId, @Param("useStatus") Integer useStatus);
+
+    Integer updateUseStatusForRefund(@Param("orderId") String orderId, @Param("useStatus") Integer useStatus);
 }

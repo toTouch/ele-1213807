@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -24,6 +25,9 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
+import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -220,9 +224,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
 			}
 			//获取已选择的套餐
-			List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
+			//List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
+			//shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(),packageList));
 
-			shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(),packageList));
+			//3.0版本，针对套餐需要做区分，新版的本的套餐多了租车和车电一体。之前只有换电套餐一种
+			List<ActivityPackageVO> activityPackageVOS = getActivityPackages(shareActivityMemberCards);
+			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
+			shareActivityPackageVO.setPackages(activityPackageVOS);
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(), shareActivityPackageVO));
+
 			return null;
 		});
 
@@ -290,9 +300,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
 			}
 			//获取已选择的套餐
-			List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
+			//List<Long> packageList = shareActivityMemberCards.stream().map(ShareActivityMemberCard::getMemberCardId).collect(Collectors.toList());
 
-			shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivityAddAndUpdateQuery.getId().longValue(),shareActivityAddAndUpdateQuery.getName(), packageList));
+			//3.0版本，针对套餐需要做区分，新版的本的套餐多了租车和车电一体。之前只有换电套餐一种
+			List<ActivityPackageVO> activityPackageVOS = getActivityPackages(shareActivityMemberCards);
+			ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
+			shareActivityPackageVO.setPackages(activityPackageVOS);
+
+			shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivityAddAndUpdateQuery.getId().longValue(),shareActivityAddAndUpdateQuery.getName(), shareActivityPackageVO));
 		});
 
 		return Triple.of(true,"","");
@@ -634,10 +649,26 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(shareActivityRuleList)) {
-			shareActivityVO.setShareActivityRuleQueryList(shareActivityRuleList);
+			shareActivityVO.setShareActivityRuleQueryList(getShareActivityRules(shareActivityRuleList));
 		}
 
 		return Triple.of(true, "", shareActivityVO);
+	}
+
+	private List<ShareActivityRuleVO> getShareActivityRules(List<ShareActivityRule> shareActivityRuleList){
+		List<ShareActivityRuleVO> shareActivityRuleVOList = Lists.newArrayList();
+		for(ShareActivityRule shareActivityRule : shareActivityRuleList){
+			ShareActivityRuleVO shareActivityRuleVO = new ShareActivityRuleVO();
+			BeanUtil.copyProperties(shareActivityRule, shareActivityRuleVO);
+			Integer couponId = shareActivityRule.getCouponId();
+			Coupon coupon = couponService.queryByIdFromCache(couponId);
+			shareActivityRuleVO.setCouponName(coupon.getName());
+
+			shareActivityRuleVOList.add(shareActivityRuleVO);
+		}
+
+		return shareActivityRuleVOList;
+
 	}
 
 	private List<BatteryMemberCardVO> getBatteryPackages(Integer activityId){
@@ -646,8 +677,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
 			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareActivityMemberCard.getMemberCardId());
-			BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-			memberCardVOList.add(batteryMemberCardVO);
+			if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+				BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+				memberCardVOList.add(batteryMemberCardVO);
+			}
 		}
 		return memberCardVOList;
 	}
@@ -658,10 +691,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
 			CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareActivityMemberCard.getMemberCardId());
-			batteryMemberCardVO.setId(carRentalPackagePO.getId());
-			batteryMemberCardVO.setName(carRentalPackagePO.getName());
-			batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-			memberCardVOList.add(batteryMemberCardVO);
+			if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+				batteryMemberCardVO.setId(carRentalPackagePO.getId());
+				batteryMemberCardVO.setName(carRentalPackagePO.getName());
+				batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+				memberCardVOList.add(batteryMemberCardVO);
+			}
+
 		}
 
 		return memberCardVOList;
@@ -734,5 +770,42 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());
 		return shareActivityOperateRecord;
 	}
+
+	private ShareActivityOperateRecord buildActivityOperateRecord(Long id, String name, ShareActivityPackageVO shareActivityPackageVO) {
+		ShareActivityOperateRecord shareActivityOperateRecord = new ShareActivityOperateRecord();
+		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
+		shareActivityOperateRecord.setShareActivityId(id);
+		shareActivityOperateRecord.setName(name);
+		shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
+		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
+		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
+		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());
+		return shareActivityOperateRecord;
+	}
+	private List<ActivityPackageVO> getActivityPackages(List<ShareActivityMemberCard> shareActivityMemberCards){
+		List<ActivityPackageVO> activityPackageVOList = Lists.newArrayList();
+		for(ShareActivityMemberCard shareActivityMemberCard : shareActivityMemberCards){
+			Long packageId = shareActivityMemberCard.getMemberCardId();
+			Integer packageType = shareActivityMemberCard.getPackageType();
+			ActivityPackageVO activityPackageVO = new ActivityPackageVO();
+			activityPackageVO.setPackageId(packageId);
+			activityPackageVO.setPackageType(packageType);
+			if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
+				BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareActivityMemberCard.getMemberCardId());
+				if(Objects.nonNull(batteryMemberCard)){
+					activityPackageVO.setPackageName(batteryMemberCard.getName());
+				}
+			}else {
+				CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareActivityMemberCard.getMemberCardId());
+				if(Objects.nonNull(carRentalPackagePO)){
+					activityPackageVO.setPackageName(carRentalPackagePO.getName());
+				}
+			}
+			activityPackageVOList.add(activityPackageVO);
+
+		}
+		return activityPackageVOList;
+	}
+
 }
 

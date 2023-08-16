@@ -50,13 +50,15 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline);
+    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline ,String applyReason);
 
     R enableMemberCardForLimitTime();
 
     R enableOrDisableMemberCardIsLimitTime();
 
-    R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid);
+    R adminDisableMemberCard(Long uid, Integer days);
+
+    R adminEnableMemberCard(Long uid);
 
     R cleanBatteryServiceFee(Long uid);
 
@@ -149,4 +151,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo();
 
     List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
+
+    void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 }

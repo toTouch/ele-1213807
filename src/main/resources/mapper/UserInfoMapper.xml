@@ -104,14 +104,12 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_info tui
         left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
@@ -202,15 +200,13 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.member_card_status as member_card_status,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_battery_member_card ubmc
         left join t_user_info tui on ubmc.uid=tui.uid
@@ -295,15 +291,13 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.member_card_status as member_card_status,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_car_member_card ucmc
         left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid

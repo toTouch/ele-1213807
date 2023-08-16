@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -35,6 +38,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service("activityService")
 public class ActivityServiceImpl implements ActivityService {
+
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ACTIVITY_HANDLE_THREAD_POOL", 4, "activity_handle_thread");
 
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;
@@ -92,6 +97,7 @@ public class ActivityServiceImpl implements ActivityService {
         return Triple.of(true, "", activityUserInfoVO);
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> updateCouponByPackage(String orderNo, Integer packageType) {
 
@@ -142,16 +148,26 @@ public class ActivityServiceImpl implements ActivityService {
             if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
                 log.info("Activity flow for battery package, orderNo = {}", orderNo);
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
+
+                if(Objects.isNull(electricityMemberCardOrder)){
+                    log.info("Activity flow for battery package error, Not found for battery package order, order number = {}", orderNo);
+                    return Triple.of(false, "000103", "当前换电套餐订单不存在");
+                }
+
                 Long uid = electricityMemberCardOrder.getUid();
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
 
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                    log.warn("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
+                    log.info("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
                     return Triple.of(false, "000101", "当前换电套餐已暂停");
                 }
+                //判断当前用户是否为新用户，如果后买过任意套餐，则为老用户,若未购买过，则为新用户
+                Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
 
+                log.info("Activity flow for battery package, is old user= {}", isOldUser);
                 //是否是新用户
-                if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
+                //if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
+                if(!isOldUser){
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
 
@@ -169,13 +185,15 @@ public class ActivityServiceImpl implements ActivityService {
                 //开始处理租车，车电一体购买套餐后的活动
                 log.info("Activity flow for car Rental or car with battery package, orderNo = {}", orderNo);
                 CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
-                Long uid = carRentalPackageOrderPO.getUid();
                 if(Objects.isNull(carRentalPackageOrderPO)){
-                    log.warn("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
-                    return Triple.of(false, "000102", "当前租车/车电一体套餐已暂停");
+                    log.info("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
+                    return Triple.of(false, "000102", "当前租车/车电一体套餐订单不存在");
                 }
+
+                Long uid = carRentalPackageOrderPO.getUid();
                 Boolean isOldUser = userBizService.isOldUser(carRentalPackageOrderPO.getTenantId(), uid);
 
+                log.info("Activity flow for car Rental or car with battery package, is old user= {}", isOldUser);
                 if(!isOldUser){
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId());
@@ -199,6 +217,8 @@ public class ActivityServiceImpl implements ActivityService {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value);
             MDC.clear();
         }
+
+        log.info("Activity by package flow end, orderNo = {}, package type = {}", orderNo, packageType);
 
         return Triple.of(true, "", null);
     }
@@ -312,10 +332,11 @@ public class ActivityServiceImpl implements ActivityService {
 
         try{
             //判断该用户是否进行了实名认证
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            log.info("get user info by uid for activity, auth status = {}", userInfo.getAuthStatus());
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("not finished real name authentication! user not auth,uid = {}", uid);
+                log.warn("not finished real name authentication! user not auth, user info = {}", JsonUtil.toJson(userInfo));
                 return Triple.of(false, "000100", "未进行实名认证");
             }
 
@@ -387,6 +408,22 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         return Triple.of(true, "", null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void asyncProcessActivity(ActivityProcessDTO activityProcessDTO) {
+
+        executorService.execute(() -> {
+            if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(activityProcessDTO.getActivityType())){
+                //处理购买套餐后的活动
+                handleActivityByPackage(activityProcessDTO);
+            }else if(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(activityProcessDTO.getActivityType())){
+                //处理实名认证后的活动
+                handleActivityByRealName(activityProcessDTO);
+            }
+        });
+
     }
 
 }

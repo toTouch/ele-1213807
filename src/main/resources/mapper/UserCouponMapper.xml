@@ -71,6 +71,9 @@
             <if test="query.status != null">
                 and tuc.status = #{query.status}
             </if>
+            <if test="query.superposition != null">
+                and tc.superposition = #{query.superposition}
+            </if>
             <if test="query.discountType != null">
                 and tuc.discount_type = #{query.discountType}
             </if>
@@ -112,6 +115,7 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon as tuc left join t_user_info tui on tuc.uid=tui.uid
+        left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
@@ -139,6 +143,9 @@
             </if>
             <if test="query.status != null">
                 and tuc.status = #{query.status}
+            </if>
+            <if test="query.superposition != null">
+                and tc.superposition = #{query.superposition}
             </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and tuc.status in

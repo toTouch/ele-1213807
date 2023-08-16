@@ -64,7 +64,7 @@
                 and jsah.start_time &lt;= #{endTime}
             </if>
         </where>
-		order by jsah.update_time desc
+		order by jsah.start_time desc
         <if test="offset != null and size != null">
 			limit #{offset}, #{size}
 		</if>
@@ -74,6 +74,7 @@
 	<select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_join_share_money_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.join_uid
         <where>
             <if test="uid != null">
                 and jsah.uid = #{uid}
@@ -149,6 +150,7 @@
             tjsmah.activity_id as activityId,
             tsma.invitation_criteria as invitationCriteria,
             tsma.name as activityName,
+            tsma.money as money,
             tjsmah.uid as inviterUid,
             tjsmah.join_uid as joinUid,
             tui.name as joinName,
@@ -236,7 +238,7 @@
         </where>
     </select>
 
-    <select id="selectJoinShareMoneyActivityHistory" resultMap="JoinShareMoneyActivityHistoryMap">
+    <select id="queryUserJoinedShareMoneyActivity" resultMap="JoinShareMoneyActivityHistoryMap">
         <include refid="selectJoinShareMoneyActivityHistory"/>
         <where>
             status in (1,2)
@@ -246,6 +248,24 @@
 
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryJoinedActivityByJoinerAndInviter" resultMap="JoinShareMoneyActivityHistoryMap">
+        <include refid="selectJoinShareMoneyActivityHistory"/>
+        <where>
+            status in (1,2)
+            <if test="joinUid != null">
+                and join_uid = #{joinUid}
+            </if>
+
+            <if test="inviterUid != null">
+                and uid = #{inviterUid}
+            </if>
+
+            <if test="activityId != null">
+                and  activity_id = #{activityId}
             </if>
         </where>
     </select>

@@ -5,9 +5,11 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +34,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin/car/carRentalPackageDepositPay")
 public class JsonAdminCarRentalPackageDepositPayController extends BasicController {
+
+    @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
@@ -86,6 +92,12 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
+        // 查询对应的退款单
+        List<String> depositPayOrderNoList = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getOrderNo).distinct().collect(Collectors.toList());
+        List<CarRentalPackageDepositRefundPo> depositRefundPos = carRentalPackageDepositRefundService.selectRefundableByDepositPayOrderNoList(depositPayOrderNoList);
+        Map<String, CarRentalPackageDepositRefundPo> refundPoMap = depositRefundPos.stream().collect(Collectors.toMap(CarRentalPackageDepositRefundPo::getDepositPayOrderNo, Function.identity(), (k1, k2) -> k2));
+
+
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVo> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
             CarRentalPackageDepositPayVo depositPayVO = new CarRentalPackageDepositPayVo();
@@ -97,6 +109,10 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
                 depositPayVO.setUserPhone(userInfo.getPhone());
             }
 
+            // 判定退款状态
+            if (refundPoMap.containsKey(depositPayEntity.getOrderNo())) {
+                depositPayVO.setRefundFlag(false);
+            }
             return depositPayVO;
         }).collect(Collectors.toList());
 

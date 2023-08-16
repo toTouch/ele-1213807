@@ -18,8 +18,6 @@ public interface ServiceFeeUserInfoService {
 
     int insert(ServiceFeeUserInfo serviceFeeUserInfo);
 
-    int update(ServiceFeeUserInfo serviceFeeUserInfo);
-
     ServiceFeeUserInfo queryByUidFromCache(Long uid);
 
     void updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
@@ -31,4 +29,6 @@ public interface ServiceFeeUserInfoService {
     Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
 
     Integer deleteByUid(Long uid);
+
+    void unbindServiceFeeInfoByUid(Long uid);
 }

@@ -10,7 +10,6 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.FaceAuthResultDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.query.FaceidResultQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -96,9 +95,6 @@ public class FaceidServiceImpl implements FaceidService {
 
     @Autowired
     private EleUserAuthService eleUserAuthService;
-
-    @Autowired
-    ActivityProducer activityProducer;
 
     /**
      * 获取人脸核身token
@@ -334,13 +330,6 @@ public class FaceidServiceImpl implements FaceidService {
             userInfoService.update(userInfoUpdate);
 
             uploadIdcardInfo(userInfo,faceidResultRsp);
-
-            //人脸核身成功后，异步触发活动处理流程
-            ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-            activityProcessDTO.setUid(userInfo.getUid());
-            activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
-            activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-            activityProducer.sendSyncMessage(JsonUtil.toJson(activityProcessDTO));
 
             return Triple.of(true, "", null);
         } catch (Exception e) {

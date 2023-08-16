@@ -22,6 +22,7 @@
         <result property="carSn" column="car_sn" jdbcType="VARCHAR" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
         <result property="rentalState" column="rental_state" jdbcType="INTEGER" />
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
     </resultMap>
 
@@ -35,7 +36,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `pay_type`, `rental_state`, `remark`
+        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `pay_type`, `rental_state`, `audit_time`, `remark`
     </sql>
 
     <!-- 全部字段 -->
@@ -53,6 +54,8 @@
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" type != null "> AND `type` = #{type} </if>
         <if test=" carSn != null "> AND `car_sn` LIKE CONCAT('%', #{carSn}, '%') </if>
+        <if test=" rentalState != null "> AND `rental_state` = #{rentalState} </if>
+        <if test=" beginCreateTime != null and endCreateTime != null "> AND `create_time` BETWEEN #{beginCreateTime} AND #{endCreateTime} </if>
         <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
             AND `franchisee_id` IN
             <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
@@ -86,6 +89,7 @@
             <if test=" carSn != null and carSn != '' "> `car_sn`, </if>
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" rentalState != null "> `rental_state`, </if>
+            <if test=" auditTime != null "> `audit_time`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
         </trim>
     </sql>
@@ -108,9 +112,43 @@
             <if test=" carSn != null and carSn != '' "> #{carSn}, </if>
             <if test=" payType != null "> #{payType}, </if>
             <if test=" rentalState != null "> #{rentalState}, </if>
+            <if test=" auditTime != null "> #{auditTime}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
         </trim>
     </sql>
+
+    <!-- 据用户UID、车辆SN码、状态查询最后一条数据 -->
+    <select id="selectLastByUidAndSnAndType" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `type` = #{type} AND `car_sn` = #{carSn}
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+
+    <!-- 根据ID进行数据更新 -->
+    <update id="updateById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{updateTime}
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
+            <if test=" rentalState != null "> , `rental_state` = #{rentalState} </if>
+            <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 据用户UID、车辆SN码、类型、状态查询最后一条数据 -->
+    <select id="selectLastByUidAndSnAndTypeAndState" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `type` = #{type} AND `rental_state` = #{rentalState} AND `car_sn` = #{carSn}
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
 
     <!-- 条件查询列表 -->
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel" resultMap="entityMap">

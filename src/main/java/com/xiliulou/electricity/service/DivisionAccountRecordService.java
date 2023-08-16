@@ -70,4 +70,6 @@ public interface DivisionAccountRecordService {
     void updateDivisionAccountStatusForFreezeOrder();
     
     Triple<Boolean, String, Object> divisionAccountCompensation(String orderId, Integer type);
+
+    void asyncHandleDivisionAccount(DivisionAccountOrderDTO divisionAccountOrderDTO);
 }

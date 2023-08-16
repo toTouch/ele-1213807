@@ -13,6 +13,19 @@ import java.util.List;
 public interface CarRentalPackageDepositRefundService {
 
     /**
+     * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
+     * <pre>
+     *     1-待审核
+     *     2-审核通过
+     *     4-退款中
+     *     5-退款成功
+     * </pre>
+     * @param depositPayOrderNoList 押金缴纳订单编码集
+     * @return 退押订单编码集
+     */
+    List<CarRentalPackageDepositRefundPo> selectRefundableByDepositPayOrderNoList(List<String> depositPayOrderNoList);
+
+    /**
      * 根据押金缴纳订单编码，查询最后一笔的退押订单信息
      * @param depositPayOrderNo 押金缴纳编码
      * @return 押金退款订单编码

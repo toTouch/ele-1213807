@@ -80,6 +80,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
 
+    @Autowired
+    private JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+
+    @Autowired
+    private JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -286,6 +292,24 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
+
+            //如果是下架活动，则将参与记录中为已参与的状态修改为已下架
+            if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareMoneyActivity.STATUS_OFF)) {
+                //修改邀请状态
+                JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
+                joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_OFF);
+                joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+                joinShareMoneyActivityRecord.setActivityId(shareMoneyActivity.getId());
+                joinShareMoneyActivityRecordService.updateByActivityId(joinShareMoneyActivityRecord);
+
+                //修改历史记录状态
+                JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
+                joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_OFF);
+                joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+                joinShareMoneyActivityHistory.setActivityId(shareMoneyActivity.getId());
+                joinShareMoneyActivityHistoryService.updateByActivityId(joinShareMoneyActivityHistory);
+            }
+
             return null;
         });
 
@@ -418,8 +442,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : batteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareMoneyActivityPackage.getPackageId());
-            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
         return memberCardVOList;
     }
@@ -430,10 +456,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : carBatteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareMoneyActivityPackage.getPackageId());
-            batteryMemberCardVO.setId(carRentalPackagePO.getId());
-            batteryMemberCardVO.setName(carRentalPackagePO.getName());
-            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
+
         }
 
         return memberCardVOList;

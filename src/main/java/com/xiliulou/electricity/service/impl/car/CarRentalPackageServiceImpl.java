@@ -289,6 +289,11 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         return entity.getId();
     }
 
+    @Override
+    public List<CarRentalPackagePo> findByCouponId(Long couponId) {
+        return carRentalPackageMapper.selectByCouponId(couponId);
+    }
+
     /**
      * 删除缓存
      * @param key

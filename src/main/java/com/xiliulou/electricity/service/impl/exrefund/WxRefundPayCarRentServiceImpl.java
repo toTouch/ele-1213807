@@ -9,9 +9,8 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
@@ -41,7 +40,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
     private UserCouponService userCouponService;
 
     @Resource
-    private DivisionAccountProducer divisionAccountProducer;
+    private DivisionAccountRecordService divisionAccountRecordService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -151,7 +150,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
                 divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
                 divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+                divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
 
 
             } else {

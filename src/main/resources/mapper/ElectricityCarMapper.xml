@@ -11,7 +11,7 @@
     <update id="updateCarBindStatusById">
         UPDATE `t_electricity_car`
         <set>
-            `uid` = #{uid}, `user_info_id` = #{userInfoId}, `user_name` = #{userName}, `phone` = #{phone}, `update_time` = #{updateTime}
+            `uid` = #{uid}, `user_info_id` = #{userInfoId}, `user_name` = #{userName}, `phone` = #{phone}, `update_time` = #{updateTime}, `status` = #{status}
         </set>
         <where>
             `id` = #{id}
@@ -24,7 +24,9 @@
             ec.id AS carId,
             ec.sn AS carSn,
             ec.store_id AS storeId,
-            s.`name` AS storeName
+            s.`name` AS storeName,
+            s.`longitude` AS longitude,
+            s.`latitude` AS latitude
         FROM
             t_electricity_car ec
                 JOIN t_store s ON ec.store_id = s.id

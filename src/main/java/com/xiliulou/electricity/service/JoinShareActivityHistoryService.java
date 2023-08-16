@@ -62,4 +62,6 @@ public interface JoinShareActivityHistoryService {
     R queryParticipantsCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 
     List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
+
+    Boolean checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
 }

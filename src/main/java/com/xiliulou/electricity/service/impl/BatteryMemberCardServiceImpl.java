@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
@@ -168,20 +170,100 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Collections.emptyList();
+        }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
+            return Collections.emptyList();
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
+            //新租
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+        } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+            //非新租 购买押金套餐
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+            }
+
+        } else {
+            //续费
+            BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.error("USER BATTERY MEMBERCARD ERROR!not found batteryMemberCard,uid={},mid={}", SecurityUtils.getUid(), userBatteryMemberCard.getMemberCardId());
+                return Collections.emptyList();
+            }
+
+            query.setDeposit(batteryMemberCard.getDeposit());
+            query.setLimitCount(batteryMemberCard.getLimitCount());
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+            query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
+        }
+
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        //用户绑定的电池型号串数
+        List<String> userBindBatteryType = null;
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            userBindBatteryType = userBatteryTypeService.selectByUid(userInfo.getUid());
+            if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+        }
+
+        List<BatteryMemberCardVO> result = new ArrayList<>();
+        for (BatteryMemberCardAndTypeVO item : list) {
+
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                List<String> number = null;
+                if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
+                    //套餐电池型号串数 number
+                    number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType())).map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+                }
+
+                if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
+                        continue;
+                    }
+                }
+            }
+
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+            if (Objects.nonNull(item.getCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+
+            result.add(batteryMemberCardVO);
+        }
+
+        return result;
+
+/*
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return Collections.emptyList();
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.error("ELE ERROR!not found userBatteryDeposit,uid={}", userInfo.getUid());
-            return Collections.emptyList();
+        if (Objects.nonNull(userBatteryDeposit)) {
+            query.setDeposit(userBatteryDeposit.getBatteryDeposit());
         }
 
         query.setFranchiseeId(userInfo.getFranchiseeId());
-        query.setDeposit(userBatteryDeposit.getBatteryDeposit());
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
@@ -193,7 +275,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
         //获取用户可购买套餐列表
-        List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(batteryMemberCardList)) {
             log.error("ELE ERROR!batteryMemberCardList is empty,uid={}", userInfo.getUid());
             return Collections.emptyList();
@@ -205,19 +287,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
 
-//        //将用户当前绑定的套餐放到最前面
-//        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
-//            Iterator<BatteryMemberCardVO> iterator = memberCardVOS.iterator();
-//            while (iterator.hasNext()){
-//                BatteryMemberCardVO memberCardVO=iterator.next();
-//                if (Objects.equals(memberCardVO.getId(), userBatteryMemberCard.getMemberCardId())) {
-//                    memberCardVOS.remove(memberCardVO);
-//                    memberCardVOS.add(0, memberCardVO);
-//                }
-//            }
-//        }
-//
-//        return memberCardVOS;
+        */
     }
 
     @Override
@@ -233,6 +303,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Slave
     @Override
+    public List<BatteryMemberCard> selectListByCouponId(Long couponId) {
+        return this.batteryMemberCardMapper.selectList(new LambdaQueryWrapper<BatteryMemberCard>().eq(BatteryMemberCard::getCouponId, couponId).eq(BatteryMemberCard::getDelFlag, BatteryMemberCard.DEL_NORMAL));
+    }
+
+    @Slave
+    @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
 
@@ -244,7 +320,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
             if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()),item.getTenantId()));
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()), item.getTenantId()));
             }
 
             if (Objects.nonNull(item.getCouponId())) {
@@ -270,6 +346,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("USER BATTERY MEMBERCARD ERROR!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());
+            return Collections.emptyList();
+        }
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
 
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
@@ -278,6 +361,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+            }
+
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -289,12 +378,40 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setDeposit(batteryMemberCard.getDeposit());
             query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()));
+            query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
         }
 
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
 
-        return list.parallelStream().map(item -> {
+        //用户绑定的电池型号串数
+        List<String> userBindBatteryType = null;
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            userBindBatteryType = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
+            if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+        }
+
+        List<BatteryMemberCardVO> result = new ArrayList<>();
+        for (BatteryMemberCardAndTypeVO item : list) {
+
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                List<String> number = null;
+                if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
+                    //套餐电池型号串数 number
+                    number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType())).map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+                }
+
+                if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
+                        continue;
+                    }
+                }
+            }
+
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 
@@ -303,8 +420,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
 
-            return batteryMemberCardVO;
-        }).collect(Collectors.toList());
+            result.add(batteryMemberCardVO);
+        }
+
+        return result;
     }
 
     @Override
@@ -316,7 +435,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
 
         //未缴纳押金
-        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES , userInfo.getBatteryDepositStatus())){
+        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())) {
             List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.emptyList();
@@ -336,7 +455,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
 
         String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid());
-        if(StringUtils.isBlank(batteryType)){
+        if (StringUtils.isBlank(batteryType)) {
             return Collections.emptyList();
         }
 
@@ -376,12 +495,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
 
-        BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
-        batteryMemberCardUpdate.setId(batteryMemberCard.getId());
-        batteryMemberCardUpdate.setStatus(batteryModelQuery.getStatus());
-        batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-
-        this.update(batteryMemberCardUpdate);
+        batteryMemberCard.setStatus(batteryModelQuery.getStatus());
+        batteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        this.update(batteryMemberCard);
 
         return Triple.of(true, null, null);
     }
@@ -392,10 +508,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(id);
         if (Objects.isNull(batteryMemberCard) || !Objects.equals(batteryMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
-        }
-
-        if (Objects.nonNull(userBatteryMemberCardService.checkUserByMembercardId(id))) {
-            return Triple.of(false, "100100", "删除失败，该套餐已有用户使用");
         }
 
         if (Objects.nonNull(electricityMemberCardOrderService.checkOrderByMembercardId(id))) {
@@ -437,9 +549,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setRentUnit(query.getRentUnit());
         batteryMemberCardUpdate.setRentType(query.getRentType());
         batteryMemberCardUpdate.setSendCoupon(query.getSendCoupon());
+        batteryMemberCardUpdate.setCouponId(Objects.equals(query.getSendCoupon(), BatteryMemberCard.NO) ? null : query.getCouponId());
         batteryMemberCardUpdate.setStatus(query.getStatus());
         batteryMemberCardUpdate.setUseCount(query.getUseCount());
-        batteryMemberCardUpdate.setCouponId(query.getCouponId());
         batteryMemberCardUpdate.setIsRefund(query.getIsRefund());
         batteryMemberCardUpdate.setRefundLimit(query.getRefundLimit());
         batteryMemberCardUpdate.setFreeDeposite(query.getFreeDeposite());

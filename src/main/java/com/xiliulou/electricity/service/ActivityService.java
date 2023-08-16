@@ -14,4 +14,6 @@ public interface ActivityService {
 
     Triple<Boolean, String, Object> handleActivityByRealName(ActivityProcessDTO activityProcessDTO);
 
+    void asyncProcessActivity(ActivityProcessDTO activityProcessDTO);
+
 }

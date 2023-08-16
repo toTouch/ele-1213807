@@ -967,8 +967,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Slave
     @Override
-    public List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
-        return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
+    public List<ElectricityBatteryVO> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
+        List<ElectricityBattery> batteryList = electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
+        if(CollectionUtils.isEmpty(batteryList)){
+            return Collections.emptyList();
+        }
+
+        return batteryList.stream().map(item->{
+            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+            BeanUtils.copyProperties(item,electricityBatteryVO);
+            electricityBatteryVO.setName(item.getSn());
+
+            return electricityBatteryVO;
+        }).collect(Collectors.toList());
     }
 
     /**

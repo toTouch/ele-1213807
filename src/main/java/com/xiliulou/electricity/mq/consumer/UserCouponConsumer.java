@@ -19,6 +19,8 @@ import java.util.Objects;
  * 用户优惠券的 Consumer
  * @author xiaohui.song
  **/
+
+@Deprecated
 @Slf4j
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.USER_COUPON_COMMON_TOPIC, consumerGroup = MqConsumerConstant.USER_COUPON_COMMON_CONSUMER_GROUP)

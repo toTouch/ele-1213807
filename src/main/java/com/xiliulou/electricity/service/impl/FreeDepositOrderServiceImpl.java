@@ -219,7 +219,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      */
     @Override
     public FreeDepositOrder insert(FreeDepositOrder freeDepositOrder) {
-        this.freeDepositOrderMapper.insertOne(freeDepositOrder);
+        this.freeDepositOrderMapper.insert(freeDepositOrder);
         return freeDepositOrder;
     }
 
@@ -377,6 +377,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setRemark(remark);
         freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setStoreId(freeDepositOrder.getStoreId());
+        freeDepositAlipayHistory.setFranchiseeId(freeDepositOrder.getFranchiseeId());
         freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
         freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
         return Triple.of(true, "", "授权转支付交易处理中！");
@@ -915,6 +917,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .realName(freeBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
+                .storeId(eleDepositOrder.getStoreId())
+                .franchiseeId(eleDepositOrder.getFranchiseeId())
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1025,6 +1029,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .realName(freeQuery.getRealName())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
+                .storeId(eleDepositOrder.getStoreId())
+                .franchiseeId(eleDepositOrder.getFranchiseeId())
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1140,6 +1146,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .realName(freeCarDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
+                .franchiseeId(carDepositOrder.getFranchiseeId())
+                .storeId(carDepositOrder.getStoreId())
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(carDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1263,6 +1271,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .realName(freeCarBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
+                .storeId(eleDepositOrder.getStoreId())
+                .franchiseeId(eleDepositOrder.getFranchiseeId())
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().add(carDepositOrder.getPayAmount()).doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -2825,11 +2835,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 userBatteryDepositService.logicDeleteByUid(freeDepositOrder.getUid());
                 userBatteryService.deleteByUid(freeDepositOrder.getUid());
 
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(freeDepositOrder.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                     //更新用户保险订单为已失效
-                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 userInfoService.unBindUserFranchiseeId(freeDepositOrder.getUid());

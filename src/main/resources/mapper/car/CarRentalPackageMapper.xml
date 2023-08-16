@@ -69,6 +69,7 @@
         <if test=" applicableType != null "> AND `applicable_type` = #{applicableType} </if>
         <if test=" rentRebate != null "> AND `rent_rebate` = #{rentRebate} </if>
         <if test=" deposit != null "> AND `deposit` = #{deposit} </if>
+        <if test=" freeDeposit != null "> AND `free_deposit` = #{freeDeposit} </if>
         <if test=" confine != null "> AND `confine` = #{confine} </if>
         <if test=" giveCoupon != null "> AND `give_coupon` = #{giveCoupon} </if>
         <if test=" idList != null and idList.size > 0">
@@ -271,5 +272,13 @@
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
+
+    <!-- 根据couponId查询套餐信息 -->
+    <select id="selectByCouponId" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `coupon_id` = #{couponId} and `del_flag` = 0
+        </where>
+    </select>
 
 </mapper>

@@ -447,8 +447,10 @@ public class CouponServiceImpl implements CouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
-            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;
@@ -460,10 +462,12 @@ public class CouponServiceImpl implements CouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
-            batteryMemberCardVO.setId(carRentalPackagePO.getId());
-            batteryMemberCardVO.setName(carRentalPackagePO.getName());
-            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;
@@ -496,9 +500,17 @@ public class CouponServiceImpl implements CouponService {
             return Triple.of(false, "", "删除失败，优惠券已绑定新用户活动");
         }
 
-        //需要增加套餐绑定检验， 优惠券会和套餐进行绑定
-        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findActivityPackagesByCouponId(id.longValue());
-        if(!CollectionUtils.isEmpty(couponActivityPackages)){
+        //需要增加套餐绑定检验，是指在创建套餐时是否指定了套餐关联的优惠券。并非是新建优惠券时所关联的套餐。
+        //检查是否绑定到换电套餐
+        List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(coupon.getId().longValue());
+        if(!CollectionUtils.isEmpty(batteryMemberCardList)){
+            log.info("find the battery packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
+            return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
+        }
+        //检查是否绑定到租车或车电一体套餐
+        List<CarRentalPackagePo>  carRentalPackagePos = carRentalPackageService.findByCouponId(coupon.getId().longValue());
+        if(!CollectionUtils.isEmpty(carRentalPackagePos)){
+            log.info("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
 

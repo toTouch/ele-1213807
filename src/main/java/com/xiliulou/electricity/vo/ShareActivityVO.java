@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import lombok.Data;
 
 import java.util.List;
@@ -92,7 +93,7 @@ public class ShareActivityVO {
     private Integer availableCount;
 
 
-    List<ShareActivityRule> shareActivityRuleQueryList;
+    List<ShareActivityRuleVO> shareActivityRuleQueryList;
 
     /**
      * 领券套餐

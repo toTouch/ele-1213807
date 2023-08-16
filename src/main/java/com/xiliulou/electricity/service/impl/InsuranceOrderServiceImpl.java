@@ -156,7 +156,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-
         Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", userInfo.getFranchiseeId());
@@ -354,6 +353,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return NumberConstant.ZERO;
         }
         return insuranceOrderMapper.updateUseStatusByOrderId(insuranceOrderId,useStatus);
+    }
+
+    @Override
+    public Integer updateUseStatusForRefund(String insuranceOrderId, Integer useStatus) {
+        if(StringUtils.isBlank(insuranceOrderId)){
+            return NumberConstant.ZERO;
+        }
+        return insuranceOrderMapper.updateUseStatusForRefund(insuranceOrderId,useStatus);
     }
 
     public String generateOrderId(Long uid) {

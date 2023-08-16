@@ -6,6 +6,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -844,8 +845,10 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
-                batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
-                batteryMemberCardVO.setName(batteryMemberCard.getName());
+                if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+                    batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
+                    batteryMemberCardVO.setName(batteryMemberCard.getName());
+                }
                 list.add(batteryMemberCardVO);
             }
         }else{
@@ -853,41 +856,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
-                batteryMemberCardVO.setId(carRentalPackagePO.getId());
-                batteryMemberCardVO.setName(carRentalPackagePO.getName());
-                list.add(batteryMemberCardVO);
-            }
-        }
-        return list;
-    }
-
-    /**
-     * 根据分账ID 获取关联的套餐信息，包括换电，租车，车店一体套餐
-     * @param daConfigId
-     * @return
-     */
-    private List<BatteryMemberCardVO> getMemberCardVOListByDA(Long daConfigId) {
-        List<BatteryMemberCardVO> list = Lists.newArrayList();
-        List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigId(daConfigId);
-        if (CollectionUtils.isEmpty(divisionAccountBatteryMembercards)) {
-            return list;
-        }
-        for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards){
-            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
-            batteryMemberCardVO.setId(accountBatteryMembercard.getRefId());
-            Integer type = accountBatteryMembercard.getType();
-            if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(accountBatteryMembercard.getRefId());
-                if (Objects.nonNull(batteryMemberCard)) {
-                    batteryMemberCardVO.setName(batteryMemberCard.getName());
-                    list.add(batteryMemberCardVO);
-                }
-            }else{
-                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
-                if (Objects.nonNull(carRentalPackagePO)) {
+                if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+                    batteryMemberCardVO.setId(carRentalPackagePO.getId());
                     batteryMemberCardVO.setName(carRentalPackagePO.getName());
-                    list.add(batteryMemberCardVO);
                 }
+                list.add(batteryMemberCardVO);
             }
         }
         return list;

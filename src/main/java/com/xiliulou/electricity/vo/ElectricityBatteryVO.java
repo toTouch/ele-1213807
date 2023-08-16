@@ -30,6 +30,7 @@ public class ElectricityBatteryVO {
      * sn码
      */
     private String sn;
+    private String name;//前端组件需要使用
     /**
      * 电池型号
      */

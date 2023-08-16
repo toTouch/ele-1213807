@@ -65,7 +65,7 @@ public class JsonAdminUserInfoV2Controller {
      */
     @PostMapping("/updateCurrPackage")
     public R<Boolean> updateCurrPackage(@RequestBody MemberCurrPackageOptReq optReq) {
-        if (!ObjectUtils.allNotNull(optReq, optReq.getUid())) {
+        if (!ObjectUtils.allNotNull(optReq, optReq.getUid(), optReq.getPackageOrderNo(), optReq.getType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -190,9 +190,9 @@ public class JsonAdminUserInfoV2Controller {
     }
 
     /**
-     * 获取会员的全量信息
+     * 获取会员的全量信息（套餐订单信息、车辆信息）
      * @param uid 用户ID
-     * @return 用户会员全量信息
+     * @return 用户会员全量信息（套餐订单信息、车辆信息）
      */
     @GetMapping("/queryUserMemberInfo")
     public R<UserMemberInfoVo> queryUserMemberInfo(Long uid) {

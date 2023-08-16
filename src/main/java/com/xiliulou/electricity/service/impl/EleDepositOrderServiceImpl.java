@@ -14,7 +14,6 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
@@ -148,6 +147,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     PxzDepositService pxzDepositService;
     @Autowired
     PxzConfigService pxzConfigService;
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -180,6 +185,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
+        BatteryMemberCard batteryMemberCard = null;
+        ServiceFeeUserInfo serviceFeeUserInfo = null;
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 
         //是否存在换电次数欠费情况
@@ -197,12 +204,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 return R.fail("ELECTRICITY.100004", "月卡已暂停");
             }
 
-            ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-            if (Objects.nonNull(bindElectricityMemberCard)) {
-                if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
-                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber().intValue());
-                    packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
-                }
+            batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("ELE DEPOSIT WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
+                return R.fail("ELECTRICITY.00121", "套餐不存在");
+            }
+
+            serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                log.error("ELE DEPOSIT WARN!not found serviceFeeUserInfo,uid={}", userInfo.getUid());
+                return R.fail("100247", "未找到用户信息");
+            }
+
+            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
+                log.error("ELE DEPOSIT WARN!user battery membercard disable,uid={}", userInfo.getUid());
+                return R.fail("", "用户套餐次数欠费");
             }
         }
 
@@ -246,39 +262,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
-        Long now = System.currentTimeMillis();
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-        long cardDays = 0;
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            userChangeServiceFee = serviceFee;
-        }
-
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
-
-            //判断用户是否产生电池服务费
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-
-                cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
-
-                //不足一天按一天计算
-                double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
-                if (time < 24) {
-                    cardDays = 1;
-                }
-                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
-                userChangeServiceFee = serviceFee;
-            }
-        }
-
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
+        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
+            return R.fail( "100220", "用户存在电池服务费");
         }
 
         //判断是否退电池
@@ -306,7 +293,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
 
         UserInfo updateUserInfo = new UserInfo();
-//        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid());
         boolean eleRefund = false;
         boolean carRefund = false;
         Integer tenantId = user.getTenantId();
@@ -354,7 +340,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     carRefund = true;
                     carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-//                    if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
                         carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
                         updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -367,7 +352,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         userCarDepositService.logicDeleteByUid(userInfo.getUid());
 
                         userCarMemberCardService.deleteByUid(userInfo.getUid());
-//                    }
                 }
             }
 
@@ -378,35 +362,48 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
-            if (Objects.isNull(electricityConfig) ||  Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT, electricityConfig.getIsZeroDepositAuditEnabled())) {
+            if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT, electricityConfig.getIsZeroDepositAuditEnabled())) {
                 eleRefund = true;
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-//                if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-//                    eleRefundOrderService.insert(eleRefundOrder);
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
 
-                    updateUserInfo.setUid(userInfo.getUid());
-                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-                    userInfoService.updateByUid(updateUserInfo);
+                userInfoService.updateByUid(updateUserInfo);
 
-                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                //更新用户套餐订单为已失效
+                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
 
-                    userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
-                    userBatteryService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
-                    //退押金解绑用户所属加盟商
-                    userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+                userBatteryService.deleteByUid(userInfo.getUid());
 
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-                    if (Objects.nonNull(insuranceUserInfo)) {
-                        insuranceUserInfoService.deleteById(insuranceUserInfo);
-                    }
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
 
-//                }
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    //更新用户保险订单为已失效
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                }
+
+                //删除用户电池套餐资源包
+                userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+
+                //删除用户电池型号
+                userBatteryTypeService.deleteByUid(userInfo.getUid());
+
+                //删除用户电池服务费
+                serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+
+                eleRefundOrderService.insert(eleRefundOrder);
+                return R.ok("SUCCESS");
             }
         }
 

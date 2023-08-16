@@ -80,6 +80,8 @@ public class DetailsBatteryInfoVo {
      * 到期时间
      */
     private Long memberCardExpireTime;
+    private Long orderExpireTime;
+    private Long orderRemainingNumber;
     
     /**
      * 剩余天数

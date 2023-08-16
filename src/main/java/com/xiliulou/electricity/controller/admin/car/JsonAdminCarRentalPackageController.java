@@ -3,10 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -14,10 +11,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
@@ -30,6 +24,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -45,6 +40,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
 public class JsonAdminCarRentalPackageController extends BasicController {
+
+    @Resource
+    private BatteryModelService batteryModelService;
 
     @Resource
     private CouponService couponService;
@@ -180,16 +178,20 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        // 获取辅助业务信息（加盟商、车辆型号、优惠券信息）
+        // 获取辅助业务信息（加盟商、车辆型号、优惠券信息、关联信息）
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
         List<Long> couponIds = new ArrayList<>();
+        List<Long> packageIds = new ArrayList<>();
         carRentalPackageEntityList.forEach(carRentalPackageEntity -> {
             franchiseeIds.add(Long.valueOf(carRentalPackageEntity.getFranchiseeId()));
             carModelIds.add(carRentalPackageEntity.getCarModelId());
             Long couponId = carRentalPackageEntity.getCouponId();
             if (ObjectUtils.isNotEmpty(couponId) && !couponIds.contains(couponId)) {
                 couponIds.add(couponId);
+            }
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageEntity.getType())) {
+                packageIds.add(carRentalPackageEntity.getId());
             }
         });
 
@@ -221,6 +223,16 @@ public class JsonAdminCarRentalPackageController extends BasicController {
                 carRentalPackageVo.setCouponName(couponMap.getOrDefault(carRentalPackageEntity.getCouponId(), new Coupon()).getName());
             }
 
+            // TODO 临时解决，添加字段，后续优化
+            // 查询电池型号
+            if (carRentalPackageEntity.getType().equals(RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
+                List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackageEntity.getId());
+                List<String> batteryModelTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(batteryModelTypes)) {
+                    List<BatteryModel> batteryModels = batteryModelService.selectByBatteryTypes(tenantId, batteryModelTypes);
+                    carRentalPackageVo.setBatteryModelTypeShorts(batteryModels.stream().map(BatteryModel::getBatteryVShort).distinct().collect(Collectors.toList()));
+                }
+            }
             return carRentalPackageVo;
         }).collect(Collectors.toList());
 

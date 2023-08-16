@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
+import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -38,5 +39,21 @@ public class CarVo implements Serializable {
      * 车辆纬度
      */
     private Double latitude;
+
+    /**
+     * 地址更新时间
+     */
+    private Long pointUpdateTime;
+
+    /**
+     * 还车订单状态
+     * <pre>
+     *     1-审核中
+     *     2-成功
+     *     3-审核拒绝
+     * </pre>
+     * @see CarRentalStateEnum
+     */
+    private Integer carRentalState;
 
 }

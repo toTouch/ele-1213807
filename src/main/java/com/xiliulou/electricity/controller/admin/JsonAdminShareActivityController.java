@@ -69,13 +69,21 @@ public class JsonAdminShareActivityController extends BaseController {
         return returnTripleResult(shareActivityService.shareActivityDetail(id));
     }
 
+    /**
+     * 编辑功能
+     * @param shareActivityAddAndUpdateQuery
+     * @return
+     */
     @PutMapping(value = "/admin/shareActivity/update")
     public R updateActivity(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
         return returnTripleResult(shareActivityService.updateShareActivity(shareActivityAddAndUpdateQuery));
     }
 
-
-    //修改--暂时无此功能
+    /**
+     * 上下架活动
+     * @param shareActivityAddAndUpdateQuery
+     * @return
+     */
     @PutMapping(value = "/admin/shareActivity")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
         return shareActivityService.update(shareActivityAddAndUpdateQuery);

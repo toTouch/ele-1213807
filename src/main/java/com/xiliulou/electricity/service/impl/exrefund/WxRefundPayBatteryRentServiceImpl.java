@@ -3,12 +3,10 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -16,10 +14,12 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -53,7 +53,8 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Autowired
-    private DivisionAccountProducer divisionAccountProducer;
+    private DivisionAccountRecordService divisionAccountRecordService;
+
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
@@ -96,11 +97,30 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
         Integer status = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? BatteryMembercardRefundOrder.STATUS_SUCCESS : BatteryMembercardRefundOrder.STATUS_FAIL;
         if (Objects.equals(status, BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
-
             if (Objects.equals(userBatteryMemberCard.getOrderId(), memberCardOrderNo)) {
                 //退使用中的
-                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-                serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+                List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userBatteryMemberCard.getUid());
+                if(CollectionUtils.isEmpty(userBatteryMemberCardPackages)){
+                    //退最后一个套餐
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    serviceFeeUserInfoService.unbindServiceFeeInfoByUid(userInfo.getUid());
+                }else{
+                    UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                    userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setOrderRemainingNumber(NumberConstant.ZERO_L);
+                    userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()-userBatteryMemberCard.getOrderRemainingNumber());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()-userBatteryMemberCard.getOrderExpireTime());
+                    userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                    userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+
+                    ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
+                    ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                    serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime()-userBatteryMemberCard.getOrderExpireTime());
+                    serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                    serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
+                }
             } else {
                 //退未使用的
                 userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());
@@ -125,11 +145,11 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
 
             // 8. 处理分账
             DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-            divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
+            divisionAccountOrderDTO.setOrderNo(batteryMembercardRefundOrder.getRefundOrderNo());
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
             divisionAccountOrderDTO.setTraceId(IdUtil.simpleUUID());
-            divisionAccountProducer.sendSyncMessage(JsonUtil.toJson(divisionAccountOrderDTO));
+            divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());

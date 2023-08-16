@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,20 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageDepositRefundMapper {
+
+    /**
+     * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
+     * <pre>
+     *     1-待审核
+     *     2-审核通过
+     *     4-退款中
+     *     5-退款成功
+     * </pre>
+     *
+     * @param depositPayOrderNoList 押金缴纳订单编码集
+     * @return 退押订单编码集
+     */
+    List<CarRentalPackageDepositRefundPo> selectRefundableByDepositPayOrderNoList(@Param("depositPayOrderNoList") List<String> depositPayOrderNoList);
 
     /**
      * 根据押金缴纳订单编码，查询最后一笔的退押订单信息

@@ -1,25 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
+import java.util.*;
 
 /**
  * (UserBatteryType)表服务实现类
@@ -32,6 +27,9 @@ import org.springframework.util.CollectionUtils;
 public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Resource
     private UserBatteryTypeMapper userBatteryTypeMapper;
+
+    @Autowired
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
 
     @Override
     public UserBatteryType queryByIdFromDB(Long id) {
@@ -78,7 +76,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     public String selectUserMaxBatteryType(Long uid) {
         List<String> batteryTypes = this.selectByUid(uid);
-        if(CollectionUtils.isEmpty(batteryTypes)){
+        if (CollectionUtils.isEmpty(batteryTypes)) {
             return null;
         }
 
@@ -88,12 +86,12 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     public String selectUserSimpleBatteryType(Long uid) {
         List<String> batteryTypes = this.selectByUid(uid);
-        if(CollectionUtils.isEmpty(batteryTypes)){
+        if (CollectionUtils.isEmpty(batteryTypes)) {
             return null;
         }
 
         String batteryType = batteryTypes.get(0);
-        if(StringUtils.isBlank(batteryType)){
+        if (StringUtils.isBlank(batteryType)) {
             return null;
         }
 
@@ -117,5 +115,32 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         }
 
         return list;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserBatteryType(ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
+        Set<String> totalBatteryTypes = new HashSet<>();
+
+        List<String> userBindBatteryTypes = this.selectByUid(electricityMemberCardOrder.getUid());
+
+        List<String> membercardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
+
+        if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
+            totalBatteryTypes.addAll(userBindBatteryTypes);
+        }
+
+        if (CollectionUtils.isNotEmpty(membercardBatteryTypes)) {
+            totalBatteryTypes.addAll(membercardBatteryTypes);
+        }
+
+        if (CollectionUtils.isEmpty(totalBatteryTypes)) {
+            log.error("ELE ERROR! totalBatteryTypes is null,uid={}", userInfo.getUid());
+            return;
+        }
+
+        this.deleteByUid(electricityMemberCardOrder.getUid());
+
+        this.batchInsert(buildUserBatteryType(new ArrayList<>(totalBatteryTypes), userInfo));
     }
 }

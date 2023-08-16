@@ -43,6 +43,8 @@ public interface InsuranceUserInfoService {
 
     R queryUserInsurance(Long uid,Integer type);
 
+    InsuranceUserInfoVo selectUserInsuranceInfo(Long uid,Integer type);
+
     R queryInsuranceByStatus(Integer status, Long offset, Long size);
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
@@ -64,4 +66,6 @@ public interface InsuranceUserInfoService {
     void saveUserInsurance(InsuranceOrder insuranceOrder);
 
     void updateUserInsuranceOrderStatusTask();
+
+    List<InsuranceUserInfo> selectByUid(Long uid);
 }

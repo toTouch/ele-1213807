@@ -105,8 +105,6 @@ public interface UserBatteryMemberCardService {
 
     Integer deductionExpireTime(Long uid, Long time,Long updateTime);
 
-    Integer increaseExpireTime(Long uid, Long time,Long updateTime);
-
     List<UserBatteryMemberCard> selectList(int offset, int size);
 
     List<String> selectUserBatteryMemberCardOrder(Long uid);

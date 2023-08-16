@@ -82,4 +82,6 @@ public interface UserCouponService {
     UserCoupon selectBySourceOrderId(String orderId);
 
     void sendCouponToUser(UserCouponDTO userCouponDTO);
+
+    void asyncSendCoupon(UserCouponDTO userCouponDTO);
 }

@@ -79,4 +79,6 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
 
     List<BatteryMemberCardVO>  selectListByQuery(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCard>  selectListByCouponId(Long couponId);
 }

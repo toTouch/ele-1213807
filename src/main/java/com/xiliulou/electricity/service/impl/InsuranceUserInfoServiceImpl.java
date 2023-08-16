@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
@@ -311,6 +312,35 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return R.ok(insuranceUserInfoVo);
     }
 
+    /**
+     * 兼容租车和车电一体
+     */
+    @Override
+    public InsuranceUserInfoVo selectUserInsuranceInfo(Long uid,Integer type) {
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
+            return null;
+        }
+
+        InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
+        if (Objects.isNull(insuranceUserInfo)) {
+            log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}", uid, type);
+            return null;
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+
+        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
+            return null;
+        }
+
+        return insuranceUserInfoVo;
+    }
+
     @Override
     public R queryInsuranceByStatus(Integer status, Long offset, Long size) {
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -430,7 +460,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     public R insertUserBatteryInsurance(InsuranceUserInfoQuery query) {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals( userInfo.getTenantId(),TenantContextHolder.getTenantId() )) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -442,10 +472,13 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -462,20 +495,20 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险");
         }
 
-        if(!Objects.equals( franchiseeInsurance.getFranchiseeId(),userInfo.getFranchiseeId() )){
+        if (!Objects.equals(franchiseeInsurance.getFranchiseeId(), userInfo.getFranchiseeId())) {
             return R.fail("ELECTRICITY.0038", "用户加盟商与保险加盟商不一致");
         }
 
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(query.getUid(),query.getType());
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(query.getUid(), query.getType());
         if (Objects.nonNull(insuranceUserInfo)) {
             return R.fail("100310", "用户已购买保险");
         }
 
-        String orderId= OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE,userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
         InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
+                .insuranceType(franchiseeInsurance.getInsuranceType())
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
@@ -566,10 +599,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR ) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -590,7 +623,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
+                .insuranceType(franchiseeInsurance.getInsuranceType())
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
@@ -612,9 +645,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
         if(Objects.nonNull(oldInsuranceUserOrder)){
-            InsuranceOrder insuranceUserOrderUpdate=new InsuranceOrder();
+            InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
             insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
-            insuranceUserOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+            insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
             insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
             insuranceOrderService.update(insuranceUserOrderUpdate);
         }
@@ -714,12 +747,27 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
             list.parallelStream().forEach(item -> {
                 if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+                    //更新用户绑定保险状态
+                    InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
+                    insuranceUserInfo.setId(item.getId());
+                    insuranceUserInfo.setUid(item.getUid());
+                    insuranceUserInfo.setType(item.getType());
+                    insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+                    insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+                    this.updateInsuranceUserInfoById(insuranceUserInfo);
+
+                    //更新订单状态
                     insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 }
             });
 
             offset += size;
         }
+    }
+
+    @Override
+    public List<InsuranceUserInfo> selectByUid(Long uid) {
+        return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid,uid));
     }
 
     private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {

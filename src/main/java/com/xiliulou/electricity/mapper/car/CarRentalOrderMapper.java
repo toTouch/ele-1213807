@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,37 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalOrderMapper {
+
+    /**
+     * 根据用户UID、车辆SN码、类型查询最后一条数据
+     *
+     * @param tenantId    租户ID
+     * @param uid         用户UID
+     * @param type        订单类型，1-租车、2-还车
+     * @param carSn       车辆编码
+     * @return 车辆租赁订单
+     */
+    CarRentalOrderPo selectLastByUidAndSnAndType(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("type") Integer type, @Param("carSn") String carSn);
+
+    /**
+     * 根据ID进行数据更新
+     * @param entity
+     * @return 操作总数
+     */
+    int updateById(CarRentalOrderPo entity);
+
+    /**
+     * 根据用户UID、车辆SN码、类型、状态查询最后一条数据
+     *
+     * @param tenantId    租户ID
+     * @param uid         用户UID
+     * @param type        订单类型，1-租车、2-还车
+     * @param rentalState 状态，1-审核中、2-成功、3-审核拒绝
+     * @param carSn       车辆编码
+     * @return 车辆租赁订单
+     */
+    CarRentalOrderPo selectLastByUidAndSnAndTypeAndState(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("type") Integer type,
+                                                  @Param("rentalState") Integer rentalState, @Param("carSn") String carSn);
 
     /**
      * 条件查询列表<br />

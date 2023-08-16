@@ -133,12 +133,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return null;
         });
 
-        Executors.newSingleThreadScheduledExecutor().schedule(()->{
-            if(redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid())){
-                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            }
-        },1, TimeUnit.SECONDS);
-
         return update;
     }
 
@@ -218,17 +212,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer deductionExpireTime(Long uid, Long time, Long updateTime) {
         Integer update = userBatteryMemberCardMapper.deductionExpireTime(uid, time, updateTime);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            return null;
-        });
-
-        return update;
-    }
-
-    @Override
-    public Integer increaseExpireTime(Long uid, Long time, Long updateTime) {
-        Integer update = userBatteryMemberCardMapper.increaseExpireTime(uid, time, updateTime);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             return null;

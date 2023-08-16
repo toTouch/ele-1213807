@@ -1,16 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Lists;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityOperateRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityQuery;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ShareActivityOperateRecordService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.vo.ShareActivityOperateRecordVO;
+import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
+import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +47,14 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
     private UserService userService;
     @Autowired
     private ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ShareActivityMemberCardService shareActivityMemberCardService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -77,27 +92,85 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
             User user = userService.queryByUidFromCache(item.getUid());
             shareActivityOperateRecordVO.setUsername(Objects.nonNull(user) ? user.getName() : "");
 
-
             if (StringUtils.isNotBlank(item.getMemberCard())) {
-                List<Long> membercardIds = JsonUtil.fromJsonArray(item.getMemberCard(), Long.class);
-                if (CollectionUtils.isNotEmpty(membercardIds)) {
-                    List<ElectricityMemberCard> membercardList = Lists.newArrayList();
-                    for (Long membercardId : membercardIds) {
-                        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(membercardId.intValue());
-                        if (Objects.nonNull(electricityMemberCard)) {
-                            membercardList.add(electricityMemberCard);
-                        }
-                    }
-
-                    if (CollectionUtils.isNotEmpty(membercardList)) {
-                        List<String> names = membercardList.stream().map(ElectricityMemberCard::getName).collect(Collectors.toList());
-                        shareActivityOperateRecordVO.setMembercardNames(names);
-                    }
+                List<String> packageNames;
+                if (isJsonStr(item.getMemberCard())) {
+                    //3.0新的处理方式
+                    packageNames = getPackageNames(item.getMemberCard());
+                } else {
+                    //旧的处理方式，只存在换电套餐的情况
+                    packageNames = getOldBatteryPackages(item.getMemberCard());
                 }
+                shareActivityOperateRecordVO.setMembercardNames(packageNames);
             }
 
             return shareActivityOperateRecordVO;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取旧的换电套餐名称信息，针对3.0之前的旧数据。
+     * @param packageInfo
+     * @return
+     */
+    private List<String> getOldBatteryPackages(String packageInfo){
+        List<String> packageNames = Lists.newArrayList();
+        if(StringUtils.isNotEmpty(packageInfo)){
+            List<Long> membercardIds = JsonUtil.fromJsonArray(packageInfo, Long.class);
+            if (CollectionUtils.isNotEmpty(membercardIds)) {
+                List<ElectricityMemberCard> membercardList = Lists.newArrayList();
+                for (Long membercardId : membercardIds) {
+                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(membercardId.intValue());
+                    if (Objects.nonNull(electricityMemberCard)) {
+                        membercardList.add(electricityMemberCard);
+                    }
+                }
+
+                if (CollectionUtils.isNotEmpty(membercardList)) {
+                    packageNames = membercardList.stream().map(ElectricityMemberCard::getName).collect(Collectors.toList());
+                }
+            }
+        }
+
+        return packageNames;
+    }
+
+    private boolean isJsonStr(String str){
+        boolean isJSONString = false;
+        Gson gson = new Gson();
+        try {
+            JsonElement jsonElement = gson.fromJson(str, JsonElement.class);
+            isJSONString = jsonElement.isJsonObject();
+        } catch (JsonSyntaxException ex) {
+            log.info("This string is not json str, {}", str);
+        }
+
+        return isJSONString;
+    }
+
+    private List<String> getPackageNames(String packageInfo){
+        ShareActivityPackageVO shareActivityPackageVO = JsonUtil.fromJson(packageInfo, ShareActivityPackageVO.class);
+        List<ActivityPackageVO> activityPackageVOList = shareActivityPackageVO.getPackages();
+        List<String> packageNames = Lists.newArrayList();
+        for(ActivityPackageVO activityPackageVO : activityPackageVOList){
+            Long packageId = activityPackageVO.getPackageId();
+            Integer packageType = activityPackageVO.getPackageType();
+            if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                if(Objects.nonNull(batteryMemberCard)){
+                    packageNames.add(batteryMemberCard.getName());
+                }
+            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(packageType)
+                    || PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(packageType)){
+                CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
+                if(Objects.nonNull(carRentalPackagePO)){
+                    packageNames.add(carRentalPackagePO.getName());
+                }
+            }
+        }
+
+        return packageNames;
+
     }
 
     @Override

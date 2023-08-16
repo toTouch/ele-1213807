@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.DivisionAccountRecordMapper;
@@ -53,8 +55,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordService {
 
-    private static final ExecutorService divisionAccountExecutorService = XllThreadPoolExecutors
-            .newFixedThreadPool("eleDivisionAccount", 4, "ele_division_account");
+    protected XllThreadPoolExecutorService divisionAccountExecutorService = XllThreadPoolExecutors
+            .newFixedThreadPool("DIVISION_ACCOUNT_THREAD_POOL", 4, "division_account_thread");
 
     @Resource
     private DivisionAccountRecordMapper divisionAccountRecordMapper;
@@ -637,7 +639,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         DivisionAccountRecord accountRecord = new DivisionAccountRecord();
         accountRecord.setId(divisionAccountRecord.getId());
         accountRecord.setDivisionAccountStatus(status);
-        divisionAccountRecordMapper.update(accountRecord);
+        accountRecord.setUpdateTime(System.currentTimeMillis());
+        divisionAccountRecordMapper.updateDAStatus(accountRecord);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -694,8 +697,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     }
 
     private BigDecimal getAmountByRate(BigDecimal userPayAmount, BigDecimal rate){
-        BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
-        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));
+       /* BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
+        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));*/
+        log.info("Calculate user pay amount by division account rate, user pay amount = {}, rate = {}", userPayAmount, rate);
+        BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN);
+        return userPayAmount.multiply(ratePercent).setScale(2, RoundingMode.DOWN);
     }
 
     @Deprecated
@@ -790,5 +796,22 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         }
 
         return Triple.of(true, "", "");
+    }
+
+    @Override
+    public void asyncHandleDivisionAccount(DivisionAccountOrderDTO divisionAccountOrderDTO) {
+
+        divisionAccountExecutorService.execute(() -> {
+
+            if(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
+                //处理购买套餐时的分账业务
+                handleDivisionAccountByPackage(divisionAccountOrderDTO);
+
+            } else if(DivisionAccountEnum.DA_TYPE_REFUND.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
+                //处理退租时的分账业务
+                handleRefundDivisionAccountByPackage(divisionAccountOrderDTO);
+            }
+
+        });
     }
 }
