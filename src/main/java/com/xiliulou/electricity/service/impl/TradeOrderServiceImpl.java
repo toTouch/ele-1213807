@@ -129,6 +129,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -346,6 +352,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", userInfo.getUid());
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+            }
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0001", "用户信息不存在");
+            }
+
+            //是否有正在进行中的退押
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            if (refundCount > 0) {
+                log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+                return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
             }
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMemberId());
