@@ -2162,7 +2162,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         memberTermUpdateEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(packageOrderEntity.getConfine());
-                        memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum());
                         // 计算到期时间
                         Integer tenancy = packageOrderEntity.getTenancy();
                         Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
@@ -2179,13 +2178,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                         // 套餐购买总次数
                         memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
+                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
+                            memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                        }
 
                     } else {
                         memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                         memberTermUpdateEntity.setRentalPackageType(carRentalPackageOrderEntity.getRentalPackageType());
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
-                        memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
+                            memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                        }
                         // 计算到期时间
                         Integer tenancy = carRentalPackageOrderEntity.getTenancy();
                         Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
