@@ -228,7 +228,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setRentalPackageConfine(packageOrderEntityUnUse.getConfine());
 
                 if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntityUnUse.getConfine())) {
-                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum());
+                    newMemberTermEntity.setResidue(packageOrderEntityUnUse.getConfineNum() - memberTermEntity.getResidue());
                 }
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
@@ -493,7 +493,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
                         // 判定构建逾期订单
-                        if (nowTime <= (memberTermEntity.getDueTime().longValue() + TimeConstant.DAY_MILLISECOND)) {
+                        if (nowTime <= (memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND)) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
                                 log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());

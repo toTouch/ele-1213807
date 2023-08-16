@@ -935,24 +935,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300020", "订单编码不匹配");
         }
 
-        // 计算时间
-        Integer applyTerm = freezeEntity.getApplyTerm();
-        Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getAuditTime(), false);
-        Integer realTerm = realTermPair.getRight();
-
         // 赋值会员更新
         CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
         memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
         memberTermUpdateEntity.setId(memberTermEntity.getId());
         memberTermUpdateEntity.setUpdateUid(uid);
         memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
-        // 提前启用
-        if (applyTerm.intValue() > realTerm.intValue()) {
-            // 计算差额
-            long diffTime = (applyTerm - realTerm) * TimeConstant.DAY_MILLISECOND;
-            memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime().longValue() - diffTime);
-            memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal().longValue() - diffTime);
-        }
+        // 提前启用、计算差额
+        long diffTime = System.currentTimeMillis() -  (freezeEntity.getCreateTime() * TimeConstant.DAY_MILLISECOND);
+        memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+        memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
         // 事务处理
         enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity);
@@ -1062,7 +1054,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         long now = System.currentTimeMillis();
-        if (memberTermEntity.getDueTime().longValue() < now) {
+        if (memberTermEntity.getDueTime() < now) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time is {}. now is {}", memberTermEntity.getDueTime(), now);
             throw new BizException("300033", "套餐已过期，无法申请冻结");
         }
@@ -2162,7 +2154,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         memberTermUpdateEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(packageOrderEntity.getConfine());
-                        memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum());
                         // 计算到期时间
                         Integer tenancy = packageOrderEntity.getTenancy();
                         Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
@@ -2179,13 +2170,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                         // 套餐购买总次数
                         memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
+                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
+                            memberTermUpdateEntity.setResidue(packageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                        }
 
                     } else {
                         memberTermUpdateEntity.setRentalPackageId(carRentalPackageOrderEntity.getRentalPackageId());
                         memberTermUpdateEntity.setRentalPackageType(carRentalPackageOrderEntity.getRentalPackageType());
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
-                        memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum());
+                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
+                            memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
+                        }
                         // 计算到期时间
                         Integer tenancy = carRentalPackageOrderEntity.getTenancy();
                         Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();

@@ -8,10 +8,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RentalTypeEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
@@ -344,7 +341,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
-            throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
+            throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
@@ -352,11 +349,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("300056", "该用户有正在审核中流程，不可操作");
         }
 
-
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
-        if (ObjectUtils.isEmpty(rentalPackageId)) {
+        if (ObjectUtils.isEmpty(rentalPackageId) || memberTermEntity.getDueTime() <= System.currentTimeMillis()
+                || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
             log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
-            throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
+            throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
         }
 
         // 通过套餐ID找到套餐
@@ -553,9 +550,10 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
-        if (ObjectUtils.isEmpty(rentalPackageId)) {
+        if (ObjectUtils.isEmpty(rentalPackageId) || memberTermEntity.getDueTime() <= System.currentTimeMillis()
+                || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
             log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
-            throw new BizException("300037", "该用户下无套餐订单，请先绑定套餐");
+            throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
         }
 
         // 通过套餐ID找到套餐
