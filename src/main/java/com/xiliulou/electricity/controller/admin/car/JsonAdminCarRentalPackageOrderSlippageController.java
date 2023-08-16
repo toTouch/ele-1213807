@@ -95,7 +95,7 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
             }
 
             if (!franchiseeNameMap.isEmpty()) {
-                slippageVo.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), ""));
+                slippageVo.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippageEntity.getFranchiseeId()), ""));
             }
 
             return slippageVo;
