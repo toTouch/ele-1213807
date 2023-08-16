@@ -2835,11 +2835,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 userBatteryDepositService.logicDeleteByUid(freeDepositOrder.getUid());
                 userBatteryService.deleteByUid(freeDepositOrder.getUid());
 
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(freeDepositOrder.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                     //更新用户保险订单为已失效
-                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 userInfoService.unBindUserFranchiseeId(freeDepositOrder.getUid());

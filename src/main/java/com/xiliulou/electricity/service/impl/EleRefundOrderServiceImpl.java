@@ -288,7 +288,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                     //更新用户保险订单为已失效
@@ -606,12 +606,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
             userBatteryService.deleteByUid(userInfo.getUid());
 
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
 
                 //更新用户保险订单为已失效
-                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
 
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
@@ -1136,12 +1136,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
             userBatteryService.deleteByUid(userInfo.getUid());
 
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
 
                 //更新用户保险订单为已失效
-                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
 
             //退押金解绑用户所属加盟商
@@ -1424,12 +1424,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
         userBatteryService.deleteByUid(userInfo.getUid());
 
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
         if (Objects.nonNull(insuranceUserInfo)) {
             insuranceUserInfoService.deleteById(insuranceUserInfo);
 
             //更新用户保险订单为已失效
-            insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+            insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
         }
 
         //退押金解绑用户所属加盟商
@@ -1777,11 +1777,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             userBatteryService.deleteByUid(userInfo.getUid());
 
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             if (Objects.nonNull(insuranceUserInfo)) {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
                 //更新用户保险订单为已失效
-                insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
             }
 
             userInfoService.unBindUserFranchiseeId(uid);
@@ -1831,11 +1831,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                     //更新用户保险订单为已失效
-                    insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
                 }
 
                 userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
