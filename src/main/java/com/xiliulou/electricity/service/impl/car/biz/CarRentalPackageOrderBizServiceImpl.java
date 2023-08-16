@@ -1524,22 +1524,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             return R.ok();
         }
 
-        Long rentalPackageId = memberTerm.getRentalPackageId();
-        if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId.longValue() == 0) {
-            log.info("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, User has no active packages. uid is {}", uid);
-            return R.ok();
-        }
-
         // 2. 查询套餐信息
-        CarRentalPackagePo carRentalPackage = carRentalPackageService.selectById(rentalPackageId);
-        if (ObjectUtils.isEmpty(carRentalPackage)) {
-            log.info("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, not foun t_car_rental_package. rentalPackageId is {}", rentalPackageId);
-            throw new BizException("300000", "数据有误");
+        CarRentalPackagePo carRentalPackage = null;
+        ElectricityCarModel carModel = null;
+        Long rentalPackageId = memberTerm.getRentalPackageId();
+        if (ObjectUtils.isNotEmpty(rentalPackageId)) {
+            carRentalPackage = carRentalPackageService.selectById(rentalPackageId);
+            if (ObjectUtils.isEmpty(carRentalPackage)) {
+                log.info("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, not foun t_car_rental_package. rentalPackageId is {}", rentalPackageId);
+                throw new BizException("300000", "数据有误");
+            }
+            // 查询车辆型号信息
+            Integer carModelId = carRentalPackage.getCarModelId();
+            carModel = carModelService.queryByIdFromCache(carModelId);
         }
-
-        // 查询车辆型号信息
-        Integer carModelId = carRentalPackage.getCarModelId();
-        ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
 
         // 3. 查询套餐购买订单信息
         String rentalPackageOrderNo = memberTerm.getRentalPackageOrderNo();
@@ -1610,9 +1608,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
         carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
         carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
-        carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackage.getName());
+        carRentalPackageOrderVO.setCarRentalPackageName(ObjectUtils.isNotEmpty(carRentalPackage) ? carRentalPackage.getName() : null);
         carRentalPackageOrderVO.setDeposit(memberTerm.getDeposit());
-        carRentalPackageOrderVO.setBatteryVoltage(carRentalPackage.getBatteryVoltage());
+        carRentalPackageOrderVO.setBatteryVoltage(ObjectUtils.isNotEmpty(carRentalPackage) ? carRentalPackage.getBatteryVoltage() : null);
         carRentalPackageOrderVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
         // 赋值套餐订单信息
         rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);
