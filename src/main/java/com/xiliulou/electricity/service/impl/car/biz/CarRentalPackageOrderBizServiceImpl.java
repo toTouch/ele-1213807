@@ -1054,7 +1054,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         long now = System.currentTimeMillis();
-        if (memberTermEntity.getDueTime().longValue() < now) {
+        if (memberTermEntity.getDueTime() < now) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time is {}. now is {}", memberTermEntity.getDueTime(), now);
             throw new BizException("300033", "套餐已过期，无法申请冻结");
         }
