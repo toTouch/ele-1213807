@@ -100,6 +100,18 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     }
 
     @Override
+    public void unbindServiceFeeInfoByUid(Long uid) {
+
+        ServiceFeeUserInfo serviceFeeUserInfo=new ServiceFeeUserInfo();
+        serviceFeeUserInfo.setUid(uid);
+        serviceFeeUserInfo.setDisableMemberCardNo("");
+        serviceFeeUserInfo.setOrderNo("");
+        serviceFeeUserInfo.setServiceFeeGenerateTime(System.currentTimeMillis());
+        serviceFeeUserInfo.setUpdateTime(System.currentTimeMillis());
+        this.updateByUid(serviceFeeUserInfo);
+    }
+
+    @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
 /*
 

@@ -221,17 +221,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     @Override
-    public Integer increaseExpireTime(Long uid, Long time, Long updateTime) {
-        Integer update = userBatteryMemberCardMapper.increaseExpireTime(uid, time, updateTime);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            return null;
-        });
-
-        return update;
-    }
-
-    @Override
     public Integer plusCount(Long id) {
         return userBatteryMemberCardMapper.plusCount(id);
     }
