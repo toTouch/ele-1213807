@@ -2180,7 +2180,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         memberTermUpdateEntity.setRentalPackageType(carRentalPackageOrderEntity.getRentalPackageType());
                         memberTermUpdateEntity.setRentalPackageOrderNo(orderNo);
                         memberTermUpdateEntity.setRentalPackageConfine(carRentalPackageOrderEntity.getConfine());
-                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
+                        if (RenalPackageConfineEnum.NUMBER.getCode().equals(carRentalPackageOrderEntity.getConfine())) {
                             memberTermUpdateEntity.setResidue(carRentalPackageOrderEntity.getConfineNum() - memberTermEntity.getResidue());
                         }
                         // 计算到期时间
