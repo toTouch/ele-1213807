@@ -571,10 +571,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
-            // 非过期
-            if (!expireFlag) {
-                slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
-            }
+            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
         }
 
         // TX 事务落库
