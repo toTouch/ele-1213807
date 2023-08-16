@@ -111,14 +111,30 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
             if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
                 // 是否退掉最后一个订单
                 boolean isLastOrder = false;
+                // 第一条未使用的支付成功的订单信息
+                CarRentalPackageOrderPo packageOrderUnUseEntity = null;
                 if (orderNo.equals(memberTermEntity.getRentalPackageOrderNo())) {
-                    isLastOrder = true;
+                    // 二次判定，根据用户ID查询第一条未使用的支付成功的订单信息
+                    packageOrderUnUseEntity = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                    if (ObjectUtils.isNotEmpty(packageOrderUnUseEntity)) {
+                        if (packageOrderUnUseEntity.getOrderNo().equals(orderNo)) {
+                            isLastOrder = true;
+                        }
+                    } else {
+                        isLastOrder = true;
+                    }
                 }
 
                 // 处理租车会员期限信息
                 if (isLastOrder) {
                     carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermEntity.getRentalPackageOrderNo(), null);
                 } else {
+                    if (ObjectUtils.isNotEmpty(packageOrderUnUseEntity)) {
+                        // 1. 置为使用中
+                        carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderUnUseEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+                        // 2. 更新会员状态表
+                        // 3. 旧的置为已失效
+                    }
                     // 计算总到期时间
                     Integer tenancy = packageOrderEntity.getTenancy();
                     Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
