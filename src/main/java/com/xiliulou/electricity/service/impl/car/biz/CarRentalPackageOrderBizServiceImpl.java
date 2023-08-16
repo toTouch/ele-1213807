@@ -340,7 +340,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 5.1 用户套餐会员限制状态异常
                     if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                         log.error("bindingPackage failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                        throw new BizException("300002", "租车会员状态异常");
+                        throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
                     }
                     // 从会员期限中获取押金金额
                     log.info("bindingPackage deposit from memberTerm");
@@ -514,6 +514,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         } catch (Exception e) {
             log.error("bindingPackage failed. ", e);
+            throw new BizException(e.getMessage());
         } finally {
             redisService.delete(bindingUidLockKey);
         }
@@ -570,10 +571,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
-            // 非过期
-            if (!expireFlag) {
-                slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
-            }
+            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
         }
 
         // TX 事务落库
@@ -1588,10 +1586,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
         rentalPackageVO.setStatus(memberTerm.getStatus());
-        // 判定是否过期
-        if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
-                (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue() <= 0L)) {
-            rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+        if (ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && ObjectUtils.isNotEmpty(memberTerm.getRentalPackageConfine()) && ObjectUtils.isNotEmpty(memberTerm.getResidue())) {
+            // 判定是否过期
+            if (memberTerm.getDueTime() <= System.currentTimeMillis() ||
+                    (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTerm.getRentalPackageConfine()) && memberTerm.getResidue() <= 0L)) {
+                rentalPackageVO.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+            }
         }
 
         // 套餐订单信息
