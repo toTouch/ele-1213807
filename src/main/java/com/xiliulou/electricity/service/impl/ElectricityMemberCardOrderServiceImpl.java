@@ -3454,6 +3454,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userInfoUpdate.setUid(userInfo.getUid());
         userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userInfoUpdate.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+        userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfoUpdate);
 
@@ -3817,6 +3818,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(userInfoUpdate);
 
         this.insert(memberCardOrder);
 
