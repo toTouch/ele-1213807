@@ -229,6 +229,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         currentMemberCardOrder.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
         currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardOrderService.updateStatusByOrderNo(oldMemberCardOrder);
+        batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
     }
 }
