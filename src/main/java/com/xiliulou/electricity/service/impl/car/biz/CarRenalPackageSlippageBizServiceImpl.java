@@ -249,7 +249,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
             // 没有滞纳金产生
-            if (lateFeeStartTime < now) {
+            if (lateFeeStartTime > now) {
                 continue;
             }
 
