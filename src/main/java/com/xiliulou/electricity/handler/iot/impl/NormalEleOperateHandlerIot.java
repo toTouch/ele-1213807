@@ -42,8 +42,8 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
 
         //3.0 同步修改柜机信息
         try{
-            ElectricityCabinet cabinet = JsonUtil.fromJson(receiverMessage.getOriginContent(), ElectricityCabinet.class);
-            electricityCabinet.setFullyCharged(cabinet.getFullyCharged());
+            EleCabinetVO cabinet = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetVO.class);
+            electricityCabinet.setFullyCharged(Double.parseDouble(cabinet.getExchangeCondition()));
             electricityCabinetService.update(electricityCabinet);
         }catch (Exception e){
             log.error("convert json to electricity cabinet error, EID = {}, session id = {}", electricityCabinet.getId(), sessionId);
@@ -58,6 +58,13 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
 //            redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, operateVo, 30L, TimeUnit.SECONDS);
 //        }
         redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, map, 30L, TimeUnit.SECONDS);
+    }
+
+    @Data
+    class EleCabinetVO {
+
+        private String exchangeCondition;
+
     }
 
 }
