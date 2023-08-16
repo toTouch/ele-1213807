@@ -848,8 +848,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                 if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
                     batteryMemberCardVO.setId(batteryMemberCard.getId().longValue());
                     batteryMemberCardVO.setName(batteryMemberCard.getName());
+                    list.add(batteryMemberCardVO);
                 }
-                list.add(batteryMemberCardVO);
+
             }
         }else{
             //获取租车或车电一体的套餐信息
@@ -859,8 +860,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                 if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
                     batteryMemberCardVO.setId(carRentalPackagePO.getId());
                     batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                    list.add(batteryMemberCardVO);
                 }
-                list.add(batteryMemberCardVO);
             }
         }
         return list;
