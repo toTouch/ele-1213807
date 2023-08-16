@@ -95,6 +95,12 @@
             <if test="isEnableEsign != null">
                 is_enable_esign = #{isEnableEsign},
             </if>
+            <if test="allowRentEle != null">
+                allow_rent_ele = #{allowRentEle},
+            </if>
+            <if test="allowReturnEle != null">
+                allow_return_ele = #{allowReturnEle},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}
