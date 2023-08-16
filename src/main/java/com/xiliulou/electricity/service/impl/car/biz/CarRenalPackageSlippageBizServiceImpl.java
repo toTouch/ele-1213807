@@ -282,6 +282,8 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             totalAmount.add(amount);
         }
 
+        log.info("totalAmount is {}", totalAmount);
+
         if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
             return null;
         }
