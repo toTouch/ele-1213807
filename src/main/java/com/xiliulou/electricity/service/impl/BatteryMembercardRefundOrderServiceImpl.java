@@ -260,6 +260,19 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "ELECTRICITY.0049", "未缴纳电池押金");
             }
 
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.warn("ELE DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            }
+
+            //是否有正在进行中的退押
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            if (refundCount > 0) {
+                log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+                return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
+            }
+
             ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
             if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderNo);
