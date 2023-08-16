@@ -2974,8 +2974,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES: ElectricityCabinetBoxVO.EXCHANGE_NO);
 
-                    if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())) {
-                        electricityCabinetBoxVO.setBatteryType(batteryModelService.acquireBatteryModel(electricityCabinetBoxVO.getBatteryType(),electricityCabinet.getTenantId()).toString());
+                    if (StringUtils.isNotBlank(electricityBattery.getSn())) {
+                        electricityCabinetBoxVO.setBatteryShortType(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
                     }
                 }
                 
