@@ -1326,9 +1326,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 退租申请，构建会员期限更新数据
-     * @param tenantId
-     * @param uid
-     * @param optUid
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @param optUid 操作用户UID
      * @return
      */
     private CarRentalPackageMemberTermPo buildRentRefundRentalPackageMemberTerm(Integer tenantId, Long uid, Long optUid) {
