@@ -564,7 +564,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (!memberTermEntity.getRentalPackageOrderNo().equals(freezeEntity.getRentalPackageOrderNo())) {
                 expireFlag = true;
             } else {
-                if (System.currentTimeMillis() >= memberTermEntity.getDueTime()) {
+                if (System.currentTimeMillis() >= memberTermEntity.getDueTime()
+                        || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
                     expireFlag = true;
                 }
             }
@@ -1006,7 +1007,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 事务处理
         revokeFreezeRentOrderTx(tenantId, uid, freezeEntity.getOrderNo());
-        
+
         return true;
     }
 
@@ -1161,8 +1162,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 查询是否未归还设备
         // 1. 车辆
-        UserCar userCar = userCarService.selectByUidFromCache(uid);
-        if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
+        ElectricityCar electricityCar = carService.selectByUid(packageOrderEntity.getTenantId(), uid);
+        if (ObjectUtils.isNotEmpty(electricityCar)) {
             createFlag = true;
         }
 
@@ -1196,8 +1197,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         slippageEntity.setCreateUid(uid);
 
         // 记录设备信息
-        if (ObjectUtils.isNotEmpty(userCar)) {
-            slippageEntity.setCarSn(userCar.getSn());
+        if (ObjectUtils.isNotEmpty(electricityCar)) {
+            slippageEntity.setCarSn(electricityCar.getSn());
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());

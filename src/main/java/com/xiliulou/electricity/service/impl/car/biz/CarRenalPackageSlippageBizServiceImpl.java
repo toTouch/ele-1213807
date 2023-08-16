@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
@@ -8,11 +12,17 @@ import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,6 +33,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 逾期业务聚合 BizServiceImpl
@@ -32,6 +44,21 @@ import java.util.List;
 @Slf4j
 @Service
 public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSlippageBizService {
+
+    @Resource
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+
+    @Resource
+    private ElectricityCarService carService;
 
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
@@ -99,6 +126,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
     @Transactional(rollbackFor = Exception.class)
     public void saveClearSlippageTx(List<CarRentalPackageOrderSlippagePo> slippageEntityList, CarRentalPackageOrderFreezePo freezeEntity, Long optUid) {
         long now = System.currentTimeMillis();
+        AtomicBoolean jt808Flag = new AtomicBoolean(false);
         // 处理逾期
         slippageEntityList.forEach(slippageEntity -> {
             CarRentalPackageOrderSlippagePo slippageUpdateEntity = new CarRentalPackageOrderSlippagePo();
@@ -112,7 +140,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             if (SlippageTypeEnum.EXPIRE.getCode().equals(slippageEntity.getType())) {
                 slippageUpdateEntity.setLateFeeEndTime(now);
                 // 转换天
-                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), now);
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime(), now);
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
             }
@@ -126,9 +154,10 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                     endTime = now;
                 }
                 // 转换天
-                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime().longValue(), endTime.longValue());
+                long diffDay = DateUtils.diffDay(slippageEntity.getLateFeeStartTime(), endTime);
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
+                jt808Flag.set(true);
             }
             carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
         });
@@ -138,9 +167,56 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             carRentalPackageOrderBizService.enableFreezeRentOrder(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), optUid);
         }
 
-        // TODO JT808
+        // JT808
+        if (jt808Flag.get()) {
+            // 查询车辆
+            ElectricityCar electricityCar = carService.selectByUid(freezeEntity.getTenantId(), freezeEntity.getUid());
+            if (ObjectUtils.isNotEmpty(electricityCar)) {
+                // JT808解锁
+                UserInfo userInfo = userInfoService.queryByUidFromCache(freezeEntity.getUid());
+                CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+                // 生成日志
+                if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+                    carLockCtrlHistoryService.insert(carLockCtrlHistory);
+                }
+            }
+        }
+
+    }
 
 
+    /**
+     * 构建JT808
+     * @param electricityCar
+     * @param userInfo
+     * @return
+     */
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+
+            boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+
+            return carLockCtrlHistory;
+        }
+        return null;
     }
 
     /**
