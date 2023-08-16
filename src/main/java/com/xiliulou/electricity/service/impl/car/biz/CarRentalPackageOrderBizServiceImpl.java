@@ -514,6 +514,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         } catch (Exception e) {
             log.error("bindingPackage failed. ", e);
+            throw new BizException(e.getMessage());
         } finally {
             redisService.delete(bindingUidLockKey);
         }
