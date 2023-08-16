@@ -942,7 +942,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         memberTermUpdateEntity.setUpdateUid(uid);
         memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
         // 提前启用、计算差额
-        long diffTime = System.currentTimeMillis() -  (freezeEntity.getCreateTime() * TimeConstant.DAY_MILLISECOND);
+        long diffTime = System.currentTimeMillis() - freezeEntity.getCreateTime();
         memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
