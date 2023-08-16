@@ -447,7 +447,7 @@ public class CouponServiceImpl implements CouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
-            if(Objects.nonNull(batteryMemberCard)){
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
                 BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
                 memberCardVOList.add(batteryMemberCardVO);
             }
@@ -462,7 +462,7 @@ public class CouponServiceImpl implements CouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
-            if(Objects.nonNull(carRentalPackagePO)){
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
                 batteryMemberCardVO.setId(carRentalPackagePO.getId());
                 batteryMemberCardVO.setName(carRentalPackagePO.getName());
                 batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

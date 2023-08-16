@@ -442,7 +442,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : batteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareMoneyActivityPackage.getPackageId());
-            if(Objects.nonNull(batteryMemberCard)){
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
                 BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
                 memberCardVOList.add(batteryMemberCardVO);
             }
@@ -456,7 +456,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivityPackage shareMoneyActivityPackage : carBatteryPackageList){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareMoneyActivityPackage.getPackageId());
-            if(Objects.nonNull(carRentalPackagePO)){
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
                 batteryMemberCardVO.setId(carRentalPackagePO.getId());
                 batteryMemberCardVO.setName(carRentalPackagePO.getName());
                 batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

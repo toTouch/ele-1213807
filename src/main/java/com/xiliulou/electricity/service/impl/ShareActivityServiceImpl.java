@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -676,7 +677,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
 			BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(shareActivityMemberCard.getMemberCardId());
-			if(Objects.nonNull(batteryMemberCard)){
+			if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
 				BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
 				memberCardVOList.add(batteryMemberCardVO);
 			}
@@ -690,7 +691,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		for(ShareActivityMemberCard shareActivityMemberCard : batteryPackageList){
 			BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
 			CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(shareActivityMemberCard.getMemberCardId());
-			if(Objects.nonNull(carRentalPackagePO)){
+			if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
 				batteryMemberCardVO.setId(carRentalPackagePO.getId());
 				batteryMemberCardVO.setName(carRentalPackagePO.getName());
 				batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());

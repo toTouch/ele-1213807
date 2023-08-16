@@ -371,6 +371,9 @@
             <if test="divisionAccountStatus != null">
                 division_account_status = #{divisionAccountStatus},
             </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
         </set>
         where id = #{id}
     </update>

@@ -639,6 +639,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         DivisionAccountRecord accountRecord = new DivisionAccountRecord();
         accountRecord.setId(divisionAccountRecord.getId());
         accountRecord.setDivisionAccountStatus(status);
+        accountRecord.setUpdateTime(System.currentTimeMillis());
         divisionAccountRecordMapper.updateDAStatus(accountRecord);
     }
 
