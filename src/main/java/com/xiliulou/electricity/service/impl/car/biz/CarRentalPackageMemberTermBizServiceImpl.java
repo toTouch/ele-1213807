@@ -216,7 +216,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     log.info("updateCurrPackage failed. t_car_rental_package_member_term Abnormal old data. skip. id is {}", memberTermEntity.getId());
                     throw new BizException("300002", "租车会员状态异常");
                 }
-                if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
+                if (oriMemberTermEntity.getRentalPackageOrderNo().equals(packageOrderEntityUnUse.getOrderNo())) {
                     log.info("updateCurrPackage failed. t_car_rental_package_member_term processed. skip. id is {}", memberTermEntity.getId());
                     return true;
                 }
@@ -233,7 +233,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 // 计算当前到期时间
                 Integer tenancyUnUse = packageOrderEntityUnUse.getTenancy();
                 Integer tenancyUnitUnUse = packageOrderEntityUnUse.getTenancyUnit();
-                long dueTimeNow = now;
+                Long dueTimeNow = now;
                 if (RentalUnitEnum.DAY.getCode().equals(tenancyUnitUnUse)) {
                     dueTimeNow = now + (tenancyUnUse * TimeConstant.DAY_MILLISECOND);
                 }
