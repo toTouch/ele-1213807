@@ -260,7 +260,6 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
         for (CarRentalPackageOrderSlippagePo slippageEntity : slippageEntityList) {
             // 结束时间，不为空
             if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
-                log.info("重新定义结束时间");
                 now = slippageEntity.getLateFeeEndTime();
             }
 
@@ -269,20 +268,14 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
 
             // 没有滞纳金产生
             if (lateFeeStartTime > now) {
-                log.info("不产生滞纳金，跳过");
                 continue;
             }
-            log.info("lateFee is {}", slippageEntity.getLateFee());
             // 转换天
             long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
-            log.info("diffDay is {}", diffDay);
             // 计算滞纳金金额
             BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
-            log.info("amount is {}", amount);
-            totalAmount.add(amount);
+            totalAmount = totalAmount.add(amount);
         }
-
-        log.info("totalAmount is {}", totalAmount);
 
         if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
             return null;
