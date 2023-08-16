@@ -943,7 +943,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         memberTermUpdateEntity.setUpdateUid(uid);
         memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
         // 提前启用、计算差额
-        long diffTime = System.currentTimeMillis() - freezeEntity.getCreateTime();
+        long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
         memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
@@ -1231,7 +1231,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         long now = System.currentTimeMillis();
-        if (memberTermEntity.getDueTimeTotal().longValue() < now) {
+        if (memberTermEntity.getDueTimeTotal() < now) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
             throw new BizException("300032", "套餐已过期，无法申请退租");
         }
@@ -1245,7 +1245,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.notEqual(YesNoEnum.YES.getCode(), packageOrderEntity.getRentRebate())) {
             throw new BizException("300012", "订单不允许退租");
         } else {
-            if (now >= packageOrderEntity.getRentRebateEndTime().longValue()) {
+            if (now >= packageOrderEntity.getRentRebateEndTime()) {
                 throw new BizException("300013", "订单超过可退期限");
             }
         }
@@ -1269,7 +1269,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         CarRentalPackageMemberTermPo memberTermUpdateEntity = null;
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
-            if (carRentalPackageOrderService.isExitUnUseByUid(tenantId, uid)) {
+            if (carRentalPackageOrderService.isExitUnUseAndRefund(tenantId, uid, now)) {
                 throw new BizException("300017", "存在未使用的订单");
             }
             // 查询设备信息，存在设备，不允许退租

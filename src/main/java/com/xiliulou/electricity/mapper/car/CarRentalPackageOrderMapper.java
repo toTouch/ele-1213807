@@ -64,6 +64,16 @@ public interface CarRentalPackageOrderMapper {
     Integer updateStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("useState") Integer useState, @Param("useBeginTime") Long useBeginTime);
 
     /**
+     * 根据用户ID查询是否存在未使用且可退的订单<br />
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param rentRebateEndTime      可退截止时间
+     * @return true(存在未使用且可退的订单)、false(不存在未使用且可退的订单)
+     */
+    int isExitUnUseAndRefund(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("rentRebateEndTime") Long rentRebateEndTime);
+
+    /**
      * 根据用户ID查询未使用的订单总数
      * @param tenantId 租户ID
      * @param uid 用户ID
