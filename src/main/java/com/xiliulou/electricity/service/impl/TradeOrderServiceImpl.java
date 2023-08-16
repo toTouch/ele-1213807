@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -134,6 +135,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -376,6 +380,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100275", "电池套餐不可用");
+            }
+
+            List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+            if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+                log.warn("BATTERY DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+                return Triple.of(false,"100018", "套餐租金退款审核中");
             }
 
             if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){

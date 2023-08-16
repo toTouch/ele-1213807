@@ -3691,6 +3691,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
         }
 
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+            log.warn("ELE DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+            return Triple.of(false,"100018", "套餐租金退款审核中");
+        }
+
         BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
 //        if(Objects.isNull(userBindbatteryMemberCard)){
 //            return Triple.of(false, "ELECTRICITY.00121", "用户电池套餐不存在");
