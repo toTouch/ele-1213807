@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -174,7 +175,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 memberTermUpdateEntity.setUpdateUid(optUid);
                 memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
                 // 提前启用、计算差额
-                long diffTime = System.currentTimeMillis() - freezeEntity.getCreateTime();
+                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
                 memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
                 memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
