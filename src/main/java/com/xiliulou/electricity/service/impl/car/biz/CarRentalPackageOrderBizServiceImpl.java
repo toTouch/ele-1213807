@@ -1542,10 +1542,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 3. 查询套餐购买订单信息
         String rentalPackageOrderNo = memberTerm.getRentalPackageOrderNo();
         CarRentalPackageOrderPo carRentalPackageOrder = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-        if (ObjectUtils.isEmpty(carRentalPackageOrder)) {
-            log.info("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, not foun t_car_rental_package_order. rentalPackageOrderNo is {}", rentalPackageOrderNo);
-            throw new BizException("300000", "数据有误");
-        }
 
         // 4. 查询用户车辆信息
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
@@ -1601,13 +1597,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 套餐订单信息
         CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
         carRentalPackageOrderVO.setRentalPackageId(memberTerm.getRentalPackageId());
-        carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
-        carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
-        carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
-        carRentalPackageOrderVO.setConfineNum(carRentalPackageOrder.getConfineNum());
-        carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
-        carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
-        carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
+        if (ObjectUtils.isNotEmpty(carRentalPackageOrder)) {
+            carRentalPackageOrderVO.setOrderNo(carRentalPackageOrder.getOrderNo());
+            carRentalPackageOrderVO.setRentalPackageType(carRentalPackageOrder.getRentalPackageType());
+            carRentalPackageOrderVO.setConfine(carRentalPackageOrder.getConfine());
+            carRentalPackageOrderVO.setConfineNum(carRentalPackageOrder.getConfineNum());
+            carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
+            carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
+            carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
+        }
+
         carRentalPackageOrderVO.setCarRentalPackageName(ObjectUtils.isNotEmpty(carRentalPackage) ? carRentalPackage.getName() : null);
         carRentalPackageOrderVO.setDeposit(memberTerm.getDeposit());
         carRentalPackageOrderVO.setBatteryVoltage(ObjectUtils.isNotEmpty(carRentalPackage) ? carRentalPackage.getBatteryVoltage() : null);
