@@ -1626,11 +1626,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_REFUND)) {
-            log.error("PAUSE BATTERY MEMBERCARD ERROR! refund battery membercard review userId={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.100001", "用户套餐退租中");
-        }
-
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("PAUSE BATTERY MEMBERCARD ERROR!not found franchisee,uid={}", userInfo.getUid());

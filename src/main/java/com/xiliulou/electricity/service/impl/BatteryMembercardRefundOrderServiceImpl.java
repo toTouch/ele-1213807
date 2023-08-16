@@ -385,15 +385,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_AUDIT);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
-
-            //若套餐使用中,发起退租不能再使用
-            if (Objects.equals(orderNo, userBatteryMemberCard.getOrderId())) {
-                userBatteryMemberCard.setUid(userInfo.getUid());
-                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_REFUND);
-                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-                userBatteryMemberCardService.updateByUid(userBatteryMemberCard);
-            }
-
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY + user.getUid());
         }
@@ -504,14 +495,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
 
         this.insert(batteryMembercardRefundOrderInsert);
-
-        //若套餐使用中,发起退租不能再使用
-        if (Objects.equals(orderNo, userBatteryMemberCard.getOrderId())) {
-            userBatteryMemberCard.setUid(userInfo.getUid());
-            userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_REFUND);
-            userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCard);
-        }
 
         if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
             return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo);
