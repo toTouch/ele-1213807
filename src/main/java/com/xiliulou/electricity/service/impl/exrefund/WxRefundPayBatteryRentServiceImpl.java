@@ -2,14 +2,12 @@ package com.xiliulou.electricity.service.impl.exrefund;
 
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
@@ -100,24 +98,24 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             if (Objects.equals(userBatteryMemberCard.getOrderId(), memberCardOrderNo)) {
                 //退使用中的
                 List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userBatteryMemberCard.getUid());
-                if(CollectionUtils.isEmpty(userBatteryMemberCardPackages)){
+                if (CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
                     //退最后一个套餐
                     userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                     serviceFeeUserInfoService.unbindServiceFeeInfoByUid(userInfo.getUid());
-                }else{
+                } else {
                     UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                     userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
                     userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
                     userBatteryMemberCardUpdate.setOrderRemainingNumber(NumberConstant.ZERO_L);
-                    userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()-userBatteryMemberCard.getOrderRemainingNumber());
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()-userBatteryMemberCard.getOrderExpireTime());
+                    userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - userBatteryMemberCard.getOrderRemainingNumber());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
                     userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                     userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
                     ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
                     ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                     serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime()-userBatteryMemberCard.getOrderExpireTime());
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
                     serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                     serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
                 }

@@ -601,6 +601,12 @@ public class UnionTradeOrderServiceImpl extends
 
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(userInfo.getUid());
+            userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
+
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
@@ -796,6 +802,12 @@ public class UnionTradeOrderServiceImpl extends
 
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
+
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(userInfo.getUid());
+            userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
