@@ -192,7 +192,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
@@ -1058,7 +1058,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.freezeRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
@@ -1233,7 +1233,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
@@ -1812,7 +1812,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 5.1 用户套餐会员限制状态异常
                     if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                         log.error("buyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                        return R.fail("300035", "您有正在审核中流程，不可购买套餐");
+                        return R.fail("300057", "您有正在审核中/已冻结流程，不支持该操作");
                     }
                     // 从会员期限中获取押金金额
                     log.info("buyRentalPackageOrder deposit from memberTerm");

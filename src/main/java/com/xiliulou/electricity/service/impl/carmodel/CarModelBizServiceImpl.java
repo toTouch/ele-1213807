@@ -150,7 +150,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         if (ObjectUtils.isNotEmpty(memberTermEntity) &&
                 !(MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus()) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus()))) {
             log.info("CarModelBizService.checkBuyByCarModelId, The t_car_rental_package_member_term abnormal status. uid is {}", uid);
-            throw new BizException("300035", "您有正在审核中流程，不可购买套餐");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         // 4. 获取车辆型号、押金、套餐类型

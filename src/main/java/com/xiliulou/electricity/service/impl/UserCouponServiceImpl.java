@@ -440,8 +440,10 @@ public class UserCouponServiceImpl implements UserCouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
-            BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(batteryMemberCard)){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;
@@ -453,10 +455,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
-            batteryMemberCardVO.setId(carRentalPackagePO.getId());
-            batteryMemberCardVO.setName(carRentalPackagePO.getName());
-            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
-            memberCardVOList.add(batteryMemberCardVO);
+            if(Objects.nonNull(carRentalPackagePO)){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
         }
 
         return memberCardVOList;

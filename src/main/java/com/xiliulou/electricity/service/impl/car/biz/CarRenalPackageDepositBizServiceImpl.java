@@ -782,7 +782,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepo" +
                     "sitBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         // 检测押金缴纳订单数据
@@ -1220,7 +1220,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         // 检测押金缴纳订单数据

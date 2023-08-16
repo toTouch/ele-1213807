@@ -238,7 +238,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                 log.error("refundCarOrderApply failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-                throw new BizException("300031", "您有正在审核中流程，不可再次提交审核");
+                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
             }
 
             // 判定用户
@@ -467,6 +467,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("300000", "数据有误");
         }
 
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("unBindingCar, t_car_rental_package_member_term status is wrong. uid is {}", uid);
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        }
+
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
             log.error("unBindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
@@ -540,6 +545,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
             throw new BizException("300000", "数据有误");
+        }
+
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("bindingCar, t_car_rental_package_member_term status is wrong. uid is {}", uid);
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
