@@ -43,10 +43,11 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
         //3.0 同步修改柜机信息
         try{
             EleCabinetVO cabinet = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetVO.class);
+
             electricityCabinet.setFullyCharged(Double.parseDouble(cabinet.getExchangeCondition()));
             electricityCabinetService.update(electricityCabinet);
         }catch (Exception e){
-            log.error("convert json to electricity cabinet error, EID = {}, session id = {}", electricityCabinet.getId(), sessionId, e);
+            log.error("convert json to electricity cabinet error, EID = {}, session id = {}, origin content = {}", electricityCabinet.getId(), sessionId, receiverMessage.getOriginContent(), e);
         }
 
         Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
