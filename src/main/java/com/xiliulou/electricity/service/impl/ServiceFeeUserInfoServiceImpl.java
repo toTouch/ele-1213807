@@ -258,16 +258,15 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Override
     public Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo) {
+        if(Objects.isNull(userInfo) || Objects.isNull(userBatteryMemberCard) || Objects.isNull(batteryMemberCard) || Objects.isNull(serviceFeeUserInfo)){
+            return Triple.of(false, null, null);
+        }
 
         if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
             return Triple.of(false, null, null);
         }
 
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            return Triple.of(false, null, null);
-        }
-
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(serviceFeeUserInfo)) {
             return Triple.of(false, null, null);
         }
 

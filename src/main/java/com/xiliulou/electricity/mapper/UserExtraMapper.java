@@ -41,14 +41,6 @@ public interface UserExtraMapper extends BaseMapper<UserExtra> {
     List<UserExtra> queryAll(UserExtra userExtra);
 
     /**
-     * 新增数据
-     *
-     * @param userExtra 实例对象
-     * @return 影响行数
-     */
-    int insertOne(UserExtra userExtra);
-
-    /**
      * 修改数据
      *
      * @param userExtra 实例对象
