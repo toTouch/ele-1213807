@@ -340,7 +340,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     // 5.1 用户套餐会员限制状态异常
                     if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                         log.error("bindingPackage failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                        throw new BizException("300002", "租车会员状态异常");
+                        throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
                     }
                     // 从会员期限中获取押金金额
                     log.info("bindingPackage deposit from memberTerm");
