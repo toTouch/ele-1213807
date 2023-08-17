@@ -60,6 +60,8 @@ public class CarDataServiceImpl implements CarDataService {
             return queryNotRentCarData(carDataConditionReq);
         }else if(Objects.equals(carDataConditionReq.getQueryType(),CarDataQueryEnum.OVERDUE.getCode())){
             return queryOverdueCarData(carDataConditionReq);
+        }else if(Objects.equals(carDataConditionReq.getQueryType(),CarDataQueryEnum.OFFLINE.getCode())){
+            return queryOfflineCarData(carDataConditionReq);
         }
         return new PageDataResult();
     }
@@ -117,6 +119,19 @@ public class CarDataServiceImpl implements CarDataService {
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
+    /**
+     * 查询下线的车辆数据
+     * @param carDataConditionReq
+     * @return
+     */
+    @Slave
+    private PageDataResult queryOfflineCarData(CarDataConditionReq carDataConditionReq){
+        // 查库的信息
+        List<CarDataEntity> carDataEntityList = electricityCarMapper.queryOfflineCarData(carDataConditionReq);
+        Integer count = electricityCarMapper.queryOfflineCarDataCount(carDataConditionReq);
+        List<CarDataVO> carDataVOList = CarDataVO.carDataEntityListToCarDataVOList(carDataEntityList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
+    }
 
     /**
      * 通过jt808查询位置信息

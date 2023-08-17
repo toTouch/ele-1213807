@@ -121,5 +121,22 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer queryOverdueCarDataCount(@Param("query")CarDataConditionReq carDataConditionReq);
 
 
+    /**
+     * 查询套餐已经到期的车辆数据
+     * @param carDataConditionReq
+     * @return
+     */
+    List<CarDataEntity> queryOfflineCarData(@Param("query")CarDataConditionReq carDataConditionReq);
+
+    /**
+     * 查询套餐已经到期的车辆数据总数
+     * @param carDataConditionReq
+     * @return
+     */
+    Integer queryOfflineCarDataCount(@Param("query")CarDataConditionReq carDataConditionReq);
+
+
+
+
 
 }

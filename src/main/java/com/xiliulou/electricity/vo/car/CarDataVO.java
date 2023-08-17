@@ -24,6 +24,7 @@ public class CarDataVO {
     private double voltage;  // 电池电压
     private Long updateTime;  // 更新时间
     private Long createTime;  // 创建时间
+    private Long dueTime; // 套餐到期时间
     /**
      * 经度
      */
@@ -33,7 +34,6 @@ public class CarDataVO {
      * 纬度
      */
     private Double latitude;
-
 
     public static CarDataVO carDataEntityToCarDataVO(CarDataEntity carDataEntity) {
         if (carDataEntity == null) {
@@ -52,6 +52,9 @@ public class CarDataVO {
         carDataVO.setVoltage(carDataEntity.getVoltage());
         carDataVO.setUpdateTime(carDataEntity.getUpdateTime());
         carDataVO.setCreateTime(carDataEntity.getCreateTime());
+        carDataVO.setDueTime(carDataEntity.getDueTime());
+        carDataVO.setLongitude(carDataEntity.getLongitude());
+        carDataVO.setLatitude(carDataEntity.getLatitude());
         return carDataVO;
     }
 
