@@ -12,15 +12,19 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -30,11 +34,13 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +65,13 @@ import java.util.stream.Collectors;
 @Service("userInfoService")
 @Slf4j
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoService {
+
+    @Value("${switch.version:v2}")
+    private String switchVersion;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
     @Resource
     private UserInfoMapper userInfoMapper;
     @Autowired
@@ -1282,7 +1295,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否缴纳租车押金
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode()) ) {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
@@ -1311,6 +1324,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } else {
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
             userCarDetail.setCarSN(userCar.getSn());
+        }
+
+        // V3 版本
+        if (CommonConstant.SWITCH_VERSION.equals(switchVersion)) {
+            // 是否购买租车套餐、是否过期
+            CarRentalPackageMemberTermPo carRentalPackageMemberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+            if (ObjectUtils.isEmpty(carRentalPackageMemberTermPo)) {
+                userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
+                userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
+            } else {
+                if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(carRentalPackageMemberTermPo.getStatus()) || StringUtils.isBlank(carRentalPackageMemberTermPo.getRentalPackageOrderNo())) {
+                    userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
+                    userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
+                } else {
+                    userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
+                    userCarDetail.setMemberCardExpireTime(carRentalPackageMemberTermPo.getDueTimeTotal());
+                    if (carRentalPackageMemberTermPo.getDueTimeTotal() <= System.currentTimeMillis()) {
+                        userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
+                    }
+                }
+            }
+
+            //是否绑定车辆
+            ElectricityCar car = electricityCarService.selectByUid(userInfo.getTenantId(), userInfo.getUid());
+            if (ObjectUtils.isNotEmpty(car)) {
+                userCarDetail.setIsRentCar(UserInfoResultVO.YES);
+                userCarDetail.setCarSN(car.getSn());
+            } else {
+                userCarDetail.setIsRentCar(UserInfoResultVO.NO);
+            }
+
         }
 
         threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));

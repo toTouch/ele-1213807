@@ -276,6 +276,9 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
             // 事务处理
             refundCarOrderApplyTx(carRentalOrderPoInsert);
+        } catch (BizException e) {
+            log.error("refundCarOrderApply failed.", e);
+            throw new BizException(e.getErrCode(), e.getMessage());
         } catch (Exception e) {
             log.error("refundCarOrderApply failed.", e);
             throw new BizException(e.getMessage());
