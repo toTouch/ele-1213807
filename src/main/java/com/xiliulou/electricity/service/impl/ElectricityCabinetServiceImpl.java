@@ -2047,7 +2047,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("queryByRentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig)&& electricityConfig.getAllowRentEle().equals(electricityConfig.NOT_ALLOW_RENT_ELE)){
+            return R.fail("100271", "当前柜机不支持租电");
+        }
+
         //是否存在未完成的租电池订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
         if (Objects.nonNull(rentBatteryOrder)) {

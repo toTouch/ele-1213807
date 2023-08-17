@@ -432,6 +432,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig)&& electricityConfig.getAllowReturnEle().equals(electricityConfig.NOT_ALLOW_RETURN_ELE)){
+            return R.fail("100272", "当前柜机不支持退电");
+        }
+
         //是否存在未完成的租电池订单
         RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
         if (Objects.nonNull(oldRentBatteryOrder)) {
@@ -621,8 +627,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             dataMap.put("orderId", orderId);
 
             //是否开启电池检测
-            ElectricityConfig electricityConfig = electricityConfigService
-                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
