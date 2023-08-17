@@ -1054,6 +1054,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
                 return Triple.of(false, "100210", "用户未开通套餐");
             }
+
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+                return Triple.of(false, "100211", "换电套餐停卡审核中");
+            }
 //            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
 //            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
 //                return checkUserMemberCardResult;
