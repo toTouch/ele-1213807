@@ -81,6 +81,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
                 item.setDisableTime(Objects.isNull(userBatteryMemberCard)?null:userBatteryMemberCard.getDisableMemberCardTime());
             }
+
         });
 
         return R.ok(eleDisableMemberCardRecordVOS);

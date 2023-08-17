@@ -123,6 +123,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
             }
 
+            if(StringUtils.isNotBlank(eleBatteryServiceFeeOrderVo.getBatteryType())){
+                eleBatteryServiceFeeOrderVo.setBatteryTypeList(JsonUtil.fromJsonArray(eleBatteryServiceFeeOrderVo.getBatteryType(),String.class));
+            }
+
         }
         return R.ok(eleBatteryServiceFeeOrders);
     }
