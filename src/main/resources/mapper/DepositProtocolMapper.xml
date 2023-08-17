@@ -16,7 +16,7 @@
     </sql>
     
     <!--查询单个-->
-    <select id="selectById" resultMap="DepositProtocolMap">
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.DepositProtocol">
         <include refid="selectDepositProtocol"/>
         where id = #{id}
     </select>
