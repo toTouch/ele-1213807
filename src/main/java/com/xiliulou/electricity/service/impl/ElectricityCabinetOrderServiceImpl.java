@@ -1042,11 +1042,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
             }
 
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-            if(Objects.isNull(electricityBattery)){
-                log.error("ORDER ERROR! not found franchisee,uid={}", user.getUid());
-                return Triple.of(false, "100292", "用户未绑定电池");
-            }
+//            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+//            if(Objects.isNull(electricityBattery)){
+//                log.error("ORDER ERROR! not found franchisee,uid={}", user.getUid());
+//                return Triple.of(false, "100292", "用户未绑定电池");
+//            }
 
             //判断用户押金
             Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, user);
@@ -1106,6 +1106,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
             }
 
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
             Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee , electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
             if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
                 return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
@@ -1145,13 +1146,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());
             commandData.put("takeCellNo", electricityCabinetOrder.getNewCellNo());
             commandData.put("phone", user.getPhone());
-    
+
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
-                commandData.put("userBindingBatterySn", electricityBattery.getSn());
+                commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             }
 
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                commandData.put("multiBatteryModelName", electricityBattery.getModel());
+                commandData.put("multiBatteryModelName", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getModel());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
