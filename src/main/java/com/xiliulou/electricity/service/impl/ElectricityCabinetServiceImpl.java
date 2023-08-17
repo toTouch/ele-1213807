@@ -2534,12 +2534,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            //用户当前绑定电池的型号
-            String userCurrentBatteryType = electricityBattery.getModel();
+            if(Objects.nonNull(electricityBattery)){
+                //用户当前绑定电池的型号
+                String userCurrentBatteryType = electricityBattery.getModel();
 
-            List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
-                return Triple.of(true, null, userBindBatteryCellNos.get(0));
+                List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
+                    return Triple.of(true, null, userBindBatteryCellNos.get(0));
+                }
             }
 
             //获取用户绑定的型号
