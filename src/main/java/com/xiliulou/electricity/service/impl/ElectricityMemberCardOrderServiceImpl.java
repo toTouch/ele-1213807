@@ -868,6 +868,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setRentUnit(batteryMemberCard.getRentUnit());
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
+            vo.setIsRefund(batteryMemberCard.getIsRefund());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
             return vo;
