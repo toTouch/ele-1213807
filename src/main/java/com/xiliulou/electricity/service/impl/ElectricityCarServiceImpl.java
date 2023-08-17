@@ -483,7 +483,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
 
-        List<CarAttr> query = jt808CarService.queryListBySn(userCar.getSn(), begin, end);
+        List<CarAttr> query = jt808CarService.queryListBySn(sn, begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }
