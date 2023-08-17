@@ -271,6 +271,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return true(成功)、false(失败)
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean bindingPackage(CarRentalPackageOrderBuyOptModel buyOptModel) {
         if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getTenantId(), buyOptModel.getUid(), buyOptModel.getFranchiseeId(), buyOptModel.getStoreId(), buyOptModel.getRentalPackageId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
