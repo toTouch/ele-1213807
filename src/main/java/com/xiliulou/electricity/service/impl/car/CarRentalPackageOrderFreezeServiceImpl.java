@@ -34,11 +34,27 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     private CarRentalPackageOrderFreezeMapper carRentalPackageOrderFreezeMapper;
 
     /**
+     * 根据用户UID查询最后一笔冻结订单
+     *
+     * @param uid 用户UID
+     * @return 冻结订单
+     */
+    @Slave
+    @Override
+    public CarRentalPackageOrderFreezePo selectLastFreeByUid(Long uid) {
+        if (ObjectUtils.isEmpty(uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderFreezeMapper.selectLastFreeByUid(uid);
+    }
+
+    /**
      * 根据用户ID查询冻结中的订单
      *
      * @param uid 用户ID
      * @return 冻结订单
      */
+    @Slave
     @Override
     public CarRentalPackageOrderFreezePo selectFreezeByUid(Long uid) {
         if (ObjectUtils.isEmpty(uid)) {
@@ -53,6 +69,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @param packageOrderNo 购买订单编码
      * @return 冻结订单
      */
+    @Slave
     @Override
     public CarRentalPackageOrderFreezePo selectFreezeByUidAndPackageOrderNo(Long uid, String packageOrderNo) {
         if (!ObjectUtils.allNotNull(uid, packageOrderNo)) {

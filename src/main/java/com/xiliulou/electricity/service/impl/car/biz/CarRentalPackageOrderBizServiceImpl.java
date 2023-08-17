@@ -1394,14 +1394,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 0. 计算剩余租期
             long nowTime = System.currentTimeMillis();
             long useBeginTime = packageOrderEntity.getUseBeginTime();
+
+            // 查询是否存在冻结订单
+            CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+
             if (RentalUnitEnum.DAY.getCode().equals(packageOrderEntity.getTenancyUnit())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                    useBeginTime = freezePo.getEnableTime();
+                }
                 // 已使用天数
                 tenancyUse = DateUtils.diffDay(useBeginTime, nowTime);
+
                 // 剩余天数
                 tenancyResidue = packageOrderEntity.getTenancy() - tenancyUse;
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                    useBeginTime = freezePo.getEnableTime();
+                }
                 // 已使用分钟数
                 tenancyUse = DateUtils.diffMinute(useBeginTime, nowTime);
                 // 剩余分钟数
