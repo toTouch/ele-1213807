@@ -1295,7 +1295,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否缴纳租车押金
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode()) ) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode()) ) {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
