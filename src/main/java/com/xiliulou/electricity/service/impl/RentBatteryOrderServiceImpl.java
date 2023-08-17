@@ -435,7 +435,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig)&& electricityConfig.getAllowReturnEle().equals(electricityConfig.NOT_ALLOW_RETURN_ELE)){
-            return R.fail("100272", "当前柜机不支持退电");
+            return R.fail("ELECTRICITY.100272", "当前柜机不支持退电");
         }
 
         //是否存在未完成的租电池订单

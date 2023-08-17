@@ -2051,7 +2051,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig)&& electricityConfig.getAllowRentEle().equals(electricityConfig.NOT_ALLOW_RENT_ELE)){
-            return R.fail("100271", "当前柜机不支持租电");
+            return R.fail("ELECTRICITY.100271", "当前柜机不支持租电");
         }
 
         //是否存在未完成的租电池订单
