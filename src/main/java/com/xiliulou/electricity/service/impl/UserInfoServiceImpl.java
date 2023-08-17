@@ -1278,12 +1278,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否产生电池服务费
-        Triple<Boolean, Integer, BigDecimal> batteryServiceFeeTriple = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId()), serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
-        if (Boolean.TRUE.equals(batteryServiceFeeTriple.getLeft())) {
-            userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
-            userBatteryDetail.setBatteryServiceFee((BigDecimal) batteryServiceFeeTriple.getRight());
-        } else {
-            userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+        if(Objects.nonNull(userBatteryMemberCard)){
+            Triple<Boolean, Integer, BigDecimal> batteryServiceFeeTriple = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId()), serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+            if (Boolean.TRUE.equals(batteryServiceFeeTriple.getLeft())) {
+                userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
+                userBatteryDetail.setBatteryServiceFee(batteryServiceFeeTriple.getRight());
+            } else {
+                userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+            }
         }
 
         //是否绑定的有电池
