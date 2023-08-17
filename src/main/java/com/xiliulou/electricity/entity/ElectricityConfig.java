@@ -230,12 +230,12 @@ public class ElectricityConfig {
      * 是否允许租电 0--是  1--否
      */
     public static  Integer ALLOW_RENT_ELE=0;
-    public static  Integer NOT_ALLOW_RENT_ELE=0;
+    public static  Integer NOT_ALLOW_RENT_ELE=1;
 
     /**
      * 是否允许退电 0--是  1--否
      */
     public static  Integer ALLOW_RETURN_ELE=0;
-    public static  Integer NOT_ALLOW_RETURN_ELE=0;
+    public static  Integer NOT_ALLOW_RETURN_ELE=1;
 
 }
