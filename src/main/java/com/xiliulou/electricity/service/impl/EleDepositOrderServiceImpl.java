@@ -32,7 +32,6 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1026,38 +1025,33 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
-        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.error("admin saveUserMemberCard ERROR! user not exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "不存在电池服务费");
         }
 
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
-        if(StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())){
-            eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
-        }else{
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
 
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
+                .uid(user.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(acquireUserBatteryServiceFeeResult.getRight())
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId)
+                .source(acquireUserBatteryServiceFeeResult.getMiddle())
+                .franchiseeId(franchisee.getId())
+                .storeId(userInfo.getStoreId())
+                .modelType(franchisee.getModelType())
+                .batteryType("")
+                .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+        eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
-            eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
-                    .uid(user.getUid())
-                    .phone(userInfo.getPhone())
-                    .name(userInfo.getName())
-                    .payAmount(acquireUserBatteryServiceFeeResult.getRight())
-                    .status(EleDepositOrder.STATUS_INIT)
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .tenantId(tenantId)
-                    .source(acquireUserBatteryServiceFeeResult.getMiddle())
-                    .franchiseeId(franchisee.getId())
-                    .storeId(userInfo.getStoreId())
-                    .modelType(franchisee.getModelType())
-                    .batteryType("")
-                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
-                    .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
-            eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
-        }
 
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
@@ -1066,7 +1060,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .payAmount(acquireUserBatteryServiceFeeResult.getRight())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_BATTERY_SERVICE_FEE)
                     .attach(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)
-                    .description("电池服务费收费")
+                    .description("电池服务费")
                     .tenantId(tenantId).build();
 
             WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
