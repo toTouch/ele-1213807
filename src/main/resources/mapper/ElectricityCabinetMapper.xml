@@ -580,10 +580,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and (count( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate})
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and count( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         limit #{offset}, #{size}
     </select>
@@ -630,10 +630,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and (count( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate})
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and count( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>

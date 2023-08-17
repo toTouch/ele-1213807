@@ -2295,6 +2295,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        log.info("start battery power query, cabinet query = {}", JsonUtil.toJson(cabinetQuery));
         return electricityCabinetMapper.selectPowerPage(cabinetQuery);
     }
 
