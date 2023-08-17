@@ -10,6 +10,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,9 +103,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         }
 
         //判断是否为重复扫邀请人的码
-        Boolean isJoinedActivityFromSameInviter = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-        if(isJoinedActivityFromSameInviter){
-            return R.ok();
+        Pair<Boolean, String> sameInviterResult = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+        if(sameInviterResult.getLeft()){
+            if(sameInviterResult.getRight().isEmpty()){
+                return R.ok();
+            }else{
+                return R.fail("000208", sameInviterResult.getRight());
+            }
         }
 
         log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
@@ -122,13 +127,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
         List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
         if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-            return R.fail("000106", "已参加过邀请返券活动");
+            return R.fail("000206", "已参加过邀请返券活动");
         }
 
         //查询当前用户是否参与了邀请返现活动
         List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
         if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
-            return R.fail("000107", "已参加过邀请返现活动");
+            return R.fail("000207", "已参加过邀请返现活动");
         }
 
         //未购买月卡则添加用户参与记录
