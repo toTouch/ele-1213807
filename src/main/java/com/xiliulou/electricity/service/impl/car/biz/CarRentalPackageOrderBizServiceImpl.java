@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryMo
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
@@ -36,6 +39,7 @@ import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
+import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
@@ -67,6 +71,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private Jt808RetrofitService jt808RetrofitService;
 
     @Resource
     private CarRentalOrderService carRentalOrderService;
@@ -1590,6 +1597,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarInfoDO carInfo = null;
         CarAttr carAttr = null;
         Integer carRentalState = null;
+        Integer lockType = null;
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             // 5. 查询车辆相关信息
             carInfo = carService.queryByCarId(tenantId, Long.valueOf(electricityCar.getId()));
@@ -1599,6 +1607,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndType(tenantId, uid, RentalTypeEnum.RETURN.getCode(), electricityCar.getSn());
             if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
                 carRentalState = carRentalOrderPo.getRentalState();
+            }
+            //车辆锁状态
+            if (StringUtils.isNotBlank(electricityCar.getSn())) {
+                R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                        .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                if (result.isSuccess()) {
+                    lockType = result.getData().getDoorStatus();
+                }
             }
         }
 
@@ -1618,14 +1634,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount, carModel,
-                carAttr, carRentalState);
+                carAttr, carRentalState, lockType);
 
         return R.ok(rentalPackageVO);
     }
 
     private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPo memberTerm, CarRentalPackagePo carRentalPackage, CarRentalPackageOrderPo carRentalPackageOrder,
                                                  InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount,
-                                                 ElectricityCarModel carModel, CarAttr carAttr, Integer carRentalState) {
+                                                 ElectricityCarModel carModel, CarAttr carAttr, Integer carRentalState, Integer lockType) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -1681,6 +1697,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
             }
             carVO.setCarRentalState(carRentalState);
+            carVO.setLockType(lockType);
             // 赋值车辆信息
             rentalPackageVO.setCar(carVO);
         }
