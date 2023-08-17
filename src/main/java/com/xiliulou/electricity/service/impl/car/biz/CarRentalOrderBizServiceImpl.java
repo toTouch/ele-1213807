@@ -238,6 +238,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
                 throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
             }
 
+            // 判定滞纳金
+            boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
+            if (exitUnpaid) {
+                log.error("refundCarOrderApply failed. User has a late fee. uid is {}", uid);
+                throw new BizException("300001", "存在滞纳金，请先缴纳");
+            }
+
             // 判定用户
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
 
@@ -271,6 +278,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             refundCarOrderApplyTx(carRentalOrderPoInsert);
         } catch (Exception e) {
             log.error("refundCarOrderApply failed.", e);
+            throw new BizException(e.getMessage());
         } finally {
             redisService.delete(cacheKey);
         }
@@ -335,6 +343,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     public boolean bindingCarByQR(Integer tenantId, Long uid, String carSn, Long optUid) {
         if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 判定滞纳金
+        boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
+        if (exitUnpaid) {
+            log.error("bindingCar failed. User has a late fee. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // 查询租车会员信息
@@ -535,6 +550,13 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     public boolean bindingCar(Integer tenantId, Long uid, String carSn, Long optUid) {
         if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 判定滞纳金
+        boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
+        if (exitUnpaid) {
+            log.error("bindingCar failed. User has a late fee. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // 查询租车会员信息

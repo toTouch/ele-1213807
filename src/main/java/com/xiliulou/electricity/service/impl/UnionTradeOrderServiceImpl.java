@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -190,6 +191,15 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     private ActivityService activityService;
+
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    EnableMemberCardRecordService enableMemberCardRecordService;
+
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -911,6 +921,231 @@ public class UnionTradeOrderServiceImpl extends
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
 
         return Pair.of(true, null);
+    }
+
+    /**
+     * 滞纳金混合支付回调
+     * 抄的上面的支付回调  @See notifyIntegratedPayment
+     * @param callBackResource
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource) {
+        //回调参数
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR! ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR! not found userInfo, TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到用户信息");
+        }
+
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (Objects.isNull(electricityTradeOrderList)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+
+        String jsonOrderType = unionTradeOrder.getJsonOrderType();
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
+
+        String jsonOrderId = unionTradeOrder.getJsonOrderId();
+        List<String> orderIdList = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+        } else {
+            log.error("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO={}" + tradeOrderNo);
+        }
+
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_PAUSE.getCode())) {
+                handleBatteryMembercardPauseServiceFeeOrder(orderIdList.get(i), tradeOrderStatus, userInfo);
+            } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode())) {
+                handleBatteryMembercardExpireServiceFeeOrder(orderIdList.get(i), tradeOrderStatus, userInfo);
+            } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR.getCode())) {
+                //TODO 车辆滞纳金
+            }
+        }
+
+        //系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+
+        //混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+
+        return Pair.of(true, null);
+    }
+
+    private void handleBatteryMembercardPauseServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
+            return;
+        }
+
+        if (Objects.equals(eleBatteryServiceFeeOrder.getStatus(), EleBatteryServiceFeeOrder.STATUS_SUCCESS)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!order status illegal,orderId={}", orderId);
+            return;
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(eleBatteryServiceFeeOrder.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            return;
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            return;
+        }
+
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.selectByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo());
+        if (Objects.isNull(eleDisableMemberCardRecord)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleDisableMemberCardRecord,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), serviceFeeUserInfo.getDisableMemberCardNo());
+            return;
+        }
+
+        if (Objects.equals(EleBatteryServiceFeeOrder.STATUS_SUCCESS, status)) {
+            Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            Long orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+
+            //更新用户套餐到期时间，启用用户套餐
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+            userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+            userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
+
+            //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+            serviceFeeUserInfoUpdate.setPauseOrderNo("");
+            serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+            //生成启用记录
+            EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
+            Long cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+            if (Objects.isNull(enableMemberCardRecord)) {
+                EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
+                        .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
+                        .memberCardName(eleDisableMemberCardRecord.getMemberCardName())
+                        .enableTime(System.currentTimeMillis())
+                        .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
+                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
+                        .disableDays(cardDays.intValue())
+                        .disableTime(eleDisableMemberCardRecord.getCreateTime())
+                        .franchiseeId(userInfo.getFranchiseeId())
+                        .phone(userInfo.getPhone())
+                        .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
+                        .createTime(System.currentTimeMillis())
+                        .tenantId(userInfo.getTenantId())
+                        .uid(userInfo.getUid())
+                        .userName(userInfo.getName())
+                        .updateTime(System.currentTimeMillis()).build();
+                enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
+            }
+        }
+
+        //更新滞纳金订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+        eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+        eleBatteryServiceFeeOrderUpdate.setStatus(status);
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+    }
+
+    private void handleBatteryMembercardExpireServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found eleBatteryServiceFeeOrder,orderId={}", orderId);
+            return;
+        }
+
+        if (Objects.equals(eleBatteryServiceFeeOrder.getStatus(), EleBatteryServiceFeeOrder.STATUS_SUCCESS)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!order status illegal,orderId={}", orderId);
+            return;
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(eleBatteryServiceFeeOrder.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found userBatteryMemberCard,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            return;
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!not found serviceFeeUserInfo,uid={},orderId={}", eleBatteryServiceFeeOrder.getUid(), orderId);
+            return;
+        }
+
+        if (Objects.equals(EleBatteryServiceFeeOrder.STATUS_SUCCESS, status)) {
+
+            //更新用户套餐过期时间
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
+
+            //更新电池服务费产生时间,解绑套餐过期电池服务费订单号
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+            serviceFeeUserInfoUpdate.setExpireOrderNo("");
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+        }
+
+        //更新滞纳金订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+        eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+        eleBatteryServiceFeeOrderUpdate.setStatus(status);
+        eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
     }
 
     /**

@@ -183,6 +183,9 @@
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
             </if>
+            <if test="orderExpireTime != null">
+                order_expire_time = #{orderExpireTime},
+            </if>
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
             </if>

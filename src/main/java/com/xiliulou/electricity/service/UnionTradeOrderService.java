@@ -29,10 +29,11 @@ public interface UnionTradeOrderService {
 
     Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus);
 
-
     UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 
     UnionTradeOrder selectTradeOrderById(Long id);
 
-    Pair<Boolean, Object> notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object>  notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource);
+
+    Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -56,7 +57,18 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
         BeanUtils.copyProperties(msg, otherSetting);
         
         redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), otherSetting);
-    
+
+        //APP端修改了换电标准  saas平台同步更新
+        if(StringUtils.isNotBlank(otherSetting.getExchangeCondition())){
+            ElectricityCabinet electricityCabinetUpdate=new ElectricityCabinet();
+            electricityCabinetUpdate.setId(electricityCabinet.getId());
+            electricityCabinetUpdate.setProductKey(electricityCabinet.getProductKey());
+            electricityCabinetUpdate.setDeviceName(electricityCabinet.getDeviceName());
+            electricityCabinetUpdate.setFullyCharged(Double.valueOf(otherSetting.getExchangeCondition()));
+            electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetService.update(electricityCabinetUpdate);
+        }
+
         if (CollectionUtils.isEmpty(msg.getSettingParamTemplate())) {
             return;
         }

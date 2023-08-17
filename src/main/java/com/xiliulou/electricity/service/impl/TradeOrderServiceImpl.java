@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.service.*;
@@ -138,6 +139,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
+    @Autowired
+    EleBatteryServiceFeeOrderService batteryServiceFeeOrderService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -539,6 +543,177 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, "", "");
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> payServiceFee(HttpServletRequest request) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("SERVICE FEE ERROR! not found user ");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        try {
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("SERVICE FEE WARN! not found user,uid={}", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+            }
+
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.warn("SERVICE FEE WARN! user is unUsable,uid={}", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
+
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("SERVICE FEE WARN! user not auth,uid={}", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.warn("SERVICE FEE WARN! user is rent deposit,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
+            }
+
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            if (Objects.isNull(electricityPayParams)) {
+                log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
+                return Triple.of(false, "100307", "未配置支付参数!");
+            }
+
+            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+                log.warn("SERVICE FEE WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
+                return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+            }
+
+            List<String> orderList = new ArrayList<>();
+            List<Integer> orderTypeList = new ArrayList<>();
+            List<BigDecimal> allPayAmountList = new ArrayList<>();
+
+            BigDecimal totalPayAmount = BigDecimal.valueOf(0);
+
+            //获取电池滞纳金
+            Triple<Boolean, String, Object> handleBatteryServiceFeeResult = handleBatteryServiceFee(userInfo, orderList, orderTypeList, allPayAmountList);
+            if(Boolean.FALSE.equals(handleBatteryServiceFeeResult.getLeft())){
+                return handleBatteryServiceFeeResult;
+            }
+
+            if(CollectionUtils.isEmpty(allPayAmountList)){
+                log.warn("SERVICE FEE WARN!allPayAmountList is empty,uid={}", user.getUid());
+                return Triple.of(false, "000001", "滞纳金为空!");
+            }
+
+            //总滞纳金
+            allPayAmountList.forEach(totalPayAmount::add);
+
+            if (totalPayAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+                log.warn("SERVICE FEE WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
+                return Triple.of(false, "000001", "滞纳金不合法!");
+            }
+
+            //调起支付
+            try {
+                UnionPayOrder unionPayOrder = UnionPayOrder.builder()
+                        .jsonOrderId(JsonUtil.toJson(orderList))
+                        .jsonOrderType(JsonUtil.toJson(orderTypeList))
+                        .jsonSingleFee(JsonUtil.toJson(allPayAmountList))
+                        .payAmount(totalPayAmount)
+                        .tenantId(tenantId)
+                        .attach(UnionTradeOrder.ATTACH_SERVUCE_FEE)
+                        .description("滞纳金")
+                        .uid(user.getUid()).build();
+                WechatJsapiOrderResultDTO resultDTO =
+                        unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+                return Triple.of(true, null, resultDTO);
+            } catch (WechatPayException e) {
+                log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
+            }
+        } finally {
+            redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
+        }
+
+        return Triple.of(false, "ELECTRICITY.0099", "滞纳金支付失败");
+    }
+
+    private Triple<Boolean, String, Object> handleBatteryServiceFee(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmount) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            log.warn("SERVICE FEE WARN! user haven't memberCard uid={}", userInfo.getUid());
+            return Triple.of(false,"100210", "用户未开通套餐");
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.warn("SERVICE FEE WARN! not found user UID={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("SERVICE FEE WARN! memberCard  is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false,"ELECTRICITY.00121", "套餐不存在");
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            log.warn("SERVICE FEE WARN! not found user,uid={}", userInfo.getUid());
+            return Triple.of(false,"100247", "用户信息不存在");
+        }
+
+        Triple<Boolean,Integer,BigDecimal> acquireDisableMembercardServiceFeeResult = serviceFeeUserInfoService.acquireDisableMembercardServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard);
+        Triple<Boolean,Integer,BigDecimal> acquireExpireMembercardServiceFeeResult = serviceFeeUserInfoService.acquireExpireMembercardServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+
+        if (Boolean.FALSE.equals(acquireDisableMembercardServiceFeeResult.getLeft()) && Boolean.FALSE.equals(acquireExpireMembercardServiceFeeResult.getLeft())) {
+            log.warn("SERVICE FEE WARN! user not exist battery service fee,uid={}", userInfo.getUid());
+            return Triple.of(true, null, null);
+        }
+
+        BigDecimal totalServiceFee=BigDecimal.ZERO;
+
+        //暂停套餐电池服务费
+        if(Boolean.TRUE.equals(acquireDisableMembercardServiceFeeResult.getLeft())){
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
+            if(Objects.isNull(eleBatteryServiceFeeOrder)){
+                log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
+                return Triple.of(false,"ELECTRICITY.0015", "滞纳金订单不存在");
+            }
+
+            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
+            orderTypeList.add(ServiceFeeEnum.BATTERY_PAUSE.getCode());
+            allPayAmount.add(acquireDisableMembercardServiceFeeResult.getRight());
+            totalServiceFee.add(acquireDisableMembercardServiceFeeResult.getRight());
+        }
+
+        //套餐过期电池服务费
+        if(Boolean.TRUE.equals(acquireExpireMembercardServiceFeeResult.getLeft())){
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+            if(Objects.isNull(eleBatteryServiceFeeOrder)){
+                log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
+                return Triple.of(false,"ELECTRICITY.0015", "滞纳金订单不存在");
+            }
+
+            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
+            orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
+            allPayAmount.add(acquireExpireMembercardServiceFeeResult.getRight());
+            totalServiceFee.add(acquireExpireMembercardServiceFeeResult.getRight());
+        }
+
+        if (totalServiceFee.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            log.warn("SERVICE FEE WARN! service fee illegal,uid={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.100000", "电池服务费不合法");
+        }
+
+        return Triple.of(true, null, null);
+    }
 
     private Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet) {
 

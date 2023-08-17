@@ -28,7 +28,13 @@ public interface ServiceFeeUserInfoService {
 
     Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
 
+    Triple<Boolean, Integer, BigDecimal> acquireDisableMembercardServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
+
+    Triple<Boolean, Integer, BigDecimal> acquireExpireMembercardServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
+
     Integer deleteByUid(Long uid);
 
     void unbindServiceFeeInfoByUid(Long uid);
+
+    List<ServiceFeeUserInfo> selectDisableMembercardList(int offset, int size);
 }
