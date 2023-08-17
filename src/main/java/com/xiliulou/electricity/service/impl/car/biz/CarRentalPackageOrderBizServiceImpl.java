@@ -894,8 +894,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     memberTermUpdateEntity.setId(memberTermEntity.getId());
                     memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
 
+                    // 是否存在因冻结产生的滞纳金，若有，则更新停止时间
+                    CarRentalPackageOrderSlippagePo slippagePo = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(freezeEntity.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
+                    CarRentalPackageOrderSlippagePo orderSlippageUpdate = null;
+                    if (ObjectUtils.isNotEmpty(slippagePo)) {
+                        orderSlippageUpdate = new CarRentalPackageOrderSlippagePo();
+                        orderSlippageUpdate.setId(slippagePo.getId());
+                        orderSlippageUpdate.setUpdateTime(System.currentTimeMillis());
+                        orderSlippageUpdate.setLateFeeEndTime(System.currentTimeMillis());
+                        // 计算滞纳金金额
+                        long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
+                        orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
+                    }
+
                     // 事务处理
-                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null);
+                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null, orderSlippageUpdate);
                 } catch (Exception e) {
                     log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
@@ -961,7 +974,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
         // 事务处理
-        enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity);
+        enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity, null);
 
         return true;
     }
@@ -975,12 +988,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param optUid 操作人ID(可为空)
      */
     @Transactional(rollbackFor = Exception.class)
-    public void enableFreezeRentOrderTx(Long uid, String packageOrderNo, Boolean autoEnable, Long optUid, CarRentalPackageMemberTermPo memberTermEntity) {
+    public void enableFreezeRentOrderTx(Long uid, String packageOrderNo, Boolean autoEnable, Long optUid, CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderSlippagePo orderSlippageUpdate) {
         // 1. 更改订单冻结表数据
         carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(packageOrderNo, uid, autoEnable, optUid);
 
         // 2. 更改会员期限表数据
         carRentalPackageMemberTermService.updateById(memberTermEntity);
+
+        // 3. 处理滞纳金
+        if (ObjectUtils.isNotEmpty(orderSlippageUpdate)) {
+            carRentalPackageOrderSlippageService.updateById(orderSlippageUpdate);
+        }
     }
 
     /**
