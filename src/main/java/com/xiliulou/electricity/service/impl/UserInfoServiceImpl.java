@@ -1278,10 +1278,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否产生电池服务费
-        Pair<Boolean, Object> batteryServiceFeePair = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userBatteryMemberCard);
-        if (Boolean.TRUE.equals(batteryServiceFeePair.getLeft())) {
+        Triple<Boolean, Integer, BigDecimal> batteryServiceFeeTriple = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId()), serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(batteryServiceFeeTriple.getLeft())) {
             userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
-            userBatteryDetail.setBatteryServiceFee((BigDecimal) batteryServiceFeePair.getRight());
+            userBatteryDetail.setBatteryServiceFee((BigDecimal) batteryServiceFeeTriple.getRight());
         } else {
             userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
         }
