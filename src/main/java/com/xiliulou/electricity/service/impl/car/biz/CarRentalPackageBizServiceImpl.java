@@ -132,6 +132,10 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("300036", "所属机构不匹配");
         }
 
+        if (!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus())) {
+            rentalPackageType = RentalPackageTypeEnum.CAR.getCode();
+        }
+
 
         // 1、查询是否存在会员期限信息(代表是否存在过套餐购买)
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
