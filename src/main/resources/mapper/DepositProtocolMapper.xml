@@ -24,14 +24,12 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="DepositProtocolMap">
         <include refid="selectDepositProtocol"/>
-        from t_deposit_protocol
         limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="DepositProtocolMap">
         <include refid="selectDepositProtocol"/>
-        from t_deposit_protocol
         <where>
             <if test="id != null">
                 and id = #{id}
