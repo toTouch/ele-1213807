@@ -161,13 +161,14 @@ public class ActivityServiceImpl implements ActivityService {
                     log.info("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
                     return Triple.of(false, "000101", "当前换电套餐已暂停");
                 }
-                //判断当前用户是否为新用户，如果后买过任意套餐，则为老用户,若未购买过，则为新用户
-                Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
+                //判断当前用户是否购买过套餐，如果买过任意套餐，则为老用户,若是第一次购买，则为新用户
+                //Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
 
-                log.info("Activity flow for battery package, is old user= {}", isOldUser);
+                log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
                 //是否是新用户
                 //if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
-                if(!isOldUser){
+                if(userInfo.getPayCount() == 1){
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
 
@@ -175,7 +176,6 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
                 //处理渠道活动
@@ -191,10 +191,10 @@ public class ActivityServiceImpl implements ActivityService {
                 }
 
                 Long uid = carRentalPackageOrderPO.getUid();
-                Boolean isOldUser = userBizService.isOldUser(carRentalPackageOrderPO.getTenantId(), uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
 
-                log.info("Activity flow for car Rental or car with battery package, is old user= {}", isOldUser);
-                if(!isOldUser){
+                log.info("Activity flow for car Rental or car with battery package, is old user= {}", userInfo.getPayCount());
+                if(userInfo.getPayCount() == 1){
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId());
 
@@ -202,7 +202,6 @@ public class ActivityServiceImpl implements ActivityService {
                     userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId(), carRentalPackageOrderPO.getTenantId());
                 }
 
-                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
                 //处理渠道活动
