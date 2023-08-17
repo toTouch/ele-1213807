@@ -16,7 +16,7 @@
         select id, content, create_time, update_time, tenant_id from t_car_rental_and_refund_protocol
     </sql>
 
-    <select id="selectProtocolByQuery" resultType="com.xiliulou.electricity.entity.CarRentalAndRefundProtocol">
+    <select id="selectProtocolByQuery" resultMap="CarRentalAndRefundProtocolMap">
         <include refid="selectCarRentalAndRefundProtocol"/>
         <where>
             <if test="id != null">
@@ -32,6 +32,7 @@
                 and update_time = #{updateTime}
             </if>
         </where>
+        order by create_time desc
     </select>
 
     <!--新增数据-->

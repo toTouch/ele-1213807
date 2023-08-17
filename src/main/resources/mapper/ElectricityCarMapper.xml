@@ -266,7 +266,6 @@
             </if>
         </where>
     </select>
-    
     <update id="updateStoreIdByIds">
         update t_electricity_car
         set store_id = #{sid}, update_time = #{updateTime}
@@ -276,4 +275,236 @@
             #{id}
         </foreach>
     </update>
+<!--  数据聚合专用，不可服用-->
+    <sql id="QUERY_CAR_DATA" >
+        select ec.sn AS carSn ,ec.model,f.name AS franchiseeName,s.name AS storeName,ui.user_name AS userName ,ui.phone as phone,
+               ec.status AS carStatus,eb.sn AS batterySn ,eb.power AS power ,eb.voltage AS voltage,ec.update_time AS updateTime ,ec.create_time AS creatTime
+               crpmt.due_time  AS dueTime
+        from t_electricity_car ec
+                 left join t_user_info ui on ec.uid = ui.uid
+                 left join t_franchisee f on ec.franchisee_id = f.id
+                 left join t_store s on ec.store_id = s.id
+                 left join t_electricity_battery eb on ec.uid = eb.uid
+                 left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
+    </sql>
+    <sql id="QUERY_CAR_DATA_COUNT" >
+        select count(*)
+        from t_electricity_car ec
+                 left join t_user_info ui on ec.uid = ui.uid
+                 left join t_franchisee f on ec.franchisee_id = f.id
+                 left join t_store s on ec.store_id = s.id
+                 left join t_electricity_battery eb on ec.uid = eb.uid
+                 left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
+    </sql>
+
+
+    <select id="queryAllCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
+        <include refid="QUERY_CAR_DATA"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+--         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+--         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+
+
+    </select>
+    <select id="queryAllCarDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_CAR_DATA_COUNT"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+
+    </select>
+    <select id="queryRentCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
+        <include refid="QUERY_CAR_DATA"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0 and status = 1
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryRentCarDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_CAR_DATA_COUNT"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0 and status = 1
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryNotRentCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
+        <include refid="QUERY_CAR_DATA"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0 and status = 0
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+
+
+    </select>
+    <select id="queryNotRentCarDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_CAR_DATA_COUNT"/>
+
+        where tenant_id = #{tenantId} and del_flag = 0 and status = 0
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+
+    </select>
+    <select id="queryOverdueCarData" resultType="com.xiliulou.electricity.entity.car.CarDataEntity">
+        <include refid="QUERY_CAR_DATA"></include>
+        where tenant_id = #{tenantId} and del_flag = 0 and UNIX_TIMESTAMP() > crpmt.due_time
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryOverdueCarDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_CAR_DATA_COUNT"></include>
+        where tenant_id = #{tenantId} and del_flag = 0 and UNIX_TIMESTAMP() > crpmt.due_time
+
+        <if test="query.carSn != null and query.carSn!=''">
+            and ec.sn like concat('%',#{carSn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and ec.model like concat('%',#{model, jdbcType=VARCHAR},'%')
+        </if>
+        --         门店和加盟
+        <if test="query.franchiseeId != null ">
+            and ec.franchisee_id = #{franchiseeId}
+        </if>
+        --         用户名和手机
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by ec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
 </mapper>
