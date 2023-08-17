@@ -1,19 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -21,12 +24,14 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -43,6 +48,9 @@ import java.util.Set;
 @Service("tradeOrderService")
 @Slf4j
 public class TradeOrderServiceImpl implements TradeOrderService {
+
+    @Resource
+    private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
 
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
@@ -607,6 +615,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return handleBatteryServiceFeeResult;
             }
 
+            // 处理租车套餐的滞纳金
+            handCarSlippage(userInfo, orderList, orderTypeList, allPayAmountList);
+
             if(CollectionUtils.isEmpty(allPayAmountList)){
                 log.warn("SERVICE FEE WARN!allPayAmountList is empty,uid={}", user.getUid());
                 return Triple.of(false, "000001", "滞纳金为空!");
@@ -642,6 +653,46 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "滞纳金支付失败");
+    }
+
+    /**
+     * 处理车辆的滞纳金
+     * @param userInfo
+     * @param orderList
+     * @param orderTypeList
+     * @param allPayAmountList
+     */
+    private void handCarSlippage(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmountList) {
+        Integer tenantId = userInfo.getTenantId();
+        Long uid = userInfo.getUid();
+        // 车辆滞纳金相关逻辑
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
+        if (!CollectionUtils.isEmpty(slippageEntityList)) {
+            long now = System.currentTimeMillis();
+            for (CarRentalPackageOrderSlippagePo slippageEntity: slippageEntityList) {
+                // 结束时间，不为空
+                if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
+                    now = slippageEntity.getLateFeeEndTime();
+                }
+
+                // 时间比对
+                long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
+
+                // 没有滞纳金产生
+                if (lateFeeStartTime > now) {
+                    continue;
+                }
+                // 转换天
+                long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
+                // 计算滞纳金金额
+                BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
+
+                // 赋值计算
+                orderList.add(slippageEntity.getOrderNo());
+                orderTypeList.add(ServiceFeeEnum.CAR_SLIPPAGE.getCode());
+                allPayAmountList.add(amount);
+            }
+        }
     }
 
     private Triple<Boolean, String, Object> handleBatteryServiceFee(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmount) {
