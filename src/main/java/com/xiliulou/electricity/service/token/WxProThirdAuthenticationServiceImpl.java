@@ -292,7 +292,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
             }
-
+        }catch(Exception e){
+            log.error("ELE AUTH ERROR!",e);
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
