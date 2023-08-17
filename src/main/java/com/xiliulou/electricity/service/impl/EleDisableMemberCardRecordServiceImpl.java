@@ -174,6 +174,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                     .name(userInfo.getName())
                     .payAmount(BigDecimal.ZERO)
                     .status(EleDepositOrder.STATUS_INIT)
+                    .batteryServiceFeeGenerateTime(System.currentTimeMillis())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(tenantId)
