@@ -1,8 +1,5 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,21 +8,16 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * 停卡记录表(TEleDisableMemberCardRecord)实体类
- *
- * @author makejava
- * @since 2022-05-21 10:17:06
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-08-17-19:46
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_ele_disable_member_card_record")
-public class EleDisableMemberCardRecord {
-    /**
-     * 停卡Id
-     */
-    @TableId(value = "id", type = IdType.AUTO)
+public class EleDisableMemberCardRecordVO {
+
     private Long id;
 
     /**
@@ -121,16 +113,14 @@ public class EleDisableMemberCardRecord {
      */
     private String applyReason;
 
+    /**
+     * 停卡审核时间
+     */
+    private Long disableTime;
+
+    private Long enableTime;
+
     private Long franchiseeId;
 
     private Long storeId;
-
-    public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
-    public static final Integer MEMBER_CARD_DISABLE = 1;
-    public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
-
-    public static final Integer DISABLE_CARD_NOT_LIMIT_TIME = 0;
-    public static final Integer DISABLE_CARD_LIMIT_TIME = 1;
-    
-    public static final Integer STATUS_MEMBER_CARD_DISABLE_ROLLBACK = 4;
 }
