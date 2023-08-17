@@ -462,21 +462,28 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        String sn = null;
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCar)) {
-            log.error("query  ERROR! not found car! uid:{} ", user.getUid());
-            return R.fail("100007", "未找到车辆");
-        }
-
-        if (StringUtils.isEmpty(userCar.getSn())) {
-            log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
-            return R.fail("100007", "未找到车辆");
+            Integer tenantId = TenantContextHolder.getTenantId();
+            ElectricityCar electricityCar = selectByUid(tenantId, user.getUid());
+            if (ObjectUtils.isEmpty(electricityCar)) {
+                log.error("query  ERROR! not found car! uid:{} ", user.getUid());
+                return R.fail("100007", "未找到车辆");
+            }
+            sn = electricityCar.getSn();
+        } else {
+            if (StringUtils.isEmpty(userCar.getSn())) {
+                log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
+                return R.fail("100007", "未找到车辆");
+            }
+            sn = userCar.getSn();
         }
 
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
 
-        List<CarAttr> query = jt808CarService.queryListBySn(userCar.getSn(), begin, end);
+        List<CarAttr> query = jt808CarService.queryListBySn(sn, begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }

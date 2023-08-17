@@ -126,5 +126,9 @@ public class UserMemberInfoVo implements Serializable {
      * */
     private CarVo car;
 
+    /**
+     * 购买订单，是否可退，默认可退
+     */
+    private boolean carRentalPackageOrderRefundFlag = true;
 
 }

@@ -132,16 +132,18 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         //查询该租户是否有邀请活动，有则不能添加
         // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
-        //3.0后修改为，如果有上架的，先提示确定上架，确定后则直接上架，并将之前的活动下架
-        ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
-        if (Objects.nonNull(activityResult)) {
-            //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
-            //如果存在已上架的活动，则将该活动修改为下架
-            ShareMoneyActivity moneyActivity = new ShareMoneyActivity();
-            moneyActivity.setId(activityResult.getId());
-            moneyActivity.setStatus(ShareMoneyActivity.STATUS_OFF);
-            moneyActivity.setUpdateTime(System.currentTimeMillis());
-            shareMoneyActivityMapper.updateActivity(moneyActivity);
+        //3.0后修改为，如果状态为上架时，先提示确定上架，确定后则直接上架，并将之前的活动下架
+        if(ShareMoneyActivity.STATUS_ON.equals(shareMoneyActivityAddAndUpdateQuery.getStatus())){
+            ShareMoneyActivity activityResult = shareMoneyActivityMapper.selectActivityByTenantIdAndStatus(tenantId.longValue(), ShareMoneyActivity.STATUS_ON);
+            if (Objects.nonNull(activityResult)) {
+                //return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+                //如果存在已上架的活动，则将该活动修改为下架
+                ShareMoneyActivity moneyActivity = new ShareMoneyActivity();
+                moneyActivity.setId(activityResult.getId());
+                moneyActivity.setStatus(ShareMoneyActivity.STATUS_OFF);
+                moneyActivity.setUpdateTime(System.currentTimeMillis());
+                shareMoneyActivityMapper.updateActivity(moneyActivity);
+            }
         }
 
         //检查选择邀请标准为购买套餐时，当前所选的套餐是否存在
@@ -166,8 +168,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setCreateTime(System.currentTimeMillis());
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
-        //新增的邀请返现活动默认为上架状态
-        shareMoneyActivity.setStatus(ShareMoneyActivity.STATUS_ON);
 
         if (Objects.isNull(shareMoneyActivity.getType())) {
             shareMoneyActivity.setType(ShareActivity.SYSTEM);
