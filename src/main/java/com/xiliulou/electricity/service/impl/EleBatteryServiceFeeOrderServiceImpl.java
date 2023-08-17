@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -204,6 +205,11 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(serviceFeeUserInfo)) {
                     log.warn("BATTERY SERVICE FEE ORDER WARN! not found serviceFeeUserInfo,uid={}", item.getUid());
+                    return;
+                }
+
+                //用户当前是否绑定的有套餐过期滞纳金订单
+                if(StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())){
                     return;
                 }
 

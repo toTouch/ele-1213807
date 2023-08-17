@@ -57,4 +57,9 @@ public interface CommonConstant {
      */
     String TRACE_ID = "traceId";
 
+    /**
+     * 版本
+     */
+    String SWITCH_VERSION = "v3";
+
 }

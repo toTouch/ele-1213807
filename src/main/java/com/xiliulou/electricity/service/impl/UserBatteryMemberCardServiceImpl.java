@@ -222,7 +222,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     @Override
     public Integer plusCount(Long id) {
-        return userBatteryMemberCardMapper.plusCount(id);
+        Integer count = userBatteryMemberCardMapper.plusCount(id);
+        DbUtils.dbOperateSuccessThen(count, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + id);
+            return null;
+        });
+        return count;
     }
 
     @Override
