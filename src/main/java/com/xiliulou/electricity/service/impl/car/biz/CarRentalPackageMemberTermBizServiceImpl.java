@@ -182,6 +182,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                     dueTimeNew = now + (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
                 }
+            } else {
+                dueTimeNew = now;
             }
             // 总到期时间
             dueTimeTotalNew = dueTimeTotal - (dueTime - dueTimeNew);
@@ -248,8 +250,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             } else {
                 newMemberTermEntity.setResidue(residueNew);
-                newMemberTermEntity.setDueTime(dueTimeNew);
-                newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
+                newMemberTermEntity.setDueTime(now);
+                newMemberTermEntity.setDueTimeTotal(now);
             }
         } else {
             newMemberTermEntity.setDueTime(dueTimeNew);

@@ -603,6 +603,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
      * @param electricityCabinetId
      * @return
      */
+    @Override
+    @Slave
     public R queryStockBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId){
         if (size < 0 || size > 50) {
             size = 10;
@@ -647,6 +649,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
      * @param electricityCabinetId
      * @return
      */
+    @Override
+    @Slave
     public R queryStockBatteryPageDataCount(String sn, Long franchiseeId, Integer electricityCabinetId){
         return R.ok(electricitybatterymapper.queryStockBatteryCount(buildStockBatteryDataQuery(sn, franchiseeId, electricityCabinetId)));
     }

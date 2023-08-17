@@ -55,10 +55,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -447,8 +444,23 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         }
                         if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
                             List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                            // TODO 临时处理
+                            List<String> oriBatterySimpleList = oriBatteryList.stream().map(n -> {
+                                StringJoiner simpleModel = new StringJoiner("_");
+                                String[] strings = n.split("_");
+                                simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                return simpleModel.toString();
+                            }).collect(Collectors.toList());
+                            // TODO 临时处理
                             List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
-                            if (!buyBatteryList.containsAll(oriBatteryList)) {
+                            List<String> buyBatterySimpleList = buyBatteryList.stream().map(n -> {
+                                StringJoiner simpleModel = new StringJoiner("_");
+                                String[] strings = n.split("_");
+                                simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                return simpleModel.toString();
+                            }).collect(Collectors.toList());
+
+                            if (!buyBatterySimpleList.containsAll(oriBatterySimpleList)) {
                                 log.error("bindingPackage failed. Package battery mismatch. ");
                                 throw new BizException("300005", "套餐不匹配");
                             }
@@ -571,7 +583,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
-            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
+            // 非过期
+            if (!expireFlag) {
+                slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
+            }
         }
 
         // TX 事务落库
@@ -1311,9 +1326,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 退租申请，构建会员期限更新数据
-     * @param tenantId
-     * @param uid
-     * @param optUid
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @param optUid 操作用户UID
      * @return
      */
     private CarRentalPackageMemberTermPo buildRentRefundRentalPackageMemberTerm(Integer tenantId, Long uid, Long optUid) {
@@ -1912,10 +1927,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             }
                             if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
                                 List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                                // TODO 临时处理
+                                List<String> oriBatterySimpleList = oriBatteryList.stream().map(n -> {
+                                    StringJoiner simpleModel = new StringJoiner("_");
+                                    String[] strings = n.split("_");
+                                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                    return simpleModel.toString();
+                                }).collect(Collectors.toList());
+                                // TODO 临时处理
                                 List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
-                                if (!buyBatteryList.containsAll(oriBatteryList)) {
+                                List<String> buyBatterySimpleList = buyBatteryList.stream().map(n -> {
+                                    StringJoiner simpleModel = new StringJoiner("_");
+                                    String[] strings = n.split("_");
+                                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                    return simpleModel.toString();
+                                }).collect(Collectors.toList());
+
+                                if (!buyBatterySimpleList.containsAll(oriBatterySimpleList)) {
                                     log.error("buyRentalPackageOrder failed. Package battery mismatch. ");
-                                    return R.fail("300005", "套餐不匹配");
+                                    throw new BizException("300005", "套餐不匹配");
                                 }
                             }
                         }
