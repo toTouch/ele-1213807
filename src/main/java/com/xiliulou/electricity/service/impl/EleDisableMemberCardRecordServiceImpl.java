@@ -83,7 +83,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             }
         });
 
-        return R.ok();
+        return R.ok(eleDisableMemberCardRecordVOS);
     }
 
     @Override
