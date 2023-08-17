@@ -137,7 +137,7 @@
         <where>
             `uid` = #{uid} AND `del_flag` = 0
         </where>
-        ORDER BY `id` DESC
+        ORDER BY `id` DESC LIMIT 1
     </select>
 
     <!-- 根据用户ID查询冻结中的订单 -->
