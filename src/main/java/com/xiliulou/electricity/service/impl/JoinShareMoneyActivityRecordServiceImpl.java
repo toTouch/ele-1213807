@@ -11,6 +11,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,9 +102,13 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		}
 
 		//检查是否重复扫描同一邀请人的二维码
-		Boolean isExist = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-		if(isExist){
-			return R.ok();
+		Pair<Boolean, String> sameInviterResult = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+		if(sameInviterResult.getLeft()){
+			if(sameInviterResult.getRight().isEmpty()){
+				return R.ok();
+			}else{
+				return R.fail("000108", sameInviterResult.getRight());
+			}
 		}
 		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
 
@@ -116,7 +121,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//检查是否有参与邀请返券的活动
 		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
 		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-			return R.fail("000106", "已参加过邀请返券活动");
+			return R.fail("000106", "已参加过邀请返现活动");
 		}
 
 	/*	//2、别人点击链接登录

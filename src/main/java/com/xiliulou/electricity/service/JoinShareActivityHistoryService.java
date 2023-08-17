@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -63,5 +64,5 @@ public interface JoinShareActivityHistoryService {
 
     List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
 
-    Boolean checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
+    Pair<Boolean, String> checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
 }
