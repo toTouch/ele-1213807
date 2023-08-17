@@ -121,6 +121,11 @@ public class EleDisableMemberCardRecord {
      */
     private String applyReason;
 
+    /**
+     * 停卡审核时间
+     */
+    private Long disableMemberCardTime;
+
     private Long franchiseeId;
 
     private Long storeId;
