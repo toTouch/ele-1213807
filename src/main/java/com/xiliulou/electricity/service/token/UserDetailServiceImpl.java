@@ -35,7 +35,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (Objects.isNull(user) || Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_WX_PRO)) {
             throw new UsernameNotFoundException("用户名或者密码错误!");
         }
-        log.info("users={}", user);
         Collection<? extends GrantedAuthority> authorities = authorizationService.acquireAllAuthorities(user.getUid(), user.getUserType());
 
         return new SecurityUser(user.getName(), user.getPhone(), user.getUid(), user.getUserType(), user.getDataType(), user.getLoginPwd(), user.isLock(), authorities, user.getTenantId());

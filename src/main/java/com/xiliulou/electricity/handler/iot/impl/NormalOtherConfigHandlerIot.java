@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
+
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     

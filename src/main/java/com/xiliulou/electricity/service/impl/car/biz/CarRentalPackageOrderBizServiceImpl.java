@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryMo
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
@@ -36,6 +39,7 @@ import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
+import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
@@ -67,6 +71,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private Jt808RetrofitService jt808RetrofitService;
 
     @Resource
     private CarRentalOrderService carRentalOrderService;
@@ -894,8 +901,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     memberTermUpdateEntity.setId(memberTermEntity.getId());
                     memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
 
+                    // 是否存在因冻结产生的滞纳金，若有，则更新停止时间
+                    CarRentalPackageOrderSlippagePo slippagePo = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(freezeEntity.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
+                    CarRentalPackageOrderSlippagePo orderSlippageUpdate = null;
+                    if (ObjectUtils.isNotEmpty(slippagePo)) {
+                        orderSlippageUpdate = new CarRentalPackageOrderSlippagePo();
+                        orderSlippageUpdate.setId(slippagePo.getId());
+                        orderSlippageUpdate.setUpdateTime(System.currentTimeMillis());
+                        orderSlippageUpdate.setLateFeeEndTime(System.currentTimeMillis());
+                        // 计算滞纳金金额
+                        long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
+                        orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
+                    }
+
                     // 事务处理
-                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null);
+                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null, orderSlippageUpdate);
                 } catch (Exception e) {
                     log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
@@ -961,7 +981,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
         // 事务处理
-        enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity);
+        enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity, null);
 
         return true;
     }
@@ -975,12 +995,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param optUid 操作人ID(可为空)
      */
     @Transactional(rollbackFor = Exception.class)
-    public void enableFreezeRentOrderTx(Long uid, String packageOrderNo, Boolean autoEnable, Long optUid, CarRentalPackageMemberTermPo memberTermEntity) {
+    public void enableFreezeRentOrderTx(Long uid, String packageOrderNo, Boolean autoEnable, Long optUid, CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderSlippagePo orderSlippageUpdate) {
         // 1. 更改订单冻结表数据
         carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(packageOrderNo, uid, autoEnable, optUid);
 
         // 2. 更改会员期限表数据
         carRentalPackageMemberTermService.updateById(memberTermEntity);
+
+        // 3. 处理滞纳金
+        if (ObjectUtils.isNotEmpty(orderSlippageUpdate)) {
+            carRentalPackageOrderSlippageService.updateById(orderSlippageUpdate);
+        }
     }
 
     /**
@@ -1376,14 +1401,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 0. 计算剩余租期
             long nowTime = System.currentTimeMillis();
             long useBeginTime = packageOrderEntity.getUseBeginTime();
+
+            // 查询是否存在冻结订单
+            CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+
             if (RentalUnitEnum.DAY.getCode().equals(packageOrderEntity.getTenancyUnit())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                    useBeginTime = freezePo.getEnableTime();
+                }
                 // 已使用天数
                 tenancyUse = DateUtils.diffDay(useBeginTime, nowTime);
+
                 // 剩余天数
                 tenancyResidue = packageOrderEntity.getTenancy() - tenancyUse;
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                    useBeginTime = freezePo.getEnableTime();
+                }
                 // 已使用分钟数
                 tenancyUse = DateUtils.diffMinute(useBeginTime, nowTime);
                 // 剩余分钟数
@@ -1561,6 +1597,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarInfoDO carInfo = null;
         CarAttr carAttr = null;
         Integer carRentalState = null;
+        Integer lockType = null;
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             // 5. 查询车辆相关信息
             carInfo = carService.queryByCarId(tenantId, Long.valueOf(electricityCar.getId()));
@@ -1570,6 +1607,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndType(tenantId, uid, RentalTypeEnum.RETURN.getCode(), electricityCar.getSn());
             if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
                 carRentalState = carRentalOrderPo.getRentalState();
+            }
+            //车辆锁状态
+            if (StringUtils.isNotBlank(electricityCar.getSn())) {
+                R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                        .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                if (result.isSuccess()) {
+                    lockType = result.getData().getDoorStatus();
+                }
             }
         }
 
@@ -1589,14 +1634,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount, carModel,
-                carAttr, carRentalState);
+                carAttr, carRentalState, lockType);
 
         return R.ok(rentalPackageVO);
     }
 
     private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPo memberTerm, CarRentalPackagePo carRentalPackage, CarRentalPackageOrderPo carRentalPackageOrder,
                                                  InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount,
-                                                 ElectricityCarModel carModel, CarAttr carAttr, Integer carRentalState) {
+                                                 ElectricityCarModel carModel, CarAttr carAttr, Integer carRentalState, Integer lockType) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -1652,6 +1697,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
             }
             carVO.setCarRentalState(carRentalState);
+            carVO.setLockType(lockType);
             // 赋值车辆信息
             rentalPackageVO.setCar(carVO);
         }

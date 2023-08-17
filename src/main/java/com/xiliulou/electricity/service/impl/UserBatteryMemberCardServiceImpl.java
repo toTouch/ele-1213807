@@ -222,7 +222,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     @Override
     public Integer plusCount(Long id) {
-        return userBatteryMemberCardMapper.plusCount(id);
+        Integer count = userBatteryMemberCardMapper.plusCount(id);
+        DbUtils.dbOperateSuccessThen(count, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + id);
+            return null;
+        });
+        return count;
     }
 
     @Override
@@ -311,39 +316,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
 
         return orderList;
-    }
-
-    /**
-     * 检查用户套餐是否可用
-     *
-     * @param userInfo
-     * @return
-     */
-    @Override
-    public Triple<Boolean, String, Object> verifyUserBatteryMembercard(UserInfo userInfo) {
-        UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
-            return Triple.of(false, "100210", "用户未开通套餐");
-        }
-
-        if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
-            log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
-            return Triple.of(false, "100211", "用户套餐不可用");
-        }
-
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.warn("ORDER WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
-        }
-
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-            log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
-        }
-
-        return Triple.of(true, null, null);
     }
 
     /**

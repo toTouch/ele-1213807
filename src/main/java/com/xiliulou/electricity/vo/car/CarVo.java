@@ -56,4 +56,9 @@ public class CarVo implements Serializable {
      */
     private Integer carRentalState;
 
+    /**
+     * 车辆锁状态
+     */
+    private Integer lockType;
+
 }

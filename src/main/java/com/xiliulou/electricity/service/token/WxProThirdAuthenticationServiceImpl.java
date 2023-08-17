@@ -292,7 +292,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
             }
-
+        }catch(Exception e){
+            log.error("ELE AUTH ERROR!",e);
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
@@ -346,7 +347,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
-        log.info("join new user activity for logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
         if (Objects.nonNull(newUserActivity)) {
 
 

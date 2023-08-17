@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -122,6 +123,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
             }
 
+            if(StringUtils.isNotBlank(eleBatteryServiceFeeOrderVo.getBatteryType())){
+                eleBatteryServiceFeeOrderVo.setBatteryTypeList(JsonUtil.fromJsonArray(eleBatteryServiceFeeOrderVo.getBatteryType(),String.class));
+            }
+
         }
         return R.ok(eleBatteryServiceFeeOrders);
     }
@@ -207,6 +212,11 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     return;
                 }
 
+                //用户当前是否绑定的有套餐过期滞纳金订单
+                if(StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())){
+                    return;
+                }
+
                 //套餐过期生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
 
@@ -220,6 +230,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                         .name(userInfo.getName())
                         .payAmount(BigDecimal.ZERO)
                         .status(EleDepositOrder.STATUS_INIT)
+                        .batteryServiceFeeGenerateTime(System.currentTimeMillis())
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
                         .tenantId(userInfo.getTenantId())

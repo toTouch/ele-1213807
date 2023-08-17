@@ -483,21 +483,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
 
         //回退月卡
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.nonNull(userInfo)) {
-            //
-            //是否缴纳押金，是否绑定电池
-//            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                Long now = System.currentTimeMillis();
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
-                        && userBatteryMemberCard.getMemberCardExpireTime() > now && userBatteryMemberCard.getRemainingNumber() != -1) {
-                    //回退月卡次数
-                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getId());
-                }
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
+                    && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() && userBatteryMemberCard.getRemainingNumber() != -1) {
+                //回退月卡次数
+                userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
             }
         }
+
 
         //删除开门失败缓存
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
@@ -1060,6 +1054,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
                 return Triple.of(false, "100210", "用户未开通套餐");
             }
+
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+                return Triple.of(false, "100211", "换电套餐停卡审核中");
+            }
 //            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
 //            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
 //                return checkUserMemberCardResult;
@@ -1113,7 +1112,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             //修改按此套餐的次数
-            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, user, batteryMemberCard);
+            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
             if (Boolean.FALSE.equals(modifyResult.getLeft())) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
@@ -1205,13 +1204,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }
 
-    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user, BatteryMemberCard batteryMemberCard) {
-        //这里的memberCard不能为空
+    @Override
+    public Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
             Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
             if (row < 1) {
-                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), userBatteryMemberCard.getId());
+                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(), userBatteryMemberCard.getId());
                 return Triple.of(false, "100213", "套餐剩余次数不足");
             }
         }

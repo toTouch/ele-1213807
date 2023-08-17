@@ -42,7 +42,6 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -246,10 +245,26 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
 
-            //判断用户套餐
-            Triple<Boolean, String, Object> verifyUserBatteryMembercardResult = userBatteryMemberCardService.verifyUserBatteryMembercard( userInfo);
-            if(Boolean.FALSE.equals(verifyUserBatteryMembercardResult.getLeft())){
-                return R.fail(verifyUserBatteryMembercardResult.getMiddle(),(String)verifyUserBatteryMembercardResult.getRight());
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
+                return R.fail("100210", "用户未开通套餐");
+            }
+
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+                return R.fail( "100211", "换电套餐停卡审核中");
+            }
+
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("ORDER WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
+                return R.fail( "ELECTRICITY.00121", "套餐不存在");
+            }
+
+            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                return R.fail( "ELECTRICITY.0023", "套餐已过期");
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
@@ -303,6 +318,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.isNull(electricityBattery)) {
                 log.error("RENTBATTERY ERROR! not found battery,batteryName={}", electricityCabinetBox.getSn());
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+            }
+
+            //修改按此套餐的次数
+            Triple<Boolean, String, String> modifyResult = electricityCabinetOrderService.checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
+            if (Boolean.FALSE.equals(modifyResult.getLeft())) {
+                return R.fail( modifyResult.getMiddle(), modifyResult.getRight());
             }
     
             //记录活跃时间
@@ -479,50 +500,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
 
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-            if(Objects.isNull(electricityBattery)){
-                log.error("RETURNBATTERY ERROR! not found user binding battery,uid={}", user.getUid());
-                return R.fail("100292", "用户未绑定电池");
-            }
-
-            Long now = System.currentTimeMillis();
-            BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-
-            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-            long cardDays = 0;
-            if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-                cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-                //查询用户是否存在套餐过期电池服务费
-                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-                userChangeServiceFee = serviceFee;
-            }
-
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
-
-                //判断用户是否产生电池服务费
-                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-
-                    cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
-
-                    //不足一天按一天计算
-                    double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
-                    if (time < 24) {
-                        cardDays = 1;
-                    }
-                    BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
-                    userChangeServiceFee = serviceFee;
-                }
-            }
-
-            if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-                return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
-            }
-
-
             //分配开门格挡
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService
                     .findUsableEmptyCellNo(electricityCabinet.getId());
@@ -538,6 +515,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
+
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
@@ -563,7 +542,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
+                    dataMap.put("user_binding_battery_sn", Objects.isNull(electricityBattery) ? "UNKNOW" : electricityBattery.getSn());
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
@@ -573,7 +552,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 dataMap.put("model_type", false);
             } else {
                 dataMap.put("model_type", true);
-                dataMap.put("multiBatteryModelName", electricityBattery.getModel());
+                dataMap.put("multiBatteryModelName", Objects.isNull(electricityBattery) ? "UNKNOW" : electricityBattery.getModel());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
@@ -734,21 +713,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //回退月卡
-            UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
-            if (Objects.nonNull(userInfo)) {
-                //
-                //是否缴纳押金，是否绑定电池
-//                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-                if (Objects.nonNull(userBatteryMemberCard)) {
-                    Long now = System.currentTimeMillis();
-                    if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
-                            && userBatteryMemberCard.getMemberCardExpireTime() > now && userBatteryMemberCard.getRemainingNumber() != -1) {
-                        //回退月卡次数
-                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getId());
-                    }
+
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
+                        && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() && userBatteryMemberCard.getRemainingNumber() != -1) {
+                    //回退月卡次数
+                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
                 }
             }
+
         }
 
         //还电池
