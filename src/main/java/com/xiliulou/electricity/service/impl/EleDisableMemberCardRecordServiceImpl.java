@@ -136,7 +136,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             //拒绝停卡
             UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
             updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
-            updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+            updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE);
             updateUserBatteryMemberCard.setDisableMemberCardTime(null);
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUidForDisableCard(updateUserBatteryMemberCard);
