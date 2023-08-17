@@ -49,6 +49,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -2359,23 +2361,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
 
-
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(orderNo);
-        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(orderNo);
-        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        activityService.asyncProcessActivity(activityProcessDTO);
-
         // 10. 发放优惠券
         if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
@@ -2385,6 +2370,27 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
             userCouponService.asyncSendCoupon(userCouponDTO);
         }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // 8. 处理分账
+                DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                divisionAccountOrderDTO.setOrderNo(orderNo);
+                divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+                divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+
+                // 9. 处理活动
+                ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+                activityProcessDTO.setOrderNo(orderNo);
+                activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+                activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                activityService.asyncProcessActivity(activityProcessDTO);
+            }
+        });
 
         return Pair.of(true, userInfo.getPhone());
     }
