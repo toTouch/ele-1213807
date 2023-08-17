@@ -108,6 +108,8 @@ public class EleDisableMemberCardRecordVO {
      */
     private Long batteryMemberCardId;
 
+    private Long disableMemberCardTime;
+
     /**
      * 停卡原因
      */

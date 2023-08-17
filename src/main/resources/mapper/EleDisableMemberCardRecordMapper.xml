@@ -22,7 +22,7 @@
         dmcr.charge_rate,
         dmcr.disable_card_time_type ,
         dmcr.apply_reason,
-        emcr.disable_time,
+        dmcr.disable_member_card_time ,
         emcr.enable_time
         from  t_ele_disable_member_card_record  dmcr left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
         <where>

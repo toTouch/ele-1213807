@@ -138,6 +138,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         updateEleDisableMemberCardRecord.setDisableMemberCardNo(disableMemberCardNo);
         updateEleDisableMemberCardRecord.setStatus(status);
         updateEleDisableMemberCardRecord.setErrMsg(errMsg);
+        updateEleDisableMemberCardRecord.setDisableMemberCardTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setCardDays((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
         if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
