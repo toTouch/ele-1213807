@@ -5,8 +5,11 @@
     <update id="updateByUid">
         update t_service_fee_user_info
         <set>
-            <if test="orderNo != null">
-                order_no = #{orderNo},
+            <if test="expireOrderNo != null">
+                expire_order_no = #{expireOrderNo},
+            </if>
+            <if test="pauseOrderNo != null">
+                pause_order_no = #{pauseOrderNo},
             </if>
             <if test="disableMemberCardNo != null">
                 disable_member_card_no = #{disableMemberCardNo},
@@ -30,5 +33,17 @@
     <delete id="deleteByUid">
         delete from t_service_fee_user_info where uid = #{uid}
     </delete>
+
+    <select id="selectDisableMembercardList" resultType="com.xiliulou.electricity.entity.ServiceFeeUserInfo">
+        select
+        sfui.uid,
+        sfui.pause_order_no ,
+        sfui.disable_member_card_no
+        from t_service_fee_user_info sfui
+        left join t_user_battery_member_card ubmc on ubmc.uid=sfui.uid
+        left join t_user_info tui on tui.uid=sfui.uid
+        where tui.battery_deposit_status=1 and tui.del_flag=0 and ubmc.member_card_status=1
+        limit #{offset},#{size}
+    </select>
 
 </mapper>

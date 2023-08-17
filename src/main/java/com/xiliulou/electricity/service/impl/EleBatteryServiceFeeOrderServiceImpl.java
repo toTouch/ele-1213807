@@ -234,7 +234,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setExpireOrderNo(eleBatteryServiceFeeOrder.getOrderId());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             });

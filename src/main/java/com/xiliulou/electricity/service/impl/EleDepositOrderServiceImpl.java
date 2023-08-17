@@ -966,6 +966,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public R payBatteryServiceFee(HttpServletRequest request) {
 
@@ -1031,25 +1032,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.100000", "不存在电池服务费");
         }
 
-        if (acquireUserBatteryServiceFeeResult.getRight().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            log.error("admin saveUserMemberCard ERROR! service fee illegal,uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.100000", "电池服务费不合法");
-        }
-
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
-        if(StringUtils.isNotBlank(serviceFeeUserInfo.getOrderNo())){
-            eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getOrderNo());
-
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate=new EleBatteryServiceFeeOrder();
-            eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
-            eleBatteryServiceFeeOrderUpdate.setPayAmount(acquireUserBatteryServiceFeeResult.getRight());
-            eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+        if(StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())){
+            eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
         }else{
 
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-
-            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(user.getUid());
 
             eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
@@ -1065,7 +1053,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .franchiseeId(franchisee.getId())
                     .storeId(userInfo.getStoreId())
                     .modelType(franchisee.getModelType())
-                    .batteryType(CollectionUtils.isEmpty(userBatteryTypes)?"":JsonUtil.toJson(userBatteryTypes))
+                    .batteryType("")
                     .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                     .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);

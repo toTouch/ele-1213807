@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -105,10 +106,16 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         ServiceFeeUserInfo serviceFeeUserInfo=new ServiceFeeUserInfo();
         serviceFeeUserInfo.setUid(uid);
         serviceFeeUserInfo.setDisableMemberCardNo("");
-        serviceFeeUserInfo.setOrderNo("");
+        serviceFeeUserInfo.setPauseOrderNo("");
+        serviceFeeUserInfo.setExpireOrderNo("");
         serviceFeeUserInfo.setServiceFeeGenerateTime(System.currentTimeMillis());
         serviceFeeUserInfo.setUpdateTime(System.currentTimeMillis());
         this.updateByUid(serviceFeeUserInfo);
+    }
+
+    @Override
+    public List<ServiceFeeUserInfo> selectDisableMembercardList(int offset, int size) {
+        return serviceFeeUserInfoMapper.selectDisableMembercardList(offset, size);
     }
 
     @Override
@@ -308,6 +315,68 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee);
         if (totalBatteryServiceFee.doubleValue() > 0) {
             return Triple.of(true, type, totalBatteryServiceFee);
+        }
+
+        return Triple.of(false, null, null);
+    }
+
+    @Override
+    public Triple<Boolean, Integer, BigDecimal> acquireDisableMembercardServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
+        if(Objects.isNull(userInfo) || Objects.isNull(userBatteryMemberCard) || Objects.isNull(batteryMemberCard)){
+            return Triple.of(false, null, null);
+        }
+
+        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+            return Triple.of(false, null, null);
+        }
+
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, null, null);
+        }
+
+        //停卡电池服务费
+        BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
+
+        //是否存在停卡电池服务费
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+            pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+            log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
+        }
+
+        if (pauseBatteryServiceFee.doubleValue() > 0) {
+            return Triple.of(true, null, pauseBatteryServiceFee);
+        }
+
+        return Triple.of(false, null, null);
+    }
+
+    @Override
+    public Triple<Boolean, Integer, BigDecimal> acquireExpireMembercardServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo) {
+        if(Objects.isNull(userInfo) || Objects.isNull(userBatteryMemberCard) || Objects.isNull(batteryMemberCard) || Objects.isNull(serviceFeeUserInfo)){
+            return Triple.of(false, null, null);
+        }
+
+        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+            return Triple.of(false, null, null);
+        }
+
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, null, null);
+        }
+
+        //套餐过期电池服务费
+        BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+
+        //是否存在套餐过期电池服务费
+        if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
+            int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+            expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
+            log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+        }
+
+        if (expireBatteryServiceFee.doubleValue() > 0) {
+            return Triple.of(true, null, expireBatteryServiceFee);
         }
 
         return Triple.of(false, null, null);

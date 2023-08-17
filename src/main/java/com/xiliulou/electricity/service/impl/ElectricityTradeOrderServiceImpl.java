@@ -674,7 +674,8 @@ public class ElectricityTradeOrderServiceImpl extends
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
             serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
-            serviceFeeUserInfoUpdate.setOrderNo("");
+            serviceFeeUserInfoUpdate.setExpireOrderNo("");
+            serviceFeeUserInfoUpdate.setPauseOrderNo("");
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
