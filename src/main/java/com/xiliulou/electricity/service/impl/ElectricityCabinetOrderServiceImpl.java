@@ -483,21 +483,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
 
         //回退月卡
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.nonNull(userInfo)) {
-            //
-            //是否缴纳押金，是否绑定电池
-//            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                Long now = System.currentTimeMillis();
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
-                        && userBatteryMemberCard.getMemberCardExpireTime() > now && userBatteryMemberCard.getRemainingNumber() != -1) {
-                    //回退月卡次数
-                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getId());
-                }
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
+                    && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() && userBatteryMemberCard.getRemainingNumber() != -1) {
+                //回退月卡次数
+                userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
             }
         }
+
 
         //删除开门失败缓存
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);

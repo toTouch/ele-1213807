@@ -63,7 +63,7 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
 
     Integer minCountForOffLineEle(Long id);
 
-    Integer plusCount(Long id);
+    Integer plusCount(Long uid);
 
     int updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
 
