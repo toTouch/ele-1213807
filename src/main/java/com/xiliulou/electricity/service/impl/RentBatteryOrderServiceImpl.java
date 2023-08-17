@@ -246,10 +246,26 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
 
-            //判断用户套餐
-            Triple<Boolean, String, Object> verifyUserBatteryMembercardResult = userBatteryMemberCardService.verifyUserBatteryMembercard( userInfo);
-            if(Boolean.FALSE.equals(verifyUserBatteryMembercardResult.getLeft())){
-                return R.fail(verifyUserBatteryMembercardResult.getMiddle(),(String)verifyUserBatteryMembercardResult.getRight());
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("ORDER WARN! user haven't memberCard uid={}", userInfo.getUid());
+                return R.fail("100210", "用户未开通套餐");
+            }
+
+            if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
+                log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+                return R.fail( "100211", "用户套餐不可用");
+            }
+
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("ORDER WARN! batteryMemberCard not found! uid={}", userInfo.getUid());
+                return R.fail( "ELECTRICITY.00121", "套餐不存在");
+            }
+
+            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                return R.fail( "ELECTRICITY.0023", "套餐已过期");
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
@@ -303,6 +319,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.isNull(electricityBattery)) {
                 log.error("RENTBATTERY ERROR! not found battery,batteryName={}", electricityCabinetBox.getSn());
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+            }
+
+            //修改按此套餐的次数
+            Triple<Boolean, String, String> modifyResult = electricityCabinetOrderService.checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
+            if (Boolean.FALSE.equals(modifyResult.getLeft())) {
+                return R.fail( modifyResult.getMiddle(), modifyResult.getRight());
             }
     
             //记录活跃时间

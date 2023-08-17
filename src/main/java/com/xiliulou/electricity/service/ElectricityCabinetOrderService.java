@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -73,6 +75,8 @@ public interface ElectricityCabinetOrderService {
     R checkOpenSessionId(String sessionId);
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
+
+    Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
 

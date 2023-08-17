@@ -1113,7 +1113,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             //修改按此套餐的次数
-            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, user, batteryMemberCard);
+            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
             if (Boolean.FALSE.equals(modifyResult.getLeft())) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
@@ -1205,13 +1205,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }
 
-    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user, BatteryMemberCard batteryMemberCard) {
+    @Override
+    public Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
         //这里的memberCard不能为空
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
             Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
             if (row < 1) {
-                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), userBatteryMemberCard.getId());
+                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(), userBatteryMemberCard.getId());
                 return Triple.of(false, "100213", "套餐剩余次数不足");
             }
         }
