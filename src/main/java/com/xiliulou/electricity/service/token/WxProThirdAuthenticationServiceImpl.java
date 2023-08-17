@@ -347,7 +347,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
-        log.info("join new user activity for logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
         if (Objects.nonNull(newUserActivity)) {
 
 
