@@ -13,10 +13,12 @@ import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.DepositProtocolService;
 import com.xiliulou.electricity.service.UserNoticeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,7 +39,16 @@ public class DepositProtocolServiceImpl implements DepositProtocolService {
 		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		DepositProtocol depositProtocol = depositProtocolMapper.selectOne(new LambdaQueryWrapper<DepositProtocol>().eq(DepositProtocol::getTenantId, tenantId));
+		//3.0 中为了fix 查询时存在多条记录的bug
+		DepositProtocol depositProtocol = new DepositProtocol();
+		depositProtocol.setTenantId(tenantId);
+
+		List<DepositProtocol> protocolList = depositProtocolMapper.selectByQuery(depositProtocol);
+		if(CollectionUtils.isNotEmpty(protocolList) && protocolList.size() > 0){
+			return R.ok(protocolList.get(0));
+		}
+
+		//DepositProtocol depositProtocol = depositProtocolMapper.selectOne(new LambdaQueryWrapper<DepositProtocol>().eq(DepositProtocol::getTenantId, tenantId));
 		return R.ok(depositProtocol);
 	}
 
