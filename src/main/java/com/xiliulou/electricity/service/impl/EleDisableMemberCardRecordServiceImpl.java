@@ -14,6 +14,7 @@ import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,7 +71,19 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Slave
     @Override
     public R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery));
+        List<EleDisableMemberCardRecordVO> eleDisableMemberCardRecordVOS = eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery);
+        if(CollectionUtils.isEmpty(eleDisableMemberCardRecordVOS)){
+            return R.ok(Collections.emptyList());
+        }
+
+        eleDisableMemberCardRecordVOS.forEach(item->{
+            if(Objects.isNull(item.getDisableTime())){
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
+                item.setDisableTime(Objects.isNull(userBatteryMemberCard)?null:userBatteryMemberCard.getDisableMemberCardTime());
+            }
+        });
+
+        return R.ok();
     }
 
     @Override
