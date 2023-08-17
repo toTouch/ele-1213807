@@ -1,10 +1,7 @@
 package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
-import com.xiliulou.electricity.vo.car.CarDataResult;
-import com.xiliulou.electricity.vo.car.CarDataVO;
-
-import java.util.List;
+import com.xiliulou.electricity.vo.car.PageDataResult;
 
 /**
  * 车辆运营数据
@@ -16,13 +13,8 @@ public interface CarDataService {
      * @param carDataConditionReq
      * @return
      */
-    CarDataResult queryAllCarDataPage(CarDataConditionReq carDataConditionReq);
+    PageDataResult queryAllCarDataPage(CarDataConditionReq carDataConditionReq);
 
-    /**
-     * 查询所有车辆运营数据的数量
-     * @return
-     */
-    Integer queryAllCarDataCount(CarDataConditionReq carDataConditionReq);
 
 
 }
