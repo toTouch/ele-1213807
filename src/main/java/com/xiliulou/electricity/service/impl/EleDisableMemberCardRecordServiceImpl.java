@@ -146,7 +146,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateServiceFeeUserInfo.setUid(userInfo.getUid());
             updateServiceFeeUserInfo.setUpdateTime(System.currentTimeMillis());
             updateServiceFeeUserInfo.setDisableMemberCardNo("");
-            updateServiceFeeUserInfo.setOrderNo("");
+            updateServiceFeeUserInfo.setPauseOrderNo("");
             serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
         }else{
             //同意停卡
@@ -188,7 +188,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-            serviceFeeUserInfoUpdate.setOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+            serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
@@ -215,5 +215,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public EleDisableMemberCardRecord queryByDisableMemberCardNo(String disableMemberCardNo, Integer tenantId) {
         return eleDisableMemberCardRecordMapper.queryByDisableMemberCardNo(disableMemberCardNo, tenantId);
+    }
+
+    @Override
+    public EleDisableMemberCardRecord selectByDisableMemberCardNo(String disableMemberCardNo) {
+        return eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo,disableMemberCardNo));
     }
 }

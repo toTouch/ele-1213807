@@ -254,7 +254,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
             BeanUtils.copyProperties(item, invitationActivityVO);
 
-            List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+            //List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
             /*if (!CollectionUtils.isEmpty(membercardIds)) {
                 List<ElectricityMemberCard> memberCardList = Lists.newArrayList();
                 for (Long membercardId : membercardIds) {

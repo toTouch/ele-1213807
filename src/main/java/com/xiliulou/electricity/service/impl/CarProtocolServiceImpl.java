@@ -7,11 +7,13 @@ import com.xiliulou.electricity.query.CarProtocolQuery;
 import com.xiliulou.electricity.service.CarProtocolService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.CarProtocolVO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,10 +34,11 @@ public class CarProtocolServiceImpl implements CarProtocolService {
         Long tenantId = TenantContextHolder.getTenantId().longValue();
         CarRentalAndRefundProtocol query = new CarRentalAndRefundProtocol();
         query.setTenantId(tenantId);
-        CarRentalAndRefundProtocol result = carRentalAndRefundProtocolMapper.selectProtocolByQuery(query);
+        List<CarRentalAndRefundProtocol> result = carRentalAndRefundProtocolMapper.selectProtocolByQuery(query);
         CarProtocolVO carProtocolVO = new CarProtocolVO();
-        if(Objects.nonNull(result)){
-            BeanUtils.copyProperties(result, carProtocolVO);
+        if(CollectionUtils.isNotEmpty(result) && result.size() > 0){
+            CarRentalAndRefundProtocol carRentalAndRefundProtocol = result.get(0);
+            BeanUtils.copyProperties(carRentalAndRefundProtocol, carProtocolVO);
         }
 
         return carProtocolVO;

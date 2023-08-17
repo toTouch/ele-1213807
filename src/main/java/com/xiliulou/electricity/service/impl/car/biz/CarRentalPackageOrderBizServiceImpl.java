@@ -49,16 +49,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -272,6 +271,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return true(成功)、false(失败)
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean bindingPackage(CarRentalPackageOrderBuyOptModel buyOptModel) {
         if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getTenantId(), buyOptModel.getUid(), buyOptModel.getFranchiseeId(), buyOptModel.getStoreId(), buyOptModel.getRentalPackageId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
@@ -447,8 +447,23 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         }
                         if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
                             List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                            // TODO 临时处理
+                            List<String> oriBatterySimpleList = oriBatteryList.stream().map(n -> {
+                                StringJoiner simpleModel = new StringJoiner("_");
+                                String[] strings = n.split("_");
+                                simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                return simpleModel.toString();
+                            }).collect(Collectors.toList());
+                            // TODO 临时处理
                             List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
-                            if (!buyBatteryList.containsAll(oriBatteryList)) {
+                            List<String> buyBatterySimpleList = buyBatteryList.stream().map(n -> {
+                                StringJoiner simpleModel = new StringJoiner("_");
+                                String[] strings = n.split("_");
+                                simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                return simpleModel.toString();
+                            }).collect(Collectors.toList());
+
+                            if (!buyBatterySimpleList.containsAll(oriBatterySimpleList)) {
                                 log.error("bindingPackage failed. Package battery mismatch. ");
                                 throw new BizException("300005", "套餐不匹配");
                             }
@@ -1076,7 +1091,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 生成冻结申请
-        Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime().longValue(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
+        Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
         CarRentalPackageOrderFreezePo freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue, applyReason, optUid);
 
         // TX 事务
@@ -1311,9 +1326,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 退租申请，构建会员期限更新数据
-     * @param tenantId
-     * @param uid
-     * @param optUid
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @param optUid 操作用户UID
      * @return
      */
     private CarRentalPackageMemberTermPo buildRentRefundRentalPackageMemberTerm(Integer tenantId, Long uid, Long optUid) {
@@ -1912,10 +1927,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             }
                             if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
                                 List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                                // TODO 临时处理
+                                List<String> oriBatterySimpleList = oriBatteryList.stream().map(n -> {
+                                    StringJoiner simpleModel = new StringJoiner("_");
+                                    String[] strings = n.split("_");
+                                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                    return simpleModel.toString();
+                                }).collect(Collectors.toList());
+                                // TODO 临时处理
                                 List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
-                                if (!buyBatteryList.containsAll(oriBatteryList)) {
+                                List<String> buyBatterySimpleList = buyBatteryList.stream().map(n -> {
+                                    StringJoiner simpleModel = new StringJoiner("_");
+                                    String[] strings = n.split("_");
+                                    simpleModel.add(strings[0]).add(strings[1]).add(strings[strings.length - 1]);
+                                    return simpleModel.toString();
+                                }).collect(Collectors.toList());
+
+                                if (!buyBatterySimpleList.containsAll(oriBatterySimpleList)) {
                                     log.error("buyRentalPackageOrder failed. Package battery mismatch. ");
-                                    return R.fail("300005", "套餐不匹配");
+                                    throw new BizException("300005", "套餐不匹配");
                                 }
                             }
                         }
@@ -2332,23 +2362,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
 
-
-        // 8. 处理分账
-        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-        divisionAccountOrderDTO.setOrderNo(orderNo);
-        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
-        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-
-        // 9. 处理活动
-        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(orderNo);
-        activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-        activityService.asyncProcessActivity(activityProcessDTO);
-
         // 10. 发放优惠券
         if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
@@ -2358,6 +2371,27 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
             userCouponService.asyncSendCoupon(userCouponDTO);
         }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // 8. 处理分账
+                DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                divisionAccountOrderDTO.setOrderNo(orderNo);
+                divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode());
+                divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+
+                // 9. 处理活动
+                ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+                activityProcessDTO.setOrderNo(orderNo);
+                activityProcessDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+                activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                activityService.asyncProcessActivity(activityProcessDTO);
+            }
+        });
 
         return Pair.of(true, userInfo.getPhone());
     }

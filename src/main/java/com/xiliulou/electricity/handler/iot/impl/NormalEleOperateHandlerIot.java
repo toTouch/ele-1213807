@@ -29,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
-    @Autowired
-    ElectricityCabinetService electricityCabinetService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -39,17 +37,6 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return ;
         }
-
-        //3.0 同步修改柜机信息
-        try{
-            EleCabinetVO cabinet = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetVO.class);
-
-            electricityCabinet.setFullyCharged(Double.parseDouble(cabinet.getExchangeCondition()));
-            electricityCabinetService.update(electricityCabinet);
-        }catch (Exception e){
-            log.error("convert json to electricity cabinet error, EID = {}, session id = {}, origin content = {}", electricityCabinet.getId(), sessionId, receiverMessage.getOriginContent(), e);
-        }
-
         Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
 
 //        //操作回调的放在redis中
@@ -59,13 +46,6 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
 //            redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, operateVo, 30L, TimeUnit.SECONDS);
 //        }
         redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, map, 30L, TimeUnit.SECONDS);
-    }
-
-    @Data
-    class EleCabinetVO {
-
-        private String exchangeCondition;
-
     }
 
 }

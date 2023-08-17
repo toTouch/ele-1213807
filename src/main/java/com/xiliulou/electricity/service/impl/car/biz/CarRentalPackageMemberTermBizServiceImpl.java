@@ -41,6 +41,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
 
     @Resource
+    private UserCouponService userCouponService;
+
+    @Resource
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     @Resource
@@ -146,6 +149,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
+        if (YesNoEnum.YES.getCode().equals(packageOrderEntity.getRentRebate()) && packageOrderEntity.getRentRebateEndTime() < System.currentTimeMillis()) {
+            log.error("updateCurrPackage failed. No changes allowed within the refundable period. rentalPackageOrderNo is {}", rentalPackageOrderNo);
+            throw new BizException("300058", "可退期限内，不允许变更");
+        }
+
         Integer tenancyReq = optReq.getTenancy();
         Long dueTimeReq = optReq.getDueTime();
         Long residueReq = optReq.getResidue();
@@ -182,6 +190,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                     dueTimeNew = now + (tenancyReq * TimeConstant.MINUTE_MILLISECOND);
                 }
+            } else {
+                dueTimeNew = now;
             }
             // 总到期时间
             dueTimeTotalNew = dueTimeTotal - (dueTime - dueTimeNew);
@@ -248,8 +258,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
             } else {
                 newMemberTermEntity.setResidue(residueNew);
-                newMemberTermEntity.setDueTime(dueTimeNew);
-                newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
+                newMemberTermEntity.setDueTime(now);
+                newMemberTermEntity.setDueTimeTotal(now);
             }
         } else {
             newMemberTermEntity.setDueTime(dueTimeNew);
@@ -401,8 +411,21 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             CarRentalPackageOrderVo carRentalPackageOrder = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
             userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
-        }
+            if (YesNoEnum.NO.getCode().equals(carRentalPackageOrder.getRentRebate()) || carRentalPackageOrder.getRentRebateEndTime() <= System.currentTimeMillis()) {
+                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+            }
 
+            // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+            UserCoupon userCoupon = userCouponService.selectBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
+            if (ObjectUtils.isNotEmpty(userCoupon)) {
+                Integer status = userCoupon.getStatus();
+                if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
+                    userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+                }
+            }
+        } else {
+            userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+        }
 
         // 押金缴纳订单信息
         if (ObjectUtils.isNotEmpty(depositPayEntity)) {
@@ -446,7 +469,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 退租未退押
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
-        if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId.longValue() == 0) {
+        if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId == 0L) {
             log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, User has retired from lease. uid is {}", uid);
             return null;
         }

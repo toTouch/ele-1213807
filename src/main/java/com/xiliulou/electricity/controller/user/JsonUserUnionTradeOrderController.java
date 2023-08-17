@@ -49,5 +49,13 @@ public class JsonUserUnionTradeOrderController extends BaseController{
     public R payMemberCardAndInsurance(@RequestBody @Validated(value = CreateGroup.class) BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request) {
         return returnTripleResult(tradeOrderService.payMemberCardAndInsurance(query, request));
     }
+
+    /**
+     * 电池滞纳金混合支付
+     */
+    @PostMapping("/user/payServiceFee")
+    public R payServiceFee(HttpServletRequest request) {
+        return returnTripleResult(tradeOrderService.payServiceFee(request));
+    }
 }
 
