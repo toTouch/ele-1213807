@@ -14,6 +14,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,77 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
+
+    /**
+     * 查询当前未支付的逾期订单明细
+     * @return 未支付的逾期订单明细
+     */
+    public R<List<CarRentalPackageOrderSlippageVo>> queryCurrSlippage() {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<CarRentalPackageOrderSlippagePo> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, user.getUid());
+        if (CollectionUtils.isEmpty(carRentalPackageSlippageEntityList)) {
+            return R.ok();
+        }
+
+        Set<Long> rentalPackageIdSet = new HashSet<>();
+        Set<String> carSnSet = new HashSet<>();
+        Set<String> batterySnSet = new HashSet<>();
+        Set<Integer> storeIdSet = new HashSet<>();
+        carRentalPackageSlippageEntityList.forEach(n -> {
+            rentalPackageIdSet.add(n.getRentalPackageId());
+            if (StringUtils.isNotBlank(n.getCarSn())) {
+                carSnSet.add(n.getCarSn());
+                storeIdSet.add(n.getStoreId());
+            }
+            if (StringUtils.isNotBlank(n.getBatterySn())) {
+                batterySnSet.add(n.getBatterySn());
+            }
+        });
+
+        List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
+        long nowTime = System.currentTimeMillis();
+
+        for (CarRentalPackageOrderSlippagePo slippageEntity : carRentalPackageSlippageEntityList) {
+            CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
+            BeanUtils.copyProperties(slippageEntity, slippageVo);
+            // 默认应缴==实缴
+            slippageVo.setLateFeePayable(slippageVo.getLateFeePay());
+
+            Integer payState = slippageVo.getPayState();
+            // 未支付、支付失败，计算应缴滞纳金金额
+            if (PayStateEnum.UNPAID.getCode().equals(payState) || PayStateEnum.FAILED.getCode().equals(payState) ) {
+                // 结束时间，不为空
+                if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
+                    nowTime = slippageEntity.getLateFeeEndTime();
+                }
+
+                // 时间比对
+                long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
+                // 没有滞纳金产生
+                if (lateFeeStartTime < nowTime) {
+                    continue;
+                }
+
+                // 转换天
+                long diffDay = DateUtils.diffDay(nowTime, lateFeeStartTime);
+                // 计算滞纳金金额
+                BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee()).setScale(2, RoundingMode.HALF_UP);
+
+                slippageVo.setLateFeePayable(amount);
+            }
+
+            carRentalPackageSlippageVoList.add(slippageVo);
+        }
+
+        return R.ok(carRentalPackageSlippageVoList);
+    }
 
     /**
      * 套餐逾期订单-条件查询列表
