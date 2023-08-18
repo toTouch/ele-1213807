@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -11,6 +12,14 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderRentRefundService {
+
+    /**
+     * 根据用户UID查询退款成功的总金额
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 总金额
+     */
+    BigDecimal selectRefundSuccessAmountTotal(Integer tenantId, Long uid);
 
     /**
      * 根据退租申请单编码进行更新
@@ -62,4 +71,6 @@ public interface CarRentalPackageOrderRentRefundService {
      * @return
      */
     Long insert(CarRentalPackageOrderRentRefundPo entity);
+
+
 }

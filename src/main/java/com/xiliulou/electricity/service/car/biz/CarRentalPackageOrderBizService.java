@@ -8,6 +8,7 @@ import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -16,6 +17,15 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderBizService {
+
+    /**
+     * 根据用户UID查询总金额<br />
+     * 订单支付成功总金额 - 退租订单成功总金额
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return 总金额
+     */
+    BigDecimal queryAmountTotalByUid(Integer tenantId, Long uid);
 
     /**
      * 退租提示

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQry
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,6 +15,15 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageOrderSlippageMapper {
+
+    /**
+     * 根据用户UID查询支付成功的总金额
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 总金额
+     */
+    BigDecimal selectPaySuccessAmountTotal(Integer tenantId, Long uid);
 
     /**
      * 根据主键ID进行更新
@@ -90,4 +100,6 @@ public interface CarRentalPackageOrderSlippageMapper {
      * @return 操作条数
      */
     int insert(CarRentalPackageOrderSlippagePo entity);
+
+
 }
