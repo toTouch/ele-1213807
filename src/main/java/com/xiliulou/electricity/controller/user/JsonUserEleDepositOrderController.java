@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.*;
@@ -200,6 +201,7 @@ public class JsonUserEleDepositOrderController {
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
                 .offset(offset)
                 .size(size)
+                .status(EleRefundOrder.STATUS_SUCCESS)
                 .tenantId(TenantContextHolder.getTenantId())
                 .uid(SecurityUtils.getUid())
                 .build();

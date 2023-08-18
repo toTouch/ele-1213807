@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleOtherConfig;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * (CupboardOtherConfig)表数据库访问层
@@ -11,5 +12,7 @@ import com.xiliulou.electricity.entity.EleOtherConfig;
  */
 public interface EleOtherConfigMapper extends BaseMapper<EleOtherConfig> {
 
+    @Update("update t_ele_other_config set tenant_id=#{tenantId},update_time=#{updateTime} where eid=#{eid}")
+    Integer updateByEid(EleOtherConfig eleOtherConfig);
 
 }

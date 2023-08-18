@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -11,6 +12,14 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderSlippageService {
+
+    /**
+     * 根据用户UID查询支付成功的总金额(实际支付金额)
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 总金额
+     */
+    BigDecimal selectPaySuccessAmountTotal(Integer tenantId, Long uid);
 
     /**
      * 根据主键ID进行更新

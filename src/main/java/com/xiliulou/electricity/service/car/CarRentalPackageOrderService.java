@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,6 +13,14 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageOrderService {
+
+    /**
+     * 根据用户UID查询支付成功的总金额(实际支付金额)
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 总金额
+     */
+    BigDecimal selectPaySuccessAmountTotal(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID查找最后一条未支付成功的购买记录信息

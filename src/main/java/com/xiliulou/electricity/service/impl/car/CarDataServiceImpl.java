@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.google.common.collect.Lists;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarDataEntity;
 import com.xiliulou.electricity.enums.car.CarDataQueryEnum;
+import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.service.Jt808CarService;
@@ -38,6 +41,8 @@ public class CarDataServiceImpl implements CarDataService {
     private Jt808CarService jt808CarService;
     @Resource
     private ElectricityCarMapper electricityCarMapper;
+    @Resource
+    private ElectricityBatteryMapper electricityBatteryMapper;
     @Override
     public PageDataResult queryAllCarDataPage(CarDataConditionReq carDataConditionReq) {
         if(checkPageAndDataType(carDataConditionReq)){
@@ -74,6 +79,7 @@ public class CarDataServiceImpl implements CarDataService {
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryAllCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryAllCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
+        carDataVOList = queryBatteryByUserId(carDataVOList);
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
@@ -88,6 +94,7 @@ public class CarDataServiceImpl implements CarDataService {
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryRentCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryRentCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
+        carDataVOList = queryBatteryByUserId(carDataVOList);
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
@@ -102,6 +109,7 @@ public class CarDataServiceImpl implements CarDataService {
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryNotRentCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryNotRentCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
+        carDataVOList = queryBatteryByUserId(carDataVOList);
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
@@ -116,6 +124,7 @@ public class CarDataServiceImpl implements CarDataService {
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryOverdueCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryOverdueCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
+        carDataVOList = queryBatteryByUserId(carDataVOList);
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
@@ -130,6 +139,7 @@ public class CarDataServiceImpl implements CarDataService {
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryOfflineCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryOfflineCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = CarDataVO.carDataEntityListToCarDataVOList(carDataEntityList);
+        carDataVOList = queryBatteryByUserId(carDataVOList);
         return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
@@ -139,6 +149,9 @@ public class CarDataServiceImpl implements CarDataService {
      * @return
      */
     private List<CarDataVO> getCarInfoByJt808(List<CarDataEntity> carDataEntityList){
+        if(CollectionUtils.isEmpty(carDataEntityList)){
+            return Lists.newArrayList();
+        }
         List<CarDataVO> carDataVOList = CarDataVO.carDataEntityListToCarDataVOList(carDataEntityList);
         for(CarDataVO carDataVO : carDataVOList){
             // 获取设备信息
@@ -151,7 +164,18 @@ public class CarDataServiceImpl implements CarDataService {
         }
         return carDataVOList;
     }
-
+    private List<CarDataVO> queryBatteryByUserId(List<CarDataVO> carDataVOList){
+        if(CollectionUtils.isEmpty(carDataVOList)){
+            return Lists.newArrayList();
+        }
+        for(CarDataVO carDataVO : carDataVOList){
+            ElectricityBattery electricityBattery = electricityBatteryMapper.queryByUid(carDataVO.getUid());
+            carDataVO.setBatterySn(electricityBattery.getSn());
+            carDataVO.setPower(electricityBattery.getPower());
+            carDataVO.setVoltage(electricityBattery.getVoltage());
+        }
+        return carDataVOList;
+    }
     //校验页码和数据类型
     private Boolean checkPageAndDataType(CarDataConditionReq carDataConditionReq){
         if(carDataConditionReq.getOffset() < 0){

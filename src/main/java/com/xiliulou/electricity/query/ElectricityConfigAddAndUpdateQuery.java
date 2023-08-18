@@ -116,6 +116,16 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否开启电子签名 0--是 1--否 2--功能关闭
      */
     private Integer isEnableEsign;
+
+    /**
+     * 是否允许租电 0--是  1--否
+     */
+    private Integer allowRentEle;
+
+    /**
+     * 是否允许退电 0--是  1--否
+     */
+    private Integer allowReturnEle;
 }
 
 

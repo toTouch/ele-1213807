@@ -181,6 +181,26 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageService carRentalPackageService;
 
     /**
+     * 根据用户UID查询总金额<br />
+     * 订单支付成功总金额 - 退租订单成功总金额
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return 总金额
+     */
+    @Override
+    public BigDecimal queryAmountTotalByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        BigDecimal paySuccessAmountTotal = carRentalPackageOrderService.selectPaySuccessAmountTotal(tenantId, uid);
+        BigDecimal refundSuccessAmountTotal = carRentalPackageOrderRentRefundService.selectRefundSuccessAmountTotal(tenantId, uid);
+
+        return paySuccessAmountTotal.subtract(refundSuccessAmountTotal).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
      * 退租提示
      *
      * @param tenantId       租户ID
@@ -190,7 +210,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      */
     @Override
     public RefundRentOrderHintVo refundRentOrderHint(Integer tenantId, Long uid, String packageOrderNo) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid) || StringUtils.isBlank(packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
