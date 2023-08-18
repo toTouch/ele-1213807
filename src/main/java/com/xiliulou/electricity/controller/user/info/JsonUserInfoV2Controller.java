@@ -74,6 +74,7 @@ public class JsonUserInfoV2Controller extends BasicController {
                 UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
                 batteryPackage.setDueTime(orderExpireTime);
                 batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
+                batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
                 userMemberPackageVo.setBatteryPackage(batteryPackage);
             }
         }
@@ -98,6 +99,7 @@ public class JsonUserInfoV2Controller extends BasicController {
                     UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
                     carBatteryPackage.setDueTime(dueTime);
                     carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    carBatteryPackage.setStatus(memberTermEntity.getStatus());
                     userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
                 }
             }
