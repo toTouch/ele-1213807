@@ -42,9 +42,9 @@ public class ActivityConsumer implements RocketMQListener<String> {
 
             if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(activityProcessDTO.getActivityType())){
 
-                activityService.handleActivityByPackage(activityProcessDTO);
+                //activityService.handleActivityByPackage(activityProcessDTO);
             }else if(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(activityProcessDTO.getActivityType())){
-                activityService.handleActivityByRealName(activityProcessDTO);
+                //activityService.handleActivityByRealName(activityProcessDTO);
             }
 
         } catch (Exception e){
