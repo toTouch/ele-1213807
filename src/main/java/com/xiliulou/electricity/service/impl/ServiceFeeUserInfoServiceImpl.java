@@ -323,6 +323,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
             if(Objects.nonNull(eleBatteryServiceFeeOrder)){
                 systemEnableBatteryServiceFee=eleBatteryServiceFeeOrder.getPayAmount();
+                type = EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD;
                 log.info("BATTERY SERVICE FEE INFO!user exist system enable expire fee,uid={},fee={}", userInfo.getUid(), systemEnableBatteryServiceFee.doubleValue());
             }
         }

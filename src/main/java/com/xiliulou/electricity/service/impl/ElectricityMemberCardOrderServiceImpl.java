@@ -1937,9 +1937,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-        userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
         userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
+        }
+
 
         if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
