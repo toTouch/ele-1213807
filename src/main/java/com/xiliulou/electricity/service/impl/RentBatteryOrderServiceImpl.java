@@ -102,13 +102,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
-    
+
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
-    
+
     @Autowired
     UserCarDepositService userCarDepositService;
-    
+
     @Autowired
     UserActiveInfoService userActiveInfoService;
 
@@ -266,7 +266,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
+
             ElectricityConfig electricityConfig = electricityConfigService
                     .queryFromCacheByTenantId(userInfo.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects
@@ -376,7 +376,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.error("RENTBATTERY ERROR! not found battery,batteryName={}", electricityCabinetBox.getSn());
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
-    
+
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
 
@@ -434,7 +434,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig)&& (electricityConfig.NOT_ALLOW_RETURN_ELE).equals(electricityConfig.getAllowReturnEle())){
+        if (Objects.nonNull(electricityConfig)&& Objects.equals(ElectricityConfig.NOT_ALLOW_RETURN_ELE, electricityConfig.getAllowReturnEle())){
             return R.fail("ELECTRICITY.100272", "当前柜机不支持退电");
         }
 
@@ -1116,7 +1116,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return Triple.of(false, "0", "加盟商未绑定满电电池");
         }
-    
+
         List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxVOList.stream()
                 .sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed())
                 .collect(Collectors.toList());
@@ -1125,17 +1125,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         final Double MAX_POWER = usableBoxes.get(0).getPower();
         usableBoxes = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), MAX_POWER))
                 .collect(Collectors.toList());
-    
+
         int maxChargeVIndex = 0;
         for (int i = 0; i < usableBoxes.size(); i++) {
             Double maxChargeV = Optional.ofNullable(usableBoxes.get(maxChargeVIndex).getChargeV()).orElse(0.0);
             Double chargeV = Optional.ofNullable(usableBoxes.get(i).getChargeV()).orElse(0.0);
-        
+
             if (maxChargeV.compareTo(chargeV) < 0) {
                 maxChargeVIndex = i;
             }
         }
-    
+
         return Triple.of(true, usableBoxes.get(maxChargeVIndex).getCellNo(), null);
     }
 
@@ -1369,26 +1369,26 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
                 RandomUtil.randomNumbers(4);
     }
-    
+
     private Triple<Boolean, String, String> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
-        
+
         //用户未缴纳押金可直接换电
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarDeposit)) {
             return Triple.of(true, null, null);
         }
-        
+
         //用户未缴纳押金可直接换电
         if (!Objects.equals(user.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return Triple.of(true, null, null);
         }
-    
+
         //用户从未买过车辆套餐则可直接换电
         if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime()) || Objects
                 .equals(userCarMemberCard.getMemberCardExpireTime(), 0L)) {
             return Triple.of(false, "100232", "未购买租车套餐");
         }
-        
+
         //套餐是否可用
         long now = System.currentTimeMillis();
         if (userCarMemberCard.getMemberCardExpireTime() < now) {
