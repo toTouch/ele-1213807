@@ -2783,7 +2783,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         int offset = 0;
         int size = 300;
 
-
         while (true) {
 
             //获取停卡用户
