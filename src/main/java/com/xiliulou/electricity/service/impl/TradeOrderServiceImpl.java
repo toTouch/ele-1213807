@@ -589,11 +589,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
 
-            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.warn("SERVICE FEE WARN! user is rent deposit,uid={} ", user.getUid());
-                return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
-            }
-
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
@@ -783,13 +778,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         //暂停套餐电池服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && StringUtils.isNotBlank(serviceFeeUserInfo.getDisableMemberCardNo())) {
-            //1.获取滞纳金订单
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
-            //判断用户是否有停卡滞纳金订单
+            //获取滞纳金订单
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = null;
+
+            BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
+
+            //1旧版小程序  停卡，不存在滞纳金订单
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isBlank(serviceFeeUserInfo.getPauseOrderNo())) {
                 //计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-                BigDecimal pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
 
                 //生成滞纳金订单
@@ -819,8 +817,30 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+            }
 
-            } else {
+            //2 新版小程序  停卡，存在滞纳金订单
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+                //计算暂停套餐电池服务费
+                int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+                pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
+
+                eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
+                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                    log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0015", "滞纳金订单不存在");
+                }
+
+                EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+                eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+                eleBatteryServiceFeeOrderUpdate.setPayAmount(pauseBatteryServiceFee);
+                eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+            }
+
+            //3 新版小程序 套餐已启用  存在滞纳金订单
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
                 //获取滞纳金订单
                 eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
                 if (Objects.isNull(eleBatteryServiceFeeOrder)) {
@@ -829,9 +849,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
             }
 
-            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
-            orderTypeList.add(ServiceFeeEnum.BATTERY_PAUSE.getCode());
-            allPayAmount.add(eleBatteryServiceFeeOrder.getPayAmount());
+            if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
+                orderList.add(eleBatteryServiceFeeOrder.getOrderId());
+                orderTypeList.add(ServiceFeeEnum.BATTERY_PAUSE.getCode());
+                allPayAmount.add(eleBatteryServiceFeeOrder.getPayAmount());
+            }
         }
 
         return Triple.of(true, null, null);
