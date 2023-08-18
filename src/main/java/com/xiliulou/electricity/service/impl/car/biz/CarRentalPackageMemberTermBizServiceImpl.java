@@ -543,6 +543,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     // 若生成滞纳金，则代表肯定设置了滞纳金，此时查看是否存在因冻结产生的滞纳金，若存在，则更新数据，并新增一条过期的逾期订单
                     CarRentalPackageOrderSlippagePo slippageFreezeEntity = null;
                     if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
+                        CarRentalPackageOrderSlippagePo slippageExpireEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.EXPIRE.getCode());
+                        if (ObjectUtils.isNotEmpty(slippageExpireEntity)) {
+                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. tThe user already has an expired order. skip. uid is {}, rentalPackageOrderNo is {}", memberTermEntity.getId(), slippageEntityInsert.getRentalPackageOrderNo());
+                            continue;
+                        }
+
                         slippageFreezeEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
                         if (ObjectUtils.isNotEmpty(slippageFreezeEntity)) {
                             // 取会员的当前到期时间，因为在冻结的时候，会更新当前套餐订单的到期时间
@@ -598,7 +604,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_SLIPPAGE_LOCK);
 
             return carLockCtrlHistory;
         }
@@ -612,6 +618,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 生成逾期订单
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
+        }
+        if (ObjectUtils.isNotEmpty(slippageFreezeEntity)) {
             // 更新对应的因冻结的产生的逾期订单记录
             carRentalPackageOrderSlippageService.updateById(slippageFreezeEntity);
         }
