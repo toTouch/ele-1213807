@@ -3678,7 +3678,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+        if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus()) || !Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE, userBatteryMemberCard.getMemberCardStatus())) {
             return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
         }
 
@@ -3796,7 +3796,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+        if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus()) || !Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE, userBatteryMemberCard.getMemberCardStatus())) {
             return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
         }
 
