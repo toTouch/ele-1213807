@@ -589,6 +589,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
 
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.warn("SERVICE FEE WARN! user is rent deposit,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
+            }
+
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
@@ -620,10 +625,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
 
             //总滞纳金
-            allPayAmountList.forEach(totalPayAmount::add);
+            totalPayAmount = allPayAmountList.stream().reduce(BigDecimal.ZERO,BigDecimal::add);
 
             if (totalPayAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-                log.warn("SERVICE FEE WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
+                log.warn("payServiceFee failed. totalPayAmount is {}", totalPayAmount);
                 return Triple.of(false, "000001", "滞纳金不合法!");
             }
 
