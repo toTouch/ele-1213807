@@ -108,7 +108,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             if(sameInviterResult.getRight().isEmpty()){
                 return R.ok();
             }else{
-                return R.fail("000208", sameInviterResult.getRight());
+                return R.fail("110205", sameInviterResult.getRight());
             }
         }
 
@@ -127,13 +127,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
         List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
         if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-            return R.fail("000206", "已参加过邀请返券活动");
+            return R.fail("110206", "已参加过邀请返券活动");
         }
 
         //查询当前用户是否参与了邀请返现活动
         List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
         if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
-            return R.fail("000207", "已参加过邀请返现活动");
+            return R.fail("110207", "已参加过邀请返现活动");
         }
 
         //未购买月卡则添加用户参与记录
