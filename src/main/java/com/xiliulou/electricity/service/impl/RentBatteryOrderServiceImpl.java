@@ -1102,7 +1102,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery);
     }
 
-    @Override
     public R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
 
         //用户
