@@ -43,7 +43,7 @@ public class UserCouponConsumer implements RocketMQListener<String> {
                 userCouponService.sendCouponToUser(userCouponDTO);
             });*/
 
-            userCouponService.sendCouponToUser(userCouponDTO);
+            //userCouponService.sendCouponToUser(userCouponDTO);
 
         } catch (Exception e){
             log.error("Send coupon consumer error! msg = {}", message, e);

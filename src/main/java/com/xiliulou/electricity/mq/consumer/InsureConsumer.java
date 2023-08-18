@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author xiaohui.song
  **/
+@Deprecated
 @Slf4j
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.INSURE_COMMON_TOPIC, consumerGroup = MqConsumerConstant.INSURE_COMMON_CONSUMER_GROUP)

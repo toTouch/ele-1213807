@@ -493,6 +493,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
 
+        if ((!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus()) && RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackage.getType()))
+                || (!UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus()) && RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackage.getType()))) {
+            log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. rentalPackage type mismatch. rentalPackage type is {}", carRentalPackage.getType());
+            throw new BizException("300005", "套餐不匹配");
+        }
+
         // 创建押金缴纳订单
         CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(), PayTypeEnum.EXEMPT.getCode());
         // 创建免押记录

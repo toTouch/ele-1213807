@@ -12,6 +12,7 @@ import javax.annotation.Resource;
  *
  * @author xiaohui.song
  **/
+@Deprecated
 @Slf4j
 @Component
 public class DivisionAccountProducer {

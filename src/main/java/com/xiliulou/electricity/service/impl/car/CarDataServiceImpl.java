@@ -14,24 +14,17 @@ import com.xiliulou.electricity.service.car.CarDataService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.vo.car.CarDataResult;
+import com.xiliulou.electricity.vo.car.PageDataResult;
 import com.xiliulou.electricity.vo.car.CarDataVO;
-import com.xiliulou.electricity.vo.car.CarLocation;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,16 +39,16 @@ public class CarDataServiceImpl implements CarDataService {
     @Resource
     private ElectricityCarMapper electricityCarMapper;
     @Override
-    public CarDataResult queryAllCarDataPage(CarDataConditionReq carDataConditionReq) {
+    public PageDataResult queryAllCarDataPage(CarDataConditionReq carDataConditionReq) {
         if(checkPageAndDataType(carDataConditionReq)){
-            return new CarDataResult();
+            return new PageDataResult();
         }
         // 统一获取租户ID
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return new CarDataResult();
+            return new PageDataResult();
         }
         carDataConditionReq.setTenantId(tenantId);
         // 方法路由，根据queryType获取不同结果
@@ -67,24 +60,21 @@ public class CarDataServiceImpl implements CarDataService {
             return queryNotRentCarData(carDataConditionReq);
         }else if(Objects.equals(carDataConditionReq.getQueryType(),CarDataQueryEnum.OVERDUE.getCode())){
             return queryOverdueCarData(carDataConditionReq);
+        }else if(Objects.equals(carDataConditionReq.getQueryType(),CarDataQueryEnum.OFFLINE.getCode())){
+            return queryOfflineCarData(carDataConditionReq);
         }
-        return new CarDataResult();
-    }
-    @Override
-    @Slave
-    public Integer queryAllCarDataCount(CarDataConditionReq carDataConditionReq) {
-        return null;
+        return new PageDataResult();
     }
     /**
      * 查询所有的车辆数据
      */
     @Slave
-    private CarDataResult queryAllCarData(CarDataConditionReq carDataConditionReq){
+    private PageDataResult queryAllCarData(CarDataConditionReq carDataConditionReq){
         // 查库的信息
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryAllCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryAllCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
-        return CarDataResult.result(count,carDataConditionReq.getSize(),carDataConditionReq.getOffset(),carDataVOList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
     /**
@@ -93,12 +83,12 @@ public class CarDataServiceImpl implements CarDataService {
      * @return
      */
     @Slave
-    private CarDataResult queryRentCarData(CarDataConditionReq carDataConditionReq){
+    private PageDataResult queryRentCarData(CarDataConditionReq carDataConditionReq){
         // 查库的信息
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryRentCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryRentCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
-        return CarDataResult.result(count,carDataConditionReq.getSize(),carDataConditionReq.getOffset(),carDataVOList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
     /**
@@ -107,12 +97,12 @@ public class CarDataServiceImpl implements CarDataService {
      * @return
      */
     @Slave
-    private CarDataResult queryNotRentCarData(CarDataConditionReq carDataConditionReq){
+    private PageDataResult queryNotRentCarData(CarDataConditionReq carDataConditionReq){
         // 查库的信息
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryNotRentCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryNotRentCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
-        return CarDataResult.result(count,carDataConditionReq.getSize(),carDataConditionReq.getOffset(),carDataVOList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
     /**
@@ -121,14 +111,27 @@ public class CarDataServiceImpl implements CarDataService {
      * @return
      */
     @Slave
-    private CarDataResult queryOverdueCarData(CarDataConditionReq carDataConditionReq){
+    private PageDataResult queryOverdueCarData(CarDataConditionReq carDataConditionReq){
         // 查库的信息
         List<CarDataEntity> carDataEntityList = electricityCarMapper.queryOverdueCarData(carDataConditionReq);
         Integer count = electricityCarMapper.queryOverdueCarDataCount(carDataConditionReq);
         List<CarDataVO> carDataVOList = getCarInfoByJt808(carDataEntityList);
-        return CarDataResult.result(count,carDataConditionReq.getSize(),carDataConditionReq.getOffset(),carDataVOList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
     }
 
+    /**
+     * 查询下线的车辆数据
+     * @param carDataConditionReq
+     * @return
+     */
+    @Slave
+    private PageDataResult queryOfflineCarData(CarDataConditionReq carDataConditionReq){
+        // 查库的信息
+        List<CarDataEntity> carDataEntityList = electricityCarMapper.queryOfflineCarData(carDataConditionReq);
+        Integer count = electricityCarMapper.queryOfflineCarDataCount(carDataConditionReq);
+        List<CarDataVO> carDataVOList = CarDataVO.carDataEntityListToCarDataVOList(carDataEntityList);
+        return PageDataResult.result(count, carDataConditionReq.getSize(), carDataConditionReq.getOffset(), carDataVOList);
+    }
 
     /**
      * 通过jt808查询位置信息
@@ -173,8 +176,4 @@ public class CarDataServiceImpl implements CarDataService {
         }
         return false;
     }
-
-
-
-
 }

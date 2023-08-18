@@ -20,4 +20,6 @@ public class CarDataEntity {
     private Long updateTime;  // 更新时间
     private Long createTime;  // 创建时间
     private Long dueTime; // 套餐到期时间
+    private double longitude;
+    private double latitude;
 }

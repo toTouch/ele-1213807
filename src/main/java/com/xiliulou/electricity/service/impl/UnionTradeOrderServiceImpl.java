@@ -8,17 +8,22 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.enums.DivisionAccountEnum;
-import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.ServiceFeeEnum;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -28,6 +33,7 @@ import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +60,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UnionTradeOrderServiceImpl extends
         ServiceImpl<UnionTradeOrderMapper, UnionTradeOrder> implements UnionTradeOrderService {
+
+    @Resource
+    private CarRentalOrderBizService carRentalOrderBizService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    @Resource
+    private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
+
+    @Resource
+    private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
 
     @Resource
     UnionTradeOrderMapper unionTradeOrderMapper;
@@ -965,6 +983,8 @@ public class UnionTradeOrderServiceImpl extends
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdList = JsonUtil.fromJsonArray(jsonOrderId, String.class);
 
+        List<String> jsonFreeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonSingleFee(), String.class);
+
         if (CollectionUtils.isEmpty(orderIdList)) {
             log.error("NOTIFY SERVICE FEE UNION ORDER ERROR!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
@@ -982,8 +1002,9 @@ public class UnionTradeOrderServiceImpl extends
                 handleBatteryMembercardPauseServiceFeeOrder(orderIdList.get(i), tradeOrderStatus, userInfo);
             } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode())) {
                 handleBatteryMembercardExpireServiceFeeOrder(orderIdList.get(i), tradeOrderStatus, userInfo);
-            } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR.getCode())) {
-                //TODO 车辆滞纳金
+            } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR_SLIPPAGE.getCode())) {
+                // 车辆滞纳金
+                handCarSupplierSuccess(orderIdList.get(i), jsonFreeList.get(i), tradeOrderStatus, userInfo);
             }
         }
 
@@ -1009,6 +1030,132 @@ public class UnionTradeOrderServiceImpl extends
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(true, null);
+    }
+
+    /**
+     *
+     * @param orderNo 逾期订单号
+     * @param freeAmount 缴纳金额
+     * @param tradeOrderStatus 支付状态
+     * @param userInfo 用户信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo) {
+        Integer tenantId = userInfo.getTenantId();
+        Long uid = userInfo.getUid();
+        log.info("handCarSupplierSuccess, orderNo is {}, freeAmount is {}, tradeOrderStatus is {}, uid is {}", orderNo, freeAmount, tradeOrderStatus, uid);
+        long now = System.currentTimeMillis();
+        CarRentalPackageOrderSlippagePo slippageEntity = carRentalPackageOrderSlippageService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(slippageEntity)) {
+            log.error("handCarSupplierSuccess, not found t_car_rental_package_order_slippage. orderNo is {}", orderNo);
+            return;
+        }
+
+        if (PayStateEnum.SUCCESS.getCode().equals(slippageEntity.getPayState())) {
+            log.error("handCarSupplierSuccess, t_car_rental_package_order_slippage processed. orderNo is {}", orderNo);
+            return;
+        }
+
+        // 支付成功
+        if (ElectricityTradeOrder.STATUS_SUCCESS.equals(tradeOrderStatus)) {
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            // 更新数据源
+            CarRentalPackageOrderSlippagePo slippageUpdateEntity = new CarRentalPackageOrderSlippagePo();
+            slippageUpdateEntity.setId(slippageEntity.getId());
+            slippageUpdateEntity.setUpdateTime(now);
+            slippageUpdateEntity.setPayState(PayStateEnum.SUCCESS.getCode());
+            slippageUpdateEntity.setPayTime(now);
+
+            Integer type = slippageEntity.getType();
+            // 冻结
+            if (SlippageTypeEnum.FREEZE.getCode().equals(type)) {
+                if (ObjectUtils.isEmpty(slippageEntity.getLateFeeEndTime())) {
+                    slippageUpdateEntity.setLateFeeEndTime(now);
+                    slippageUpdateEntity.setLateFeePay(new BigDecimal(freeAmount));
+                }
+
+                CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+
+                // 更改订单冻结表数据
+                carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, null);
+
+                // 赋值会员更新
+                CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
+                memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
+                memberTermUpdateEntity.setId(memberTermEntity.getId());
+                memberTermUpdateEntity.setUpdateTime(now);
+                // 提前启用、计算差额
+                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
+                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
+
+                carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
+
+            }
+
+            // 过期
+            if (SlippageTypeEnum.EXPIRE.getCode().equals(type)) {
+                slippageUpdateEntity.setLateFeeEndTime(now);
+                slippageUpdateEntity.setLateFeePay(new BigDecimal(freeAmount));
+
+                // 更改会员期限表数据
+                CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
+                memberTermEntityUpdate.setDueTime(now);
+                memberTermEntityUpdate.setDueTimeTotal(now);
+                memberTermEntityUpdate.setId(memberTermEntity.getId());
+                carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
+            }
+
+            // 更新逾期订单
+            carRentalPackageOrderSlippageService.updateById(slippageUpdateEntity);
+
+            // 查询车辆
+            ElectricityCar electricityCar = electricityCarService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isNotEmpty(electricityCar)) {
+                // JT808解锁
+                CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+                // 生成日志
+                if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
+                    carLockCtrlHistoryService.insert(carLockCtrlHistory);
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * 构建JT808
+     * @param electricityCar
+     * @param userInfo
+     * @return
+     */
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+
+            boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_SLIPPAGE_UN_LOCK);
+
+            return carLockCtrlHistory;
+        }
+        return null;
     }
 
     private void handleBatteryMembercardPauseServiceFeeOrder(String orderId, Integer status, UserInfo userInfo) {

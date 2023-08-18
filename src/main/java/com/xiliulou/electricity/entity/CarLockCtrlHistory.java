@@ -70,4 +70,10 @@ public class CarLockCtrlHistory {
     public static final Integer TYPE_BIND_USER_UN_LOCK = 3;
     
     public static final Integer TYPE_UN_BIND_USER_LOCK = 4;
+
+    /** 滞纳金加锁 */
+    public static final Integer TYPE_SLIPPAGE_LOCK = 5;
+
+    /** 滞纳金解锁 */
+    public static final Integer TYPE_SLIPPAGE_UN_LOCK = 6;
 }

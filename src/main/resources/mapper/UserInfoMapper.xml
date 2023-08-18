@@ -851,4 +851,190 @@
         order by id
         limit #{offset}, #{size}
     </select>
+    <sql id="QUERY_USER_INFO_DATA">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.sn AS batterySn, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+    </sql>
+    <sql id="QUERY_USER_INFO_DATA_COUNT">
+        select  count(*)
+        from    t_user_info ui
+    </sql>
+
+    <select id="queryAllUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        <include refid="QUERY_USER_INFO_DATA"></include>
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryAllUserInfoDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_USER_INFO_DATA_COUNT"></include>
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEffectiveUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+        ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from    t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and ubmc.member_card_expire_time > UNIX_TIMESTAMP()
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEffectiveUserInfoDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_USER_INFO_DATA_COUNT"></include>
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and ubmc.member_card_expire_time > UNIX_TIMESTAMP()
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryRentUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+        ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryRentUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryOverdueUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime,eb.sn AS batterySn
+        from t_user_info ui
+                 left join t_user_active_info uai on ui.uid = uai.uid
+                 left join t_electricity_battery eb on eb.uid = eb.uid
+                 left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and UNIX_TIMESTAMP() > ubmc.member_card_expire_time
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryOverdueUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and UNIX_TIMESTAMP() > ubmc.member_card_expire_time
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+
+    </select>
+    <select id="querySilentUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.sn AS batterySn, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from t_user_info ui
+                 left join t_user_active_info uai on ui.uid = uai.uid
+                 left join t_electricity_battery eb on eb.uid = eb.uid
+                 left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and  uai.active_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <select id="querySilentUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and  uai.active_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+
+    </select>
+
+
 </mapper>
