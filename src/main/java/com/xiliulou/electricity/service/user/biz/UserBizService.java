@@ -1,11 +1,21 @@
 package com.xiliulou.electricity.service.user.biz;
 
+import java.math.BigDecimal;
+
 /**
  * 用户业务聚合 Service
  *
  * @author xiaohui.song
  **/
 public interface UserBizService {
+
+    /**
+     * 获取名下的总滞纳金（单电、单车、车电一体）
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return 总金额
+     */
+    BigDecimal querySlippageTotal(Integer tenantId, Long uid);
 
     /**
      * 退押解绑用户信息

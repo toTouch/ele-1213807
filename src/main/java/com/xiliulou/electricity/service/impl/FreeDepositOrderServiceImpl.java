@@ -173,6 +173,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
 
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -2021,13 +2024,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMemberCardId().longValue());
         if (Objects.isNull(batteryMemberCard)) {
-            log.warn("FREE DEPOSIT ERROR!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
+            log.warn("FREE DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
 
         if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
-            log.warn("FREE DEPOSIT ERROR! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
+            log.warn("FREE DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "100275", "电池套餐不可用");
+        }
+
+        //是否有正在进行中的退押
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+        if (refundCount > 0) {
+            log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
+        }
+
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+            log.warn("FREE DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+            return Triple.of(false,"100018", "套餐租金退款审核中");
         }
 
         //获取扫码柜机

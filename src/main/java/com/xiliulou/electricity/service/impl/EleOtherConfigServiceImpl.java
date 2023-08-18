@@ -99,4 +99,9 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
         }
         return R.fail("SYSTEM.0005", "数据库错误");
     }
+
+    @Override
+    public Integer updateByEid(EleOtherConfig eleOtherConfig) {
+        return eleOtherConfigMapper.updateByEid(eleOtherConfig);
+    }
 }

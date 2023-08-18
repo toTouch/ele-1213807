@@ -1059,6 +1059,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
                 return Triple.of(false, "100211", "换电套餐停卡审核中");
             }
+
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+                return Triple.of( false,"100211", "换电套餐已暂停");
+            }
 //            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard, user);
 //            if (Boolean.FALSE.equals(checkUserMemberCardResult.getLeft())) {
 //                return checkUserMemberCardResult;
@@ -1070,16 +1075,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "ELECTRICITY.00121","套餐不存在");
             }
 
-            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
-            }
-
             //判断用户电池服务费
             Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("ORDER WARN! user exist battery service fee,uid={}", user.getUid());
                 return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
+            }
+
+            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
             }
     
             //判断车电关联是否可换电

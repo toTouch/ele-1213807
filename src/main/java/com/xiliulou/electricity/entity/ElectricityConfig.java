@@ -131,6 +131,17 @@ public class ElectricityConfig {
      */
     private Integer isEnableEsign;
 
+    /**
+     * 是否允许租电 0--是  1--否
+     */
+    private Integer allowRentEle;
+
+    /**
+     * 是否允许退电 0--是  1--否
+     */
+    private Integer allowReturnEle;
+
+
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
 
     public static Integer MOVE_FRANCHISEE_OPEN = 0;
@@ -214,5 +225,17 @@ public class ElectricityConfig {
     public static Integer ENABLE_ZERO_DEPOSIT_AUDIT=0;
 
     public static Integer DISABLE_ZERO_DEPOSIT_AUDIT=1;
+
+    /**
+     * 是否允许租电 0--是  1--否
+     */
+    public static  Integer ALLOW_RENT_ELE=0;
+    public static  Integer NOT_ALLOW_RENT_ELE=1;
+
+    /**
+     * 是否允许退电 0--是  1--否
+     */
+    public static  Integer ALLOW_RETURN_ELE=0;
+    public static  Integer NOT_ALLOW_RETURN_ELE=1;
 
 }

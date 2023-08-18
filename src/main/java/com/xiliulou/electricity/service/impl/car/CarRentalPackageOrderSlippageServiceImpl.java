@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -27,6 +28,28 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageOrderSlippageMapper carRentalPackageOrderSlippageMapper;
+
+    /**
+     * 根据用户UID查询支付成功的总金额(实际支付金额)
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 总金额
+     */
+    @Slave
+    @Override
+    public BigDecimal selectPaySuccessAmountTotal(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        BigDecimal paySuccessAmountTotal = carRentalPackageOrderSlippageMapper.selectPaySuccessAmountTotal(tenantId, uid);
+        if (ObjectUtils.isEmpty(paySuccessAmountTotal)) {
+            paySuccessAmountTotal = BigDecimal.ZERO;
+        }
+
+        return paySuccessAmountTotal;
+    }
 
     /**
      * 根据主键ID进行更新

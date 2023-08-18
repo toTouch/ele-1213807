@@ -3,7 +3,9 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -13,6 +15,15 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageOrderRentRefundMapper {
+
+    /**
+     * 根据用户UID查询退款成功的总金额
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 总金额
+     */
+    BigDecimal selectRefundSuccessAmountTotal(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据退租申请单编码进行更新

@@ -92,14 +92,15 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
             User user = userService.queryByUidFromCache(item.getUid());
             shareActivityOperateRecordVO.setUsername(Objects.nonNull(user) ? user.getName() : "");
 
-            if (StringUtils.isNotBlank(item.getMemberCard())) {
+            String packageInfo = item.getPackageInfo();
+            if (StringUtils.isNotBlank(packageInfo)) {
                 List<String> packageNames;
-                if (isJsonStr(item.getMemberCard())) {
+                if (isJsonStr(packageInfo)) {
                     //3.0新的处理方式
-                    packageNames = getPackageNames(item.getMemberCard());
+                    packageNames = getPackageNames(packageInfo);
                 } else {
                     //旧的处理方式，只存在换电套餐的情况
-                    packageNames = getOldBatteryPackages(item.getMemberCard());
+                    packageNames = getOldBatteryPackages(packageInfo);
                 }
                 shareActivityOperateRecordVO.setMembercardNames(packageNames);
             }

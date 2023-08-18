@@ -39,11 +39,19 @@ public class DetailsUserInfoVo {
     
     /**
      * 电池租借状态
+     * <pre>
+     *     0-未租
+     *     1-已租
+     * </pre>
      */
     private Integer batteryRentStatus;
     
     /**
      * 车辆租借状态
+     * <pre>
+     *     0-未租
+     *     1-已租
+     * </pre>
      */
     private Integer carRentStatus;
     
@@ -81,4 +89,14 @@ public class DetailsUserInfoVo {
     private Long franchiseeId;
 
     private Long storeId;
+
+    /**
+     * 租车套餐金额（总支付成功-总退租成功）
+     */
+    private BigDecimal carRentalPackageOrderAmountTotal;
+
+    /**
+     * 租车滞纳金金额（总支付成功）
+     */
+    private BigDecimal carRentalPackageOrderSlippageAmountTotal;
 }

@@ -114,7 +114,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if(CollectionUtils.isEmpty(query.getBatteryPackages())
                 && CollectionUtils.isEmpty(query.getCarRentalPackages())
                 && CollectionUtils.isEmpty(query.getCarWithBatteryPackages())){
-            return Triple.of(false, "000201", "请选择套餐信息");
+            return Triple.of(false, "110201", "请选择套餐信息");
         }
 
         Triple<Boolean, String, Object> verifyResult = verifySelectedPackages(query);
@@ -154,7 +154,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             //检查所选套餐是否存在，并且可用
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
             if (Objects.isNull(batteryMemberCard)) {
-                return Triple.of(false, "000202", "换电套餐不存在");
+                return Triple.of(false, "110202", "换电套餐不存在");
             }
         }
 
@@ -162,7 +162,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         for(Long packageId : carRentalPackages){
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
-                return Triple.of(false, "000203", "租车套餐不存在");
+                return Triple.of(false, "110203", "租车套餐不存在");
             }
         }
 
@@ -170,7 +170,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         for(Long packageId : carElectricityPackages){
             CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
-                return Triple.of(false, "000204", "车电一体套餐不存在");
+                return Triple.of(false, "110204", "车电一体套餐不存在");
             }
         }
         return Triple.of(true, "", null);

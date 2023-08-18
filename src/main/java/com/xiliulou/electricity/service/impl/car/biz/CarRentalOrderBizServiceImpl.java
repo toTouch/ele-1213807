@@ -472,7 +472,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         // 解绑车辆的限制
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
         if (exitUnpaid) {
-            throw new BizException("300006", "未缴纳押金");
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // 查询租车会员信息

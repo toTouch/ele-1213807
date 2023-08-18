@@ -11,6 +11,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.userinfo.*;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -33,6 +35,9 @@ import java.util.Objects;
 @RequestMapping("/user/info/v2")
 public class JsonUserInfoV2Controller extends BasicController {
 
+    @Resource
+    private UserBizService userBizService;
+
     @Autowired
     private UserBatteryMemberCardService batteryMemberCardService;
 
@@ -41,6 +46,23 @@ public class JsonUserInfoV2Controller extends BasicController {
 
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 获取名下的总滞纳金（单电、单车、车电一体）
+     * @return 总金额
+     */
+    @GetMapping("/querySlippageTotal")
+    public R<BigDecimal> querySlippageTotal() {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(userBizService.querySlippageTotal(tenantId, user.getUid()));
+    }
 
     /**
      * 查询用户会员名下的所有套餐的过期时间<br />
@@ -74,6 +96,7 @@ public class JsonUserInfoV2Controller extends BasicController {
                 UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
                 batteryPackage.setDueTime(orderExpireTime);
                 batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
+                batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
                 userMemberPackageVo.setBatteryPackage(batteryPackage);
             }
         }
@@ -98,6 +121,7 @@ public class JsonUserInfoV2Controller extends BasicController {
                     UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
                     carBatteryPackage.setDueTime(dueTime);
                     carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    carBatteryPackage.setStatus(memberTermEntity.getStatus());
                     userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
                 }
             }

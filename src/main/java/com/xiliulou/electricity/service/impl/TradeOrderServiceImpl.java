@@ -151,6 +151,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     EleBatteryServiceFeeOrderService batteryServiceFeeOrderService;
 
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -610,10 +613,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
             //获取电池滞纳金
-            Triple<Boolean, String, Object> handleBatteryServiceFeeResult = handleBatteryServiceFee(userInfo, orderList, orderTypeList, allPayAmountList);
-            if(Boolean.FALSE.equals(handleBatteryServiceFeeResult.getLeft())){
-                return handleBatteryServiceFeeResult;
-            }
+            handleBatteryServiceFee(userInfo, orderList, orderTypeList, allPayAmountList);
+
 
             // 处理租车套餐的滞纳金
             handCarSlippage(userInfo, orderList, orderTypeList, allPayAmountList);
@@ -699,68 +700,138 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
             log.warn("SERVICE FEE WARN! user haven't memberCard uid={}", userInfo.getUid());
-            return Triple.of(false,"100210", "用户未开通套餐");
+            return Triple.of(false, "100210", "用户未开通套餐");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("SERVICE FEE WARN! not found user UID={}", userInfo.getUid());
-            return Triple.of(false,"ELECTRICITY.0038", "未找到加盟商");
+            return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
         }
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("SERVICE FEE WARN! memberCard  is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-            return Triple.of(false,"ELECTRICITY.00121", "套餐不存在");
+            return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
             log.warn("SERVICE FEE WARN! not found user,uid={}", userInfo.getUid());
-            return Triple.of(false,"100247", "用户信息不存在");
+            return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        Triple<Boolean,Integer,BigDecimal> acquireDisableMembercardServiceFeeResult = serviceFeeUserInfoService.acquireDisableMembercardServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard);
-        Triple<Boolean,Integer,BigDecimal> acquireExpireMembercardServiceFeeResult = serviceFeeUserInfoService.acquireExpireMembercardServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        //套餐过期电池服务费
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
+            //1.获取滞纳金订单
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
+            if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {//兼容2.0版本小程序
+                //生成滞纳金订单
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+                eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
+                        .uid(userInfo.getUid())
+                        .phone(userInfo.getPhone())
+                        .name(userInfo.getName())
+                        .payAmount(BigDecimal.ZERO)
+                        .status(EleDepositOrder.STATUS_INIT)
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
+                        .franchiseeId(franchisee.getId())
+                        .storeId(userInfo.getStoreId())
+                        .modelType(franchisee.getModelType())
+                        .batteryType("")
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                        .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
 
-        if (Boolean.FALSE.equals(acquireDisableMembercardServiceFeeResult.getLeft()) && Boolean.FALSE.equals(acquireExpireMembercardServiceFeeResult.getLeft())) {
-            log.warn("SERVICE FEE WARN! user not exist battery service fee,uid={}", userInfo.getUid());
-            return Triple.of(true, null, null);
+                //将滞纳金订单与用户绑定
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoUpdate.setExpireOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+            } else {
+                eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                    log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0015", "滞纳金订单不存在");
+                }
+            }
+
+            //2.计算套餐过期电池服务费
+            BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+            //是否存在套餐过期电池服务费
+            if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
+                int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
+                log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+            }
+
+            //更新滞纳金订单金额
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+            eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+            eleBatteryServiceFeeOrderUpdate.setPayAmount(expireBatteryServiceFee);
+            eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+
+            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
+            orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
+            allPayAmount.add(expireBatteryServiceFee);
         }
-
-        BigDecimal totalServiceFee=BigDecimal.ZERO;
 
         //暂停套餐电池服务费
-        if(Boolean.TRUE.equals(acquireDisableMembercardServiceFeeResult.getLeft())){
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
-            if(Objects.isNull(eleBatteryServiceFeeOrder)){
-                log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
-                return Triple.of(false,"ELECTRICITY.0015", "滞纳金订单不存在");
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && StringUtils.isNotBlank(serviceFeeUserInfo.getDisableMemberCardNo())) {
+            //1.获取滞纳金订单
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
+            //判断用户是否有停卡滞纳金订单
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+                //计算暂停套餐电池服务费
+                int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+                BigDecimal pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
+
+                //生成滞纳金订单
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+                eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
+                        .uid(userInfo.getUid())
+                        .phone(userInfo.getPhone())
+                        .name(userInfo.getName())
+                        .payAmount(pauseBatteryServiceFee)
+                        .status(EleDepositOrder.STATUS_INIT)
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
+                        .franchiseeId(franchisee.getId())
+                        .storeId(userInfo.getStoreId())
+                        .modelType(franchisee.getModelType())
+                        .batteryType("")
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                        .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+
+                //将滞纳金订单与用户绑定
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+            } else {
+                //获取滞纳金订单
+                eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
+                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                    log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0015", "滞纳金订单不存在");
+                }
             }
 
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_PAUSE.getCode());
-            allPayAmount.add(acquireDisableMembercardServiceFeeResult.getRight());
-            totalServiceFee.add(acquireDisableMembercardServiceFeeResult.getRight());
-        }
-
-        //套餐过期电池服务费
-        if(Boolean.TRUE.equals(acquireExpireMembercardServiceFeeResult.getLeft())){
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
-            if(Objects.isNull(eleBatteryServiceFeeOrder)){
-                log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
-                return Triple.of(false,"ELECTRICITY.0015", "滞纳金订单不存在");
-            }
-
-            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
-            orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
-            allPayAmount.add(acquireExpireMembercardServiceFeeResult.getRight());
-            totalServiceFee.add(acquireExpireMembercardServiceFeeResult.getRight());
-        }
-
-        if (totalServiceFee.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            log.warn("SERVICE FEE WARN! service fee illegal,uid={}", userInfo.getUid());
-            return Triple.of(false,"ELECTRICITY.100000", "电池服务费不合法");
+            allPayAmount.add(eleBatteryServiceFeeOrder.getPayAmount());
         }
 
         return Triple.of(true, null, null);

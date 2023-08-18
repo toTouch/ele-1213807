@@ -23,4 +23,9 @@ public class UserMemberBatteryPackageVo implements Serializable {
      * 总计到期时间
      */
     private Long dueTimeTotal;
+
+    /**
+     * 套餐状态
+     */
+    private Integer memberCardStatus;
 }

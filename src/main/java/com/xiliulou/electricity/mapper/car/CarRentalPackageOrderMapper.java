@@ -5,6 +5,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,6 +15,15 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageOrderMapper {
+
+    /**
+     * 根据用户UID查询支付成功的总金额(实际支付金额)
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 总金额
+     */
+    BigDecimal selectPaySuccessAmountTotal(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据用户ID查找最后一条未支付成功的购买记录信息
@@ -172,4 +182,5 @@ public interface CarRentalPackageOrderMapper {
      * @return 操作总条数
      */
     int insert(CarRentalPackageOrderPo entity);
+
 }

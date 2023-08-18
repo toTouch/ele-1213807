@@ -10,6 +10,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,6 +38,9 @@ import java.util.stream.Collectors;
 public class UserBizServiceImpl implements UserBizService {
 
     @Resource
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+
+    @Resource
     private CarRentalOrderBizService carRentalOrderBizService;
 
     @Resource
@@ -42,12 +48,6 @@ public class UserBizServiceImpl implements UserBizService {
 
     @Resource
     private ElectricityConfigService electricityConfigService;
-
-    @Resource
-    private ElectricityBatteryService batteryService;
-
-    @Resource
-    private UserCarService userCarService;
 
     @Resource
     private ElectricityCarService carService;
@@ -84,6 +84,32 @@ public class UserBizServiceImpl implements UserBizService {
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
 
+    /**
+     * 获取名下的总滞纳金（单电、单车、车电一体）
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return 总金额
+     */
+    @Override
+    public BigDecimal querySlippageTotal(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // TODO 查询电的总滞纳金
+        BigDecimal batterySlippage = null;
+        if (ObjectUtils.isEmpty(batterySlippage)) {
+            batterySlippage = BigDecimal.ZERO;
+        }
+
+        // 查询车的总滞纳金
+        BigDecimal carSlippage = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(carSlippage)) {
+            carSlippage = BigDecimal.ZERO;
+        }
+        return batterySlippage.add(carSlippage).setScale(2, RoundingMode.HALF_UP);
+    }
 
     /**
      * 退押解绑用户信息

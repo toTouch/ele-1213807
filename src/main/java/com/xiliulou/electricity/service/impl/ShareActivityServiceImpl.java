@@ -743,6 +743,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return shareActivityMemberCard;
 	}
 
+	@Deprecated
 	private List<ShareActivityMemberCard> buildShareActivityMemberCard(ShareActivity shareActivity, List<Long> membercardIds) {
 		List<ShareActivityMemberCard> list = Lists.newArrayList();
 
@@ -759,6 +760,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return list;
 	}
 
+	@Deprecated
 	private ShareActivityOperateRecord buildShareActivityOperateRecord(Long id, String name, List<Long> membercardIds) {
 		ShareActivityOperateRecord shareActivityOperateRecord = new ShareActivityOperateRecord();
 		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
@@ -776,7 +778,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
 		shareActivityOperateRecord.setShareActivityId(id);
 		shareActivityOperateRecord.setName(name);
-		shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
+		//shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(shareActivityPackageVO));
+		shareActivityOperateRecord.setPackageInfo(JsonUtil.toJson(shareActivityPackageVO));
 		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
 		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
 		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());
