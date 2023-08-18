@@ -277,14 +277,13 @@
     </update>
 <!--  数据聚合专用，不可服用-->
     <sql id="QUERY_CAR_DATA" >
-        select ec.sn AS carSn ,ec.model,f.name AS franchiseeName,s.name AS storeName,ui.user_name AS userName ,ui.phone as phone,
+        select ec.sn AS carSn ,ec.model,f.name AS franchiseeName,s.name AS storeName,ui.uid AS uid,ui.user_name AS userName ,ui.phone as phone,
                ec.status AS carStatus,eb.sn AS batterySn ,eb.power AS power ,eb.voltage AS voltage,ec.update_time AS updateTime ,ec.create_time AS creatTime
                crpmt.due_time  AS dueTime,ec.latitude AS latitude , ec.longitude AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
                  left join t_franchisee f on ec.id = f.id
                  left join t_store s on ec.id = s.id
-                 left join t_electricity_battery eb on ec.uid = eb.uid
                  left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
     </sql>
     <sql id="QUERY_CAR_DATA_COUNT" >
@@ -293,7 +292,6 @@
                  left join t_user_info ui on ec.uid = ui.uid
                  left join t_franchisee f on ec.id = f.id
                  left join t_store s on ec.id = s.id
-                 left join t_electricity_battery eb on ec.uid = eb.uid
                  left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
     </sql>
 
