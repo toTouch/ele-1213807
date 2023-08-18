@@ -73,6 +73,8 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
      *     1-未支付
      *     2-支付成功
      *     3-支付失败
+     *     4-取消支付
+     *     5-已清除
      * </pre>
      * @see PayStateEnum
      */
@@ -97,4 +99,17 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
      * 门店ID集
      */
     private List<Integer> storeIdList;
+
+    /**
+     * 支付状态
+     * <pre>
+     *     1-未支付
+     *     2-支付成功
+     *     3-支付失败
+     *     4-取消支付
+     *     5-已清除
+     * </pre>
+     * @see PayStateEnum
+     */
+    private List<Integer> payStateList;
 }
