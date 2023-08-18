@@ -278,7 +278,7 @@
 <!--  数据聚合专用，不可服用-->
     <sql id="QUERY_CAR_DATA" >
         select ec.sn AS carSn ,ec.model,f.name AS franchiseeName,s.name AS storeName,ui.uid AS uid,ui.user_name AS userName ,ui.phone as phone,
-               ec.status AS carStatus,eb.sn AS batterySn ,eb.power AS power ,eb.voltage AS voltage,ec.update_time AS updateTime ,ec.create_time AS creatTime
+               ec.status AS carStatus,ec.update_time AS updateTime ,ec.create_time AS creatTime
                crpmt.due_time  AS dueTime,ec.latitude AS latitude , ec.longitude AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
