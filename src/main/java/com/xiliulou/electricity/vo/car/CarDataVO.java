@@ -12,6 +12,7 @@ import java.util.List;
  */
 @Data
 public class CarDataVO {
+    private Long uid;
     private String carSn;  // 车辆序列号
     private String model;  // 车辆型号
     private String franchiseeName;  // 加盟商名称
@@ -20,7 +21,7 @@ public class CarDataVO {
     private String phone;  // 用户电话
     private String carStatus;  // 车辆状态
     private String batterySn;  // 电池序列号
-    private int power;  // 电池电量
+    private double power;  // 电池电量
     private double voltage;  // 电池电压
     private Long updateTime;  // 更新时间
     private Long createTime;  // 创建时间
@@ -40,6 +41,7 @@ public class CarDataVO {
             return null;
         }
         CarDataVO carDataVO = new CarDataVO();
+        carDataVO.setUid(carDataEntity.getUid());
         carDataVO.setCarSn(carDataEntity.getCarSn());
         carDataVO.setModel(carDataEntity.getModel());
         carDataVO.setFranchiseeName(carDataEntity.getFranchiseeName());
@@ -47,9 +49,6 @@ public class CarDataVO {
         carDataVO.setUserName(carDataEntity.getUserName());
         carDataVO.setPhone(carDataEntity.getPhone());
         carDataVO.setCarStatus(carDataEntity.getCarStatus());
-        carDataVO.setBatterySn(carDataEntity.getBatterySn());
-        carDataVO.setPower(carDataEntity.getPower());
-        carDataVO.setVoltage(carDataEntity.getVoltage());
         carDataVO.setUpdateTime(carDataEntity.getUpdateTime());
         carDataVO.setCreateTime(carDataEntity.getCreateTime());
         carDataVO.setDueTime(carDataEntity.getDueTime());
