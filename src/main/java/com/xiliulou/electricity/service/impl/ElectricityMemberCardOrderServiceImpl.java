@@ -3678,8 +3678,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus()) || Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE, userBatteryMemberCard.getMemberCardStatus())) {
-            return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
+        if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+            return Triple.of(false, "100247", "用户套餐冻结中，不允许操作");
         }
 
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
@@ -3796,8 +3796,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus()) || Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE, userBatteryMemberCard.getMemberCardStatus())) {
-            return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
+        if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+            return Triple.of(false, "100247", "用户套餐冻结中，不允许操作");
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
