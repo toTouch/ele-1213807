@@ -711,7 +711,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
         slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
         slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
-        slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
+        slippageEntity.setType(SlippageTypeEnum.EXPIRE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
         slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
         slippageEntity.setPayState(PayStateEnum.UNPAID.getCode());
