@@ -625,10 +625,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
 
             //总滞纳金
-            allPayAmountList.forEach(totalPayAmount::add);
+            totalPayAmount = allPayAmountList.stream().reduce(BigDecimal.ZERO,BigDecimal::add);
 
             if (totalPayAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-                log.warn("SERVICE FEE WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
+                log.warn("payServiceFee failed. totalPayAmount is {}", totalPayAmount);
                 return Triple.of(false, "000001", "滞纳金不合法!");
             }
 
