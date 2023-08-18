@@ -265,13 +265,13 @@ public class UserBizServiceImpl implements UserBizService {
         queryModel.setUid(uid);
         queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
         Integer count = carRentalPackageOrderService.count(queryModel);
-        if (count.intValue() > 0) {
+        if (count > 0) {
             return true;
         }
 
         // 查询换电套餐购买记录
         Integer num = electricityMemberCardOrderService.selectCountByUid(tenantId, uid, ElectricityMemberCardOrder.STATUS_SUCCESS);
-        if (num.intValue() > 0) {
+        if (num> 0) {
             return true;
         }
 
