@@ -56,6 +56,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
         return serviceFeeUserInfoMapper.insert(serviceFeeUserInfo);
@@ -317,9 +320,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         //是否存在停卡系统启用电池服务费
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                systemEnableBatteryServiceFee=electricityMemberCardOrder.getPayAmount();
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
+            if(Objects.nonNull(eleBatteryServiceFeeOrder)){
+                systemEnableBatteryServiceFee=eleBatteryServiceFeeOrder.getPayAmount();
                 log.info("BATTERY SERVICE FEE INFO!user exist system enable expire fee,uid={},fee={}", userInfo.getUid(), systemEnableBatteryServiceFee.doubleValue());
             }
         }
