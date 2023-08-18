@@ -72,6 +72,24 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     /**
      * 根据电池型号集查询数据
      *
+     * @param tenantId 租户ID
+     * @param idList   电池型号ID集
+     * @return 电池型号集
+     */
+    @Slave
+    @Override
+    public List<BatteryModel> selectByIds(Integer tenantId, List<Long> idList) {
+        if (!ObjectUtils.allNotNull(tenantId, idList) || CollectionUtils.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getId, idList);
+        return batteryModelMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 根据电池型号集查询数据
+     *
      * @param tenantId     租户ID
      * @param batteryTypes 电池型号集
      * @return 电池型号集

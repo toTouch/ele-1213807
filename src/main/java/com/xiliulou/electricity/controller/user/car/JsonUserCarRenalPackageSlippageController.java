@@ -3,9 +3,12 @@ package com.xiliulou.electricity.controller.user.car;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -14,7 +17,6 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +40,9 @@ import java.util.*;
 public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
     @Resource
+    private ElectricityBatteryService batteryService;
+
+    @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
 
     /**
@@ -59,19 +64,32 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         }
 
         Set<Long> rentalPackageIdSet = new HashSet<>();
-        Set<String> carSnSet = new HashSet<>();
-        Set<String> batterySnSet = new HashSet<>();
-        Set<Integer> storeIdSet = new HashSet<>();
+        Set<Integer> carModelSet = new HashSet<>();
+        Set<Long> batteryModelIdSet = new HashSet<>();
+        Set<Long> storeIdSet = new HashSet<>();
         carRentalPackageSlippageEntityList.forEach(n -> {
             rentalPackageIdSet.add(n.getRentalPackageId());
-            if (StringUtils.isNotBlank(n.getCarSn())) {
-                carSnSet.add(n.getCarSn());
-                storeIdSet.add(n.getStoreId());
+            if (ObjectUtils.isNotEmpty(n.getCarModelId())) {
+                carModelSet.add(n.getCarModelId());
+                storeIdSet.add(Long.valueOf(n.getStoreId()));
             }
-            if (StringUtils.isNotBlank(n.getBatterySn())) {
-                batterySnSet.add(n.getBatterySn());
+            if (ObjectUtils.isNotEmpty(n.getBatteryModelId())) {
+                batteryModelIdSet.add(n.getBatteryModelId());
             }
         });
+
+        // 套餐名称信息
+        Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdSet);
+
+        // 车辆型号信息
+        Map<Integer, ElectricityCarModel> carModelForMap = getCarModelByIdsForMap(carModelSet);
+
+        // 电池型号信息
+        Map<Long, BatteryModel> batteryModelMap = getBatteryModelByIds(tenantId, batteryModelIdSet);
+        
+        // 门店信息
+        Map<Long, String> storeNameForMap = getStoreNameByIdsForMap(storeIdSet);
+
 
         List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
         long nowTime = System.currentTimeMillis();

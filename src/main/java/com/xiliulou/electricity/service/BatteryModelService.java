@@ -20,6 +20,14 @@ public interface BatteryModelService {
     /**
      * 根据电池型号集查询数据
      * @param tenantId 租户ID
+     * @param idList 电池型号ID集
+     * @return 电池型号集
+     */
+    List<BatteryModel> selectByIds(Integer tenantId, List<Long> idList);
+
+    /**
+     * 根据电池型号集查询数据
+     * @param tenantId 租户ID
      * @param batteryTypes 电池型号集
      * @return 电池型号集
      */
