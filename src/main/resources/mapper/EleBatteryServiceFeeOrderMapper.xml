@@ -80,8 +80,8 @@
             <if test="query.name != null and query.name != ''">
                 and te.name =#{query.name}
             </if>
-            <if test="query.sn != null and query.sn != ''">
-                and te.sn =#{query.sn}
+            <if test="query.orderId != null and query.orderId != ''">
+                and te.order_id =#{query.orderId}
             </if>
             <if test="query.tenantId != null">
                 and te.tenant_id =#{query.tenantId}
@@ -122,8 +122,8 @@
             <if test="query.name != null and query.name != ''">
                 and te.name =#{query.name}
             </if>
-            <if test="query.sn != null and query.sn != ''">
-                and te.sn =#{query.sn}
+            <if test="query.orderId != null and query.orderId != ''">
+                and te.order_id =#{query.orderId}
             </if>
             <if test="query.tenantId != null">
                 and te.tenant_id =#{query.tenantId}

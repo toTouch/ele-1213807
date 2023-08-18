@@ -115,7 +115,7 @@ public class JsonAdminBatteryServiceFeeController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "sn", required = false) String sn,
+                       @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "source", required = false) Integer source) {
@@ -155,7 +155,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .offset(offset)
                 .size(size)
                 .name(name)
-                .sn(sn)
+                .orderId(orderId)
                 .status(status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds)
@@ -175,7 +175,7 @@ public class JsonAdminBatteryServiceFeeController {
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "source", required = false) Integer source) {
@@ -208,7 +208,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .endTime(endTime)
                 .status(status)
                 .name(name)
-                .sn(sn)
+                .orderId(orderId)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
