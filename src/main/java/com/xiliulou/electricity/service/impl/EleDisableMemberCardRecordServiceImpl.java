@@ -124,6 +124,12 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {
+            EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
+            updateEleDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+            updateEleDisableMemberCardRecord.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_EXPIRE);
+            updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+            eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
+
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
