@@ -137,8 +137,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        if (memberTermEntity.getDueTime() <= now || (ObjectUtils.isNotEmpty(memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
-            log.error("updateCurrPackage failed. t_car_rental_package_member_term rentalPackageOrderNo is null or mismatching. params rentalPackageOrderNo is {}, member's rentalPackageOrderNo is {}", optReq.getPackageOrderNo(), rentalPackageOrderNo);
+        if (memberTermEntity.getDueTime() <= now || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
+            log.error("updateCurrPackage failed. t_car_rental_package_member_term time or frequency reaching threshold", rentalPackageOrderNo);
             throw new BizException("300042", "该套餐已过期，请返回上一步进行续费套餐");
         }
 
