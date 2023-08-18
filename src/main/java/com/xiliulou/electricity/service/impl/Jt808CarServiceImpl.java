@@ -8,8 +8,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
@@ -29,6 +27,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -47,7 +46,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
     
-    @Autowired
+    @Resource
     CarAttrMapper carAttrMapper;
     
     @Autowired
@@ -195,32 +194,6 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("USER CONTROL CAR ERROR! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
-        }
-        
-        //判断是否缴纳押金
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userCarDeposit)) {
-            log.error("USER CONTROL CAR ERROR! userCarDeposit is null,uid={}", uid);
-            return Triple.of(false, "100238", "未缴纳押金");
-        }
-        
-        //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("USER CONTROL CAR ERROR! not pay deposit,uid={}", uid);
-            return Triple.of(false, "100238", "未缴纳押金");
-        }
-        
-        //是否购买套餐
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(uid);
-        if (Objects.isNull(userCarMemberCard)) {
-            log.error("USER CONTROL CAR ERROR! not pay rent car memberCard,uid={}", uid);
-            return Triple.of(false, "100232", "未购买租车套餐");
-        }
-        
-        //套餐是否过期
-        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            log.error("USER CONTROL CAR ERROR! rent car memberCard expired,uid={}", uid);
-            return Triple.of(false, "100233", "租车套餐已过期");
         }
         
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(uid);

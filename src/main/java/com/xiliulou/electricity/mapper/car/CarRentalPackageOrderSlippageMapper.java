@@ -23,7 +23,7 @@ public interface CarRentalPackageOrderSlippageMapper {
      * @param uid      用户ID
      * @return 总金额
      */
-    BigDecimal selectPaySuccessAmountTotal(Integer tenantId, Long uid);
+    BigDecimal selectPaySuccessAmountTotal(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据主键ID进行更新
