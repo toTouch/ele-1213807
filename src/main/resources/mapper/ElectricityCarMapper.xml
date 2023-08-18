@@ -284,7 +284,7 @@
                  left join t_user_info ui on ec.uid = ui.uid
                  left join t_franchisee f on ec.id = f.id
                  left join t_store s on ec.id = s.id
-                 left join t_car_rental_package_member_term crpmt on crpmt.uid = ui.uid
+                 left join t_car_rental_package_member_term crpmt on crpmt.uid = ec.uid
     </sql>
     <sql id="QUERY_CAR_DATA_COUNT" >
         select count(*)
