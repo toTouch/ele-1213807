@@ -171,8 +171,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
-            electricityConfig.setIsZeroDepositAuditEnabled(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT);
+            electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
             electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
+            electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
+            electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -198,6 +200,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
         electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
         electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
+        electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
+        electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
