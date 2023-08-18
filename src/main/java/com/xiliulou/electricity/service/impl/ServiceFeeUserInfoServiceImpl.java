@@ -9,6 +9,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -293,6 +294,8 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
         //套餐过期电池服务费
         BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+        //停卡系统启用电池服务费
+        BigDecimal systemEnableBatteryServiceFee = BigDecimal.ZERO;
 
         Integer type = null;
 
@@ -312,7 +315,16 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
         }
 
-        BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee);
+        //是否存在停卡系统启用电池服务费
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
+            if(Objects.nonNull(electricityMemberCardOrder)){
+                systemEnableBatteryServiceFee=electricityMemberCardOrder.getPayAmount();
+                log.info("BATTERY SERVICE FEE INFO!user exist system enable expire fee,uid={},fee={}", userInfo.getUid(), systemEnableBatteryServiceFee.doubleValue());
+            }
+        }
+
+        BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee).add(systemEnableBatteryServiceFee);
         if (totalBatteryServiceFee.doubleValue() > 0) {
             return Triple.of(true, type, totalBatteryServiceFee);
         }
