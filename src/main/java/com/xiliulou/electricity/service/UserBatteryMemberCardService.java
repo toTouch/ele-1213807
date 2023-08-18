@@ -114,4 +114,6 @@ public interface UserBatteryMemberCardService {
     Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
 
     void batteryMembercardExpireUpdateStatusTask();
+
+    Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 }
