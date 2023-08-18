@@ -1946,8 +1946,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
         }
-
 
         if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
@@ -1970,7 +1970,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
                     .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_INIT)
                     .disableDays(disableCardDays)
-                    .disableTime(eleDisableMemberCardRecord.getUpdateTime())
+                    .disableTime(userBatteryMemberCard.getDisableMemberCardTime())
+                    .enableTime(System.currentTimeMillis())
                     .franchiseeId(userInfo.getFranchiseeId())
                     .phone(userInfo.getPhone())
                     .createTime(System.currentTimeMillis())
