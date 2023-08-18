@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 车辆套餐逾期订单 Controller
@@ -65,6 +62,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         qryModel.setOffset(offset);
         qryModel.setSize(size);
         qryModel.setRentalPackageType(rentalPackageType);
+        qryModel.setPayStateList(Arrays.asList(PayStateEnum.SUCCESS.getCode(), PayStateEnum.CLEAN_UP.getCode()));
 
         // 调用服务
         List<CarRentalPackageOrderSlippagePo> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
@@ -86,11 +84,11 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
             if (PayStateEnum.UNPAID.getCode().equals(payState) || PayStateEnum.FAILED.getCode().equals(payState) ) {
                 // 结束时间，不为空
                 if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
-                    nowTime = slippageEntity.getLateFeeEndTime().longValue();
+                    nowTime = slippageEntity.getLateFeeEndTime();
                 }
 
                 // 时间比对
-                long lateFeeStartTime = slippageEntity.getLateFeeStartTime().longValue();
+                long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
                 // 没有滞纳金产生
                 if (lateFeeStartTime < nowTime) {
                     continue;
@@ -129,6 +127,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
         qryModel.setRentalPackageType(rentalPackageType);
+        qryModel.setPayStateList(Arrays.asList(PayStateEnum.SUCCESS.getCode(), PayStateEnum.CLEAN_UP.getCode()));
 
         // 调用服务
         return R.ok(carRentalPackageOrderSlippageService.count(qryModel));

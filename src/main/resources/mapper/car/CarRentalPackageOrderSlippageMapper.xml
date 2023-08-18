@@ -73,6 +73,12 @@
                 #{storeId}
             </foreach>
         </if>
+        <if test=" payStateList != null and payStateList.size > 0 ">
+            AND `pay_state` IN
+            <foreach collection="payStateList" item="payState" open="(" close=")" separator=",">
+                #{payState}
+            </foreach>
+        </if>
     </sql>
 
     <!-- 条件新增字段 -->
