@@ -24,7 +24,7 @@ public class CarDataConditionReq implements Serializable {
     /**
      * 车辆型号
      */
-    private String carModel;
+    private String model;
     /**
      * 加盟商ID
      */

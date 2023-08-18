@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.user;
+package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserInfoDataQuery;
@@ -19,7 +19,7 @@ public class JsonAdminUserInfoDataController {
     /**
      *
      */
-    @PostMapping("/user/activity/info")
+    @PostMapping("/admin/user/all/info")
     public R userActivityInfo(@RequestBody UserInfoDataQuery userInfoDataQuery) {
         PageDataResult pageDataResult = userInfoDataService.queryUserInfoData(userInfoDataQuery);
         return R.ok(pageDataResult);
