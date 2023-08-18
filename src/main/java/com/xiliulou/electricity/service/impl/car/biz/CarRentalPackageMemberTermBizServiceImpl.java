@@ -685,8 +685,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 查询是否未归还设备
         // 1. 车辆
-        UserCar userCar = userCarService.selectByUidFromCache(uid);
-        if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
+        ElectricityCar electricityCar = carService.selectByUid(memberTermEntity.getTenantId(), uid);
+        if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
             createFlag = true;
         }
 
@@ -711,7 +711,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
         slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
         slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
-        slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
+        slippageEntity.setType(SlippageTypeEnum.EXPIRE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
         slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
         slippageEntity.setPayState(PayStateEnum.UNPAID.getCode());
@@ -721,8 +721,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         slippageEntity.setCreateUid(uid);
 
         // 记录设备信息
-        if (ObjectUtils.isNotEmpty(userCar)) {
-            slippageEntity.setCarSn(userCar.getSn());
+        if (ObjectUtils.isNotEmpty(electricityCar)) {
+            slippageEntity.setCarSn(electricityCar.getSn());
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
