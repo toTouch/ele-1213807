@@ -107,7 +107,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			if(sameInviterResult.getRight().isEmpty()){
 				return R.ok();
 			}else{
-				return R.fail("000108", sameInviterResult.getRight());
+				return R.fail("110208", sameInviterResult.getRight());
 			}
 		}
 		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
@@ -116,12 +116,12 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//查询当前用户是否参与了邀请返现活动
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
 		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
-			return R.fail("000107", "已参加过邀请返现活动");
+			return R.fail("110206", "已参加过邀请返现活动");
 		}
 		//检查是否有参与邀请返券的活动
 		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
 		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
-			return R.fail("000106", "已参加过邀请返现活动");
+			return R.fail("110207", "已参加过邀请返现活动");
 		}
 
 	/*	//2、别人点击链接登录

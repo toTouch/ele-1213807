@@ -151,7 +151,7 @@ public class ActivityServiceImpl implements ActivityService {
 
                 if(Objects.isNull(electricityMemberCardOrder)){
                     log.info("Activity flow for battery package error, Not found for battery package order, order number = {}", orderNo);
-                    return Triple.of(false, "000103", "当前换电套餐订单不存在");
+                    return Triple.of(false, "110001", "当前换电套餐订单不存在");
                 }
 
                 Long uid = electricityMemberCardOrder.getUid();
@@ -159,7 +159,7 @@ public class ActivityServiceImpl implements ActivityService {
 
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.info("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
-                    return Triple.of(false, "000101", "当前换电套餐已暂停");
+                    return Triple.of(false, "110002", "当前换电套餐已暂停");
                 }
                 //判断当前用户是否购买过套餐，如果买过任意套餐，则为老用户,若是第一次购买，则为新用户
                 //Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
@@ -187,7 +187,7 @@ public class ActivityServiceImpl implements ActivityService {
                 CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
                 if(Objects.isNull(carRentalPackageOrderPO)){
                     log.info("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
-                    return Triple.of(false, "000102", "当前租车/车电一体套餐订单不存在");
+                    return Triple.of(false, "110003", "当前租车/车电一体套餐订单不存在");
                 }
 
                 Long uid = carRentalPackageOrderPO.getUid();
@@ -211,7 +211,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         }catch(Exception e){
             log.error("handle activity for purchase package error, order number = {}, package type = {}", orderNo, packageType, e);
-            throw new BizException("200010", e.getMessage());
+            throw new BizException("110004", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value);
             MDC.clear();
@@ -302,7 +302,7 @@ public class ActivityServiceImpl implements ActivityService {
             }
         } catch (Exception e) {
             log.error("handle activity for user register error, uid = {}", uid, e);
-            throw new BizException("200011", e.getMessage());
+            throw new BizException("110005", e.getMessage());
         } finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY + uid);
             MDC.clear();
@@ -336,7 +336,7 @@ public class ActivityServiceImpl implements ActivityService {
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("not finished real name authentication! user not auth, user info = {}", JsonUtil.toJson(userInfo));
-                return Triple.of(false, "000100", "未进行实名认证");
+                return Triple.of(false, "110006", "未进行实名认证");
             }
 
             //获取参与邀请活动记录
@@ -400,7 +400,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         }catch (Exception e){
             log.error("handle activity for real name auth error, uid = {}",uid, e);
-            throw new BizException("200012", e.getMessage());
+            throw new BizException("110007", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY + uid);
             MDC.clear();
