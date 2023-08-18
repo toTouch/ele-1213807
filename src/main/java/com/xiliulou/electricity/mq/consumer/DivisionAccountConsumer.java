@@ -42,19 +42,12 @@ public class DivisionAccountConsumer implements RocketMQListener<String> {
                 return;
             }
 
-            //同步处理分账业务
             if(DivisionAccountEnum.DA_TYPE_PURCHASE.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
-                /*executorService.execute(() -> {
-                    divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
-                });*/
                 //使用MQ自身线程池消费消息，无需再开一个线程去处理。
-                divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO);
+                //divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO);
 
             }else if(DivisionAccountEnum.DA_TYPE_REFUND.getCode().equals(divisionAccountOrderDTO.getDivisionAccountType())){
-                /*executorService.execute(() -> {
-                    divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
-                });*/
-                divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO);
+                //divisionAccountRecordService.handleRefundDivisionAccountByPackage(divisionAccountOrderDTO);
             }
         } catch (Exception e){
             log.error("Division account consumer error! msg = {}", message, e);
