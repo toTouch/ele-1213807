@@ -355,6 +355,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
         Long remainingTime = userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis();
 
-        return result = Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 60 / 1000;
+        return result = Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000;
     }
 }

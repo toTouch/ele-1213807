@@ -7,10 +7,12 @@ import com.xiliulou.electricity.vo.car.PageDataResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 用户运营数据
  */
+@RestController
 public class JsonAdminUserInfoDataController {
 
     @Autowired
