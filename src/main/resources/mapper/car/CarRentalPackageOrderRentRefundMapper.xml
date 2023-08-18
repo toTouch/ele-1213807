@@ -150,6 +150,14 @@
         </trim>
     </sql>
 
+    <!-- 根据用户UID查询退款成功的总金额 -->
+    <select id="selectRefundSuccessAmountTotal" resultType="java.math.BigDecimal">
+        SELECT SUM( `refund_amount` ) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `refund_state` = 5 AND `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </select>
+
     <!-- 根据退租申请单编码进行更新 -->
     <update id="updateByOrderNo">
         UPDATE <include refid="table_name" />

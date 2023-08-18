@@ -130,6 +130,14 @@
         </trim>
     </sql>
 
+    <!-- 根据用户UID查询支付成功的总金额 -->
+    <select id="selectPaySuccessAmountTotal" resultType="java.math.BigDecimal">
+        SELECT SUM( `late_fee_pay` ) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `pay_state` = 2 AND `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </select>
+
     <!-- 根据主键ID进行更新 -->
     <update id="updateById">
         UPDATE <include refid="table_name" />

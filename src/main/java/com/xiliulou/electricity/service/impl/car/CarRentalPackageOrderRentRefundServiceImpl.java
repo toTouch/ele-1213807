@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -27,6 +28,28 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
 
     @Resource
     private CarRentalPackageOrderRentRefundMapper carRentalPackageOrderRentRefundMapper;
+
+    /**
+     * 根据用户UID查询退款成功的总金额
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 总金额
+     */
+    @Slave
+    @Override
+    public BigDecimal selectRefundSuccessAmountTotal(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        BigDecimal refundSuccessAmountTotal = carRentalPackageOrderRentRefundMapper.selectRefundSuccessAmountTotal(tenantId, uid);
+
+        if (ObjectUtils.isEmpty(refundSuccessAmountTotal)) {
+            refundSuccessAmountTotal = BigDecimal.ZERO;
+        }
+        return refundSuccessAmountTotal;
+    }
 
     /**
      * 根据退租申请单编码进行更新
