@@ -930,7 +930,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Deprecated
     public void loginCallBack(UserSourceQuery query) {
 
         User user = userMapper.selectById(SecurityUtils.getUid());

@@ -352,11 +352,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
+        //用户邀请人
+        CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                if (Objects.isNull(item.getUid())) {
+                    return;
+                }
+
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+
 
         //获取用户车辆信息  TODO
 
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo, queryUserBasicInfo);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo, queryUserBasicInfo,queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

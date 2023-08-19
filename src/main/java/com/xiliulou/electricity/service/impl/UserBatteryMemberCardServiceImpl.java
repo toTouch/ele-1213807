@@ -3,7 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
@@ -12,7 +15,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +24,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -347,5 +347,14 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
             offset += size;
         }
+    }
+
+    @Override
+    public Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
+        Long result = 0L;
+
+        Long remainingTime = userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis();
+
+        return result = Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000;
     }
 }

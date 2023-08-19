@@ -46,6 +46,7 @@ import com.xiliulou.electricity.web.query.battery.BatteryModifyQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -58,7 +59,6 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -134,6 +134,24 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Autowired
     TenantService tenantService;
+
+    /**
+     * 根据电池SN码集查询
+     *
+     * @param tenantId 租户ID
+     * @param snList   电池SN码
+     * @return 电池信息集
+     */
+    @Slave
+    @Override
+    public List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList) {
+        if (ObjectUtils.isEmpty(tenantId) || CollectionUtils.isEmpty(snList)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<ElectricityBattery> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ElectricityBattery::getTenantId, tenantId).in(ElectricityBattery::getSn, snList);
+        return electricitybatterymapper.selectList(queryWrapper);
+    }
 
     /**
      * 保存电池

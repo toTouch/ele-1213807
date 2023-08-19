@@ -203,7 +203,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
 
         // 优惠券信息
-        Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
+        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageVo> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {

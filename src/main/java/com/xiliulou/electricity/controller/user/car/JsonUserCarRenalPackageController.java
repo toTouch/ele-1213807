@@ -65,7 +65,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
                 .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
 
         // 查询赠送的优惠券信息
-        Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIdList);
+        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIdList);
 
         // 转换 VO
         List<CarRentalPackageVo> voList = buildVOList(entityList, couponMap);

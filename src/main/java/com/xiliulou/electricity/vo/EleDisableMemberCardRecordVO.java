@@ -125,4 +125,9 @@ public class EleDisableMemberCardRecordVO {
     private Long franchiseeId;
 
     private Long storeId;
+
+    /**
+     * 租期单位 0：分钟，1：天
+     */
+    private Integer rentUnit;
 }

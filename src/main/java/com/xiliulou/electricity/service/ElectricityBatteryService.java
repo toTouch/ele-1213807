@@ -23,6 +23,13 @@ import java.util.List;
  */
 public interface ElectricityBatteryService extends IService<ElectricityBattery> {
 
+    /**
+     * 根据电池SN码集查询
+     * @param tenantId 租户ID
+     * @param snList 电池SN码
+     * @return 电池信息集
+     */
+    List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList);
 
     R saveElectricityBattery(EleBatteryQuery electricityBattery);
 
