@@ -58,7 +58,7 @@
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
-        SELECT pay_amount, order_id, source, battery_service_fee_generate_time, update_time
+        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time
         FROM     t_ele_battery_service_fee_order
         <where>
             <if test="status != null">
@@ -70,7 +70,7 @@
             <if test="tenantId != null">
                 and tenant_id =#{tenantId}
             </if>
-            order by create_time desc
+            order by id desc
             limit #{offset},#{size}
         </where>
     </select>
