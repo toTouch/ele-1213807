@@ -124,60 +124,6 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return R.fail("110207", "已参加过邀请返现活动");
 		}
 
-	/*	//2、别人点击链接登录
-
-		//2.1 判断此人是否首次购买月卡
-		Boolean result = checkUserIsCard(userInfo);
-
-		//已购买月卡,则直接返回首页
-		if (result) {
-			return R.fail("ELECTRICITY.00107", "您已购买过月卡");
-		}*/
-
-		//未购买月卡则添加用户参与记录
-		//2.2 判断此人是否参与过活动
-		//TODO 待删除。 3.0版本后活动不能重复参加，所以如下代码被注释
-		/*JoinShareMoneyActivityRecord oldJoinShareMoneyActivityRecord = joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
-				.eq(JoinShareMoneyActivityRecord::getJoinUid, user.getUid()).eq(JoinShareMoneyActivityRecord::getTenantId, tenantId)
-				.eq(JoinShareMoneyActivityRecord::getActivityId, activityId)
-				.in(JoinShareMoneyActivityRecord::getStatus, JoinShareMoneyActivityRecord.STATUS_INIT));
-
-		if (Objects.nonNull(oldJoinShareMoneyActivityRecord)) {
-			if (Objects.equals(oldJoinShareMoneyActivityRecord.getUid(), uid)) {
-				return R.ok();
-			}
-			//切换邀请用户
-			oldJoinShareMoneyActivityRecord.setUid(uid);
-			//过期时间可配置
-			oldJoinShareMoneyActivityRecord.setStartTime(System.currentTimeMillis());
-			oldJoinShareMoneyActivityRecord.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
-			oldJoinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-			joinShareMoneyActivityRecordMapper.updateById(oldJoinShareMoneyActivityRecord);
-
-			//修改被替换掉的历史记录状态
-			JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(oldJoinShareMoneyActivityRecord.getId(), user.getUid());
-			if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-				oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_REPLACE);
-				oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-				joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-			}
-
-			//新增邀请历史记录
-			JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
-			joinShareMoneyActivityHistory.setRecordId(oldJoinShareMoneyActivityHistory.getId());
-			joinShareMoneyActivityHistory.setUid(uid);
-			joinShareMoneyActivityHistory.setJoinUid(user.getUid());
-			joinShareMoneyActivityHistory.setCreateTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setStartTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
-			joinShareMoneyActivityHistory.setTenantId(tenantId);
-			joinShareMoneyActivityHistory.setActivityId(oldJoinShareMoneyActivityRecord.getActivityId());
-			joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
-			joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
-			return R.ok();
-		}*/
-
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
 		joinShareMoneyActivityRecord.setUid(uid);
 		joinShareMoneyActivityRecord.setJoinUid(user.getUid());

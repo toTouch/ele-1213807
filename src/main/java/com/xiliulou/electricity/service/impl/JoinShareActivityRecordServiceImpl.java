@@ -136,50 +136,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             return R.fail("110207", "已参加过邀请返现活动");
         }
 
-        //未购买月卡则添加用户参与记录
-        //2.2 判断此人是否参与过活动
-        //TODO 待删除。 3.0版本后活动不能重复参加，所以如下代码被注释
-        /*JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
-                .eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
-                .eq(JoinShareActivityRecord::getActivityId, activityId)
-                .in(JoinShareActivityRecord::getStatus, JoinShareActivityRecord.STATUS_INIT));
-
-        if (Objects.nonNull(oldJoinShareActivityRecord)) {
-            if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
-                return R.ok();
-            }
-            //切换邀请用户
-            oldJoinShareActivityRecord.setUid(uid);
-            //过期时间可配置
-            oldJoinShareActivityRecord.setStartTime(System.currentTimeMillis());
-            oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
-            oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-            joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
-
-            //修改被替换掉的历史记录状态
-            JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(oldJoinShareActivityRecord.getId(), user.getUid());
-            if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
-                oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
-            }
-
-            //新增邀请历史记录
-            JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
-            joinShareActivityHistory.setRecordId(oldJoinShareActivityRecord.getId());
-            joinShareActivityHistory.setUid(uid);
-            joinShareActivityHistory.setJoinUid(user.getUid());
-            joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
-            joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-            joinShareActivityHistory.setStartTime(System.currentTimeMillis());
-            joinShareActivityHistory.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
-            joinShareActivityHistory.setTenantId(tenantId);
-            joinShareActivityHistory.setActivityId(oldJoinShareActivityRecord.getActivityId());
-            joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
-            joinShareActivityHistoryService.insert(joinShareActivityHistory);
-            return R.ok();
-        }*/
-
         JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
         joinShareActivityRecord.setUid(uid);
         joinShareActivityRecord.setJoinUid(user.getUid());
