@@ -20,6 +20,9 @@
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
 			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
+			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
 			</if>
@@ -50,6 +53,9 @@
 			</if>
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
+			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
 			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}

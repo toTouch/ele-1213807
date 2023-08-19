@@ -21,6 +21,7 @@ public class ShareMoneyActivityRecordQuery {
     private Long offset;
     private String phone;
     private String name;
+    private Long uid;
 
     private Integer tenantId;
 

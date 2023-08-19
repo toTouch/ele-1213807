@@ -52,6 +52,9 @@
         <if test="phone != null and phone != ''">
             and tui.phone = #{phone}
         </if>
+        <if test="uid != null">
+            and tui.uid = #{uid}
+        </if>
         <if test="userName != null and userName != '' ">
             and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
         </if>
@@ -91,6 +94,9 @@
         </if>
         <if test="phone != null and phone != ''">
             and tui.phone = #{phone}
+        </if>
+        <if test="uid != null">
+            and tui.uid = #{uid}
         </if>
         <if test="userName != null and userName != '' ">
             and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')

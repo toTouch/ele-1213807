@@ -26,6 +26,8 @@ public class FaceRecognizeUserRecordQuery {
     private String userName;
 
     private String phone;
+
+    private Long uid;
     /**
      * 状态
      */

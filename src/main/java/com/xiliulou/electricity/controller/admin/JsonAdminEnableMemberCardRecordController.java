@@ -58,6 +58,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "enableType", required = false) Integer enableType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -101,6 +102,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
                 .phone(phone)
                 .franchiseeIds(franchiseeIds)
                 .userName(userName)
+                .uid(uid)
                 .tenantId(tenantId).build();
 
         return enableMemberCardRecordService.queryList(enableMemberCardRecordQuery);
@@ -111,6 +113,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
     @GetMapping(value = "/admin/enableMemberCardRecord/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "enableType", required = false) Integer enableType,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
@@ -145,6 +148,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
                 .phone(phone)
                 .franchiseeIds(franchiseeIds)
                 .userName(userName)
+                .uid(uid)
                 .tenantId(tenantId).build();
 
         return enableMemberCardRecordService.queryCount(enableMemberCardRecordQuery);

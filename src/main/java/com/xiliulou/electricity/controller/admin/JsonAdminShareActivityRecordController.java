@@ -39,6 +39,7 @@ public class JsonAdminShareActivityRecordController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 		if (size < 0 || size > 50) {
@@ -75,6 +76,7 @@ public class JsonAdminShareActivityRecordController {
 				.size(size)
 				.phone(phone)
 				.name(name)
+				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
 				.tenantId(TenantContextHolder.getTenantId())
@@ -88,6 +90,7 @@ public class JsonAdminShareActivityRecordController {
 	@GetMapping(value = "/admin/shareActivityRecord/queryCount")
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -115,6 +118,7 @@ public class JsonAdminShareActivityRecordController {
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.phone(phone)
 				.name(name)
+				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
 				.tenantId(TenantContextHolder.getTenantId())
@@ -129,13 +133,14 @@ public class JsonAdminShareActivityRecordController {
     public void shareActivityRecordExportExcel(
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 	
 	    ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
-                .phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
+                .phone(phone).name(name).uid(uid).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
         
         shareActivityRecordService.shareActivityRecordExportExcel(shareActivityRecordQuery, response);
     }

@@ -184,6 +184,9 @@
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
             </if>
+            <if test="joinUid != null">
+                and tjsmah.join_uid = #{joinUid}
+            </if>
             <if test="activityName != null and activityName != ''">
                 and tsma.name like concat('%', #{activityName}, '%')
             </if>
@@ -225,6 +228,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="joinUid != null">
+                and tjsmah.join_uid = #{joinUid}
             </if>
             <if test="activityName != null and activityName != ''">
                 and tsa.name like concat('%', #{activityName}, '%')

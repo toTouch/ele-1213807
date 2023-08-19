@@ -22,6 +22,7 @@
         tel.coupon_id ,
         tel.source ,
         tel.ref_id ,
+        tel.uid,
         tel.member_card_id ,
         tel.use_status ,
         tel.send_coupon_id ,
@@ -39,6 +40,9 @@
         </if>
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.uid != null">
+            and tel.uid = #{query.uid}
         </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
@@ -102,6 +106,9 @@
         WHERE 0= 0
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.uid != null">
+            and tel.uid = #{query.uid}
         </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}

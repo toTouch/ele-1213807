@@ -92,6 +92,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 								  @RequestParam("offset") Long offset,
 								  @RequestParam(value = "joinName", required = false) String joinName,
 								  @RequestParam(value = "joinPhone", required = false) String joinPhone,
+							      @RequestParam(value = "joinUid", required = false) Long joinUid,
 								  @RequestParam(value = "activityName", required = false) String activityName,
 								  @RequestParam(value = "beginTime", required = false) Long beginTime,
 								  @RequestParam(value = "endTime", required = false) Long endTime,
@@ -114,6 +115,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.tenantId(tenantId)
 				.joinName(joinName)
 				.phone(joinPhone)
+				.joinUid(joinUid)
 				.activityName(activityName)
 				.status(status)
 				.startTime(beginTime)
@@ -126,6 +128,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 	@GetMapping(value = "/admin/joinShareActivityHistory/participationCount")
 	public R participationCount(@RequestParam(value = "joinName", required = false) String joinName,
 								  @RequestParam(value = "joinPhone", required = false) String joinPhone,
+								  @RequestParam(value = "joinUid", required = false) Long joinUid,
 								  @RequestParam(value = "activityName", required = false) String activityName,
 								  @RequestParam(value = "beginTime", required = false) Long beginTime,
 								  @RequestParam(value = "endTime", required = false) Long endTime,
@@ -137,6 +140,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.tenantId(tenantId)
 				.joinName(joinName)
 				.phone(joinPhone)
+				.joinUid(joinUid)
 				.activityName(activityName)
 				.status(status)
 				.startTime(beginTime)

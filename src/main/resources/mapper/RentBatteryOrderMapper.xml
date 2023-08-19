@@ -20,6 +20,9 @@
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
             </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
             <if test="query.status != null and query.status != ''">
                 and status = #{query.status}
             </if>
@@ -65,6 +68,9 @@
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
+            </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
             </if>
             <if test="query.status != null  and query.status != ''">
                 and status = #{query.status}

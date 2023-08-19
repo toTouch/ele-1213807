@@ -39,6 +39,8 @@ public class FreeDepositOrderQuery {
      */
     private String realName;
 
+    private Long uid;
+
     /**
      * 授权免押的状态
      */

@@ -16,6 +16,10 @@ public class RentBatteryOrderQuery {
     private Long size;
     private Long offset;
     /**
+     * 用户UID
+     */
+    private Long uid;
+    /**
      * 用户名字
      */
     private String name;

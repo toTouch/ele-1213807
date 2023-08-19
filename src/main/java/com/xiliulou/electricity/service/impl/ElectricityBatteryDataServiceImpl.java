@@ -52,7 +52,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
     @Slave
-    public R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -89,6 +89,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .sn(sn)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
+                .uid(uid)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
@@ -96,10 +97,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fid = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -117,12 +118,13 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     }
 
     @Override
-    public R selectAllBatteryDataCount( String sn, Long franchiseeId, Integer electricityCabinetId)  {
+    public R selectAllBatteryDataCount( String sn, Long franchiseeId, Integer electricityCabinetId, Long uid)  {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
+                //.uid(uid)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));

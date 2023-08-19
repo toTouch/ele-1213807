@@ -62,6 +62,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
+                                          @RequestParam(value = "uid", required = false) Long uid,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                                           @RequestParam(value = "payType",required = false) Integer payType) {
 
@@ -105,6 +106,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .size(size)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .uid(uid)
                 .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
@@ -139,6 +141,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "payType",required = false) Integer payType) {
 
@@ -172,6 +175,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .uid(uid)
                 .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
@@ -196,6 +200,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
                             @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                             @RequestParam(value = "status", required = false) Integer status,
+                            @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "payType", required = false) Integer payType,
                             @RequestParam(value = "payCount", required = false) Integer payCount,
@@ -231,6 +236,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .payType(payType)
                 .phone(phone)
+                .uid(uid)
                 .orderId(orderId)
                 .cardType(cardType)
                 .queryStartTime(queryStartTime)

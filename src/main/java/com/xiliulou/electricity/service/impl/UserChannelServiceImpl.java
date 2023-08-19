@@ -190,7 +190,43 @@ public class UserChannelServiceImpl implements UserChannelService {
         Long count = this.userChannelMapper.queryCount(name, phone, TenantContextHolder.getTenantId());
         return Triple.of(true, null, count);
     }
-    
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryUserChannelActivityList(UserChannelQuery userChannelQuery) {
+
+        List<UserChannel> queryList = this.userChannelMapper.queryActivityList(userChannelQuery);
+
+        List<UserChannelVo> voList = new ArrayList<>();
+
+        Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
+            UserChannelVo vo = new UserChannelVo();
+            BeanUtils.copyProperties(item, vo);
+
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                vo.setName(userInfo.getName());
+                vo.setPhone(userInfo.getPhone());
+            }
+
+            User user = userService.queryByUidFromCache(item.getOperateUid());
+            if (Objects.nonNull(user)) {
+                vo.setOperateName(user.getName());
+            }
+
+            voList.add(vo);
+        });
+
+        return Triple.of(true, null, voList);
+    }
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryUserChannelActivityCount(UserChannelQuery userChannelQuery) {
+        Long count = this.userChannelMapper.queryActivityCount(userChannelQuery);
+        return Triple.of(true, null, count);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> saveOne(Long uid) {

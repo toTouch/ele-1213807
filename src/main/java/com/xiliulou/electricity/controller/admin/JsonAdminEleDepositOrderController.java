@@ -58,6 +58,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -99,6 +100,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
                 .size(size)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
@@ -118,6 +120,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
@@ -151,6 +154,7 @@ public class JsonAdminEleDepositOrderController extends BaseController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)

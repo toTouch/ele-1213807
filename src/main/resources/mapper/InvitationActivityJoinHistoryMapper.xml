@@ -68,6 +68,7 @@
         iajh.pay_count,
         iajh.money,
         iajh.create_time,
+        iajh.join_uid joinUid,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
@@ -79,6 +80,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="joinUid != null">
+                and iajh.join_uid = #{joinUid}
             </if>
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
@@ -142,6 +146,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="joinUid != null">
+                and iajh.join_uid = #{joinUid}
             </if>
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}

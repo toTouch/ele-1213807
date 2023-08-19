@@ -33,6 +33,9 @@
           tui.name as userName ,tui.phone as phone
         from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
         <where>
+            <if test="uid != null">
+                and tui.uid = #{uid}
+            </if>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
             </if>
@@ -51,6 +54,9 @@
         select count(1)
         from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
         <where>
+            <if test="uid != null">
+                and tui.uid = #{uid}
+            </if>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
             </if>

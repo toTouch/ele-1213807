@@ -18,6 +18,8 @@ public class InvitationActivityRecordQuery {
 
     private Integer tenantId;
 
+    private Long uid;
+
     private String userName;
 
     private String phone;
