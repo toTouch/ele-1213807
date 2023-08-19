@@ -83,6 +83,8 @@ public class UserBizServiceImpl implements UserBizService {
     ShareMoneyActivityPackageService shareMoneyActivityPackageService;
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
@@ -97,11 +99,7 @@ public class UserBizServiceImpl implements UserBizService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // TODO 查询电的总滞纳金
-        BigDecimal batterySlippage = null;
-        if (ObjectUtils.isEmpty(batterySlippage)) {
-            batterySlippage = BigDecimal.ZERO;
-        }
+        BigDecimal batterySlippage = serviceFeeUserInfoService.selectBatteryServiceFeeByUid(uid);
 
         // 查询车的总滞纳金
         BigDecimal carSlippage = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
