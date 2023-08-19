@@ -99,7 +99,6 @@ public class User {
 	/**
 	 * 用户来源，1：扫码，2：邀请，3：其它
 	 */
-	@Deprecated
 	private Integer source;
 
 	private Integer tenantId;
