@@ -64,12 +64,6 @@
             <if test="status != null">
                 and status in (1,3)
             </if>
-            <if test="beginTime != null">
-                and create_time &gt;=#{beginTime}
-            </if>
-            <if test="endTime != null">
-                and create_time &lt;=#{endTime}
-            </if>
             <if test="uid != null">
                 and uid =#{uid}
             </if>
