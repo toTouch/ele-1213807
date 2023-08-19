@@ -1696,6 +1696,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .status(EleDepositOrder.STATUS_INIT)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
+                    .batteryServiceFeeGenerateTime(System.currentTimeMillis())
                     .franchiseeId(userInfo.getFranchiseeId())
                     .storeId(userInfo.getStoreId())
                     .tenantId(userInfo.getTenantId())
@@ -3696,7 +3697,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.isNull(query.getMemberCardExpireTime()) && Objects.isNull(query.getValidDays())) {
+        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
             if (Objects.isNull(query.getUseCount())) {
                 //不限次套餐
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
