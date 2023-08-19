@@ -33,4 +33,14 @@ public class UserCarDetail {
      */
     private Long memberCardExpireTime;
 
+    /**
+     * 车辆套餐滞纳金是否存在
+     * <pre>
+     *     0-是
+     *     1-否
+     * </pre>
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer carRentalPackageSlippage;
+
 }
