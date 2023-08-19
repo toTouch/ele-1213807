@@ -48,6 +48,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
      * 查询当前未支付的逾期订单明细
      * @return 未支付的逾期订单明细
      */
+    @GetMapping("/queryCurrSlippage")
     public R<List<CarRentalPackageOrderSlippageVo>> queryCurrSlippage() {
 
         Integer tenantId = TenantContextHolder.getTenantId();
