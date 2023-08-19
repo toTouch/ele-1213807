@@ -514,7 +514,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
                         // 判定构建逾期订单
-                        if (nowTime >= (memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND)) {
+                        // TODO 为了测试，更改为10分钟，实际值 DAY_MILLISECOND
+                        if (nowTime >= (memberTermEntity.getDueTime() + TimeConstant.TEN_MINUTE_MILLISECOND)) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
                                 log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());
