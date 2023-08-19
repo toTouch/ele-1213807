@@ -956,6 +956,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
             rentBatteryOrder.setElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(BigDecimal.ZERO);
+            rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+            rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+            rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
