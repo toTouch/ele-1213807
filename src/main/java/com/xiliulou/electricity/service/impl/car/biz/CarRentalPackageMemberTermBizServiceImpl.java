@@ -68,9 +68,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private FranchiseeService franchiseeService;
 
     @Resource
-    private InsuranceUserInfoService insuranceUserInfoService;
-
-    @Resource
     private ElectricityCarService carService;
 
     @Resource
@@ -90,9 +87,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Resource
     private ElectricityBatteryService batteryService;
-
-    @Resource
-    private UserCarService userCarService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -692,9 +686,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
+        Long batteryModelId = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
+                BatteryModel batteryModel = batteryModelService.selectByBatteryType(packageOrderEntity.getTenantId(), battery.getModel());
+                if (ObjectUtils.isNotEmpty(batteryModel)) {
+                    batteryModelId = batteryModel.getId();
+                }
                 createFlag = true;
             }
         }
@@ -723,9 +722,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 记录设备信息
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             slippageEntity.setCarSn(electricityCar.getSn());
+            slippageEntity.setCarModelId(electricityCar.getModelId());
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
+            slippageEntity.setBatteryModelId(batteryModelId);
         }
 
         return slippageEntity;

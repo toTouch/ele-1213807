@@ -18,6 +18,14 @@ import java.util.List;
 public interface BatteryModelService {
 
     /**
+     * 根据电池型号查询数据
+     * @param tenantId 租户ID
+     * @param batteryType 电池型号
+     * @return 电池型号信息
+     */
+    BatteryModel selectByBatteryType(Integer tenantId, String batteryType);
+
+    /**
      * 根据电池型号集查询数据
      * @param tenantId 租户ID
      * @param idList 电池型号ID集
