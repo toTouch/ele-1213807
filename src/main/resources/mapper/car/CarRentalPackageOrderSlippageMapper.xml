@@ -20,7 +20,9 @@
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="type" column="type" jdbcType="INTEGER" />
+        <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
         <result property="carSn" column="car_sn" jdbcType="VARCHAR" />
+        <result property="batteryModelId" column="battery_model_id" jdbcType="BIGINT" />
         <result property="batterySn" column="battery_sn" jdbcType="VARCHAR" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="lateFeeStartTime" column="late_fee_start_time" jdbcType="BIGINT" />
@@ -40,7 +42,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `car_sn`, `battery_sn`, `late_fee`, `late_fee_start_time`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `car_model_id`, `car_sn`, `battery_model_id`, `battery_sn`, `late_fee`, `late_fee_start_time`,
         `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`
     </sql>
 
@@ -98,7 +100,9 @@
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" type != null "> `type`, </if>
+            <if test=" carModelId != null "> `car_model_id`, </if>
             <if test=" carSn != null and carSn != '' "> `car_sn`, </if>
+            <if test=" batteryModelId != null "> `battery_model_id`, </if>
             <if test=" batterySn != null and batterySn != '' "> `battery_sn`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" lateFeeStartTime != null "> `late_fee_start_time`, </if>
@@ -125,7 +129,9 @@
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
+            <if test=" carModelId != null "> #{carModelId}, </if>
             <if test=" carSn != null and carSn != '' "> #{carSn}, </if>
+            <if test=" batteryModelId != null "> #{batteryModelId}, </if>
             <if test=" batterySn != null and batterySn != '' "> #{batterySn}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" lateFeeStartTime != null "> #{lateFeeStartTime}, </if>

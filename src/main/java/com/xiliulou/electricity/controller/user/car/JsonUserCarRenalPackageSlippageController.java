@@ -4,7 +4,6 @@ import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.BatteryModel;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
@@ -81,9 +80,6 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         // 套餐名称信息
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdSet);
 
-        // 车辆型号信息
-        Map<Integer, ElectricityCarModel> carModelForMap = getCarModelByIdsForMap(carModelSet);
-
         // 电池型号信息
         Map<Long, BatteryModel> batteryModelMap = getBatteryModelByIds(tenantId, batteryModelIdSet);
         
@@ -122,6 +118,10 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
                 slippageVo.setLateFeePayable(amount);
             }
+
+            slippageVo.setRentalPackageName(packageNameMap.getOrDefault(slippageEntity.getRentalPackageId(), null));
+            slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(Long.valueOf(slippageEntity.getBatteryModelId()), new BatteryModel()).getBatteryType());
+            slippageVo.setStoreName(storeNameForMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), null));
 
             carRentalPackageSlippageVoList.add(slippageVo);
         }

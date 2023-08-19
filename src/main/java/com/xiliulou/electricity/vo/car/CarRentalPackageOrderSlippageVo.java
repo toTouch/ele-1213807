@@ -50,9 +50,19 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
     private Integer type;
 
     /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
      * 车辆SN码
      */
     private String carSn;
+
+    /**
+     * 电池型号ID
+     */
+    private Long batteryModelId;
 
     /**
      * 电池SN码
@@ -118,4 +128,19 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      * 用户手机号
      */
     private String userPhone;
+
+    /**
+     * 套餐名称
+     */
+    private String rentalPackageName;
+
+    /**
+     * 电池型号类型
+     */
+    private String batteryModelType;
+
+    /**
+     * 门店名称
+     */
+    private String storeName;
 }

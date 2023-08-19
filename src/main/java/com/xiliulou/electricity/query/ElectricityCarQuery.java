@@ -42,6 +42,10 @@ public class ElectricityCarQuery {
      * 手机号
      */
     private String Phone;
+    /**
+     * 用户ID
+     */
+    private Long uid;
 
     /**
      * 电池sn码

@@ -73,6 +73,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private BatteryModelService batteryModelService;
+
+    @Resource
     private Jt808RetrofitService jt808RetrofitService;
 
     @Resource
@@ -1227,9 +1230,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
+        Long batteryModelId = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
+                BatteryModel batteryModel = batteryModelService.selectByBatteryType(packageOrderEntity.getTenantId(), battery.getModel());
+                if (ObjectUtils.isNotEmpty(batteryModel)) {
+                    batteryModelId = batteryModel.getId();
+                }
                 createFlag = true;
             }
         }
@@ -1257,9 +1265,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 记录设备信息
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             slippageEntity.setCarSn(electricityCar.getSn());
+            slippageEntity.setCarModelId(electricityCar.getModelId());
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
+            slippageEntity.setBatteryModelId(batteryModelId);
         }
 
         return slippageEntity;

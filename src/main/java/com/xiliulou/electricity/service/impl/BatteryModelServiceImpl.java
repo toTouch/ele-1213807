@@ -70,6 +70,24 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     private FranchiseeService franchiseeService;
 
     /**
+     * 根据电池型号查询数据
+     *
+     * @param tenantId    租户ID
+     * @param batteryType 电池型号
+     * @return 电池型号信息
+     */
+    @Slave
+    @Override
+    public BatteryModel selectByBatteryType(Integer tenantId, String batteryType) {
+        if (ObjectUtils.isEmpty(tenantId) || StringUtils.isBlank(batteryType)) {
+            return null;
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).eq(BatteryModel::getBatteryType, batteryType);
+        return batteryModelMapper.selectOne(queryWrapper);
+    }
+
+    /**
      * 根据电池型号集查询数据
      *
      * @param tenantId 租户ID
