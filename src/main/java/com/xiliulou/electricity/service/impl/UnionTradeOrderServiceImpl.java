@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -633,6 +634,10 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setUid(userInfo.getUid());
             userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            if (Objects.nonNull(electricityMemberCardOrder.getRefId()) && Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+                userInfoUpdate.setStoreId(electricityMemberCardOrder.getRefId());
+            }
+
             userInfoService.updateByUid(userInfoUpdate);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -835,6 +840,9 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setUid(userInfo.getUid());
             userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            if (Objects.nonNull(electricityMemberCardOrder.getRefId()) && Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+                userInfoUpdate.setStoreId(electricityMemberCardOrder.getRefId());
+            }
             userInfoService.updateByUid(userInfoUpdate);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
