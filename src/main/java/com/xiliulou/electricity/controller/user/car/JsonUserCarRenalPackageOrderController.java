@@ -240,6 +240,15 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             carRentalPackageOrderVo.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getBatteryVoltage());
             carRentalPackageOrderVo.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getCarModelId(), ""));
 
+            // 对使用中的订单，进行二次处理
+            if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
+                    && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
+                carRentalPackageOrderVo.setUseState(UseStateEnum.EXPIRED.getCode());
+                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+                carRentalPackageVOList.add(carRentalPackageOrderVo);
+                continue;
+            }
+
             // 二次判定是否可退
             if (YesNoEnum.NO.getCode().equals(carRentalPackageOrder.getRentRebate())) {
                 carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
@@ -248,7 +257,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             }
 
             // 判定可退截止时间
-            Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime().longValue() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
+            Integer rentRebate = carRentalPackageOrder.getRentRebateEndTime() >= nowTime ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode();
             if (YesNoEnum.NO.getCode().equals(rentRebate)) {
                 carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
                 carRentalPackageVOList.add(carRentalPackageOrderVo);
@@ -258,15 +267,6 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             // 使用状态判定
             Integer useState = carRentalPackageOrder.getUseState();
             if (UseStateEnum.EXPIRED.getCode().equals(useState) || UseStateEnum.RETURNED.getCode().equals(useState)) {
-                carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
-                carRentalPackageVOList.add(carRentalPackageOrderVo);
-                continue;
-            }
-
-            // 对使用中的订单，进行二次处理
-            if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
-                    && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
-                carRentalPackageOrderVo.setUseState(UseStateEnum.EXPIRED.getCode());
                 carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
                 carRentalPackageVOList.add(carRentalPackageOrderVo);
                 continue;
