@@ -1354,9 +1354,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 是否存在滞纳金
             boolean exitUnpaid = carRentalPackageOrderSlippageService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid());
             if (exitUnpaid) {
-                userBatteryDetail.setCarRentalPackageSlippage(YesNoEnum.YES.getCode());
+                userCarDetail.setCarRentalPackageSlippage(YesNoEnum.YES.getCode());
             } else {
-                userBatteryDetail.setCarRentalPackageSlippage(YesNoEnum.NO.getCode());
+                userCarDetail.setCarRentalPackageSlippage(YesNoEnum.NO.getCode());
             }
             // 是否购买租车套餐、是否过期
             CarRentalPackageMemberTermPo carRentalPackageMemberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
