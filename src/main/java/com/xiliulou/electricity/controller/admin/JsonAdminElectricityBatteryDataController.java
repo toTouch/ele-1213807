@@ -24,8 +24,9 @@ public class JsonAdminElectricityBatteryDataController {
                                     @RequestParam("size") long size,
                                     @RequestParam(value = "sn", required =  false) String sn,
                                     @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
-                                    @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
-        return electricityBatteryDataService.selectAllBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId);
+                                    @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId,
+                                    @RequestParam(value = "uid", required = false) Long uid) {
+        return electricityBatteryDataService.selectAllBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId, uid);
     }
 
     /**
@@ -34,8 +35,9 @@ public class JsonAdminElectricityBatteryDataController {
     @GetMapping(value = "/admin/batteryData/allBattery/count")
     public R getAllBatteryDataCount( @RequestParam(value = "sn", required =  false) String sn,
                                      @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
-                                     @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
-        return electricityBatteryDataService.selectAllBatteryDataCount(sn, franchiseeId, electricityCabinetId);
+                                     @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId,
+                                     @RequestParam(value = "uid", required = false) Long uid) {
+        return electricityBatteryDataService.selectAllBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
 
     /**

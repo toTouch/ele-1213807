@@ -36,6 +36,7 @@ public class MemberCardOrderQuery {
     private List<Long> storeIds;
     private String franchiseeName;
     private String userName;
+    private Long uid;
 
     /**
      * 套餐订单来源，1：扫码，2：线上，3：后台

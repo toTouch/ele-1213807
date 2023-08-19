@@ -162,4 +162,64 @@
             </if>
         </where>
     </select>
+
+    <select id="queryActivityHistoryList" resultType="com.xiliulou.electricity.vo.ChannelActivityHistoryVo">
+        select
+            tcah.id,
+            tcah.uid,
+            tcah.invite_uid,
+            tcah.channel_uid,
+            tcah.status,
+            tcah.create_time,
+            tcah.update_time,
+            tcah.tenant_id,
+            tui.phone as phone,
+            tui.name as name
+        from t_channel_activity_history tcah
+        left join t_user_info tui on tui.uid = tcah.uid
+        <where>
+            <if test="phone != null and phone != ''">
+                and tui.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="tenantId != null and tenantId != ''">
+                and tcah.tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null">
+                and tui.uid = #{uid}
+            </if>
+            <if test="beginTime != null">
+                and tcah.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tcah.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="queryActivityHistoryCount" resultType="long">
+        select
+            count(*)
+        from t_channel_activity_history tcah
+        left join t_user_info tui on tui.uid = tcah.uid
+        <where>
+            <if test="phone != null and phone != ''">
+                and tui.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="tenantId != null and tenantId != ''">
+                and tcah.tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null">
+                and tui.uid = #{uid}
+            </if>
+            <if test="beginTime != null">
+                and tcah.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tcah.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
 </mapper>

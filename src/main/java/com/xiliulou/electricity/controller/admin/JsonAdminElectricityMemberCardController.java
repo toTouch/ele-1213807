@@ -370,7 +370,8 @@ public class JsonAdminElectricityMemberCardController {
                                                  @RequestParam(value = "size") Long size,
                                                  @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
                                                  @RequestParam(value = "phone", required = false) String phone,
-                                                 @RequestParam(value = "status", required = false) Integer status) {
+                                                 @RequestParam(value = "status", required = false) Integer status,
+                                                 @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -408,6 +409,7 @@ public class JsonAdminElectricityMemberCardController {
                 .disableMemberCardNo(disableMemberCardNo)
                 .phone(phone)
                 .status(status)
+                .uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return eleDisableMemberCardRecordService.list(electricityMemberCardRecordQuery);
@@ -421,7 +423,8 @@ public class JsonAdminElectricityMemberCardController {
     @GetMapping(value = "/admin/electricityMemberCard/disableMemberCardCount")
     public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
                                                   @RequestParam(value = "phone", required = false) String phone,
-                                                  @RequestParam(value = "status", required = false) Integer status) {
+                                                  @RequestParam(value = "status", required = false) Integer status,
+                                                  @RequestParam(value = "uid", required = false) Long uid) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -448,6 +451,7 @@ public class JsonAdminElectricityMemberCardController {
                 .disableMemberCardNo(disableMemberCardNo)
                 .phone(phone)
                 .status(status)
+                .uid(uid)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();

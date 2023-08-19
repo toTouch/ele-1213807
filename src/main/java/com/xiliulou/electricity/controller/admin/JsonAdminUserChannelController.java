@@ -4,6 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserChannelQuery;
 import com.xiliulou.electricity.service.UserChannelService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,15 +28,35 @@ public class JsonAdminUserChannelController extends BaseController {
     
     @GetMapping("admin/userChannel/list")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return this.returnTripleResult(userChannelService.queryList(offset, size, name, phone));
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "phone", required = false) String phone) {
+
+        UserChannelQuery userChannelQuery = UserChannelQuery.builder()
+                .offset(offset)
+                .size(size)
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(uid)
+                .name(name)
+                .phone(phone)
+                .build();
+
+        return this.returnTripleResult(userChannelService.queryUserChannelActivityList(userChannelQuery));
     }
     
     @GetMapping("admin/userChannel/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return this.returnTripleResult(userChannelService.queryCount(name, phone));
+                        @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "phone", required = false) String phone) {
+
+        UserChannelQuery userChannelQuery = UserChannelQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(uid)
+                .name(name)
+                .phone(phone)
+                .build();
+
+        return this.returnTripleResult(userChannelService.queryUserChannelActivityCount(userChannelQuery));
     }
     
     @PostMapping("admin/userChannel/save")

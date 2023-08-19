@@ -60,6 +60,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                        @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -105,6 +106,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .phone(phone)
+                .uid(uid)
                 .payType(payType)
                 .refundOrderType(refundOrderType)
                 .name(name).build();
@@ -120,6 +122,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
         //用户区分
@@ -155,7 +158,8 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(phone).build();
+                .phone(phone)
+                .uid(uid).build();
 
         return eleRefundOrderService.queryCount(eleRefundQuery);
     }

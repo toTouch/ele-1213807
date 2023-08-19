@@ -370,6 +370,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryListV2(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -403,7 +404,7 @@ public class JsonAdminUserInfoController extends BaseController {
             }
         }
 
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).authType(authType)
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).uid(uid).authType(authType)
                 .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds).storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
     

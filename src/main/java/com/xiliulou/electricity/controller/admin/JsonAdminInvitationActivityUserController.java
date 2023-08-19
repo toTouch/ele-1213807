@@ -28,6 +28,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
 
     @GetMapping("/admin/invitationActivityUser/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                  @RequestParam(value = "uid", required = false) Long uid,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "userName", required = false) String userName) {
         if (size < 0 || size > 50) {
@@ -38,18 +39,29 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
             offset = 0L;
         }
 
-        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder().size(size).offset(offset).userName(userName)
-                .tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
+        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder()
+                .size(size)
+                .offset(offset)
+                .userName(userName)
+                .uid(uid)
+                .tenantId(TenantContextHolder.getTenantId())
+                .phone(phone)
+                .build();
 
         return R.ok(invitationActivityUserService.selectByPage(query));
     }
 
     @GetMapping("/admin/invitationActivityUser/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
+                   @RequestParam(value = "uid", required = false) Long uid,
                    @RequestParam(value = "userName", required = false) String userName) {
 
         InvitationActivityUserQuery query = InvitationActivityUserQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId()).userName(userName).phone(phone).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .userName(userName)
+                .phone(phone)
+                .uid(uid)
+                .build();
 
         return R.ok(invitationActivityUserService.selectByPageCount(query));
     }

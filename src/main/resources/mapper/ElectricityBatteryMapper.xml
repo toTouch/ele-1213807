@@ -744,6 +744,10 @@
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
 
+        <if test="query.uid != null">
+            and teb.uid = #{query.uid}
+        </if>
+
         <if test="query.queryType == 4">
             and teb.uid is not null
         </if>
@@ -774,6 +778,10 @@
 
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
+        </if>
+
+        <if test="query.uid != null">
+            and teb.uid = #{query.uid}
         </if>
 
         <if test="query.queryType == 4">

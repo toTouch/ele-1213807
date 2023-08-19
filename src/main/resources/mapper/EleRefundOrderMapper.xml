@@ -123,6 +123,9 @@
             <if test="query.status != null">
                 and tero.status = #{query.status}
             </if>
+            <if test="query.uid != null">
+                and tedo.uid = #{query.uid}
+            </if>
             <if test="query.refundOrderType != null">
                 and tero.refund_order_type = #{query.refundOrderType}
             </if>

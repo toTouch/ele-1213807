@@ -53,6 +53,7 @@ public class JsonAdminRentBatteryOrderController {
                        @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "orderId", required = false) String orderId) {
@@ -90,6 +91,7 @@ public class JsonAdminRentBatteryOrderController {
                 .size(size)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
@@ -183,6 +185,7 @@ public class JsonAdminRentBatteryOrderController {
 			@RequestParam(value = "type", required = false) Integer type,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
 			@RequestParam(value = "orderId", required = false) String orderId) {
@@ -211,6 +214,7 @@ public class JsonAdminRentBatteryOrderController {
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)

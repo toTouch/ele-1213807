@@ -68,6 +68,9 @@
         <if test="realName != null and realName != '' ">
             and tfdo.real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
         </if>
+        <if test="uid != null">
+            and tfdo.uid = #{uid}
+        </if>
         <if test="startTime != null">
             and tfdo.create_time &gt;= #{startTime}
         </if>
@@ -112,6 +115,9 @@
         </if>
         <if test="realName != null and realName != '' ">
             and tfdo.real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="uid != null">
+            and tfdo.uid = #{uid}
         </if>
         <if test="startTime != null">
             and tfdo.create_time &gt;= #{startTime}

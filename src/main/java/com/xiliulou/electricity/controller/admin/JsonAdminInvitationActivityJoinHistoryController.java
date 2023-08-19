@@ -41,6 +41,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "id", required = false) Long id,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "phone", required = false) String phone,
+                  @RequestParam(value = "joinUid", required = false) Long joinUid,
                   @RequestParam(value = "joinUserName", required = false) String joinUserName,
                   @RequestParam(value = "activityName", required = false) String activityName,
                   @RequestParam(value = "payCount", required = false) Integer payCount) {
@@ -76,6 +77,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
                 .size(size)
                 .offset(offset)
+                .joinUid(joinUid)
                 .userName(joinUserName)
                 .recordId(id)
                 .beginTime(beginTime)
@@ -99,6 +101,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                    @RequestParam(value = "endTime", required = false) Long endTime,
                    @RequestParam(value = "status", required = false) Integer status,
                    @RequestParam(value = "phone", required = false) String phone,
+                   @RequestParam(value = "joinUid", required = false) Long joinUid,
                    @RequestParam(value = "joinUserName", required = false) String joinUserName,
                    @RequestParam(value = "activityName", required = false) String activityName,
                    @RequestParam(value = "payCount", required = false) Integer payCount) {
@@ -125,6 +128,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         }
 
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
+                .joinUid(joinUid)
                 .userName(joinUserName)
                 .recordId(id)
                 .beginTime(beginTime)

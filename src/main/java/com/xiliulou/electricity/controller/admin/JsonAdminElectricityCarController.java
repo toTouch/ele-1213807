@@ -81,6 +81,7 @@ public class JsonAdminElectricityCarController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -123,6 +124,7 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
@@ -140,6 +142,7 @@ public class JsonAdminElectricityCarController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "storeId", required = false) Long storeId,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -169,6 +172,7 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)

@@ -539,7 +539,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
                         CarRentalPackageOrderSlippagePo slippageExpireEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.EXPIRE.getCode());
                         if (ObjectUtils.isNotEmpty(slippageExpireEntity)) {
-                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. tThe user already has an expired order. skip. uid is {}, rentalPackageOrderNo is {}", memberTermEntity.getId(), slippageEntityInsert.getRentalPackageOrderNo());
+                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. The user already has an expired order. skip. uid is {}, rentalPackageOrderNo is {}", memberTermEntity.getId(), slippageEntityInsert.getRentalPackageOrderNo());
                             continue;
                         }
 
@@ -633,7 +633,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + Long.valueOf(tenancy * TimeConstant.MINUTE_MILLISECOND);
+                dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
 
             memberTermEntityUpdate.setDueTime(dueTime);

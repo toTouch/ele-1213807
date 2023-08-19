@@ -22,6 +22,8 @@ public class JsonShareMoneyActivityHistoryQuery {
     private Integer tenantId;
     
     private String joinName;
+
+    private Long joinUid;
     
     private Long beginTime;
     

@@ -49,6 +49,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                   @RequestParam(value = "orderId", required = false) String orderId,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "realName", required = false) String realName,
+                  @RequestParam(value = "uid", required = false) Long uid,
                   @RequestParam(value = "startTime", required = false) Long startTime,
                   @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -89,6 +90,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .realName(realName)
+                .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -109,6 +111,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "realName", required = false) String realName,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "startTime", required = false) Long startTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -140,6 +143,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .realName(realName)
+                .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())

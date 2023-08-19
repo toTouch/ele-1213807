@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.UserChannel;
+import com.xiliulou.electricity.query.UserChannelQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -70,4 +71,9 @@ public interface UserChannelMapper extends BaseMapper<UserChannel> {
     Long queryCount(@Param("name") String name, @Param("phone") String phone, @Param("tenantId") Integer tenantId);
     
     UserChannel queryByUidFromDB(@Param("uid") Long uid);
+
+    List<UserChannel> queryActivityList(UserChannelQuery userChannelQuery);
+
+    Long queryActivityCount(UserChannelQuery userChannelQuery);
+
 }

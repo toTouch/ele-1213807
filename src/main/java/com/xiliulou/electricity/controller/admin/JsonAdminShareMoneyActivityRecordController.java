@@ -38,6 +38,7 @@ public class JsonAdminShareMoneyActivityRecordController {
 	@GetMapping(value = "/admin/shareMoneyActivityRecord/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
+			@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "name", required = false) String name) {
 		if (size < 0 || size > 50) {
@@ -75,6 +76,7 @@ public class JsonAdminShareMoneyActivityRecordController {
 				.size(size)
 				.phone(phone)
 				.name(name)
+				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
 				.tenantId(TenantContextHolder.getTenantId()).build();
@@ -86,7 +88,8 @@ public class JsonAdminShareMoneyActivityRecordController {
 	//列表查询
 	@GetMapping(value = "/admin/shareMoneyActivityRecord/queryCount")
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "name", required = false) String name) {
+						@RequestParam(value = "uid", required = false) Long uid,
+						@RequestParam(value = "name", required = false) String name) {
 
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -113,6 +116,7 @@ public class JsonAdminShareMoneyActivityRecordController {
 		ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery = ShareMoneyActivityRecordQuery.builder()
 				.phone(phone)
 				.name(name)
+				.uid(uid)
 				.storeIds(storeIds)
 				.franchiseeIds(franchiseeIds)
 				.tenantId(TenantContextHolder.getTenantId()).build();

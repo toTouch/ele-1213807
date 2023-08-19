@@ -60,6 +60,7 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "userName", required = false) String userName,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "payType", required = false) Integer payType) {
 
         if (size < 0 || size > 50) {
@@ -107,6 +108,7 @@ public class JsonAdminInsuranceOrderController {
                 .insuranceType(insuranceType)
                 .isUse(isUse)
                 .userName(userName)
+                .uid(uid)
                 .offset(offset)
                 .size(size)
                 .payType(payType).build();
@@ -125,6 +127,7 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "userName", required = false) String userName,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "payType", required = false) Integer payType) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -163,6 +166,7 @@ public class JsonAdminInsuranceOrderController {
                 .tenantId(tenantId)
                 .phone(phone)
                 .userName(userName)
+                .uid(uid)
                 .payType(payType).build();
 
         return insuranceOrderService.queryCount(insuranceOrderQuery);
