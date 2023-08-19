@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
@@ -42,4 +43,6 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
     BigDecimal queryAllTurnOver(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
     Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
+
+    List<EleBatteryServiceFeeOrder> selectByPage(BatteryServiceFeeOrderQuery query);
 }

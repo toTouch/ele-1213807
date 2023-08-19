@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.UserServiceFeeDetail;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -37,4 +38,6 @@ public interface ServiceFeeUserInfoService {
     void unbindServiceFeeInfoByUid(Long uid);
 
     List<ServiceFeeUserInfo> selectDisableMembercardList(int offset, int size);
+
+    UserServiceFeeDetail selectUserBatteryServiceFee();
 }

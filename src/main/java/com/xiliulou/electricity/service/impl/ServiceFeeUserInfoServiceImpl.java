@@ -4,15 +4,21 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.UserServiceFeeDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -58,6 +64,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
@@ -396,5 +405,103 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         }
 
         return Triple.of(false, null, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserServiceFeeDetail selectUserBatteryServiceFee() {
+        UserServiceFeeDetail userServiceFeeDetail = new UserServiceFeeDetail();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return null;
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            return null;
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return null;
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return null;
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = this.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            return null;
+        }
+
+        //暂停套餐滞纳金
+        if (StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())) {
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                //计算暂停套餐电池服务费
+                int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+                BigDecimal pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                eleBatteryServiceFeeOrder.setPayAmount(pauseBatteryServiceFee);
+                log.info("QUERY BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
+            }
+
+            userServiceFeeDetail.setDisableBatteryServiceFeeOrder(eleBatteryServiceFeeOrder);
+        }
+
+        //套餐过期滞纳金
+        if (StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+            //获取滞纳金订单
+            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+            //如果用户套餐过期滞纳金订单不存在，套餐启用，且套餐过期   生成滞纳金订单
+            if (Objects.isNull(eleBatteryServiceFeeOrder) && !Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) &&
+                    Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
+                //生成滞纳金订单
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+                eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
+                        .uid(userInfo.getUid())
+                        .phone(userInfo.getPhone())
+                        .name(userInfo.getName())
+                        .payAmount(BigDecimal.ZERO)
+                        .status(EleDepositOrder.STATUS_INIT)
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
+                        .franchiseeId(franchisee.getId())
+                        .storeId(userInfo.getStoreId())
+                        .modelType(franchisee.getModelType())
+                        .batteryType("")
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                        .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+
+                //将滞纳金订单与用户绑定
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoUpdate.setExpireOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                this.updateByUid(serviceFeeUserInfoUpdate);
+            }
+
+            //2.计算套餐过期电池服务费
+            BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+            //是否存在套餐过期电池服务费
+            if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
+                int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
+                log.info("QUERY BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+            }
+
+            if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
+                eleBatteryServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
+                userServiceFeeDetail.setExpireBatteryServiceFeeOrder(eleBatteryServiceFeeOrder);
+            }
+        }
+
+        return userServiceFeeDetail;
     }
 }
