@@ -56,6 +56,9 @@
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
         </if>
+        <if test="query.uid != null">
+            and tec.uid = #{query.uid}
+        </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
         </if>
@@ -117,6 +120,9 @@
         </if>
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
+        </if>
+        <if test="query.uid != null">
+            and tec.uid = #{query.uid}
         </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tec.battery_sn = #{query.batterySn}

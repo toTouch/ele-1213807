@@ -213,7 +213,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         Map<Integer, String> carModelNameMap = getCarModelNameByIdsForMap(carModelIds);
 
         // 查询套餐购买订单对应的退款订单信息
-        Map<String, CarRentalPackageOrderRentRefundPo> rentRefundMap = queryCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
+        Map<String, CarRentalPackageOrderRentRefundPo> rentRefundMap = getCarRentalRentRefundOrderByRentalOrderNos(rentalPackageOrderNos);
 
         // 查询会员信息
         CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, user.getUid());

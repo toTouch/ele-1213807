@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.util.CollectionUtils;
 
@@ -33,6 +34,9 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 public class BasicController {
+
+    @Resource
+    private BatteryModelService batteryModelService;
 
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
@@ -61,6 +65,29 @@ public class BasicController {
     @Resource
     private UserDataScopeService userDataScopeService;
 
+
+    /**
+     * 根据电池型号ID集获取对应电池信息<br />
+     * K：电池型号ID<br />
+     * V：电池型号信息
+     * @param tenantId 租户ID集
+     * @param ids 车辆型号ID集
+     * @return K：电池型号ID，V：电池型号信息
+     */
+    protected Map<Long, BatteryModel> getBatteryModelByIds(Integer tenantId, Set<Long> ids) {
+        if (ObjectUtils.isEmpty(tenantId) || CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyMap();
+        }
+
+        List<BatteryModel> batteryModels = batteryModelService.selectByIds(tenantId, new ArrayList<>(ids));
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyMap();
+        }
+
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getId, Function.identity(), (k1, k2) -> k1));
+
+    }
+
     /**
      * 根据套餐退租订单编码集获取对应退租订单信息<br />
      * K：套餐购买订单编码<br />
@@ -68,7 +95,7 @@ public class BasicController {
      * @param orderNos 退租订单编码集
      * @return K：套餐退租订单编码，V：退租订单信息
      */
-    protected Map<String, CarRentalPackageOrderRentRefundPo> queryCarRentalRentRefundOrderByOrderNos(Set<String> orderNos) {
+    protected Map<String, CarRentalPackageOrderRentRefundPo> getCarRentalRentRefundOrderByOrderNos(Set<String> orderNos) {
         if (CollectionUtils.isEmpty(orderNos)) {
             return Collections.emptyMap();
         }
@@ -92,7 +119,7 @@ public class BasicController {
      * @param rentalPackageOrderNos 套餐购买订单编码集
      * @return K：套餐购买订单编码，V：退租订单信息
      */
-    protected Map<String, CarRentalPackageOrderRentRefundPo> queryCarRentalRentRefundOrderByRentalOrderNos(Set<String> rentalPackageOrderNos) {
+    protected Map<String, CarRentalPackageOrderRentRefundPo> getCarRentalRentRefundOrderByRentalOrderNos(Set<String> rentalPackageOrderNos) {
         if (CollectionUtils.isEmpty(rentalPackageOrderNos)) {
             return Collections.emptyMap();
         }
@@ -116,7 +143,7 @@ public class BasicController {
      * @param couponIdList 优惠券ID集
      * @return
      */
-    protected Map<Long, Coupon> queryCouponForMapByIds(List<Long> couponIdList) {
+    protected Map<Long, Coupon> getCouponForMapByIds(List<Long> couponIdList) {
         if (CollectionUtils.isEmpty(couponIdList)) {
             return Collections.emptyMap();
         }
@@ -277,6 +304,31 @@ public class BasicController {
                 .collect(Collectors.toMap(Franchisee::getId, Franchisee::getName, (k1, k2) -> k1));
 
         return franchiseeMap;
+    }
+
+
+    /**
+     * 根据车辆型号ID集获取车辆型号<br />
+     * K：车辆型号ID
+     * V：车辆型号名称
+     * @param carModelIds 车辆型号ID集
+     * @return
+     */
+    protected Map<Integer, ElectricityCarModel> getCarModelByIdsForMap(Set<Integer> carModelIds) {
+        if (CollectionUtils.isEmpty(carModelIds)) {
+            return Collections.emptyMap();
+        }
+
+        ElectricityCarModelQuery electricityCarModelQuery = new ElectricityCarModelQuery();
+        electricityCarModelQuery.setIds(carModelIds);
+        List<ElectricityCarModel> carModelList = electricityCarModelService.selectByQuery(electricityCarModelQuery);
+        if (CollectionUtils.isEmpty(carModelList)) {
+            return Collections.emptyMap();
+        }
+
+        Map<Integer, ElectricityCarModel> carModelMap = carModelList.stream().collect(Collectors.toMap(ElectricityCarModel::getId, Function.identity(), (k1, k2) -> k1));
+
+        return carModelMap;
     }
 
     /**

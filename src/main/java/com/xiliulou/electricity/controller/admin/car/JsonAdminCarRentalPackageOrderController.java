@@ -99,7 +99,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
 
         // 优惠券信息
-        Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
+        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {

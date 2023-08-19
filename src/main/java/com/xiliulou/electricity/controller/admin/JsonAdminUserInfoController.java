@@ -318,8 +318,9 @@ public class JsonAdminUserInfoController extends BaseController {
         R result= userInfoService.verifyAuth(id, authStatus);
 
         //人工审核成功后，触发活动处理流程
+        UserInfo userInfo = userInfoService.queryByIdFromDB(id);
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setUid(id);
+        activityProcessDTO.setUid(userInfo.getUid());
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         log.info("handle activity after manual review success: {}", JsonUtil.toJson(activityProcessDTO));
