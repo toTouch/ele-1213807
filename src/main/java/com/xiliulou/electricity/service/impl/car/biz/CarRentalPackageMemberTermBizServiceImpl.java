@@ -68,9 +68,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private FranchiseeService franchiseeService;
 
     @Resource
-    private InsuranceUserInfoService insuranceUserInfoService;
-
-    @Resource
     private ElectricityCarService carService;
 
     @Resource
@@ -90,9 +87,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Resource
     private ElectricityBatteryService batteryService;
-
-    @Resource
-    private UserCarService userCarService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -545,7 +539,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
                         CarRentalPackageOrderSlippagePo slippageExpireEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.EXPIRE.getCode());
                         if (ObjectUtils.isNotEmpty(slippageExpireEntity)) {
-                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. tThe user already has an expired order. skip. uid is {}, rentalPackageOrderNo is {}", memberTermEntity.getId(), slippageEntityInsert.getRentalPackageOrderNo());
+                            log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. The user already has an expired order. skip. uid is {}, rentalPackageOrderNo is {}", memberTermEntity.getId(), slippageEntityInsert.getRentalPackageOrderNo());
                             continue;
                         }
 
@@ -639,7 +633,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
             }
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + Long.valueOf(tenancy * TimeConstant.MINUTE_MILLISECOND);
+                dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
             }
 
             memberTermEntityUpdate.setDueTime(dueTime);
@@ -692,9 +686,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
+        Long batteryModelId = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
+                BatteryModel batteryModel = batteryModelService.selectByBatteryType(packageOrderEntity.getTenantId(), battery.getModel());
+                if (ObjectUtils.isNotEmpty(batteryModel)) {
+                    batteryModelId = batteryModel.getId();
+                }
                 createFlag = true;
             }
         }
@@ -723,9 +722,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 记录设备信息
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             slippageEntity.setCarSn(electricityCar.getSn());
+            slippageEntity.setCarModelId(electricityCar.getModelId());
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
+            slippageEntity.setBatteryModelId(batteryModelId);
         }
 
         return slippageEntity;
