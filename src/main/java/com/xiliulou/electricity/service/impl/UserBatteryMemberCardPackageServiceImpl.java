@@ -38,6 +38,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Autowired
     private ElectricityMemberCardOrderService batteryMemberCardOrderService;
 
+    @Autowired
+    private UserBatteryTypeService userBatteryTypeService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -230,5 +233,20 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={}", userBatteryMemberCard.getUid());
+            return;
+        }
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={},orderId={}", userBatteryMemberCard.getUid(), userBatteryMemberCardPackageLatest.getOrderId());
+            return;
+        }
+
+        //更新用户电池型号
+        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
 }
