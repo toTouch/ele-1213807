@@ -82,8 +82,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Override
     public R queryList(BatteryServiceFeeOrderQuery query) {
-
-        return R.ok();
+        List<EleBatteryServiceFeeOrder> list=eleBatteryServiceFeeOrderMapper.selectByPage(query);
+        return R.ok(list);
     }
 
     @Slave

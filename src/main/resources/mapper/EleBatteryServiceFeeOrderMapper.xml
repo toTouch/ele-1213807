@@ -57,6 +57,33 @@
         limit #{offset},#{size}
     </select>
 
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
+        SELECT pay_amount, order_id, source, battery_service_fee_generate_time, update_time
+        FROM     t_ele_battery_service_fee_order
+        <where>
+            <if test="status != null">
+                and status in (1,3)
+            </if>
+            <if test="beginTime != null">
+                and create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;=#{endTime}
+            </if>
+            <if test="uid != null">
+                and uid =#{uid}
+            </if>
+            <if test="name != null and name != ''">
+                and name =#{name}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id =#{tenantId}
+            </if>
+            order by create_time desc
+            limit #{offset},#{size}
+        </where>
+    </select>
+
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,

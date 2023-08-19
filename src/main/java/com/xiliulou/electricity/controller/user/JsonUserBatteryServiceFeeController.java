@@ -75,4 +75,10 @@ public class JsonUserBatteryServiceFeeController {
         return eleBatteryServiceFeeOrderService.queryList(query);
     }
 
+
+    @GetMapping("/user/batteryServiceFee/info")
+    public R selectUserBatteryServiceFee() {
+        return R.ok(serviceFeeUserInfoService.selectUserBatteryServiceFee());
+    }
+
 }
