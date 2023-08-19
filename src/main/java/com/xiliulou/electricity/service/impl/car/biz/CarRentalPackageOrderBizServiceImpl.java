@@ -557,9 +557,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 7）无须唤起支付，走支付回调的逻辑，抽取方法，直接调用
             handBuyRentalPackageOrderSuccess(carRentalPackageOrder.getOrderNo(), tenantId, uid, null);
 
+        } catch (BizException e) {
+            log.error("bindingPackage failed. ", e);
+            throw new BizException(e.getErrCode(), e.getMessage());
         } catch (Exception e) {
             log.error("bindingPackage failed. ", e);
-            throw new BizException(e.getMessage());
+            throw new BizException("000001", "系统异常");
         } finally {
             redisService.delete(bindingUidLockKey);
         }
@@ -2167,6 +2170,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, payParamsEntity, userOauthBindEntity.getThirdId(), request);
 
             return R.ok(resultDTO);
+        } catch (BizException e) {
+            log.error("buyRentalPackageOrder failed. ", e);
+            throw new BizException(e.getErrCode(), e.getErrMsg());
         } catch (Exception e) {
             log.error("buyRentalPackageOrder failed. ", e);
             throw new BizException("000001", "系统异常");
