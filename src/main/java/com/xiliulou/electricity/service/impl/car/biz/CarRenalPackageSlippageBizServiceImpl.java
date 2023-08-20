@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
@@ -106,9 +107,10 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             // 查询冻结订单
             CarRentalPackageOrderFreezePo freezeEntity = null;
             if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
-                freezeEntity = carRentalPackageOrderFreezeService.selectFreezeByUid(uid);
-                if (ObjectUtils.isEmpty(freezeEntity)) {
-                    log.error("clearSlippage, not found t_car_rental_package_order_freeze. uid is {}", uid);
+                freezeEntity = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+                if (ObjectUtils.isEmpty(freezeEntity)
+                        || !(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(freezeEntity.getStatus()) || RentalPackageOrderFreezeStatusEnum.AUTO_ENABLE.getCode().equals(freezeEntity.getStatus()))) {
+                    log.error("clearSlippage, not found t_car_rental_package_order_freeze or state is wrong. uid is {}", uid);
                     throw new BizException("300000", "数据有误");
                 }
             }
