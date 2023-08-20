@@ -925,7 +925,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
                     memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                     memberTermUpdateEntity.setId(memberTermEntity.getId());
-                    memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+                    memberTermUpdateEntity.setUpdateTime(nowTime);
 
                     // 是否存在因冻结产生的滞纳金，若有，则更新停止时间
                     CarRentalPackageOrderSlippagePo slippagePo = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(freezeEntity.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
@@ -933,15 +933,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     if (ObjectUtils.isNotEmpty(slippagePo)) {
                         orderSlippageUpdate = new CarRentalPackageOrderSlippagePo();
                         orderSlippageUpdate.setId(slippagePo.getId());
-                        orderSlippageUpdate.setUpdateTime(System.currentTimeMillis());
-                        orderSlippageUpdate.setLateFeeEndTime(System.currentTimeMillis());
+                        orderSlippageUpdate.setUpdateTime(nowTime);
+                        orderSlippageUpdate.setLateFeeEndTime(memberTermEntity.getDueTime());
                         // 计算滞纳金金额
                         long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
                         orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
                     }
 
                     // 事务处理
-                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null, orderSlippageUpdate);
+                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, memberTermUpdateEntity, orderSlippageUpdate);
                 } catch (Exception e) {
                     log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
@@ -994,15 +994,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     uid, packageOrderNo);
             throw new BizException("300020", "订单编码不匹配");
         }
-
+        long nowTime = System.currentTimeMillis();
         // 赋值会员更新
         CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
         memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
         memberTermUpdateEntity.setId(memberTermEntity.getId());
         memberTermUpdateEntity.setUpdateUid(uid);
-        memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+        memberTermUpdateEntity.setUpdateTime(nowTime);
         // 提前启用、计算差额
-        long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
+        long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (nowTime - freezeEntity.getApplyTime());
         memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
