@@ -98,6 +98,7 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
      *     1-未支付
      *     2-支付成功
      *     3-支付失败
+     *     4-取消支付
      * </pre>
      * @see PayStateEnum
      */
