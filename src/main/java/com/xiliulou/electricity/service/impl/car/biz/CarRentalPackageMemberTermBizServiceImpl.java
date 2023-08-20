@@ -143,7 +143,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
-        if (YesNoEnum.YES.getCode().equals(packageOrderEntity.getRentRebate()) && packageOrderEntity.getRentRebateEndTime() < System.currentTimeMillis()) {
+        if (YesNoEnum.YES.getCode().equals(packageOrderEntity.getRentRebate()) && packageOrderEntity.getRentRebateEndTime() >= System.currentTimeMillis()) {
             log.error("updateCurrPackage failed. No changes allowed within the refundable period. rentalPackageOrderNo is {}", rentalPackageOrderNo);
             throw new BizException("300058", "可退期限内，不允许变更");
         }

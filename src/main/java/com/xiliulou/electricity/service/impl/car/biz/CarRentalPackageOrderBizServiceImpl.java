@@ -225,7 +225,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         long now = System.currentTimeMillis();
-        if (memberTermEntity.getDueTimeTotal().longValue() < now) {
+        if (memberTermEntity.getDueTimeTotal() < now) {
             log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
             throw new BizException("300032", "套餐已过期，无法申请退租");
         }
@@ -239,7 +239,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.notEqual(YesNoEnum.YES.getCode(), packageOrderEntity.getRentRebate())) {
             throw new BizException("300012", "订单不允许退租");
         } else {
-            if (now >= packageOrderEntity.getRentRebateEndTime().longValue()) {
+            if (now >= packageOrderEntity.getRentRebateEndTime()) {
                 throw new BizException("300013", "订单超过可退期限");
             }
         }
@@ -256,7 +256,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
         if (ObjectUtils.isNotEmpty(userCoupon)) {
             Integer status = userCoupon.getStatus();
-            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status)) {
+            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status)) {
                 throw new BizException("300016", "您已使用优惠券，该套餐不可退");
             }
         }
@@ -925,7 +925,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
                     memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                     memberTermUpdateEntity.setId(memberTermEntity.getId());
-                    memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+                    memberTermUpdateEntity.setUpdateTime(nowTime);
 
                     // 是否存在因冻结产生的滞纳金，若有，则更新停止时间
                     CarRentalPackageOrderSlippagePo slippagePo = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(freezeEntity.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
@@ -933,15 +933,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     if (ObjectUtils.isNotEmpty(slippagePo)) {
                         orderSlippageUpdate = new CarRentalPackageOrderSlippagePo();
                         orderSlippageUpdate.setId(slippagePo.getId());
-                        orderSlippageUpdate.setUpdateTime(System.currentTimeMillis());
-                        orderSlippageUpdate.setLateFeeEndTime(System.currentTimeMillis());
+                        orderSlippageUpdate.setUpdateTime(nowTime);
+                        orderSlippageUpdate.setLateFeeEndTime(memberTermEntity.getDueTime());
                         // 计算滞纳金金额
                         long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
                         orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
                     }
 
                     // 事务处理
-                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, null, orderSlippageUpdate);
+                    enableFreezeRentOrderTx(freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null, memberTermUpdateEntity, orderSlippageUpdate);
                 } catch (Exception e) {
                     log.info("enableFreezeRentOrderAuto, skip. error: ", e);
                     continue;
@@ -994,15 +994,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     uid, packageOrderNo);
             throw new BizException("300020", "订单编码不匹配");
         }
-
+        long nowTime = System.currentTimeMillis();
         // 赋值会员更新
         CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
         memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
         memberTermUpdateEntity.setId(memberTermEntity.getId());
         memberTermUpdateEntity.setUpdateUid(uid);
-        memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+        memberTermUpdateEntity.setUpdateTime(nowTime);
         // 提前启用、计算差额
-        long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
+        long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (nowTime - freezeEntity.getApplyTime());
         memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
         memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
@@ -1141,8 +1141,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300015", "订单状态异常");
         }
 
+        Long useBeginTime = packageOrderEntity.getUseBeginTime();
+        // 查询是否存在冻结订单
+        CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+        if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime()) && freezePo.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
+            useBeginTime = freezePo.getEnableTime();
+        }
+
+        // 计算余量
+        Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), useBeginTime, packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
         // 生成冻结申请
-        Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
         CarRentalPackageOrderFreezePo freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue, applyReason, optUid);
 
         // TX 事务
@@ -1439,7 +1447,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
 
             if (RentalUnitEnum.DAY.getCode().equals(packageOrderEntity.getTenancyUnit())) {
-                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime()) && freezePo.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
                     useBeginTime = freezePo.getEnableTime();
                 }
                 // 已使用天数
@@ -1450,7 +1458,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(packageOrderEntity.getTenancyUnit())) {
-                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())) {
+                if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime()) && freezePo.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
                     useBeginTime = freezePo.getEnableTime();
                 }
                 // 已使用分钟数
@@ -1514,7 +1522,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 已使用天数
                 long diffDay = DateUtils.diffDay(useBeginTime, nowTime);
 
-                return Long.valueOf(tenancy.intValue() - diffDay);
+                return tenancy - diffDay;
 
             }
 
@@ -1522,7 +1530,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 已使用分钟数
                 long diffMinute = DateUtils.diffMinute(useBeginTime, nowTime);
 
-                return Long.valueOf(tenancy.intValue() - diffMinute);
+                return tenancy - diffMinute;
             }
         }
 

@@ -1329,17 +1329,21 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
             refundDepositInsertEntity.setRealAmount(refundAmount);
 
-            // 线上，退款中
-            if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-            }
-            // 线下，退款成功
-            if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
-            }
-            // 免押，退款中
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            // 0元退
+            if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
+                // 线上、线下，退款成功
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                }
+            } else {
+                // 线下，退款成功
+                if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                }
+                // 线上、免押，退款中
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                }
             }
         }
 
