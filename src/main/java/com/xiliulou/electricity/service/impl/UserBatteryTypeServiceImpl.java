@@ -143,4 +143,46 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
 
         this.batchInsert(buildUserBatteryType(new ArrayList<>(totalBatteryTypes), userInfo));
     }
+
+    /**
+     * 同步用户电池型号数据
+     * @param uid 用户uid
+     * @param batteryTypes 套餐包含的电池型号列表
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void synchronizedUserBatteryType(Long uid, Integer tenantId, List<String> batteryTypes) {
+        Set<String> totalBatteryTypes = new HashSet<>();
+
+        List<String> userBindBatteryTypes = this.selectByUid(uid);
+
+        if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
+            totalBatteryTypes.addAll(userBindBatteryTypes);
+        }
+
+        if (CollectionUtils.isNotEmpty(batteryTypes)) {
+            totalBatteryTypes.addAll(batteryTypes);
+        }
+
+        if (CollectionUtils.isEmpty(totalBatteryTypes)) {
+            log.error("ELE ERROR! synchronized user batteryType error, totalBatteryTypes is null,uid={}", uid);
+            return;
+        }
+
+        this.deleteByUid(uid);
+
+        List<UserBatteryType> list = new ArrayList<>(totalBatteryTypes.size());
+        for (String batteryType : totalBatteryTypes) {
+            UserBatteryType userBatteryType = new UserBatteryType();
+            userBatteryType.setUid(uid);
+            userBatteryType.setBatteryType(batteryType);
+            userBatteryType.setTenantId(tenantId);
+            userBatteryType.setDelFlag(UserBatteryType.DEL_NORMAL);
+            userBatteryType.setCreateTime(System.currentTimeMillis());
+            userBatteryType.setUpdateTime(System.currentTimeMillis());
+            list.add(userBatteryType);
+        }
+
+        this.batchInsert(list);
+    }
 }

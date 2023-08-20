@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
+import java.math.BigDecimal;
+
 /**
  * (UserBatteryDeposit)表服务接口
  *
@@ -32,7 +34,7 @@ public interface UserBatteryDepositService {
      * @param userBatteryDeposit 实例对象
      * @return 实例对象
      */
-    UserBatteryDeposit insert(UserBatteryDeposit userBatteryDeposit);
+    Integer insert(UserBatteryDeposit userBatteryDeposit);
 
     UserBatteryDeposit insertOrUpdate(UserBatteryDeposit userBatteryDeposit);
 
@@ -54,5 +56,10 @@ public interface UserBatteryDepositService {
 
 
     Integer logicDeleteByUid(Long uid);
+
+    /**
+     * 同步车电一体押金数据
+     */
+    Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit);
 
 }
