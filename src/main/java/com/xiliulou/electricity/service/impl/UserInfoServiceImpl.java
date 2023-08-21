@@ -1264,6 +1264,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
 
+        //是否缴纳车电一体押金
+        if(Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())){
+            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
+        }else{
+            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+        }
+
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)

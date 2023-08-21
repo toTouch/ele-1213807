@@ -1206,29 +1206,48 @@ public class UnionTradeOrderServiceImpl extends
                 memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+
+                //更新用户套餐到期时间，启用用户套餐
+                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+                userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+                userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
+
+                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+                serviceFeeUserInfoUpdate.setPauseOrderNo("");
+                serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }else{
-                memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
-                orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
+//                memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
+//                orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
+//
+//                //更新用户套餐到期时间，启用用户套餐
+//                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+//                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+//                userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+//                userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
+//                userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+//                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+//                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+//                userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
+//
+//                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+//                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+//                serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+//                serviceFeeUserInfoUpdate.setPauseOrderNo("");
+//                serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+//                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+//                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+//                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }
-
-            //更新用户套餐到期时间，启用用户套餐
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-            userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-            userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-            userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
-            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
-
-            //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
-            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-            serviceFeeUserInfoUpdate.setPauseOrderNo("");
-            serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
-            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
             //生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
