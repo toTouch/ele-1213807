@@ -349,6 +349,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
     }
 
+    /**
+     * 暂停套餐 计算用户套餐余量
+     * @param userBatteryMemberCard
+     * @param batteryMemberCard
+     * @return
+     */
     @Override
     public Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
         Long result = 0L;
