@@ -117,6 +117,12 @@
             <if test="query.status != null">
                 and tio.status = #{query.status}
             </if>
+            <if test="query.type != null and query.type == 0">
+                and tio.insurance_type = 0
+            </if>
+            <if test="query.type != null and query.type == 1">
+                and tio.insurance_type in (1,2)
+            </if>
             <if test="query.payType != null">
                 and tio.pay_type = #{query.payType}
             </if>
