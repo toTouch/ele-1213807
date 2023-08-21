@@ -157,6 +157,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             userBatteryDepositInsert.setDid(0L);
             userBatteryDepositInsert.setOrderId(orderId);
             userBatteryDepositInsert.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+            userBatteryDepositInsert.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositInsert.setBatteryDeposit(batteryDeposit);
             userBatteryDepositInsert.setCreateTime(System.currentTimeMillis());
             userBatteryDepositInsert.setUpdateTime(System.currentTimeMillis());
@@ -166,6 +167,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             userBatteryDepositUpdate.setUid(uid);
             userBatteryDepositUpdate.setDid(0L);
             userBatteryDepositUpdate.setOrderId(orderId);
+            userBatteryDepositUpdate.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositUpdate.setBatteryDeposit(batteryDeposit);
             userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
             result = this.updateByUid(userBatteryDepositUpdate);
