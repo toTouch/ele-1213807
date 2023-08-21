@@ -14,6 +14,12 @@
         <if test="insuranceType != null">
             AND tf.insurance_type = #{insuranceType}
         </if>
+        <if test="type != null and type == 0">
+            and tf.insurance_type = 0
+        </if>
+        <if test="type != null and type == 1">
+            and tf.insurance_type in (1,2)
+        </if>
         <if test="tenantId != null ">
             and tf.tenant_id = #{tenantId}
         </if>
@@ -36,6 +42,12 @@
         </if>
         <if test="insuranceType != null">
             AND insurance_type = #{insuranceType}
+        </if>
+        <if test="type != null and type == 0">
+            and insurance_type = 0
+        </if>
+        <if test="type != null and type == 1">
+            and insurance_type in (1,2)
         </if>
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
