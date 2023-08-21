@@ -163,6 +163,9 @@
             <if test="phone != null and phone != ''">
                 and clch.phone like concat('%', #{phone}, '%')
             </if>
+            <if test="uid != null">
+                and clch.uid = #{uid}
+            </if>
             <if test="carSn != null and carSn != ''">
                 and clch.car_sn like concat('%', #{carSn}, '%')
             </if>
@@ -201,6 +204,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and clch.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="uid != null">
+                and clch.uid = #{uid}
             </if>
             <if test="carSn != null and carSn != ''">
                 and clch.car_sn like concat('%', #{carSn}, '%')

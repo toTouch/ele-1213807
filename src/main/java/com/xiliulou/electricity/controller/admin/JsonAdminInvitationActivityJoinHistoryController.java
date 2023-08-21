@@ -40,7 +40,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "activityId", required = false) Long activityId,
                   @RequestParam(value = "id", required = false) Long id,
                   @RequestParam(value = "status", required = false) Integer status,
-                  @RequestParam(value = "phone", required = false) String phone,
+                  @RequestParam(value = "joinUserPhone", required = false) String joinUserPhone,
                   @RequestParam(value = "joinUid", required = false) Long joinUid,
                   @RequestParam(value = "joinUserName", required = false) String joinUserName,
                   @RequestParam(value = "activityName", required = false) String activityName,
@@ -89,7 +89,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(phone).build();
+                .phone(joinUserPhone).build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
     }
@@ -100,7 +100,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                    @RequestParam(value = "beginTime", required = false) Long beginTime,
                    @RequestParam(value = "endTime", required = false) Long endTime,
                    @RequestParam(value = "status", required = false) Integer status,
-                   @RequestParam(value = "phone", required = false) String phone,
+                   @RequestParam(value = "joinUserPhone", required = false) String joinUserPhone,
                    @RequestParam(value = "joinUid", required = false) Long joinUid,
                    @RequestParam(value = "joinUserName", required = false) String joinUserName,
                    @RequestParam(value = "activityName", required = false) String activityName,
@@ -140,7 +140,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(phone)
+                .phone(joinUserPhone)
                 .build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));
