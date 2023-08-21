@@ -105,14 +105,11 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             saveClearSlippageTx(slippageEntityList, null, optUid, memberTermEntity);
         } else {
             // 查询冻结订单
-            CarRentalPackageOrderFreezePo freezeEntity = null;
-            if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
-                freezeEntity = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
-                if (ObjectUtils.isEmpty(freezeEntity)
-                        || !(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(freezeEntity.getStatus()) || RentalPackageOrderFreezeStatusEnum.AUTO_ENABLE.getCode().equals(freezeEntity.getStatus()))) {
-                    log.error("clearSlippage, not found t_car_rental_package_order_freeze or state is wrong. uid is {}", uid);
-                    throw new BizException("300000", "数据有误");
-                }
+            CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+
+            if (ObjectUtils.isEmpty(freezeEntity)) {
+                log.error("clearSlippage, not found t_car_rental_package_order_freeze. uid is {}", uid);
+                throw new BizException("300000", "数据有误");
             }
             saveClearSlippageTx(slippageEntityList, freezeEntity, optUid, memberTermEntity);
         }
@@ -167,17 +164,20 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
 
-                // 1. 更改订单冻结表数据
-                carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
+                CarRentalPackageOrderFreezePo orderFreezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(slippageEntity.getUid());
+                if (ObjectUtils.isNotEmpty(orderFreezePo) && RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(orderFreezePo.getStatus())) {
+                    // 1. 更改订单冻结表数据
+                    carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
+                }
 
                 // 赋值会员更新
                 CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
                 memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                 memberTermUpdateEntity.setId(memberTermEntity.getId());
                 memberTermUpdateEntity.setUpdateUid(optUid);
-                memberTermUpdateEntity.setUpdateTime(System.currentTimeMillis());
+                memberTermUpdateEntity.setUpdateTime(now);
                 // 提前启用、计算差额
-                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
+                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
                 memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
                 memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
@@ -269,10 +269,6 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             // 时间比对
             long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
-            // 没有滞纳金产生
-            if (lateFeeStartTime > now) {
-                continue;
-            }
             // 转换天
             long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
             // 计算滞纳金金额

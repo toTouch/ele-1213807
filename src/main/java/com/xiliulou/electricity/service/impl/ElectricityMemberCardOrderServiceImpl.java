@@ -1661,7 +1661,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .chargeRate(batteryMemberCard.getServiceCharge())
                 .chooseDays(days)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
-                .cardDays((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24)
+                .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard,batteryMemberCard))
                 .disableMemberCardTime(System.currentTimeMillis())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();

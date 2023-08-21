@@ -1197,8 +1197,19 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         if (Objects.equals(EleBatteryServiceFeeOrder.STATUS_SUCCESS, status)) {
-            Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-            Long orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            Long memberCardExpireTime;
+            Long orderExpireTime;
+            Long cardDays = 0L;
+
+            //用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
+            if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+                memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+            }else{
+                memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
+                orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
+            }
 
             //更新用户套餐到期时间，启用用户套餐
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
@@ -1221,7 +1232,6 @@ public class UnionTradeOrderServiceImpl extends
 
             //生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
-            Long cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             if (Objects.isNull(enableMemberCardRecord)) {
                 EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                         .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -1240,6 +1250,12 @@ public class UnionTradeOrderServiceImpl extends
                         .userName(userInfo.getName())
                         .updateTime(System.currentTimeMillis()).build();
                 enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
+            } else {
+                EnableMemberCardRecord enableMemberCardRecordUpdate = new EnableMemberCardRecord();
+                enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
+                enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
             }
         }
 

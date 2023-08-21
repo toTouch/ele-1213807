@@ -154,8 +154,9 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         if (Objects.isNull(userBatteryDeposit)) {
             UserBatteryDeposit userBatteryDepositInsert = new UserBatteryDeposit();
             userBatteryDepositInsert.setUid(uid);
-            userBatteryDepositInsert.setDid(mid);
+            userBatteryDepositInsert.setDid(0L);
             userBatteryDepositInsert.setOrderId(orderId);
+            userBatteryDepositInsert.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDepositInsert.setBatteryDeposit(batteryDeposit);
             userBatteryDepositInsert.setCreateTime(System.currentTimeMillis());
             userBatteryDepositInsert.setUpdateTime(System.currentTimeMillis());
@@ -163,7 +164,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         } else {
             UserBatteryDeposit userBatteryDepositUpdate = new UserBatteryDeposit();
             userBatteryDepositUpdate.setUid(uid);
-            userBatteryDepositUpdate.setDid(mid);
+            userBatteryDepositUpdate.setDid(0L);
             userBatteryDepositUpdate.setOrderId(orderId);
             userBatteryDepositUpdate.setBatteryDeposit(batteryDeposit);
             userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
