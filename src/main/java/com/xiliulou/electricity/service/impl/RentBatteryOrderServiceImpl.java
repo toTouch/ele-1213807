@@ -654,12 +654,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
 
-            //判断是否缴纳押金
-            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.error("RETURNBATTERY ERROR! not pay deposit,uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0042", "未缴纳押金");
-            }
-
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
                 log.error("RENTBATTERY ERROR! not pay deposit,uid={}", user.getUid());
