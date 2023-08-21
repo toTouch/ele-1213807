@@ -21,6 +21,8 @@ public class UserAmountQuery {
 
     private String phone;
 
+    private Long uid;
+
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;

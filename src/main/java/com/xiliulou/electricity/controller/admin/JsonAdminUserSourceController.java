@@ -47,6 +47,7 @@ public class JsonAdminUserSourceController extends BaseController {
     @GetMapping(value = "/admin/userSource/list")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "source", required = false) Integer source,
@@ -87,6 +88,7 @@ public class JsonAdminUserSourceController extends BaseController {
         UserSourceQuery userSourceQuery = UserSourceQuery.builder()
                 .offset(offset)
                 .size(size)
+                .uid(uid)
                 .name(name)
                 .phone(phone)
                 .franchiseeId(franchiseeId)
@@ -106,6 +108,7 @@ public class JsonAdminUserSourceController extends BaseController {
     @GetMapping(value = "/admin/userSource/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                         @RequestParam(value = "storeId", required = false) Long storeId,
@@ -137,6 +140,7 @@ public class JsonAdminUserSourceController extends BaseController {
         UserSourceQuery userSourceQuery = UserSourceQuery.builder()
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .franchiseeId(franchiseeId)
                 .source(source)
                 .electricityCabinetId(electricityCabinetId)
