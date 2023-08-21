@@ -49,7 +49,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                                           @RequestParam(value = "rentType", required = false) Integer rentType,
                                           @RequestParam(value = "mid", required = false) Long mid,
                                           @RequestParam(value = "status", required = false) Integer status,
-                                          @RequestParam(value = "startTime", required = false) Long startTime,
+                                          @RequestParam(value = "beginTime", required = false) Long beginTime,
                                           @RequestParam(value = "endTime", required = false) Long endTime,
                                           @RequestParam(value = "payType", required = false) Integer payType) {
 
@@ -86,7 +86,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 .uid(uid)
                 .phone(phone)
                 .refundOrderNo(refundOrderNo)
-                .startTime(startTime)
+                .startTime(beginTime)
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
@@ -109,7 +109,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                         @RequestParam(value = "rentType", required = false) Integer rentType,
                         @RequestParam(value = "mid", required = false) Long mid,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "startTime", required = false) Long startTime,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "payType", required = false) Integer payType) {
 
@@ -138,7 +138,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
                 .uid(uid)
                 .phone(phone)
                 .refundOrderNo(refundOrderNo)
-                .startTime(startTime)
+                .startTime(beginTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
+import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -110,7 +111,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
             }
 
             // 判定退款状态
-            if (refundPoMap.containsKey(depositPayEntity.getOrderNo())) {
+            if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 depositPayVO.setRefundFlag(false);
             }
             return depositPayVO;

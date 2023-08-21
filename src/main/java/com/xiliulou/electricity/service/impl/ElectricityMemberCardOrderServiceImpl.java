@@ -2857,18 +2857,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
+                BigDecimal serviceFee=BigDecimal.ZERO;
+                if(Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)){
+                    serviceFee=batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays()));
+                }
+
                 //生成启用记录
                 EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                         .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                         .memberCardName(eleDisableMemberCardRecord.getMemberCardName())
                         .enableTime(System.currentTimeMillis())
-                        .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
-                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
+                        .enableType(EnableMemberCardRecord.SYSTEM_ENABLE)
+                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_INIT)
                         .disableDays(eleDisableMemberCardRecord.getChooseDays())
                         .disableTime(eleDisableMemberCardRecord.getCreateTime())
                         .franchiseeId(userInfo.getFranchiseeId())
                         .phone(userInfo.getPhone())
-                        .serviceFee(batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays())))
+                        .serviceFee(serviceFee)
                         .createTime(System.currentTimeMillis())
                         .tenantId(userInfo.getTenantId())
                         .uid(userInfo.getUid())

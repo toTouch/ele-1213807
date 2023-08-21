@@ -116,4 +116,5 @@ public interface UserBatteryMemberCardService {
     void batteryMembercardExpireUpdateStatusTask();
 
     Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
+
 }

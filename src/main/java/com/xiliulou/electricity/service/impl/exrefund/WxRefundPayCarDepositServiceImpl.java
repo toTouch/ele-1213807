@@ -10,14 +10,16 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -38,25 +40,19 @@ import java.util.Objects;
 public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
 
     @Resource
+    private UserBatteryDepositService userBatteryDepositService;
+
+    @Resource
+    private UserBatteryTypeService userBatteryTypeService;
+
+    @Resource
     private InsuranceOrderService insuranceOrderService;
 
     @Resource
     private UserBizService userBizService;
 
     @Resource
-    private UserInfoService userInfoService;
-
-    @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
-
-    @Resource
-    private FreeDepositOrderService freeDepositOrderService;
-
-    @Resource
-    private PxzDepositService pxzDepositService;
-
-    @Resource
-    private PxzConfigService pxzConfigService;
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
@@ -184,6 +180,12 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 }
                 // 清理user信息/解绑车辆/解绑电池
                 userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                // 车电一体押金，同步删除电池那边的数据
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
+                    log.info("saveDepositRefundInfoTx, delete from battery member info. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
+                    userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                    userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
+                }
             }
 
         } else {

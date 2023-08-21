@@ -2,19 +2,17 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.mapper.UserBatteryDepositMapper;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.utils.DbUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserBatteryDeposit)表服务实现类
@@ -75,13 +73,9 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserBatteryDeposit insert(UserBatteryDeposit userBatteryDeposit) {
+    public Integer insert(UserBatteryDeposit userBatteryDeposit) {
         int insert = this.userBatteryDepositMapper.insertOne(userBatteryDeposit);
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid(), userBatteryDeposit);
-            return null;
-        });
-        return userBatteryDeposit;
+        return insert;
     }
 
     @Override
@@ -142,5 +136,40 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             return null;
         });
         return update;
+    }
+
+    /**
+     *同步车电一体数据
+     *
+     * @param uid 用户uid
+     * @param mid 交押金时押金所属套餐id
+     * @param orderId 押金订单号
+     * @param batteryDeposit  押金金额
+     * @return
+     */
+    @Override
+    public Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit) {
+        Integer result = null;
+        UserBatteryDeposit userBatteryDeposit = this.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            UserBatteryDeposit userBatteryDepositInsert = new UserBatteryDeposit();
+            userBatteryDepositInsert.setUid(uid);
+            userBatteryDepositInsert.setDid(mid);
+            userBatteryDepositInsert.setOrderId(orderId);
+            userBatteryDepositInsert.setBatteryDeposit(batteryDeposit);
+            userBatteryDepositInsert.setCreateTime(System.currentTimeMillis());
+            userBatteryDepositInsert.setUpdateTime(System.currentTimeMillis());
+            result = this.insert(userBatteryDepositInsert);
+        } else {
+            UserBatteryDeposit userBatteryDepositUpdate = new UserBatteryDeposit();
+            userBatteryDepositUpdate.setUid(uid);
+            userBatteryDepositUpdate.setDid(mid);
+            userBatteryDepositUpdate.setOrderId(orderId);
+            userBatteryDepositUpdate.setBatteryDeposit(batteryDeposit);
+            userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
+            result = this.updateByUid(userBatteryDepositUpdate);
+        }
+
+        return result;
     }
 }

@@ -9,7 +9,6 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.*;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
@@ -56,6 +55,12 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
+
+    @Resource
+    private UserBatteryTypeService userBatteryTypeService;
+
+    @Resource
+    private UserBatteryDepositService userBatteryDepositService;
 
     @Resource
     private InsuranceOrderService insuranceOrderService;
@@ -226,7 +231,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);
         // 清理user信息/解绑车辆/解绑电池
         userBizService.depositRefundUnbind(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType());
-
+        // 车电一体押金，同步删除电池那边的数据
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositRefundEntity.getRentalPackageType())) {
+            log.info("saveFreeDepositRefundHandlerTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
+            userBatteryTypeService.deleteById(depositRefundEntity.getUid());
+            userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
+        }
     }
 
     /**
@@ -409,6 +419,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             }
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
+            }
+            // 车电一体，同步押金
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+                log.info("saveFreeDepositSuccessTx, userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
+                userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
             }
         }
         // 3. 超时关闭之后更新状态
@@ -1002,7 +1017,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), apploveUid);
                     // 清理user信息/解绑车辆/解绑电池
                     userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
-
+                    // 车电一体押金，同步删除电池那边的数据
+                    if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
+                        log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
+                        userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                        userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
+                    }
                 }
 
                 // 线上，调用微信退款
@@ -1114,6 +1134,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
                     // 清理user信息/解绑车辆/解绑电池
                     userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 车电一体押金，同步删除电池那边的数据
+                    if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
+                        log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
+                        userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                        userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
+                    }
                 }
 
                 // 免押
@@ -1295,6 +1321,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
             // 清理user信息/解绑车辆/解绑电池
             userBizService.depositRefundUnbind(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
+            // 车电一体押金，同步删除电池那边的数据
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+                log.info("saveRefundDepositInfoTx, delete from battery member info. depositPayOrderNo is {}", memberTermEntity.getDepositPayOrderNo());
+                userBatteryTypeService.deleteById(memberTermEntity.getUid());
+                userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
+            }
 
         }
     }
@@ -1329,17 +1361,21 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
             refundDepositInsertEntity.setRealAmount(refundAmount);
 
-            // 线上，退款中
-            if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-            }
-            // 线下，退款成功
-            if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
-            }
-            // 免押，退款中
-            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
-                refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            // 0元退
+            if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
+                // 线上、线下，退款成功
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                }
+            } else {
+                // 线下，退款成功
+                if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                }
+                // 线上、免押，退款中
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                }
             }
         }
 
