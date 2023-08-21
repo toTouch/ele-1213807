@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -75,7 +76,7 @@ public class JsonAdminBatteryModelController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(0);
+            return R.ok(NumberConstant.ZERO);
         }
 
         BatteryModelQuery query = BatteryModelQuery.builder()
