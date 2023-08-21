@@ -117,7 +117,9 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
             }
 
             slippageVo.setRentalPackageName(packageNameMap.getOrDefault(slippageEntity.getRentalPackageId(), null));
-            slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(Long.valueOf(slippageEntity.getBatteryModelId()), new BatteryModel()).getBatteryType());
+            if (ObjectUtils.isNotEmpty(slippageEntity.getBatteryModelId())) {
+                slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(slippageEntity.getBatteryModelId(), new BatteryModel()).getBatteryType());
+            }
             slippageVo.setStoreName(storeNameForMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), null));
 
             carRentalPackageSlippageVoList.add(slippageVo);
