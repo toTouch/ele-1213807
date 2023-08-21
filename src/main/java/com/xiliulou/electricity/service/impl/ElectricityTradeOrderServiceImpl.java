@@ -702,12 +702,6 @@ public class ElectricityTradeOrderServiceImpl extends
                 if (time < 24) {
                     cardDays = 1L;
                 }
-                //启用套餐时需要更新停卡记录中的实际停卡天数
-                EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
-                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
-                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
             }
         }
 

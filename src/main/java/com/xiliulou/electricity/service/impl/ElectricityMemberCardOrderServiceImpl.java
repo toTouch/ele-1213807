@@ -1172,12 +1172,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);
 
-            //启用套餐需要更新停卡记录的真实停卡天数  不然自动启用套餐定时任务会扫描出来
-            EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
-            eleDisableMemberCardRecordUpdate.setId(eleDisableMemberCardRecord.getId());
-            eleDisableMemberCardRecordUpdate.setRealDays(disableCardDays);
-            eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
-
             memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(serviceFeeUserInfo.getUid());
@@ -1417,11 +1411,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .userName(userInfo.getName())
                 .updateTime(System.currentTimeMillis()).build();
         enableMemberCardRecordService.insert(enableMemberCardRecord);
-
-        EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
-        eleDisableMemberCardRecordUpdate.setId(eleDisableMemberCardRecord.getId());
-        eleDisableMemberCardRecordUpdate.setRealDays(disableCardDays);
-        eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
 
         UserBatteryMemberCard userBatteryMemberCardUdpate = new UserBatteryMemberCard();
         Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
@@ -1859,12 +1848,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         int realDisableCardDays=(int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
 
-        EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
-        updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-        updateDisableMemberCardRecord.setRealDays(realDisableCardDays);
-        updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-        eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
-
         EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                 .uid(uid)
                 .userName(userInfo.getName())
@@ -1968,12 +1951,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             int disableCardDays=(int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-
-            EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
-            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-            updateDisableMemberCardRecord.setRealDays(disableCardDays);
-            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
 
             //生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
@@ -2887,13 +2864,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         .userName(userInfo.getName())
                         .updateTime(System.currentTimeMillis()).build();
                 enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
-
-                //更新停卡记录
-                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
-                eleDisableMemberCardRecordUpdate.setId(eleDisableMemberCardRecord.getId());
-                eleDisableMemberCardRecordUpdate.setRealDays(eleDisableMemberCardRecord.getChooseDays());
-                eleDisableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
 
                 //获取滞纳金订单
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(item.getPauseOrderNo());
