@@ -565,7 +565,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                             slippageFreezeEntity.setUpdateTime(System.currentTimeMillis());
                             slippageFreezeEntity.setLateFeeEndTime(memberTermEntity.getDueTime());
                             // 计算滞纳金金额
-                            long diffDay = DateUtils.diffDay(memberTermEntity.getDueTime(), slippageFreezeEntity.getLateFeeStartTime());
+                            long diffDay = DateUtils.diffDay(slippageFreezeEntity.getLateFeeStartTime(), memberTermEntity.getDueTime());
                             slippageFreezeEntity.setLateFeePay(slippageFreezeEntity.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
                         }
                         // JT808

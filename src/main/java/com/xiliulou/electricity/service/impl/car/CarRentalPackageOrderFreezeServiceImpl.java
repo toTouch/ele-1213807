@@ -137,15 +137,19 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean enableFreezeRentOrderByUidAndPackageOrderNo(String packageOrderNo, Long uid, Boolean autoEnable, Long optUid) {
-        if (!ObjectUtils.allNotNull(packageOrderNo, uid, autoEnable)) {
+        if (!ObjectUtils.allNotNull(packageOrderNo, uid, autoEnable) || StringUtils.isBlank(packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeMapper.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
-        if (ObjectUtils.isEmpty(freezeEntity)) {
+        CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeMapper.selectLastFreeByUid(uid);
+        if (ObjectUtils.isEmpty(freezeEntity) || !packageOrderNo.equals(freezeEntity.getRentalPackageOrderNo())) {
             log.error("CarRentalPackageOrderFreezeServiceImpl.enableFreezeRentOrderByUidAndPackageOrderNo error. not found order. uid is {}, packageOrderNo is {}",
                     uid, packageOrderNo);
             throw new BizException("300020", "订单编码不匹配");
+        }
+
+        if (!ObjectUtils.isEmpty(freezeEntity.getEnableTime())) {
+            return true;
         }
 
         // 实际期限、启用算法

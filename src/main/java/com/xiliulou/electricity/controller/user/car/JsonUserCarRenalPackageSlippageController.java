@@ -107,13 +107,9 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
                 // 时间比对
                 long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
-                // 没有滞纳金产生
-                if (lateFeeStartTime < nowTime) {
-                    continue;
-                }
 
                 // 转换天
-                long diffDay = DateUtils.diffDay(nowTime, lateFeeStartTime);
+                long diffDay = DateUtils.diffDay(lateFeeStartTime, nowTime);
                 // 计算滞纳金金额
                 BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee()).setScale(2, RoundingMode.HALF_UP);
 
@@ -180,13 +176,9 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
                 // 时间比对
                 long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
-                // 没有滞纳金产生
-                if (lateFeeStartTime < nowTime) {
-                    continue;
-                }
 
                 // 转换天
-                long diffDay = DateUtils.diffDay(nowTime, lateFeeStartTime);
+                long diffDay = DateUtils.diffDay(lateFeeStartTime, nowTime);
                 // 计算滞纳金金额
                 BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee()).setScale(2, RoundingMode.HALF_UP);
 

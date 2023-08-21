@@ -280,15 +280,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     private Triple<Boolean, String, Object> handlerRentBatteryCar(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet) {
         //判断是否缴纳押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("RENTBATTERY ERROR! not pay deposit,uid={}", userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.error("RENT CAR BATTERY ERROR! not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false,"ELECTRICITY.0042", "未缴纳押金");
         }
 
         // 查询会员当前信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("RENTBATTERY ERROR! t_car_rental_package_member_term not found or status is error. uid = {}", userInfo.getUid());
+            log.error("RENT CAR BATTERY ERROR! t_car_rental_package_member_term not found or status is error. uid = {}", userInfo.getUid());
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
@@ -321,20 +321,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.error("RENTBATTERY ERROR!FranchiseeId is not equal,uid={}, FranchiseeId1={} ,FranchiseeId2={}", userInfo.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
+            log.error("RENT CAR BATTERY ERROR!FranchiseeId is not equal,uid={}, FranchiseeId1={} ,FranchiseeId2={}", userInfo.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return Triple.of(false,"ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ELE ERROR! not found franchisee,uid={}", userInfo.getUid());
+            log.error("RENT CAR BATTERY ERROR! not found franchisee,uid={}", userInfo.getUid());
             return Triple.of(false,"ELECTRICITY.0038", "加盟商不存在");
         }
 
         //是否有正在退款中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
-            log.error("RENTBATTERY ERROR! deposit is being refunded,uid={}", userInfo.getUid());
+            log.error("RENT CAR BATTERY ERROR! deposit is being refunded,uid={}", userInfo.getUid());
             return Triple.of(false,"ELECTRICITY.0051", "押金正在退款中，请勿租电池");
         }
 
@@ -346,8 +346,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         ElectricityCabinetBox eleCabinetBox = (ElectricityCabinetBox) acquireFullBatteryResult.getRight();
         if (Objects.isNull(eleCabinetBox)) {
-            log.error("RENTBATTERY ERROR! eleCabinetBoxis null,eid={}", electricityCabinet.getId());
-            return Triple.of(false,"ELECTRICITY.0026", "换电柜暂无满电电池");
+            log.error("RENT CAR BATTERY ERROR! eleCabinetBoxis null,eid={},uid={}", electricityCabinet.getId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
 
         String cellNo = eleCabinetBox.getCellNo();
@@ -356,8 +356,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(electricityCabinetBox.getSn());
         if (Objects.isNull(electricityBattery)) {
-            log.error("RENTBATTERY ERROR! not found battery,batteryName={}", electricityCabinetBox.getSn());
-            return Triple.of(false,"ELECTRICITY.0026", "换电柜暂无满电电池");
+            log.error("RENT CAR BATTERY ERROR! not found battery,batteryName={},uid={}", electricityCabinetBox.getSn(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
 
         //修改按此套餐的次数

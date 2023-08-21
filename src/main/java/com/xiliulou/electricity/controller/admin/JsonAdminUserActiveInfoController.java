@@ -39,6 +39,7 @@ public class JsonAdminUserActiveInfoController {
     @GetMapping("/admin/userActiveInfo/list")
     public R queryList(@RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "day", required = false) Integer day,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
                        @RequestParam(value = "payCount", required = false) Integer payCount,
@@ -73,7 +74,7 @@ public class JsonAdminUserActiveInfoController {
             }
         }
         
-        UserActiveInfoQuery query = UserActiveInfoQuery.builder().userName(userName).phone(phone).day(day)
+        UserActiveInfoQuery query = UserActiveInfoQuery.builder().userName(userName).phone(phone).uid(uid).day(day)
                 .batterySn(batterySn).payCount(payCount).offset(offset).size(size).storeIds(storeIds).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
@@ -83,6 +84,7 @@ public class JsonAdminUserActiveInfoController {
     @GetMapping("/admin/userActiveInfo/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "day", required = false) Integer day,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
                         @RequestParam(value = "payCount", required = false) Integer payCount) {
@@ -108,7 +110,7 @@ public class JsonAdminUserActiveInfoController {
             }
         }
         
-        UserActiveInfoQuery query = UserActiveInfoQuery.builder().userName(userName).phone(phone).day(day).storeIds(storeIds).franchiseeIds(franchiseeIds)
+        UserActiveInfoQuery query = UserActiveInfoQuery.builder().userName(userName).phone(phone).uid(uid).day(day).storeIds(storeIds).franchiseeIds(franchiseeIds)
                 .batterySn(batterySn).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).build();
         return userActiveInfoService.queryCount(query);
     }

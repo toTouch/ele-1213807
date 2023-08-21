@@ -43,6 +43,7 @@ public class JsonAdminUserAmountController {
     @GetMapping(value = "/admin/userAmount/list")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "phone", required = false) String phone) {
 
         if (size < 0 || size > 50) {
@@ -78,6 +79,7 @@ public class JsonAdminUserAmountController {
                 .offset(offset)
                 .size(size)
                 .phone(phone)
+                .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -89,7 +91,8 @@ public class JsonAdminUserAmountController {
      * 用户余额列表
      */
     @GetMapping(value = "/admin/userAmount/queryCount")
-    public R queryCount(@RequestParam(value = "phone", required = false) String phone) {
+    public R queryCount(@RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -114,6 +117,7 @@ public class JsonAdminUserAmountController {
 
         UserAmountQuery userAmountQuery = UserAmountQuery.builder()
                 .phone(phone)
+                .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();

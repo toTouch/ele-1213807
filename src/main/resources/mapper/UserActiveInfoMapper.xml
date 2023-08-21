@@ -134,6 +134,9 @@
             <if test="userName != null and userName != ''">
                 and uai.user_name = #{userName}
             </if>
+            <if test="uid != null">
+                and uai.uid = #{uid}
+            </if>
             <if test="batterySn != null and batterySn != ''">
                 and eb.sn = #{batterySn}
             </if>
@@ -177,6 +180,9 @@
             </if>
             <if test="userName != null and userName != ''">
                 and uai.user_name = #{userName}
+            </if>
+            <if test="uid != null">
+                and uai.uid = #{uid}
             </if>
             <if test="batterySn != null and batterySn != ''">
                 and eb.sn = #{batterySn}
