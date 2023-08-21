@@ -26,6 +26,8 @@ public class CarLockCtrlHistoryQuery {
 
     private String carSn;
 
+    private Long uid;
+
     private String name;
 
     private String phone;
