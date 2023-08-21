@@ -669,8 +669,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         // 车辆滞纳金相关逻辑
         List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
         if (!CollectionUtils.isEmpty(slippageEntityList)) {
-            long now = System.currentTimeMillis();
             for (CarRentalPackageOrderSlippagePo slippageEntity: slippageEntityList) {
+                long now = System.currentTimeMillis();
                 // 结束时间，不为空
                 if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
                     now = slippageEntity.getLateFeeEndTime();
@@ -679,10 +679,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 时间比对
                 long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
-                // 没有滞纳金产生
-                if (lateFeeStartTime > now) {
-                    continue;
-                }
                 // 转换天
                 long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
                 // 计算滞纳金金额
