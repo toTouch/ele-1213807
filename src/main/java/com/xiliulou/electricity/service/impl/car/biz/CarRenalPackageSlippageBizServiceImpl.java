@@ -269,10 +269,6 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             // 时间比对
             long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
-            // 没有滞纳金产生
-            if (lateFeeStartTime > now) {
-                continue;
-            }
             // 转换天
             long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
             // 计算滞纳金金额
