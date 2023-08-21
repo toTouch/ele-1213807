@@ -156,6 +156,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             userBatteryDepositInsert.setUid(uid);
             userBatteryDepositInsert.setDid(0L);
             userBatteryDepositInsert.setOrderId(orderId);
+            userBatteryDepositInsert.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDepositInsert.setBatteryDeposit(batteryDeposit);
             userBatteryDepositInsert.setCreateTime(System.currentTimeMillis());
             userBatteryDepositInsert.setUpdateTime(System.currentTimeMillis());
