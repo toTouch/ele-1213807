@@ -112,6 +112,7 @@ public class JsonUserInfoV2Controller extends BasicController {
                     UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
                     carPackage.setDueTime(dueTime);
                     carPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    carPackage.setStatus(memberTermEntity.getStatus());
                     userMemberPackageVo.setCarPackage(carPackage);
                 }
 
