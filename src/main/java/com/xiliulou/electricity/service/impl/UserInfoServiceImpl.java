@@ -1260,16 +1260,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //是否缴纳租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+
+            //是否缴纳车电一体押金
+            if(Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())){
+                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
+            }else{
+                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+            }
         } else {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
 
-        //是否缴纳车电一体押金
-        if(Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())){
-            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
-        }else{
-            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
-        }
+
 
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -1278,18 +1280,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) //如果送的次数卡  首页提示没有购买套餐
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
+
+            //是否购买车电一体套餐
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+            if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
+                userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
+            }else{
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
+            }
+
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
             userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
-        }
-
-        //是否购买车电一体套餐
-        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
-        if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
-            userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
-            userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
-        }else{
-            userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         }
 
         //套餐是否过期(前端要兼容旧代码  不能删除)
