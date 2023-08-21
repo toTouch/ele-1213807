@@ -608,6 +608,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPo memberTermEntity = null;
         boolean expireFlag = false;
 
+        long nowTime = System.currentTimeMillis();
         if (approveFlag) {
             // 判定会员状态以及套餐是否过期
             memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(freezeEntity.getTenantId(), freezeEntity.getUid());
@@ -619,17 +620,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (!memberTermEntity.getRentalPackageOrderNo().equals(freezeEntity.getRentalPackageOrderNo())) {
                 expireFlag = true;
             } else {
-                if (System.currentTimeMillis() >= memberTermEntity.getDueTime()
+                if (nowTime >= memberTermEntity.getDueTime()
                         || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
                     expireFlag = true;
                 }
             }
 
-            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity);
+            slippageInsertEntity = buildCarRentalPackageOrderSlippage(freezeEntity.getUid(), packageOrderEntity, nowTime);
         }
 
         // TX 事务落库
-        saveApproveFreezeRentOrderTx(expireFlag, freezeRentOrderNo, approveFlag, apploveDesc, apploveUid, freezeEntity, slippageInsertEntity, memberTermEntity);
+        saveApproveFreezeRentOrderTx(expireFlag, freezeRentOrderNo, approveFlag, apploveDesc, apploveUid, freezeEntity, slippageInsertEntity, memberTermEntity, nowTime);
 
         if (expireFlag) {
             log.error("approveFreezeRentOrder faild. The package has expired and cannot be approved. freezeRentOrderNo is {}", freezeRentOrderNo);
@@ -654,10 +655,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      **/
     @Transactional(rollbackFor = Exception.class)
     public void saveApproveFreezeRentOrderTx(boolean expireFlag, String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
-                                             CarRentalPackageOrderFreezePo freezeEntity, CarRentalPackageOrderSlippagePo slippageInsertEntity, CarRentalPackageMemberTermPo memberTermEntity) {
+                                             CarRentalPackageOrderFreezePo freezeEntity, CarRentalPackageOrderSlippagePo slippageInsertEntity,
+                                             CarRentalPackageMemberTermPo memberTermEntity, Long nowTime) {
         CarRentalPackageOrderFreezePo freezeUpdateEntity = new CarRentalPackageOrderFreezePo();
         freezeUpdateEntity.setOrderNo(freezeRentOrderNo);
-        freezeUpdateEntity.setAuditTime(System.currentTimeMillis());
+        freezeUpdateEntity.setAuditTime(nowTime);
         freezeUpdateEntity.setRemark(apploveDesc);
         freezeUpdateEntity.setUpdateUid(apploveUid);
 
@@ -693,6 +695,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
                 // 3. 保存滞纳金订单
                 if (ObjectUtils.isNotEmpty(slippageInsertEntity)) {
+                    slippageInsertEntity.setLateFeeStartTime(nowTime);
                     carRentalPackageOrderSlippageService.insert(slippageInsertEntity);
                 }
             } else {
@@ -940,7 +943,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         orderSlippageUpdate = new CarRentalPackageOrderSlippagePo();
                         orderSlippageUpdate.setId(slippagePo.getId());
                         orderSlippageUpdate.setUpdateTime(nowTime);
-                        orderSlippageUpdate.setLateFeeEndTime(memberTermEntity.getDueTime());
+                        // 启用时间
+                        Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getApplyTime(), true);
+                        orderSlippageUpdate.setLateFeeEndTime(realTermPair.getLeft());
                         // 计算滞纳金金额
                         long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
                         orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
@@ -1230,7 +1235,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * 生成逾期订单
      * @return
      */
-    private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageOrderPo packageOrderEntity) {
+    private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageOrderPo packageOrderEntity, Long nowTime) {
         // 初始化标识
         boolean createFlag = false;
         if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
@@ -1272,7 +1277,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
-        slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
+        slippageEntity.setLateFeeStartTime(nowTime);
         slippageEntity.setPayState(PayStateEnum.UNPAID.getCode());
         slippageEntity.setTenantId(packageOrderEntity.getTenantId());
         slippageEntity.setFranchiseeId(packageOrderEntity.getFranchiseeId());
