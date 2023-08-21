@@ -304,12 +304,15 @@ public class UserChannelServiceImpl implements UserChannelService {
         if (Objects.isNull(electricityMemberCardOrder)) {
             batteryMemberCard = false;
         }
-        
+        //3.0之前的租车信息查询
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
         if (Objects.isNull(carMemberCardOrder)) {
             carMemberCard = false;
         }
+
+        //TODO 3.0之后租车，车电一体购买套餐信息查询
+
         
         return batteryMemberCard || carMemberCard;
     }

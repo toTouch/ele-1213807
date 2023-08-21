@@ -338,21 +338,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        //获取用户基础信息
-        CompletableFuture<Void> queryUserBasicInfo = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.forEach(item -> {
-                //获取邀请人信息
-                UserExtra userExtra = userExtraService.queryByIdFromCache(item.getUid());
-                if (Objects.nonNull(userExtra)) {
-                    UserInfo inviter = this.queryByUidFromCache(userExtra.getInviter());
-                    item.setInviterUserName(Objects.isNull(inviter) ? "" : inviter.getName());
-                }
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("ELE ERROR! query user insurance info error!", e);
-            return null;
-        });
-
         //用户邀请人
         CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.forEach(item -> {
@@ -371,7 +356,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //获取用户车辆信息  TODO
 
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo, queryUserBasicInfo,queryInviterUser);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo,queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

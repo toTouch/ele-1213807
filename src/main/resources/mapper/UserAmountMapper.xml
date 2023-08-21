@@ -14,6 +14,9 @@
 		<if test="tenantId != null">
 			and tua.tenant_id = #{tenantId}
 		</if>
+		<if test="uid != null">
+			and tui.uid = #{uid}
+		</if>
 		<if test="phone != null and phone != ''">
 			and tui.phone = #{phone}
 		</if>
@@ -41,6 +44,9 @@
 		<where>
 			<if test="tenantId != null">
 				and tua.tenant_id = #{tenantId}
+			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
 			</if>
 			<if test="phone != null and phone != ''">
 				and tui.phone = #{phone}

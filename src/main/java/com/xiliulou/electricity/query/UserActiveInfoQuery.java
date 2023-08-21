@@ -13,6 +13,8 @@ import java.util.List;
 @Data
 @Builder
 public class UserActiveInfoQuery {
+
+    private Long uid;
     
     private String userName;
     
