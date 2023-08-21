@@ -18,6 +18,7 @@ import com.xiliulou.electricity.vo.userinfo.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,36 +91,38 @@ public class JsonUserInfoV2Controller extends BasicController {
         // 单电
         if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
             UserBatteryMemberCard batteryMemberCard = batteryMemberCardService.selectByUidFromCache(uid);
-            Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
-
-            UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
-            batteryPackage.setDueTime(orderExpireTime);
-            batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
-            batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
-            userMemberPackageVo.setBatteryPackage(batteryPackage);
+            if (ObjectUtils.isNotEmpty(batteryMemberCard) && ObjectUtils.isNotEmpty(batteryMemberCard.getMemberCardId()) && batteryMemberCard.getMemberCardId() != 0L) {
+                Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
+                UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
+                batteryPackage.setDueTime(orderExpireTime);
+                batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
+                batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
+                userMemberPackageVo.setBatteryPackage(batteryPackage);
+            }
         }
 
         // 电车、车电一体
         if (UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus())) {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-            Integer rentalPackageType = memberTermEntity.getRentalPackageType();
-            Long dueTime = memberTermEntity.getDueTime();
+            if (ObjectUtils.isNotEmpty(memberTermEntity) && StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo())) {
+                Integer rentalPackageType = memberTermEntity.getRentalPackageType();
+                Long dueTime = memberTermEntity.getDueTime();
 
-            if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
-                UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
-                carPackage.setDueTime(dueTime);
-                carPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
-                userMemberPackageVo.setCarPackage(carPackage);
+                if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
+                    UserMemberCarPackageVo carPackage = new UserMemberCarPackageVo();
+                    carPackage.setDueTime(dueTime);
+                    carPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    userMemberPackageVo.setCarPackage(carPackage);
+                }
+
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+                    UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
+                    carBatteryPackage.setDueTime(dueTime);
+                    carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+                    carBatteryPackage.setStatus(memberTermEntity.getStatus());
+                    userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
+                }
             }
-
-            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
-                UserMemberCarBatteryPackageVo carBatteryPackage = new UserMemberCarBatteryPackageVo();
-                carBatteryPackage.setDueTime(dueTime);
-                carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
-                carBatteryPackage.setStatus(memberTermEntity.getStatus());
-                userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
-            }
-
         }
         return R.ok(userMemberPackageVo);
     }
