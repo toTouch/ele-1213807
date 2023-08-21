@@ -44,7 +44,7 @@ public interface CarRentalPackageOrderService {
      * @param uid 用户ID
      * @return 购买订单信息
      */
-    CarRentalPackageOrderPo seletLastPaySuccessByUid(Integer tenantId, Long uid);
+    CarRentalPackageOrderPo selectLastPaySuccessByUid(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID进行退押操作<br />
