@@ -1941,17 +1941,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
-        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-        userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
-            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
+        //套餐过期时间
+        Long memberCardExpireTime=userBatteryMemberCard.getMemberCardExpireTime();
+        //当前套餐过期时间
+        Long orderExpireTime=userBatteryMemberCard.getOrderExpireTime();
+        //电池服务费产生时间
+        Long serviceFeeGenerateTime=userBatteryMemberCard.getMemberCardExpireTime();
+
+        //1.如果是套餐过期
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            memberCardExpireTime = System.currentTimeMillis();
+            orderExpireTime = System.currentTimeMillis();
+            serviceFeeGenerateTime = System.currentTimeMillis();
         }
 
-        if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+        //2.如果套餐暂停提前启用
+        if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+            memberCardExpireTime=System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            orderExpireTime=System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            serviceFeeGenerateTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+
+            //更新停卡记录
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
             if(Objects.isNull(eleDisableMemberCardRecord)){
                 return R.fail("100370","停卡记录不存在");
@@ -1965,6 +1975,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
             eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
 
+            //生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                     .memberCardName(batteryMemberCard.getName())
@@ -1983,26 +1994,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);
         }
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+        userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+        userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
+        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+        userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+        serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeGenerateTime);
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
         serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
         serviceFeeUserInfoUpdate.setExpireOrderNo("");
         serviceFeeUserInfoUpdate.setPauseOrderNo("");
-        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-        } else {
-            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
-            } else {
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
-            }
-        }
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         //更新滞纳金订单状态
@@ -2020,8 +2029,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
         }
-
-
 /*
 
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(uid);
