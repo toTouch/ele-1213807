@@ -89,9 +89,9 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
 
         List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
-        long nowTime = System.currentTimeMillis();
 
         for (CarRentalPackageOrderSlippagePo slippageEntity : carRentalPackageSlippageEntityList) {
+            long nowTime = System.currentTimeMillis();
             CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
             // 默认应缴==实缴
