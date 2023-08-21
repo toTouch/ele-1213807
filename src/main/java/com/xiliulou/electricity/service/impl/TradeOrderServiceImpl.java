@@ -847,12 +847,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
                     return Triple.of(false, "ELECTRICITY.0015", "滞纳金订单不存在");
                 }
+
+                pauseBatteryServiceFee = eleBatteryServiceFeeOrder.getPayAmount();
             }
 
             if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
                 orderList.add(eleBatteryServiceFeeOrder.getOrderId());
                 orderTypeList.add(ServiceFeeEnum.BATTERY_PAUSE.getCode());
-                allPayAmount.add(eleBatteryServiceFeeOrder.getPayAmount());
+                allPayAmount.add(pauseBatteryServiceFee);
             }
         }
 
