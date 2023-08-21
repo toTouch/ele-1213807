@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
+
+    @Resource
+    private UserBatteryTypeService userBatteryTypeService;
 
     @Resource
     private UserCouponService userCouponService;
@@ -278,6 +282,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (StringUtils.isNotEmpty(newMemberTermEntity.getRentalPackageOrderNo())) {
             carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid);
             carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid);
+        }
+
+        // 此处二次查询，目的是为了拿在事务缓存中的最新数据
+        CarRentalPackageMemberTermPo memberTermEntityProcessed = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntityProcessed.getRentalPackageType())) {
+            List<CarRentalPackageCarBatteryRelPo> carBatteryRelPos = carRentalPackageCarBatteryRelService.selectByRentalPackageId(memberTermEntityProcessed.getRentalPackageId());
+            if (!CollectionUtils.isEmpty(carBatteryRelPos)) {
+                List<String> batteryTypes = carBatteryRelPos.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                log.info("saveUpdateCurrPackageTx, userBatteryTypeService.synchronizedUserBatteryType, batteryTypes is {}", JsonUtil.toJson(batteryTypes));
+                userBatteryTypeService.synchronizedUserBatteryType(memberTermEntity.getUid(), memberTermEntity.getTenantId(), batteryTypes);
+            }
         }
     }
 
@@ -655,6 +670,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 更改原订单状态及新订单状态
             carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null);
             carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+
+            // 车电一体，同步电池那边的数据
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntityNew.getRentalPackageType())) {
+                // 同步押金
+                List<CarRentalPackageCarBatteryRelPo> carBatteryRelPos = carRentalPackageCarBatteryRelService.selectByRentalPackageId(packageOrderEntityNew.getRentalPackageId());
+                if (!CollectionUtils.isEmpty(carBatteryRelPos)) {
+                    List<String> batteryTypes = carBatteryRelPos.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                    log.info("saveExpirePackageOrderTx, userBatteryTypeService.synchronizedUserBatteryType, batteryTypes is {}", JsonUtil.toJson(batteryTypes));
+                    userBatteryTypeService.synchronizedUserBatteryType(packageOrderEntityNew.getUid(), packageOrderEntityNew.getTenantId(), batteryTypes);
+                }
+            }
         }
 
         if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {

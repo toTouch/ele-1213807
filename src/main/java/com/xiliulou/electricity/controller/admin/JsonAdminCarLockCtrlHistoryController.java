@@ -38,6 +38,7 @@ public class JsonAdminCarLockCtrlHistoryController {
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "carSn", required = false) String carSn,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -78,6 +79,7 @@ public class JsonAdminCarLockCtrlHistoryController {
                 .franchiseeIds(franchiseeIds)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .carSn(carSn)
                 .beginTime(beginTime)
                 .endTime(endTime).build();
@@ -88,6 +90,7 @@ public class JsonAdminCarLockCtrlHistoryController {
     @GetMapping("admin/carLockCtrlHistory/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "carSn", required = false) String carSn,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -119,6 +122,7 @@ public class JsonAdminCarLockCtrlHistoryController {
                 .franchiseeIds(franchiseeIds)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .carSn(carSn)
                 .beginTime(beginTime)
                 .endTime(endTime).build();

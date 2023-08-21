@@ -73,6 +73,12 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private UserBatteryDepositService userBatteryDepositService;
+
+    @Resource
+    private UserBatteryTypeService userBatteryTypeService;
+
+    @Resource
     private BatteryModelService batteryModelService;
 
     @Resource
@@ -2480,6 +2486,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
                 activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                 activityService.asyncProcessActivity(activityProcessDTO);
+
+                // 车电一体，同步电池会员信息
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
+                    // 同步押金
+                    if (ObjectUtil.equal(PayStateEnum.UNPAID.getCode(), depositPayEntity.getPayState())) {
+                        log.info("handBuyRentalPackageOrderSuccess, userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
+                        userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
+                    }
+                    // 同步电池会员表数据
+                    // 此处二次查询，目的是为了拿在事务缓存中的最新数据
+                    CarRentalPackageMemberTermPo memberTermEntityProcessed = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+                    List<CarRentalPackageCarBatteryRelPo> carBatteryRelPos = carRentalPackageCarBatteryRelService.selectByRentalPackageId(memberTermEntityProcessed.getRentalPackageId());
+                    if (!CollectionUtils.isEmpty(carBatteryRelPos)) {
+                        List<String> batteryTypes = carBatteryRelPos.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).collect(Collectors.toList());
+                        log.info("handBuyRentalPackageOrderSuccess, userBatteryTypeService.synchronizedUserBatteryType, batteryTypes is {}", JsonUtil.toJson(batteryTypes));
+                        userBatteryTypeService.synchronizedUserBatteryType(uid, tenantId, batteryTypes);
+                    }
+                }
+
             }
         });
 
