@@ -167,8 +167,11 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 // 计算滞纳金金额
                 slippageUpdateEntity.setLateFeePay(NumberUtil.mul(diffDay, slippageEntity.getLateFee()));
 
-                // 1. 更改订单冻结表数据
-                carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
+                CarRentalPackageOrderFreezePo orderFreezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(slippageEntity.getUid());
+                if (ObjectUtils.isNotEmpty(orderFreezePo) && RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(orderFreezePo.getStatus())) {
+                    // 1. 更改订单冻结表数据
+                    carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
+                }
 
                 // 赋值会员更新
                 CarRentalPackageMemberTermPo memberTermUpdateEntity = new CarRentalPackageMemberTermPo();
