@@ -49,7 +49,7 @@ public interface CarRentalPackageOrderMapper {
      * @param uid      用户ID
      * @return 购买订单信息
      */
-    CarRentalPackageOrderPo seletLastPaySuccessByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageOrderPo selectLastPaySuccessByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据用户ID进行退押操作<br />

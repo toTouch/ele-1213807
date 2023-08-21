@@ -190,7 +190,7 @@
     </select>
 
     <!-- 根据用户ID查找最后一条支付成功的购买记录信息 -->
-    <select id="seletLastPaySuccessByUid" resultMap="entityMap">
+    <select id="selectLastPaySuccessByUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
             `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 2 AND `del_flag` = 0

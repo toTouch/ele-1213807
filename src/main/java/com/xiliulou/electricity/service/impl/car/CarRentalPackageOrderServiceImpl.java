@@ -97,11 +97,11 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public CarRentalPackageOrderPo seletLastPaySuccessByUid(Integer tenantId, Long uid) {
+    public CarRentalPackageOrderPo selectLastPaySuccessByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return carRentalPackageOrderMapper.seletLastPaySuccessByUid(tenantId, uid);
+        return carRentalPackageOrderMapper.selectLastPaySuccessByUid(tenantId, uid);
     }
 
     /**
