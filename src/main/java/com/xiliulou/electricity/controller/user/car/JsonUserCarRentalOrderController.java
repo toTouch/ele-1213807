@@ -48,7 +48,7 @@ public class JsonUserCarRentalOrderController {
      * @return true(成功)、false(失败)
      */
     @GetMapping("/scanQR")
-    public R<Boolean> scanQR(String sn) {
+    public R<Boolean> scanQR(String sn, Integer franchiseeId) {
         if (StringUtils.isBlank(sn)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -60,6 +60,6 @@ public class JsonUserCarRentalOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, user.getUid(), sn, user.getUid()));
+        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, franchiseeId, user.getUid(), sn, user.getUid()));
     }
 }

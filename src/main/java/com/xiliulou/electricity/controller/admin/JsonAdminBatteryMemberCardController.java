@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -111,16 +112,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
         }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
@@ -128,7 +121,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
                 .status(status)
                 .rentType(rentType)
                 .rentUnit(rentUnit)
@@ -154,21 +146,12 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
         }
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
                 .status(status)
                 .rentType(rentType)
                 .rentUnit(rentUnit)
@@ -191,7 +174,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(batteryMemberCardService.save(query));
@@ -209,7 +192,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(batteryMemberCardService.modify(query));
@@ -227,7 +210,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(batteryMemberCardService.updateStatus(batteryModelQuery));
@@ -245,7 +228,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(batteryMemberCardService.delete(id));

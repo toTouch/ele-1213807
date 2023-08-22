@@ -337,60 +337,72 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * 用户扫码绑定车辆
      *
      * @param tenantId 租户ID
+     * @param franchiseeId 加盟商ID
      * @param uid      用户UID
      * @param carSn    车辆SN码
      * @param optUid   操作用户UID
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean bindingCarByQR(Integer tenantId, Long uid, String carSn, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
+    public boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, franchiseeId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         // 判定滞纳金
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
         if (exitUnpaid) {
-            log.error("bindingCar failed. User has a late fee. uid is {}", uid);
+            log.error("bindingCarByQR failed. User has a late fee. uid is {}", uid);
             throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+            log.error("bindingCarByQR, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
             throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("bindingCar, You have a process under review and cannot be operated. uid is {}", uid);
+            log.error("bindingCarByQR, You have a process under review and cannot be operated. uid is {}", uid);
             throw new BizException("300056", "该用户有正在审核中流程，不可操作");
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId) || memberTermEntity.getDueTime() <= System.currentTimeMillis()
                 || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
-            log.error("bindingCar, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
+            log.error("bindingCarByQR, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
             throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
+        }
+
+        Integer franchiseeIdExit = memberTermEntity.getFranchiseeId();
+        if (!franchiseeId.equals(franchiseeIdExit)) {
+            log.error("bindingCarByQR, t_car_rental_package_member_term franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, member franchiseeId is {}", franchiseeId, franchiseeIdExit);
+            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
 
         // 通过套餐ID找到套餐
         CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
-            log.error("bindingCar, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
+            log.error("bindingCarByQR, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
             throw new BizException("300000", "数据有误");
         }
 
         // 查询车辆
         ElectricityCar electricityCar = carService.selectBySn(carSn, tenantId);
         if (ObjectUtils.isEmpty(electricityCar)) {
-            log.error("bindingCar, not found t_electricity_car. carSn is {}, tenantId is {}", rentalPackageId, tenantId);
+            log.error("bindingCarByQR, not found t_electricity_car. carSn is {}, tenantId is {}", rentalPackageId, tenantId);
             throw new BizException("100007", "未找到车辆");
+        }
+
+        if (!electricityCar.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
+            log.error("bindingCarByQR, t_electricity_car franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, electricityCar.getFranchiseeId());
+            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
 
         // 是否被其它用户绑定
         if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
-            log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
+            log.error("bindingCarByQR, t_electricity_car bind uid is {}", electricityCar.getUid());
             throw new BizException("300038", "该车已被其他用户绑定");
         }
 
@@ -399,14 +411,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("bindingCar, user is disable. uid is {}", userInfo.getUid());
+            log.error("bindingCarByQR, user is disable. uid is {}", userInfo.getUid());
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
 
         }
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("bindingCar, user not auth. uid is {}", userInfo.getUid());
+            log.error("bindingCarByQR, user not auth. uid is {}", userInfo.getUid());
             throw new BizException("ELECTRICITY.0041", "未实名认证");
         }
 
@@ -418,7 +430,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         // 比对车辆是否符合(门店、型号)
         if (!rentalPackageEntity.getStoreId().equals(electricityCar.getStoreId().intValue()) || !rentalPackageEntity.getCarModelId().equals(electricityCar.getModelId())) {
-            log.error("bindingCar, t_electricity_car carModel or organization is wrong", electricityCar.getUid());
+            log.error("bindingCarByQR, t_electricity_car carModel or organization is wrong");
             throw new BizException("100007", "未找到车辆");
         }
 

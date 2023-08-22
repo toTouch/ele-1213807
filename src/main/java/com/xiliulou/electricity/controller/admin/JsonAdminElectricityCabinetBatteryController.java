@@ -356,6 +356,16 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @Log(title = "电池绑定/解绑加盟商")
     public R bindElectricityBattery(
             @RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return electricityBatteryService.bindFranchiseeForBattery(bindElectricityBatteryQuery);
     }
 
