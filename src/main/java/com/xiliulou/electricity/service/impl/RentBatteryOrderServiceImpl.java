@@ -133,6 +133,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
+    @Autowired
+    CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+
     /**
      * 新增数据
      *
@@ -296,6 +299,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
+        if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
+            log.error("RENT CAR BATTERY ERROR! user memberCard disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "100210", "用户套餐不可用");
+        }
 
 
 //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -367,10 +374,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //修改按此套餐的次数
-//        Triple<Boolean, String, String> modifyResult = electricityCabinetOrderService.checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
-//        if (Boolean.FALSE.equals(modifyResult.getLeft())) {
-//            return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
-//        }
+        carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(),userInfo.getUid());
 
         //记录活跃时间
         userActiveInfoService.userActiveRecord(userInfo);
@@ -677,42 +681,48 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(userBatteryMemberCard)) {
-                    log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN! user haven't memberCard uid={}", userInfo.getUid());
                     return R.fail( "100210", "用户未开通套餐");
                 }
 
                 if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                    log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN! user's member card is stop! uid={}", userInfo.getUid());
                     return R.fail( "100211", "换电套餐停卡审核中");
                 }
 
                 if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                    log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN! user's member card is stop! uid={}", userInfo.getUid());
                     return R.fail("100211", "换电套餐已暂停");
                 }
 
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 if(Objects.isNull(batteryMemberCard)){
-                    log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
+                    log.warn("RETURNBATTERY WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                     return R.fail( "ELECTRICITY.00121","套餐不存在");
                 }
 
                 //判断用户电池服务费
                 Triple<Boolean,Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                 if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                    log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.100000", "存在电池服务费");
                 }
 
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                    log.error("WEBBIND ERROR ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
                     return R.fail( "ELECTRICITY.0023", "套餐已过期");
                 }
             }else{
                 //判断车电一体滞纳金
                 if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(),userInfo.getUid()))) {
-                    log.warn("ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    log.warn("RETURNBATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                }
+
+                //判断车电一体套餐状态
+                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
+                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
+                    return R.fail( "100210", "用户套餐不可用");
                 }
             }
 
