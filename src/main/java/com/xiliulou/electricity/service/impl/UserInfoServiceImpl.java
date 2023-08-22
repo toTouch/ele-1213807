@@ -2430,6 +2430,44 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             throw new CustomBusinessException("用户租车列表信息为空！");
         }
 
+
+        List<UserCarRentalInfoExcelVO> userCarRentalInfoExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        for(UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList){
+            UserCarRentalInfoExcelVO userCarRentalInfoExcelVO = new UserCarRentalInfoExcelVO();
+
+            userCarRentalInfoExcelVO.setUserName(userCarRentalPackageDO.getName());
+            userCarRentalInfoExcelVO.setPhone(userCarRentalPackageDO.getPhone());
+            //userCarRentalInfoExcelVO.setPackageType();
+
+            userCarRentalInfoExcelVO.setCurrentCar(userCarRentalPackageDO.getCarModel());
+
+            //获取电池信息
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userCarRentalPackageDO.getUid());
+            userCarRentalInfoExcelVO.setCurrentBattery(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+
+            //获取套餐名称
+            CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(userCarRentalPackageDO.getPackageId());
+            if(Objects.nonNull(carRentalPackagePo)){
+                userCarRentalInfoExcelVO.setPackageName(carRentalPackagePo.getName());
+            }
+
+            //TODO 设置套餐冻结状态
+
+
+            //获取用户所属加盟商
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userCarRentalPackageDO.getFranchiseeId());
+            userCarRentalInfoExcelVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
+            //获取保险信息
+            InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userCarRentalPackageDO.getUid(), userCarRentalPackageDO.getPackageType());
+            //userCarRentalInfoExcelVO.setInsuranceStatus(Objects.isNull(insuranceUserInfoVo) ? "" : insuranceUserInfoVo.getIsUse());
+            userCarRentalInfoExcelVO.setInsuranceExpiredTime(Objects.isNull(insuranceUserInfoVo) ? "" : simpleDateFormat.format(new Date(insuranceUserInfoVo.getInsuranceExpireTime())));
+
+
+        }
+
         //处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
         for(UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList){
@@ -2492,11 +2530,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("Data summary browsing error for car rental.", e);
         }
-
-        List<UserCarRentalInfoExcelVO> userCarRentalInfoExcelVOS = new ArrayList();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-
 
     }
 
