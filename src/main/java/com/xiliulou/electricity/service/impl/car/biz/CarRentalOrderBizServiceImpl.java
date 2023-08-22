@@ -349,6 +349,24 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 查询车辆
+        ElectricityCar electricityCar = carService.selectBySn(carSn, tenantId);
+        if (ObjectUtils.isEmpty(electricityCar)) {
+            log.error("bindingCarByQR, not found t_electricity_car. carSn is {}, tenantId is {}", carSn, tenantId);
+            throw new BizException("100007", "未找到车辆");
+        }
+
+        if (!electricityCar.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
+            log.error("bindingCarByQR, t_electricity_car franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, electricityCar.getFranchiseeId());
+            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
+        }
+
+        // 是否被其它用户绑定
+        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
+            log.error("bindingCarByQR, t_electricity_car bind uid is {}", electricityCar.getUid());
+            throw new BizException("300038", "该车已被其他用户绑定");
+        }
+
         // 判定滞纳金
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
         if (exitUnpaid) {
@@ -368,6 +386,12 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("300056", "该用户有正在审核中流程，不可操作");
         }
 
+        Integer franchiseeIdExit = memberTermEntity.getFranchiseeId();
+        if (ObjectUtils.isNotEmpty(franchiseeIdExit) && !franchiseeId.equals(franchiseeIdExit)) {
+            log.error("bindingCarByQR, t_car_rental_package_member_term franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, member franchiseeId is {}", franchiseeId, franchiseeIdExit);
+            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
+        }
+
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         if (ObjectUtils.isEmpty(rentalPackageId) || memberTermEntity.getDueTime() <= System.currentTimeMillis()
                 || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
@@ -375,35 +399,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("300037", "您名下暂无可用套餐，不支持该操作");
         }
 
-        Integer franchiseeIdExit = memberTermEntity.getFranchiseeId();
-        if (!franchiseeId.equals(franchiseeIdExit)) {
-            log.error("bindingCarByQR, t_car_rental_package_member_term franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, member franchiseeId is {}", franchiseeId, franchiseeIdExit);
-            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
-        }
-
         // 通过套餐ID找到套餐
         CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
         if (ObjectUtils.isEmpty(rentalPackageEntity)) {
             log.error("bindingCarByQR, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
             throw new BizException("300000", "数据有误");
-        }
-
-        // 查询车辆
-        ElectricityCar electricityCar = carService.selectBySn(carSn, tenantId);
-        if (ObjectUtils.isEmpty(electricityCar)) {
-            log.error("bindingCarByQR, not found t_electricity_car. carSn is {}, tenantId is {}", rentalPackageId, tenantId);
-            throw new BizException("100007", "未找到车辆");
-        }
-
-        if (!electricityCar.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
-            log.error("bindingCarByQR, t_electricity_car franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, electricityCar.getFranchiseeId());
-            throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
-        }
-
-        // 是否被其它用户绑定
-        if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
-            log.error("bindingCarByQR, t_electricity_car bind uid is {}", electricityCar.getUid());
-            throw new BizException("300038", "该车已被其他用户绑定");
         }
 
         // 查询用户信息
