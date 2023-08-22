@@ -22,6 +22,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.util.Objects;
@@ -171,6 +173,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         entityModify.setRentalPackageOrderNo(packageOrderUnUseEntity.getOrderNo());
                         entityModify.setRentalPackageType(packageOrderUnUseEntity.getRentalPackageType());
                         entityModify.setRentalPackageConfine(packageOrderUnUseEntity.getConfine());
+                        entityModify.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                         if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderUnUseEntity.getConfine()) && memberTermEntity.getResidue() <= 0L) {
                             entityModify.setResidue(packageOrderUnUseEntity.getConfineNum() + memberTermEntity.getResidue());
                         } else {
@@ -205,13 +208,17 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 userCouponService.cancelBySourceOrderIdAndUnUse(orderNo);
 
                 // 5. 异步处理分账
-                DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
-                divisionAccountOrderDTO.setOrderNo(outRefundNo);
-                divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
-                divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
-                divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
-
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
+                        divisionAccountOrderDTO.setOrderNo(outRefundNo);
+                        divisionAccountOrderDTO.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentRefundEntity.getRentalPackageType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode() : PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode());
+                        divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
+                        divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+                    }
+                });
 
             } else {
                 // 2. 更新会员期限
