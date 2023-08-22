@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
+import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.core.parameters.P;
 
@@ -157,5 +158,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      */
     Integer querySilentUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
 
-
+    List<UserEleInfoVO> queryEleList(@Param("query") UserInfoQuery userInfoQuery);
+    Integer queryEleListCount(@Param("query") UserInfoQuery userInfoQuery);
 }

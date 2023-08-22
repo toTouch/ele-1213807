@@ -1039,5 +1039,83 @@
 
     </select>
 
-
+    <select id="queryEleList" resultType="com.xiliulou.electricity.vo.userinfo.UserEleInfoVO">
+        SELECT
+            tui.NAME,
+            tui.phone,
+            ubmc.card_pay_count AS cardPayCount,
+            tui.id AS user_info_id,
+            teb.sn,
+            tui.battery_rent_status,
+            tui.battery_deposit_status,
+            ubmc.member_card_id,
+            ubmc.member_card_status,
+            ubmc.member_card_expire_time,
+            tiui.is_use,
+            tiui.insurance_expire_time,
+            tui.uid,
+            tui.create_time AS userCertificationTime,
+            tui.franchisee_id,
+            tui.tenant_id,
+            ubmc.remaining_number AS limitCount
+        FROM
+            t_user_info tui
+            LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
+            AND ubmc.del_flag = 0
+            LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
+            AND teb.del_flag = 0
+            LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
+            AND tiui.del_flag = 0
+        WHERE
+            tui.del_flag = 0
+            AND tui.auth_status = 2
+            AND tui.tenant_id =#{query.tenantId}
+            <if test="query.memberCardExpireTimeBegin !=null">
+                and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+            </if>
+            <if test="query.memberCardExpireTimeEnd !=null">
+                and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+            </if>
+            <if test="query.batteryRentStatus !=null">
+                and tui.battery_rent_status =#{query.batteryRentStatus}
+            </if>
+            <if test="query.memberCardExpireType == 4">
+                and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+            </if>
+            <if test="query.uid != null ">
+                and tui.uid = #{query.uid}
+            </if>
+            order by ubmc.member_card_expire_time limit  #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEleListCount" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        t_user_info tui
+        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
+        AND ubmc.del_flag = 0
+        LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
+        AND teb.del_flag = 0
+        LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
+        AND tiui.del_flag = 0
+        WHERE
+        tui.del_flag = 0
+        AND tui.auth_status = 2
+        AND tui.tenant_id =#{query.tenantId}
+        <if test="query.memberCardExpireTimeBegin !=null">
+            and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+        </if>
+        <if test="query.memberCardExpireTimeEnd !=null">
+            and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
+    </select>
 </mapper>
