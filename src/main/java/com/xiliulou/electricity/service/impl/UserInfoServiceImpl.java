@@ -2551,7 +2551,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-                if (Objects.nonNull(item)  ) {
+                if (Objects.nonNull(item) && Objects.nonNull(item.getMemberCardStatus()) ) {
                     if(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
                         //冻结
                         item.setMemberCardFreezeStatus(Integer.valueOf(1));
