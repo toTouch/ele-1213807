@@ -646,6 +646,7 @@ public class ElectricityTradeOrderServiceImpl extends
                             .disableDays(cardDays.intValue())
                             .disableTime(eleDisableMemberCardRecord.getCreateTime())
                             .franchiseeId(userInfo.getFranchiseeId())
+                            .storeId(userInfo.getStoreId())
                             .phone(userInfo.getPhone())
                             .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
                             .createTime(System.currentTimeMillis())
