@@ -268,7 +268,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
-            if (carRentalPackageOrderService.isExitUnUseByUid(tenantId, uid)) {
+            if (carRentalPackageOrderService.isExitUnUseAndRefund(tenantId, uid, now)) {
                 throw new BizException("300017", "存在未使用的订单");
             }
             // 查询设备信息，存在设备，不允许退租
