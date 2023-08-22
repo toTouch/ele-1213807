@@ -123,6 +123,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
 
+    void exportCarRentalExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
+
     R deleteUserInfo(Long uid);
 
     Integer updateByUid(UserInfo userInfo);

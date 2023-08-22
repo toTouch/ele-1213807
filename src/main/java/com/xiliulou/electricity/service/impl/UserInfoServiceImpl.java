@@ -18,6 +18,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -29,6 +30,7 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -36,6 +38,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -205,6 +208,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     UserExtraService userExtraService;
+
+    @Autowired
+    CarRentalPackageService carRentalPackageService;
 
     /**
      * 分页查询
@@ -430,6 +436,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userBatteryInfoVOS);
     }
 
+    @Slave
     @Override
     public R queryCarRentalList(UserInfoQuery userInfoQuery) {
 
@@ -481,6 +488,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //获取用户租车保险相关信息
         CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
             userCarRentalPackageVOList.forEach(item -> {
+
+                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(item.getPackageId());
+                if(Objects.nonNull(carRentalPackagePo)){
+                    item.setPackageName(carRentalPackagePo.getName());
+                }
+
                 InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(item.getUid(), item.getPackageType());
                 if (Objects.isNull(insuranceUserInfoVo)) {
                     return;
@@ -504,6 +517,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userCarRentalPackageVOList);
     }
 
+    @Slave
     @Override
     public R queryCarRentalCount(UserInfoQuery userInfoQuery) {
         Integer count = carRentalPackageMemberTermService.queryUserCarRentalPackageCount(userInfoQuery);
@@ -2313,7 +2327,87 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
     }
-    
+
+    @Override
+    public void exportCarRentalExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
+        userInfoQuery.setOffset(0L);
+        userInfoQuery.setSize(2000L);
+
+        List<UserCarRentalPackageDO> userCarRentalPackageDOList = carRentalPackageMemberTermService.queryUserCarRentalPackageList(userInfoQuery);
+        if (ObjectUtil.isEmpty(userCarRentalPackageDOList)) {
+            throw new CustomBusinessException("用户租车列表信息为空！");
+        }
+
+        //处理租车/车店一体押金状态 和 当前套餐冻结状态
+        List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
+        for(UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList){
+            UserCarRentalPackageVO userCarRentalPackageVO = new UserCarRentalPackageVO();
+            BeanUtils.copyProperties(userCarRentalPackageDO, userCarRentalPackageVO);
+            if(RentalPackageTypeEnum.CAR.getCode().equals(userCarRentalPackageDO.getPackageType())){
+                userCarRentalPackageVO.setDepositStatus(userCarRentalPackageDO.getCarDepositStatus());
+            }else if(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(userCarRentalPackageDO.getPackageType())){
+                userCarRentalPackageVO.setDepositStatus(convertCarBatteryDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus()));
+            }
+
+            if(MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())){
+                userCarRentalPackageVO.setPackageFreezeStatus(0);
+            }else{
+                userCarRentalPackageVO.setPackageFreezeStatus(1);
+            }
+
+            userCarRentalPackageVOList.add(userCarRentalPackageVO);
+        }
+
+        //获取用户电池相关信息
+        CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> {
+            userCarRentalPackageVOList.forEach(item -> {
+
+                //获取用户电池信息
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+                //item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
+                item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
+
+                //获取用户所属加盟商
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("Query user battery info error for car rental.", e);
+            return null;
+        });
+
+        //获取用户租车保险相关信息
+        CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
+            userCarRentalPackageVOList.forEach(item -> {
+                InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(item.getUid(), item.getPackageType());
+                if (Objects.isNull(insuranceUserInfoVo)) {
+                    return;
+                }
+
+                item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
+                item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("Query user insurance info error for car rental.", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo, queryUserInsuranceInfo);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Data summary browsing error for car rental.", e);
+        }
+
+        List<UserCarRentalInfoExcelVO> userCarRentalInfoExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+
+
+    }
+
     //TODO 优化
     private String queryFinalInviterUserName(Long uid, Integer tenantId) {
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
