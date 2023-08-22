@@ -106,6 +106,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
                 .size(size)
                 .phone(phone)
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .userName(userName)
                 .uid(uid)
                 .tenantId(tenantId).build();
@@ -156,6 +157,7 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
                 .endTime(endTime)
                 .phone(phone)
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .userName(userName)
                 .uid(uid)
                 .tenantId(tenantId).build();
