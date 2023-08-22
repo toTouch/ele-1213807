@@ -111,6 +111,11 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      */
     private Long createTime;
 
+    /**
+     * 支付时间
+     */
+    private Long payTime;
+
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

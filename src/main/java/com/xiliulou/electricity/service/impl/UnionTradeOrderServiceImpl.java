@@ -1093,7 +1093,7 @@ public class UnionTradeOrderServiceImpl extends
                 memberTermUpdateEntity.setId(memberTermEntity.getId());
                 memberTermUpdateEntity.setUpdateTime(now);
                 // 提前启用、计算差额
-                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (System.currentTimeMillis() - freezeEntity.getApplyTime());
+                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
                 memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
                 memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal()- diffTime);
 
