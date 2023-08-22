@@ -6,6 +6,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,8 +49,8 @@ public class JsonUserCarRentalOrderController {
      * @return true(成功)、false(失败)
      */
     @GetMapping("/scanQR")
-    public R<Boolean> scanQR(String sn) {
-        if (StringUtils.isBlank(sn)) {
+    public R<Boolean> scanQR(String sn, Integer franchiseeId) {
+        if (StringUtils.isBlank(sn) || ObjectUtils.isEmpty(franchiseeId)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -60,6 +61,6 @@ public class JsonUserCarRentalOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, user.getUid(), sn, user.getUid()));
+        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, franchiseeId, user.getUid(), sn, user.getUid()));
     }
 }

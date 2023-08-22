@@ -28,12 +28,13 @@ public interface CarRentalOrderBizService {
     /**
      * 用户扫码绑定车辆
      * @param tenantId 租户ID
+     * @param franchiseeId 加盟商ID
      * @param uid 用户UID
      * @param carSn 车辆SN码
      * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean bindingCarByQR(Integer tenantId, Long uid, String carSn, Long optUid);
+    boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid);
 
     /**
      * 解绑用户车辆
