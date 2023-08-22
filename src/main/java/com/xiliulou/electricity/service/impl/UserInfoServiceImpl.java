@@ -36,6 +36,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -2342,5 +2343,56 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         return null;
+    }
+
+    @Override
+    @Slave
+    public R queryEleList(UserInfoQuery userInfoQuery) {
+        List<UserEleInfoVO> userEleInfoVOS = userInfoMapper.queryEleList(userInfoQuery);
+        if (ObjectUtil.isEmpty(userEleInfoVOS)) {
+            return R.ok(Collections.emptyList());
+        }
+        //获取用户电池套餐相关信息
+        CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                //获取用户所属加盟商
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
+                if (Objects.nonNull(item)  ) {
+                    if(!Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+                        //冻结
+                        item.setMemberCardFreezeStatus(Integer.valueOf(1));
+                    }else{
+                        //正常
+                        item.setMemberCardFreezeStatus(Integer.valueOf(0));
+                    }
+                }
+
+                //获取用户当前绑定的套餐
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                item.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user battery other info error!", e);
+            return null;
+        });
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(userEleInfoVOS);
+    }
+
+    @Override
+    @Slave
+    public R queryEleListCount(UserInfoQuery userInfoQuery) {
+        Integer count = userInfoMapper.queryEleListCount(userInfoQuery);
+
+        return R.ok(count);
     }
 }

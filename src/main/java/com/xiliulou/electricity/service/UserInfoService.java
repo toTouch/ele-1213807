@@ -154,4 +154,7 @@ public interface UserInfoService extends IService<UserInfo> {
     R webUnBindCar(Long uid);
     
     R userInfoSearch(Long size, Long offset, String name);
+
+    R queryEleList(UserInfoQuery userInfoQuery);
+    R queryEleListCount(UserInfoQuery userInfoQuery);
 }

@@ -94,6 +94,8 @@ public class EnableMemberCardRecord {
      */
     private Long franchiseeId;
 
+    private Long storeId;
+
     /**
      * 服务费金额
      */
