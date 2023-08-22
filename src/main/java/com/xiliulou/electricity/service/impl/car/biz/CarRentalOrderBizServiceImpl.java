@@ -40,6 +40,9 @@ import java.util.Objects;
 public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
     @Resource
+    private StoreService storeService;
+
+    @Resource
     private RedisService redisService;
 
     @Resource
@@ -356,8 +359,15 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("100007", "未找到车辆");
         }
 
-        if (!electricityCar.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
-            log.error("bindingCarByQR, t_electricity_car franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, electricityCar.getFranchiseeId());
+        // 查找门店信息
+        Store store = storeService.queryByIdFromCache(electricityCar.getStoreId());
+        if (ObjectUtils.isEmpty(store)) {
+            log.error("bindingCarByQR, not found t_store. carSn is {}, tenantId is {}", carSn, tenantId);
+            throw new BizException("100204", "未找到门店");
+        }
+
+        if (!store.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
+            log.error("bindingCarByQR, t_store franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, store.getFranchiseeId());
             throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
 
