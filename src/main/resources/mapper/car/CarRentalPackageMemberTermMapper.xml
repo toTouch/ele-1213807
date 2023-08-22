@@ -250,7 +250,7 @@
     <select id="queryUserCarRentalPackageList" resultType="com.xiliulou.electricity.domain.car.UserCarRentalPackageDO">
         select
             tcrpme.id as id,
-            tcrpme.uid as uid,
+            tui.uid as uid,
             tui.name as name,
             tui.phone as phone,
             tui.car_deposit_status as carDepositStatus,
@@ -266,11 +266,11 @@
             tui.franchisee_id as franchiseeId,
             tui.create_time as userAuthTime
         from t_user_info tui
-        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid
-        left join t_electricity_car tec on tec.uid = tui.uid
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid and tcrpme.del_flag = 0
+        left join t_electricity_car tec on tec.uid = tui.uid and tcrpme.del_flag = 0
 
         <where>
-            tcrpme.del_flag = 0 and tcrpme.tenant_id = #{query.tenantId}
+            tui.del_flag = 0 and tui.tenant_id = #{query.tenantId}
             <if test="query.uid != null">
                 and tui.uid = #{query.uid}
             </if>
@@ -300,7 +300,7 @@
             </if>
 
         </where>
-        order by tcrpme.due_time_total desc
+        order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -308,11 +308,11 @@
         select
             count(1)
         from t_user_info tui
-        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid
-        left join t_electricity_car tec on tec.uid = tui.uid
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid and tcrpme.del_flag = 0
+        left join t_electricity_car tec on tec.uid = tui.uid and tcrpme.del_flag = 0
 
         <where>
-            tcrpme.del_flag = 0 and tcrpme.tenant_id = #{query.tenantId}
+            tui.del_flag = 0 and tui.tenant_id = #{query.tenantId}
             <if test="query.uid != null">
                 and tui.uid = #{query.uid}
             </if>
