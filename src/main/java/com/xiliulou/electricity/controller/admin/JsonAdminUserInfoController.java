@@ -696,4 +696,104 @@ public class JsonAdminUserInfoController extends BaseController {
     }
 
 
+    //列表查询
+    @GetMapping(value = "/admin/userInfo/eleList")
+    public R queryEleList(@RequestParam("size") Long size,
+                          @RequestParam("offset") Long offset,
+                          @RequestParam(value = "uid", required = false) Long uid,
+                          @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
+                          @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
+                          @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                          @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .offset(offset)
+                .size(size)
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .uid(uid)
+                .memberCardExpireType(memberCardExpireType)
+                .batteryRentStatus(batteryRentStatus)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
+
+        return userInfoService.queryEleList(userInfoQuery);
+    }
+    //列表查询
+    @GetMapping(value = "/admin/userInfo/eleListCount")
+    public R queryEleListCount(
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
+            @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
+            @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
+
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .uid(uid)
+                .memberCardExpireType(memberCardExpireType)
+                .batteryRentStatus(batteryRentStatus)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
+
+        return userInfoService.queryEleListCount(userInfoQuery);
+    }
 }
