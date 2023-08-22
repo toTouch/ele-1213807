@@ -37,8 +37,8 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
+import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -1441,6 +1441,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userBatteryDetail.setBatteryServiceFee(batteryServiceFeeTriple.getRight());
             } else {
                 userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+
+                //是否有车电一体滞纳金
+                if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
+                    userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
+                }
             }
         }
 

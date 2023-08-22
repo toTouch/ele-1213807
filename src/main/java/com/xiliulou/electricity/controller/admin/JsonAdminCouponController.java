@@ -3,7 +3,9 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -25,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -80,6 +83,15 @@ public class JsonAdminCouponController extends BaseController {
     //新增
     @PostMapping(value = "/admin/coupon")
     public R save(@RequestBody @Validated(value = CreateGroup.class) CouponQuery couponQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return couponService.insert(couponQuery);
     }
 
@@ -87,6 +99,15 @@ public class JsonAdminCouponController extends BaseController {
     @PutMapping(value = "/admin/coupon")
     @Log(title = "修改优惠券")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) CouponQuery couponQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return couponService.update(couponQuery);
     }
 
@@ -97,12 +118,30 @@ public class JsonAdminCouponController extends BaseController {
      */
     @GetMapping("/admin/coupon/update/{id}")
     public R edit(@PathVariable("id") Long id){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return returnTripleResult(couponService.findCouponById(id));
     }
 
     @DeleteMapping("/admin/coupon/delete/{id}")
     @Log(title = "删除优惠券")
     public R delete(@PathVariable("id") Long id){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return returnTripleResult(couponService.deleteById(id));
     }
 
@@ -125,21 +164,12 @@ public class JsonAdminCouponController extends BaseController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-//            return R.ok(Collections.EMPTY_LIST);
-//        }
-//
-//        List<Long> franchiseeIds = null;
-//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-//            if (CollectionUtils.isEmpty(franchiseeIds)) {
-//                return R.ok();
-//            }
-//        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
+        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .offset(offset)
@@ -167,21 +197,12 @@ public class JsonAdminCouponController extends BaseController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-//            return R.ok(Collections.EMPTY_LIST);
-//        }
-//
-//        List<Long> franchiseeIds = null;
-//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-//            if (CollectionUtils.isEmpty(franchiseeIds)) {
-//                return R.ok();
-//            }
-//        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .name(name)

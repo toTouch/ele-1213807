@@ -65,7 +65,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         DivisionAccountConfigQuery query = DivisionAccountConfigQuery.builder()
@@ -92,7 +92,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         DivisionAccountConfigQuery query = DivisionAccountConfigQuery.builder()
@@ -117,7 +117,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(divisionAccountConfigService.selectInfoById(id));
@@ -134,7 +134,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(divisionAccountConfigService.saveDivisionAccountWithPackage(divisionAccountConfigQuery));
@@ -151,7 +151,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(divisionAccountConfigService.modifyDivisionAccountWithPackage(divisionAccountConfigQuery));
@@ -168,7 +168,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(divisionAccountConfigService.updateDAStatus(divisionAccountConfigQuery));
@@ -185,7 +185,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return returnTripleResult(divisionAccountConfigService.delete(id));

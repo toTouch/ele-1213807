@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author : eclair
  * @date : 2023/7/18 10:25
