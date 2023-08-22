@@ -135,13 +135,13 @@ public interface CarRentalPackageMemberTermMapper {
      * @param userInfoQuery
      * @return
      */
-    List<UserCarRentalPackageDO> queryUserCarRentalPackageList(UserInfoQuery userInfoQuery);
+    List<UserCarRentalPackageDO> queryUserCarRentalPackageList(@Param("query") UserInfoQuery userInfoQuery);
 
     /**
      * 会员列表查询租车用户信息总数
      * @param userInfoQuery
      * @return
      */
-    Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery);
+    Integer queryUserCarRentalPackageCount(@Param("query") UserInfoQuery userInfoQuery);
 
 }
