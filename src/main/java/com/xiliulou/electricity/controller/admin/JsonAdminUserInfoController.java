@@ -595,4 +595,105 @@ public class JsonAdminUserInfoController extends BaseController {
         }
         return userInfoService.userInfoSearch(size, offset, name);
     }
+
+    @GetMapping(value = "/admin/userInfo/carRentalList")
+    public R queryCarRentalList(@RequestParam("size") Long size,
+                                @RequestParam("offset") Long offset,
+                                @RequestParam(value = "uid", required = false) Long uid,
+                                @RequestParam(value = "sortType", required = false) Integer sortType,
+                                @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
+                                @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
+                                @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType ) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .offset(offset)
+                .size(size)
+                .carMemberCardExpireType(carRentalExpireType)
+                .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
+                .uid(uid)
+                .sortType(sortType)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+
+        return userInfoService.queryCarRentalList(userInfoQuery);
+    }
+
+    @GetMapping(value = "/admin/userInfo/carRentalCount")
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "sortType", required = false) Integer sortType,
+                        @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
+                        @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
+                        @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .carMemberCardExpireType(carRentalExpireType)
+                .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
+                .uid(uid)
+                .sortType(sortType)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+
+        return userInfoService.queryCarRentalCount(userInfoQuery);
+    }
+
+
 }

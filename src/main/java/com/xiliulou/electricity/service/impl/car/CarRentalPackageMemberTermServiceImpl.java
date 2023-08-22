@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
+import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -312,5 +314,16 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         carRentalPackageMemberTermMapper.insert(entity);
 
         return entity.getId();
+    }
+
+    @Override
+    public List<UserCarRentalPackageDO> queryUserCarRentalPackageList(UserInfoQuery userInfoQuery) {
+        return carRentalPackageMemberTermMapper.queryUserCarRentalPackageList(userInfoQuery);
+    }
+
+    @Override
+    public Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery) {
+
+        return carRentalPackageMemberTermMapper.queryUserCarRentalPackageCount(userInfoQuery);
     }
 }

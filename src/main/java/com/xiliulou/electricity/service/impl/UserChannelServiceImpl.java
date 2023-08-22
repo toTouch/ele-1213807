@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserChannelVo;
@@ -73,6 +75,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    CarRentalPackageOrderService carRentalPackageOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -302,17 +307,23 @@ public class UserChannelServiceImpl implements UserChannelService {
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityMemberCardOrder)) {
+            log.info("not found battery package order info, uid = {}", uid);
             batteryMemberCard = false;
         }
         //3.0之前的租车信息查询
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
         if (Objects.isNull(carMemberCardOrder)) {
+            log.info("not found car member card order info, uid = {}", uid);
             carMemberCard = false;
         }
 
-        //TODO 3.0之后租车，车电一体购买套餐信息查询
-
+        //3.0之后租车，车电一体购买套餐信息查询
+        CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectLastPaySuccessByUid(TenantContextHolder.getTenantId(), uid);
+        if(Objects.isNull(carRentalPackageOrderPo)){
+            log.info("not found car rental package order info, uid = {}", uid);
+            carMemberCard = false;
+        }
         
         return batteryMemberCard || carMemberCard;
     }

@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.mapper.car;
 
+import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
+import com.xiliulou.electricity.query.UserInfoQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -127,5 +129,19 @@ public interface CarRentalPackageMemberTermMapper {
      * @return 操作条数
      */
     int insert(CarRentalPackageMemberTermPo entity);
+
+    /**
+     * 会员列表查询租车用户信息
+     * @param userInfoQuery
+     * @return
+     */
+    List<UserCarRentalPackageDO> queryUserCarRentalPackageList(UserInfoQuery userInfoQuery);
+
+    /**
+     * 会员列表查询租车用户信息总数
+     * @param userInfoQuery
+     * @return
+     */
+    Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery);
 
 }
