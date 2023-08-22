@@ -334,6 +334,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 }
                 //获取套餐信息
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+                log.info("Division Account flow get franchisee id and store id, franchisee id = {}, store id = {}", divisionAccountConfigRefVO.getFranchiseeId(), divisionAccountConfigRefVO.getStoreId());
 
                 //保存分帐记录
                 DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
@@ -351,8 +352,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setStoreRate(divisionAccountAmountVO.getStoreRate());
                 divisionAccountRecord.setSource(electricityMemberCardOrder.getSource());
                 divisionAccountRecord.setTenantId(electricityMemberCardOrder.getTenantId());
-                divisionAccountRecord.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
-                divisionAccountRecord.setStoreId(electricityMemberCardOrder.getStoreId());
+                divisionAccountRecord.setFranchiseeId(divisionAccountConfigRefVO.getFranchiseeId());
+                divisionAccountRecord.setStoreId(divisionAccountConfigRefVO.getStoreId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
                 divisionAccountRecord.setType(DivisionAccountRecord.TYPE_PURCHASE);
@@ -403,8 +404,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setStoreRate(CarRentalAmountVO.getStoreRate());
 
                 divisionAccountRecord.setTenantId(carRentalPackageOrderPO.getTenantId());
-                divisionAccountRecord.setFranchiseeId(carRentalPackageOrderPO.getFranchiseeId().longValue());
-                divisionAccountRecord.setStoreId(carRentalPackageOrderPO.getStoreId().longValue());
+                divisionAccountRecord.setFranchiseeId(divisionAccountConfigRefVO.getFranchiseeId());
+                divisionAccountRecord.setStoreId(divisionAccountConfigRefVO.getStoreId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
                 divisionAccountRecord.setType(DivisionAccountRecord.TYPE_PURCHASE);
@@ -585,8 +586,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 refundDivisionAccountRecord.setStoreRate(divisionAccountRecord.getStoreRate());
                 refundDivisionAccountRecord.setSource(electricityMemberCardOrder.getSource());
                 refundDivisionAccountRecord.setTenantId(batteryMembercardRefundOrder.getTenantId());
-                refundDivisionAccountRecord.setFranchiseeId(batteryMembercardRefundOrder.getFranchiseeId());
-                refundDivisionAccountRecord.setStoreId(batteryMembercardRefundOrder.getStoreId());
+                refundDivisionAccountRecord.setFranchiseeId(divisionAccountRecord.getFranchiseeId());
+                refundDivisionAccountRecord.setStoreId(divisionAccountRecord.getStoreId());
                 refundDivisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 refundDivisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
                 refundDivisionAccountRecord.setType(DivisionAccountRecord.TYPE_REFUND);
@@ -680,8 +681,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         refundDivisionAccountRecord.setStoreRate(divisionAccountRecord.getStoreRate());
 
         refundDivisionAccountRecord.setTenantId(carRentalPackageOrderRentRefundPO.getTenantId());
-        refundDivisionAccountRecord.setFranchiseeId(carRentalPackageOrderRentRefundPO.getFranchiseeId().longValue());
-        refundDivisionAccountRecord.setStoreId(carRentalPackageOrderRentRefundPO.getStoreId().longValue());
+        refundDivisionAccountRecord.setFranchiseeId(divisionAccountRecord.getFranchiseeId());
+        refundDivisionAccountRecord.setStoreId(divisionAccountRecord.getStoreId());
         refundDivisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
         refundDivisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
         refundDivisionAccountRecord.setType(DivisionAccountRecord.TYPE_REFUND);
