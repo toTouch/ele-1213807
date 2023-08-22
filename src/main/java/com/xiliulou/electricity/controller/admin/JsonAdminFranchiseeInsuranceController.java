@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.User;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -50,6 +52,15 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
      */
     @PostMapping(value = "/admin/franchiseeInsurance")
     public R updateEleAuthEntries(@RequestBody @Validated FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.add(franchiseeInsuranceAddAndUpdate);
     }
 
@@ -65,6 +76,16 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
         if (Objects.isNull(franchiseeInsuranceAddAndUpdate)) {
             return R.failMsg("请求参数不能为空!");
         }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.update(franchiseeInsuranceAddAndUpdate);
     }
 
@@ -77,6 +98,16 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
     @PutMapping("admin/franchiseeInsurance/enableOrDisable")
     @Log(title = "禁启用保险保险")
     public R enableOrDisable(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.enableOrDisable(id, usableStatus);
     }
 
@@ -88,6 +119,16 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
     @DeleteMapping("admin/franchiseeInsurance/{id}")
     @Log(title = "删除保险")
     public R delete(@PathVariable(value = "id") Integer id) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.delete(id);
     }
 
@@ -106,18 +147,13 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                           @RequestParam(value = "status", required = false) Integer status) {
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
         }
 
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
@@ -148,19 +184,13 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
         }
 
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()

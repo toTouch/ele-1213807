@@ -1070,7 +1070,6 @@
             tui.del_flag = 0
             AND tui.auth_status = 2
             AND tui.tenant_id =#{query.tenantId}
-            AND ubmc.del_flag=0
             <if test="query.memberCardExpireTimeBegin !=null">
                 and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
             </if>
@@ -1098,7 +1097,8 @@
                     #{id}
                 </foreach>
             </if>
-            order by ubmc.member_card_expire_time desc limit  #{query.offset}, #{query.size}
+            order by ISNULL(ubmc.member_card_expire_time),ubmc.member_card_expire_time
+            limit  #{query.offset}, #{query.size}
     </select>
     <select id="queryEleListCount" resultType="java.lang.Integer">
         SELECT
@@ -1115,7 +1115,6 @@
         tui.del_flag = 0
         AND tui.auth_status = 2
         AND tui.tenant_id =#{query.tenantId}
-        AND ubmc.del_flag=0
         <if test="query.memberCardExpireTimeBegin !=null">
             and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
         </if>

@@ -42,6 +42,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
+import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -1455,6 +1456,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userBatteryDetail.setBatteryServiceFee(batteryServiceFeeTriple.getRight());
             } else {
                 userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+
+                //是否有车电一体滞纳金
+                if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
+                    userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
+                }
             }
         }
 
@@ -2578,7 +2584,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-                if (Objects.nonNull(item)  ) {
+                if (Objects.nonNull(item) && Objects.nonNull(item.getMemberCardStatus()) ) {
                     if(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
                         //冻结
                         item.setMemberCardFreezeStatus(Integer.valueOf(1));

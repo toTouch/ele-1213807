@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
@@ -109,7 +110,7 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(NumberConstant.ZERO);
             }
         }
 
@@ -117,7 +118,7 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(NumberConstant.ZERO);
             }
         }
 

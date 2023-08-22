@@ -25,6 +25,7 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -111,6 +112,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Autowired
     CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+
+    @Autowired
+    CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     /**
      * 修改数据
@@ -1062,8 +1066,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Triple<Boolean, String, Object> handlerExchangeBatteryCar(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet,OrderQueryV2 orderQuery) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ORDER ERROR! not found franchisee,uid={}", userInfo.getUid());
+            log.warn("EXCHANGE WARN! not found franchisee,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        //判断车电一体套餐状态
+        if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
+            log.warn("EXCHANGE WARN! user memberCard disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "100210", "用户套餐不可用");
         }
 
 //        //判断用户押金
@@ -1123,10 +1133,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //修改按此套餐的次数
-//        Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
-//        if (Boolean.FALSE.equals(modifyResult.getLeft())) {
-//            return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
-//        }
+        carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(),userInfo.getUid());
+
 
         ElectricityCabinetBox electricityCabinetBox = (ElectricityCabinetBox) usableBatteryCellNoResult.getRight();
 
@@ -1443,10 +1451,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100220", "用户存在电池服务费");
         }
         return Triple.of(true, null, null);
-
-
     }
-
 
     private Triple<Boolean, String, Object> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);

@@ -116,7 +116,13 @@
                     #{id}
                 </foreach>
             </if>
-            order by te.create_time desc
+            <if test="query.storeIds != null">
+                and te.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            order by te.id desc
             limit #{query.offset},#{query.size}
         </where>
     </select>
