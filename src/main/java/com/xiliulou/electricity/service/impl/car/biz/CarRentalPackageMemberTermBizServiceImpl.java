@@ -99,7 +99,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     /**
      * 扣减余量次数
-     * 只有状态正常且未过期，扣减成功返回为true，其于throw 异常
+     * 只有状态正常且未过期，扣减成功返回为true
      * @param tenantId 租户ID
      * @param uid      用户UID
      * @return true(成功)、false(失败)
@@ -135,7 +135,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     /**
      * 判定租户的套餐是否过期<br />
-     * 只有状态正常且过期，返回为true，其于为false
+     * 只有状态正常且过期，返回为true
      *
      * @param tenantId 租户ID
      * @param uid      用户UID
