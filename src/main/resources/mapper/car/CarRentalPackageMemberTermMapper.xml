@@ -246,4 +246,102 @@
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 
+    <!--3.0 会员列表查询租车用户信息-->
+    <select id="queryUserCarRentalPackageList" resultType="com.xiliulou.electricity.domain.car.UserCarRentalPackageDO">
+        select
+            tcrpme.id as id,
+            tcrpme.uid as uid,
+            tui.name as name,
+            tui.phone as phone,
+            tui.car_deposit_status as carDepositStatus,
+            tui.car_battery_deposit_status as carBatteryDepositStatus,
+            tcrpme.rental_package_id as packageId,
+            tcrpme.rental_package_type as packageType,
+            tcrpme.status as packageStatus,
+            tcrpme.deposit_pay_order_no as depositOrderNo,
+            tcrpme.due_time_total as packageExpiredTime,
+            tec.sn as carSn,
+            tec.model as carModel,
+            tui.tenant_id as tenantId,
+            tui.franchisee_id as franchiseeId,
+            tui.update_time as userAuthTime
+        from t_user_info tui
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid
+        left join t_electricity_car tec on tec.uid = tui.uid
+
+        <where>
+            tcrpme.del_flag = 0 and tcrpme.tenant_id = #{query.tenantId}
+            <if test="query.uid != null">
+                and tui.uid = #{query.uid}
+            </if>
+            <if test="query.carMemberCardExpireTimeBegin !=null">
+                and tcrpme.due_time_total &gt;=#{query.carMemberCardExpireTimeBegin}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeEnd !=null">
+                and tcrpme.due_time_total &lt;=#{query.carMemberCardExpireTimeEnd}
+            </if>
+
+            <if test="query.carMemberCardExpireType == 4">
+                and tcrpme.due_time_total is not null and tcrpme.due_time_total !=0
+            </if>
+
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+        order by tcrpme.due_time_total
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryUserCarRentalPackageCount" resultType="Integer">
+        select
+            count(1)
+        from t_user_info tui
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid
+        left join t_electricity_car tec on tec.uid = tui.uid
+
+        <where>
+            tcrpme.del_flag = 0 and tcrpme.tenant_id = #{query.tenantId}
+            <if test="query.uid != null">
+                and tui.uid = #{query.uid}
+            </if>
+            <if test="query.carMemberCardExpireTimeBegin !=null">
+                and tcrpme.due_time_total &gt;=#{query.carMemberCardExpireTimeBegin}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeEnd !=null">
+                and tcrpme.due_time_total &lt;=#{query.carMemberCardExpireTimeEnd}
+            </if>
+
+            <if test="query.carMemberCardExpireType == 4">
+                and tcrpme.due_time_total is not null and tcrpme.due_time_total !=0
+            </if>
+
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+
 </mapper>
