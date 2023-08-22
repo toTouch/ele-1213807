@@ -13,7 +13,6 @@ import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
@@ -528,6 +527,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     CarRentalPackageOrderSlippagePo slippageEntityInsert = null;
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
+                        // JT808，套餐过期级锁
+                        ElectricityCar electricityCar = carService.selectByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                        if (ObjectUtils.isNotEmpty(electricityCar)) {
+                            UserInfo userInfo = userInfoService.queryByUidFromCache(memberTermEntity.getUid());
+                            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, nowTime, CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
+                        }
+
                         // 判定构建逾期订单
                         // TODO 为了测试，更改为10分钟，实际值 DAY_MILLISECOND
                         if (nowTime >= (memberTermEntity.getDueTime() + TimeConstant.TEN_MINUTE_MILLISECOND)) {
@@ -572,7 +578,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         ElectricityCar electricityCar = carService.selectByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
                         if (ObjectUtils.isNotEmpty(electricityCar)) {
                             UserInfo userInfo = userInfoService.queryByUidFromCache(memberTermEntity.getUid());
-                            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo);
+                            carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, nowTime, CarLockCtrlHistory.TYPE_SLIPPAGE_LOCK);
                         }
                     }
                     // 数据落库处理
@@ -592,9 +598,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @param userInfo
      * @return
      */
-    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo) {
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Long nowTime, Integer type) {
+        Integer tenantId = userInfo.getTenantId();
+        if (ObjectUtils.isEmpty(electricityCar) && UserInfo.CAR_RENT_STATUS_YES.equals(userInfo.getCarRentStatus())) {
+            electricityCar = carService.selectByUid(tenantId, userInfo.getUid());
+        }
+
         ElectricityConfig electricityConfig = electricityConfigService
-                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+                .queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
 
@@ -611,10 +622,10 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
             carLockCtrlHistory.setCarSn(electricityCar.getSn());
-            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
-            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
-            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_SLIPPAGE_LOCK);
+            carLockCtrlHistory.setCreateTime(nowTime);
+            carLockCtrlHistory.setUpdateTime(nowTime);
+            carLockCtrlHistory.setTenantId(tenantId);
+            carLockCtrlHistory.setType(type);
 
             return carLockCtrlHistory;
         }

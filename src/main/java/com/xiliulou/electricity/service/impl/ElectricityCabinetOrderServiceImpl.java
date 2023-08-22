@@ -1063,11 +1063,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
 
-        //判断用户押金
-        Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
-        if (Boolean.FALSE.equals(checkUserDepositResult.getLeft())) {
-            return checkUserDepositResult;
-        }
+//        //判断用户押金
+//        Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
+//        if (Boolean.FALSE.equals(checkUserDepositResult.getLeft())) {
+//            return checkUserDepositResult;
+//        }
 
 //        //判断用户套餐
 //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

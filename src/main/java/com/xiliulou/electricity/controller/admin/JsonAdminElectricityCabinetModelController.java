@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -75,7 +76,7 @@ public class JsonAdminElectricityCabinetModelController {
 		}
 
 		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-			return R.ok();
+			return R.ok(Collections.EMPTY_LIST);
 		}
 
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -98,7 +99,7 @@ public class JsonAdminElectricityCabinetModelController {
 		}
 
 		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-			return R.ok();
+			return R.ok(0);
 		}
 
 		Integer tenantId = TenantContextHolder.getTenantId();

@@ -297,76 +297,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(Collections.emptyList());
         }
 
-        //获取用户电池套餐相关信息
-        CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.forEach(item -> {
-                //获取用户所属加盟商
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-
-                //获取用户电池信息
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                item.setNowElectricityBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
-                item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
-
-                //获取用户当前绑定的套餐
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-                item.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("ELE ERROR! query user battery membercard info error!", e);
-            return null;
-        });
-
-        //获取用户保险信息
-        CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.forEach(item -> {
-                List<InsuranceUserInfo> list = insuranceUserInfoService.selectByUid(item.getUid());
-                if (CollectionUtils.isEmpty(list)) {
-                    return;
-                }
-
-                List<String> insuranceNames = new ArrayList<>(list.size());
-                list.forEach(e -> {
-                    FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(e.getInsuranceId());
-                    if (Objects.nonNull(franchiseeInsurance)) {
-                        insuranceNames.add(franchiseeInsurance.getName());
-                    }
-                });
-
-                item.setInsuranceNames(insuranceNames);
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("ELE ERROR! query user insurance info error!", e);
-            return null;
-        });
-
-        //用户邀请人
-        CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.forEach(item -> {
-                if (Objects.isNull(item.getUid())) {
-                    return;
-                }
-
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("The carSn list ERROR! query carSn error!", e);
-            return null;
-        });
-
-
-        //获取用户车辆信息  TODO
-
-
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserInsuranceInfo,queryInviterUser);
-        try {
-            resultFuture.get(10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error("DATA SUMMARY BROWSING ERROR!", e);
-        }
-
-
 
 /*
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
@@ -1356,9 +1286,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //是否缴纳租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+
+            //是否缴纳车电一体押金
+            if(Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())){
+                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
+            }else{
+                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+            }
         } else {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
+
+
 
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -1367,18 +1306,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) //如果送的次数卡  首页提示没有购买套餐
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
+
+            //是否购买车电一体套餐
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+            if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
+                userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
+            }else{
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
+            }
+
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
             userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
-        }
-
-        //是否购买车电一体套餐
-        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
-        if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
-            userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
-            userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
-        }else{
-            userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         }
 
         //套餐是否过期(前端要兼容旧代码  不能删除)

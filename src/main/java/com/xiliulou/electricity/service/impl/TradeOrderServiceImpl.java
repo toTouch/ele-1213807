@@ -228,6 +228,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(integratedPaymentAdd.getProductKey(), integratedPaymentAdd.getDeviceName());
             }
 
+            if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
+                log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(), integratedPaymentAdd.getMemberCardId());
+                return Triple.of(false, "100375", "柜机加盟商与套餐加盟商不一致");
+            }
+
             //押金订单
             Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet);
             if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
@@ -664,8 +669,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         // 车辆滞纳金相关逻辑
         List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
         if (!CollectionUtils.isEmpty(slippageEntityList)) {
-            long now = System.currentTimeMillis();
             for (CarRentalPackageOrderSlippagePo slippageEntity: slippageEntityList) {
+                long now = System.currentTimeMillis();
                 // 结束时间，不为空
                 if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
                     now = slippageEntity.getLateFeeEndTime();
@@ -674,10 +679,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 时间比对
                 long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
 
-                // 没有滞纳金产生
-                if (lateFeeStartTime > now) {
-                    continue;
-                }
                 // 转换天
                 long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
                 // 计算滞纳金金额

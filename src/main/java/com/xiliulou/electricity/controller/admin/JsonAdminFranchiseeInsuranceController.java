@@ -101,6 +101,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
     public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
                                           @RequestParam(value = "size") Long size,
                                           @RequestParam(value = "name", required = false) String name,
+                                          @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                           @RequestParam(value = "status", required = false) Integer status) {
@@ -141,6 +142,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
     @GetMapping("admin/franchiseeInsurance/queryCount")
     public R getElectricityMemberCardPage(@RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                                           @RequestParam(value = "name", required = false) String name,
+                                          @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
@@ -163,6 +165,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .franchiseeId(franchiseeId)
+                .type(type)
                 .insuranceType(insuranceType)
                 .name(name)
                 .status(status)

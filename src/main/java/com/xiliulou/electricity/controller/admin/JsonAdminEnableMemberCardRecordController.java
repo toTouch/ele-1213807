@@ -9,6 +9,7 @@ import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -81,8 +82,12 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.springframework.util.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         List<Long> franchiseeIds = null;
@@ -129,8 +134,12 @@ public class JsonAdminEnableMemberCardRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.springframework.util.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
         }
 
         List<Long> franchiseeIds = null;

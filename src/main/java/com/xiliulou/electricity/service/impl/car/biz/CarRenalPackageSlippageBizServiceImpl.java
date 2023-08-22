@@ -259,8 +259,8 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
-        long now = System.currentTimeMillis();
         for (CarRentalPackageOrderSlippagePo slippageEntity : slippageEntityList) {
+            long now = System.currentTimeMillis();
             // 结束时间，不为空
             if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
                 now = slippageEntity.getLateFeeEndTime();

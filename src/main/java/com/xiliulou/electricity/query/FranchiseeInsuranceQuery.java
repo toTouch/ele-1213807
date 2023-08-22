@@ -23,6 +23,7 @@ public class FranchiseeInsuranceQuery {
     private String name;
     private Long franchiseeId;
     private Integer insuranceType;
+    private Integer type;
     private Integer status;
     private Long storeId;
 
