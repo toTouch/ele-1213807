@@ -264,7 +264,7 @@
             tec.model as carModel,
             tui.tenant_id as tenantId,
             tui.franchisee_id as franchiseeId,
-            tui.update_time as userAuthTime
+            tui.create_time as userAuthTime
         from t_user_info tui
         left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid
         left join t_electricity_car tec on tec.uid = tui.uid
@@ -300,7 +300,7 @@
             </if>
 
         </where>
-        order by tcrpme.due_time_total
+        order by tcrpme.due_time_total desc
         limit #{query.offset}, #{query.size}
     </select>
 
