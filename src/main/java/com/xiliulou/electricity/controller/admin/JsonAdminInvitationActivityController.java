@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -26,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -76,7 +78,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         return returnTripleResult(invitationActivityService.save(query));
@@ -98,7 +100,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok(NumberConstant.ZERO);
         }
 
         return returnTripleResult(invitationActivityService.modify(query));
@@ -133,6 +135,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
             offset = 0L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
         InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).status(status).build();
 
@@ -145,6 +156,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
 
         InvitationActivityQuery query = InvitationActivityQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId()).name(name).status(status).build();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
 
         return R.ok(invitationActivityService.selectByPageCount(query));
     }
