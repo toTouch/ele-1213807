@@ -27,6 +27,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -49,6 +50,7 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -270,6 +272,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             return R.ok(rentBatteryResult.getRight());
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
         } catch (Exception e) {
             log.error("RENTBATTERY ERROR! create order error,uid={}", user.getUid(), e);
         }
@@ -291,6 +295,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("RENT CAR BATTERY ERROR! t_car_rental_package_member_term not found or status is error. uid = {}", userInfo.getUid());
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
+
+
 
 //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 //        if (Objects.isNull(userBatteryMemberCard)) {
@@ -666,6 +672,50 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
 
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                //判断电池滞纳金
+
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBatteryMemberCard)) {
+                    log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", userInfo.getUid());
+                    return R.fail( "100210", "用户未开通套餐");
+                }
+
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail( "100211", "换电套餐停卡审核中");
+                }
+
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("WEBBIND ERROR ERROR! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail("100211", "换电套餐已暂停");
+                }
+
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if(Objects.isNull(batteryMemberCard)){
+                    log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
+                    return R.fail( "ELECTRICITY.00121","套餐不存在");
+                }
+
+                //判断用户电池服务费
+                Triple<Boolean,Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                }
+
+                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                    log.error("WEBBIND ERROR ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+                    return R.fail( "ELECTRICITY.0023", "套餐已过期");
+                }
+            }else{
+                //判断车电一体滞纳金
+                if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(),userInfo.getUid()))) {
+                    log.warn("ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                }
+            }
+
             //分配开门格挡
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService
                     .findUsableEmptyCellNo(electricityCabinet.getId());
@@ -726,7 +776,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
-        } catch (Exception e) {
+        }catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
+        }
+        catch (Exception e) {
             log.error("RTURN BATTERY ERROR! create order error,uid={}", user.getUid(), e);
         }
 

@@ -1085,7 +1085,19 @@
             <if test="query.uid != null ">
                 and tui.uid = #{query.uid}
             </if>
-            order by ubmc.member_card_expire_time limit  #{query.offset}, #{query.size}
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            order by ubmc.member_card_expire_time desc limit  #{query.offset}, #{query.size}
     </select>
     <select id="queryEleListCount" resultType="java.lang.Integer">
         SELECT
@@ -1116,6 +1128,18 @@
         </if>
         <if test="query.uid != null ">
             and tui.uid = #{query.uid}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 </mapper>

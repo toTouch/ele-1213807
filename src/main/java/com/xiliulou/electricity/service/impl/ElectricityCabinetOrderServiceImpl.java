@@ -19,6 +19,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
@@ -1050,6 +1051,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             return rentBatteryResult;
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
         } finally {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());

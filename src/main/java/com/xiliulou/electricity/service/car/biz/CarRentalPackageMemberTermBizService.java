@@ -10,16 +10,23 @@ import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
  **/
 public interface CarRentalPackageMemberTermBizService {
 
-
+    /**
+     * 扣减余量次数<br />
+     * 只有状态正常，扣减成功返回为true
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true(成功)、false(失败)
+     */
+    boolean substractResidue(Integer tenantId, Long uid);
 
     /**
-     * TODO 扣减余量次数待定实现
-     * @param tenantId
-     * @param uid
-     * @param packageId
-     * @return
+     * 判定租户的套餐是否过期<br />
+     * 只有状态正常且过期，返回为true
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true(过期)、false(未过期)
      */
-    /*boolean substractResidue(Integer tenantId, Long uid, Long packageId)*/
+    boolean isExpirePackageOrder(Integer tenantId, Long uid);
 
 
     /**
