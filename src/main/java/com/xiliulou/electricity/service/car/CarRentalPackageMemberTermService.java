@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.car;
 
+import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
+import com.xiliulou.electricity.query.UserInfoQuery;
 
 import java.util.List;
 
@@ -124,5 +126,19 @@ public interface CarRentalPackageMemberTermService {
      * @return 主键ID
      */
     Long insert(CarRentalPackageMemberTermPo entity);
+
+    /**
+     * 会员列表统计会员租车信息
+     * @param userInfoQuery
+     * @return
+     */
+    List<UserCarRentalPackageDO> queryUserCarRentalPackageList(UserInfoQuery userInfoQuery);
+
+    /**
+     * 会员列表统计会员租车信息总数
+     * @param userInfoQuery
+     * @return
+     */
+    Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery);
     
 }

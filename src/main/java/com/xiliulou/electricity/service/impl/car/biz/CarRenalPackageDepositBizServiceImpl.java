@@ -450,11 +450,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         //检测租户
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+/*        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
             log.error("CarRenalPackageDepositBizService.createFreeDeposit failed. The deposit exemption function is not enabled. tenantId is {}", tenantId);
             throw new BizException("100418", "押金免押功能未开启,请联系客服处理");
-        }
+        }*/
 
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(tenantId);
         if (ObjectUtils.isEmpty(freeDepositData)) {
