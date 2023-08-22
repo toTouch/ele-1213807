@@ -2360,7 +2360,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
                 if (Objects.nonNull(item)  ) {
-                    if(!Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+                    if(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
                         //冻结
                         item.setMemberCardFreezeStatus(Integer.valueOf(1));
                     }else{
