@@ -509,6 +509,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(count);
     }
 
+    /**
+     * 将车店一体押金状态，从0-已缴纳 1-未缴纳 转换为 0-未缴纳 1-已缴纳
+     * @param depositStatus
+     * @return
+     */
     private Integer convertCarBatteryDepositStatus(Integer depositStatus){
         Integer status = 0;
 
