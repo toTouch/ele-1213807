@@ -204,7 +204,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             Franchisee franchisee = franchiseeService.queryByIdFromCache(divisionAccountConfig.getFranchiseeId());
             item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
-            Store store = storeService.queryByIdFromCache(divisionAccountConfig.getStoreId());
+            Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
 
             item.setDivisionAccountConfigName(divisionAccountConfig.getName());

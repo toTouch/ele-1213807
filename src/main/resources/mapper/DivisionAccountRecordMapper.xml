@@ -177,13 +177,13 @@
                 </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectStatisticByPage" resultType="com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO">
         select
-        division_account_config_id,
+        division_account_config_id,store_id,
         sum(operator_income) operator_income,
         sum(franchisee_income) franchisee_income,
         sum(store_income) store_income
