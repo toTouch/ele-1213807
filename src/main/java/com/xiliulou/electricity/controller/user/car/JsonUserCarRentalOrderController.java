@@ -6,6 +6,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +50,7 @@ public class JsonUserCarRentalOrderController {
      */
     @GetMapping("/scanQR")
     public R<Boolean> scanQR(String sn, Integer franchiseeId) {
-        if (StringUtils.isBlank(sn)) {
+        if (StringUtils.isBlank(sn) || ObjectUtils.isEmpty(franchiseeId)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
