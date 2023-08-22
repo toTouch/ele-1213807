@@ -1384,10 +1384,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(true, null, freeDepositUserInfoVo);
         }
 
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -1513,10 +1513,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(true, null, freeDepositUserInfoVo);
         }
 
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -1648,10 +1648,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(true, null, freeDepositUserInfoVo);
         }
 
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -2959,10 +2959,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     private Triple<Boolean, String, Object> checkUserCanFreeBatteryDeposit(Long uid, UserInfo userInfo) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
@@ -2981,10 +2981,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     private Triple<Boolean, String, Object> checkUserCanFreeCarBatteryDeposit(Long uid, UserInfo userInfo) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL)) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL)) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
@@ -3008,10 +3008,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     private Triple<Boolean, String, Object> checkUserCanFreeCarDeposit(Long uid, UserInfo userInfo) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
-            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+//            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+//        }
 
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
