@@ -348,7 +348,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      */
     @Override
     public boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, franchiseeId, uid, carSn, optUid)) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -366,7 +366,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             throw new BizException("100204", "未找到门店");
         }
 
-        if (!store.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
+        if (ObjectUtils.isNotEmpty(franchiseeId) && !store.getFranchiseeId().equals(Long.valueOf(franchiseeId))) {
             log.error("bindingCarByQR, t_store franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, car franchiseeId is {}", franchiseeId, store.getFranchiseeId());
             throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
@@ -397,7 +397,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         Integer franchiseeIdExit = memberTermEntity.getFranchiseeId();
-        if (ObjectUtils.isNotEmpty(franchiseeIdExit) && !franchiseeId.equals(franchiseeIdExit)) {
+        if (ObjectUtils.isNotEmpty(franchiseeIdExit) && ObjectUtils.isNotEmpty(franchiseeId) && !franchiseeId.equals(franchiseeIdExit)) {
             log.error("bindingCarByQR, t_car_rental_package_member_term franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, member franchiseeId is {}", franchiseeId, franchiseeIdExit);
             throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
