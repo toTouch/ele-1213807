@@ -86,6 +86,9 @@ public class UserBizServiceImpl implements UserBizService {
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
      *
@@ -183,8 +186,6 @@ public class UserBizServiceImpl implements UserBizService {
 
             }
 
-            // TODO 解绑用户电池
-
             // 设置用户租赁状态
             userInfoEntity.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             userInfoEntity.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
@@ -236,7 +237,9 @@ public class UserBizServiceImpl implements UserBizService {
         if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
             carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
-        // TODO 解绑用户电池
+
+        //删除用户绑定的电池型号
+        userBatteryTypeService.deleteByUid(userInfoEntity.getUid());
     }
 
     /**
