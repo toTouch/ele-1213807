@@ -55,6 +55,11 @@ public class UserInfoQuery {
      * 排序方式
      */
     private Integer sortType;
+
+    /**
+     * 排序：升序 ASC， 降序 DESC
+     */
+    private String sortBy;
     
     /**
      * 套餐购买次数

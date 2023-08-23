@@ -596,11 +596,63 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.userInfoSearch(size, offset, name);
     }
 
+    @GetMapping("/admin/userInfo/exportCarRentalExcel")
+    public void exportCarRentalExcel(@RequestParam(value = "uid", required = false) Long uid,
+                                     @RequestParam(value = "sortType", required = false) Integer sortType,
+                                     @RequestParam(value = "sortBy", required = false) String sortBy,
+                                     @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
+                                     @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
+                                     @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType , HttpServletResponse response) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            throw new CustomBusinessException("当前用户不存在");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
+            log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
+            throw new CustomBusinessException("用户权限不足");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return;
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return;
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .carMemberCardExpireType(carRentalExpireType)
+                .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
+                .uid(uid)
+                .sortType(sortType)
+                .sortBy(sortBy)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+
+        userInfoService.exportCarRentalExcel(userInfoQuery, response);
+    }
+
     @GetMapping(value = "/admin/userInfo/carRentalList")
     public R queryCarRentalList(@RequestParam("size") Long size,
                                 @RequestParam("offset") Long offset,
                                 @RequestParam(value = "uid", required = false) Long uid,
                                 @RequestParam(value = "sortType", required = false) Integer sortType,
+                                @RequestParam(value = "sortBy", required = false) String sortBy,
                                 @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
                                 @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
                                 @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType ) {
@@ -642,6 +694,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
                 .uid(uid)
                 .sortType(sortType)
+                .sortBy(sortBy)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -654,6 +707,7 @@ public class JsonAdminUserInfoController extends BaseController {
     @GetMapping(value = "/admin/userInfo/carRentalCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "sortType", required = false) Integer sortType,
+                        @RequestParam(value = "sortBy", required = false) String sortBy,
                         @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
                         @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
                         @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType) {
@@ -685,6 +739,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
                 .uid(uid)
                 .sortType(sortType)
+                .sortBy(sortBy)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
