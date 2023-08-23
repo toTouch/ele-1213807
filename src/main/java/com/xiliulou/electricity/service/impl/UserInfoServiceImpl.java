@@ -984,7 +984,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //判断车电一体滞纳金
             if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(),oldUserInfo.getUid()))) {
                 log.warn("ORDER WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
-                return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                return R.fail("300001", "存在滞纳金，请先缴纳");
             }
         }
 
@@ -1183,7 +1183,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //判断车电一体滞纳金
             if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(),oldUserInfo.getUid()))) {
                 log.warn("ORDER WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
-                return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                return R.fail("存在滞纳金，请先缴纳", "300001");
             }
         }
 
@@ -1457,12 +1457,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userBatteryDetail.setBatteryServiceFee(batteryServiceFeeTriple.getRight());
             } else {
                 userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
-
-                //是否有车电一体滞纳金
-                if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
-                    userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
-                }
             }
+        }
+
+        //是否有车电一体滞纳金
+        if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
+            userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
         }
 
         //是否绑定的有电池

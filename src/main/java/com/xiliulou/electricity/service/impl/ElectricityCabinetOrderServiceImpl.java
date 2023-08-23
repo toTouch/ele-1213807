@@ -1107,7 +1107,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //判断用户电池服务费
         if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(),userInfo.getUid()))) {
             log.warn("ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
-            return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
+            return Triple.of(false,"300001", "存在滞纳金，请先缴纳");
         }
 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
