@@ -2,13 +2,20 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -25,6 +32,9 @@ public class JsonAdminChannelActivityHistoryController extends BaseController {
      */
     @Resource
     private ChannelActivityHistoryService channelActivityHistoryService;
+
+    @Autowired
+    private UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/channelActivityHistory/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
@@ -40,6 +50,27 @@ public class JsonAdminChannelActivityHistoryController extends BaseController {
             offset = 50L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         ChannelActivityHistoryQuery channelActivityHistoryQuery = ChannelActivityHistoryQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -48,6 +79,8 @@ public class JsonAdminChannelActivityHistoryController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return this
@@ -60,12 +93,35 @@ public class JsonAdminChannelActivityHistoryController extends BaseController {
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         ChannelActivityHistoryQuery channelActivityHistoryQuery = ChannelActivityHistoryQuery.builder()
                 .uid(uid)
                 .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId())
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return this.returnTripleResult(channelActivityHistoryService.queryActivityHistoryCount(channelActivityHistoryQuery));

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zgw
@@ -33,4 +34,8 @@ public class UserChannelQuery {
     private Long size;
 
     private Long offset;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }
