@@ -301,28 +301,28 @@ public class UserChannelServiceImpl implements UserChannelService {
     }
     
     private boolean userBuyMemberCardCheck(Long uid) {
-        boolean batteryMemberCard = true;
-        boolean carMemberCard = true;
+        boolean batteryMemberCard = false;
+        boolean carMemberCard = false;
     
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            log.info("not found battery package order info, uid = {}", uid);
-            batteryMemberCard = false;
+        if (Objects.nonNull(electricityMemberCardOrder)) {
+            log.info("Found battery package order info, uid = {}", uid);
+            batteryMemberCard = true;
         }
         //3.0之前的租车信息查询
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(carMemberCardOrder)) {
-            log.info("not found car member card order info, uid = {}", uid);
-            carMemberCard = false;
+        if (Objects.nonNull(carMemberCardOrder)) {
+            log.info("Found car member card order info, uid = {}", uid);
+            carMemberCard = true;
         }
 
         //3.0之后租车，车电一体购买套餐信息查询
         CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectLastPaySuccessByUid(TenantContextHolder.getTenantId(), uid);
-        if(Objects.isNull(carRentalPackageOrderPo)){
-            log.info("not found car rental package order info, uid = {}", uid);
-            carMemberCard = false;
+        if(Objects.nonNull(carRentalPackageOrderPo)){
+            log.info("Found car rental package order info, uid = {}", uid);
+            carMemberCard = true;
         }
         
         return batteryMemberCard || carMemberCard;

@@ -56,6 +56,10 @@ public class UserCarRentalPackageDO {
      */
     private String batteryName;
     /**
+     * 电池租赁状态，0：未租电池，1：已租电池
+     */
+    private Integer batteryRentStatus;
+    /**
      * 套餐状态
      * 0-待生效、1-正常、2-申请冻结、3-冻结、4-申请退押、5-申请退租
      * @see UserCarRentalPackageVO 页面实际显示状态根据VO中的映射为主
