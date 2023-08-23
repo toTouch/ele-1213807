@@ -230,7 +230,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                         .name(userInfo.getName())
                         .payAmount(BigDecimal.ZERO)
                         .status(EleDepositOrder.STATUS_INIT)
-                        .batteryServiceFeeGenerateTime(System.currentTimeMillis())
+                        .batteryServiceFeeGenerateTime(item.getMemberCardExpireTime())
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
                         .tenantId(userInfo.getTenantId())

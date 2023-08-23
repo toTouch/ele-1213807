@@ -64,6 +64,10 @@ public class UserCarRentalPackageVO {
      */
     private String batteryModel;
     /**
+     * 电池租赁状态，0：未租电池，1：已租电池
+     */
+    private Integer batteryRentStatus;
+    /**
      * 套餐冻结状态
      * 0-已冻结、 1-正常 (该值需要通过数据库状态转换为页面显示状态)
      * @see UserCarRentalPackageDO
