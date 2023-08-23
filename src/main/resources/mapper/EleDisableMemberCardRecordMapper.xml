@@ -41,6 +41,12 @@
             <if test="query.status !=null ">
                 and dmcr.status=#{query.status}
             </if>
+            <if test="query.beginTime !=null ">
+                and dmcr.create_time &gt;= #{query.beginTime}
+            </if>
+            <if test="query.endTime !=null ">
+                and dmcr.create_time &lt;= #{query.endTime}
+            </if>
             <if test="query.franchiseeIds != null">
                 and dmcr.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
@@ -73,6 +79,12 @@
             </if>
             <if test="query.status !=null ">
                 and status=#{query.status}
+            </if>
+            <if test="query.beginTime !=null ">
+                and create_time &gt;= #{query.beginTime}
+            </if>
+            <if test="query.endTime !=null ">
+                and create_time &lt;= #{query.endTime}
             </if>
             <if test="query.franchiseeIds != null">
                 and franchisee_id in
