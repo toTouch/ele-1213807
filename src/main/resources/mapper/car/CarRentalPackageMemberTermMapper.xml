@@ -254,6 +254,7 @@
             tui.usable_status as usableStatus,
             tui.name as name,
             tui.phone as phone,
+            tui.battery_rent_status as batteryRentStatus,
             tui.car_deposit_status as carDepositStatus,
             tui.car_battery_deposit_status as carBatteryDepositStatus,
             tcrpme.rental_package_id as packageId,

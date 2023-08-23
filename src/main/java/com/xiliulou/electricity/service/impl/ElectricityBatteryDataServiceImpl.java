@@ -671,30 +671,31 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
 
     // 组装EleBatteryDataVO
-    private List<EleBatteryDataVO> buildEleBatteryDataVOList( List<ElectricityBatteryDataVO> electricityBatteries
-    ,Tenant tenant){
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    private List<EleBatteryDataVO> buildEleBatteryDataVOList(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant) {
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return Lists.newArrayList();
         }
-        electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
-            Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-                if (Objects.nonNull(userInfo)) {
-                    item.setName(userInfo.getName());
-                    item.setUserName(userInfo.getUserName());
-                    item.setPhone(userInfo.getPhone());
+        electricityBatteries.parallelStream().forEach(item -> {
+            if (Objects.nonNull(item)) {
+                Long uid = item.getUid();
+                Long fId = item.getFranchiseeId();
+                if (Objects.nonNull(uid)) {
+                    UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                    if (Objects.nonNull(userInfo)) {
+                        item.setName(userInfo.getName());
+                        item.setUserName(userInfo.getUserName());
+                        item.setPhone(userInfo.getPhone());
+                    }
                 }
-            }
-            if (Objects.nonNull(fId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
-                if (Objects.nonNull(franchisee)) {
-                    item.setFranchiseeName(franchisee.getName());
+                if (Objects.nonNull(fId)) {
+                    Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
+                    if (Objects.nonNull(franchisee)) {
+                        item.setFranchiseeName(franchisee.getName());
+                    }
                 }
             }
         });
-        return queryDataFromBMS(electricityBatteries,tenant);
+        return queryDataFromBMS(electricityBatteries, tenant);
     }
 
 
