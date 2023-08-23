@@ -38,7 +38,7 @@ public class JsonAdminCarDataController extends BasicController {
     /**
      * 获取全部车辆的数据总数
      */
-    @GetMapping("/admin/carData/allCar/page")
+    @GetMapping("/admin/carData/allCar/count")
     public R queryAllCarDataCount(
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "storeId", required = false) Long storeId,
