@@ -169,7 +169,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         entityModify.setDueTime(dueTime);
                         entityModify.setDueTimeTotal(dueTimeTotal);
                         entityModify.setUpdateTime(System.currentTimeMillis());
-                        entityModify.setRentalPackageId(packageOrderUnUseEntity.getId());
+                        entityModify.setRentalPackageId(packageOrderUnUseEntity.getRentalPackageId());
                         entityModify.setRentalPackageOrderNo(packageOrderUnUseEntity.getOrderNo());
                         entityModify.setRentalPackageType(packageOrderUnUseEntity.getRentalPackageType());
                         entityModify.setRentalPackageConfine(packageOrderUnUseEntity.getConfine());

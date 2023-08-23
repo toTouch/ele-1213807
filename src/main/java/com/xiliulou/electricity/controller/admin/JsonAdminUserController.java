@@ -5,6 +5,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -15,12 +17,14 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,6 +69,15 @@ public class JsonAdminUserController extends BaseController {
             offset = 0L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -84,6 +97,14 @@ public class JsonAdminUserController extends BaseController {
             @RequestParam(value = "beginTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -107,12 +128,31 @@ public class JsonAdminUserController extends BaseController {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return returnPairResult(userService.updateAdminUser(adminUserQuery));
     }
 
     @DeleteMapping("/user/{uid}")
     @Log(title = "删除用户")
     public R deleteAdminUser(@PathVariable("uid") Long uid) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return returnPairResult(userService.deleteAdminUser(uid));
     }
 
@@ -121,6 +161,15 @@ public class JsonAdminUserController extends BaseController {
         List<Long> roleIds = JsonUtil.fromJsonArray(jsonRoleIds, Long.class);
         if (!DataUtil.collectionIsUsable(roleIds)) {
             return R.fail("SYSTEM.0002", "参数不合法");
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
         }
 
         return returnPairResult(roleService.bindUserRole(uid, roleIds));
@@ -151,6 +200,16 @@ public class JsonAdminUserController extends BaseController {
     @DeleteMapping("/user/del/{uid}")
     @Log(title = "删除普通用户")
     public R deleteNormalUser(@PathVariable("uid") Long uid) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return returnTripleResult(userService.deleteNormalUser(uid));
     }
 
@@ -170,6 +229,16 @@ public class JsonAdminUserController extends BaseController {
      */
     @PutMapping(value = "/user/userSource")
     public R updateUserSource(@RequestBody @Validated UserSourceUpdateQuery query) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         userService.updateUserByUid(query);
         return R.ok();
     }
