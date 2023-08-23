@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.service.car.CarDataService;
 import com.xiliulou.electricity.vo.car.PageDataResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 车辆运营数据
  */
+@Slf4j
 @RestController
-public class JsonAdminCarDataController {
+public class JsonAdminCarDataController extends BasicController {
 
     @Autowired
     private CarDataService carDataService;
