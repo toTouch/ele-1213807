@@ -736,6 +736,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .name(userInfo.getName())
                         .payAmount(BigDecimal.ZERO)
                         .status(EleDepositOrder.STATUS_INIT)
+                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime())
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
                         .tenantId(userInfo.getTenantId())
