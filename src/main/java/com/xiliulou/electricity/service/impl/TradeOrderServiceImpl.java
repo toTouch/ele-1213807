@@ -771,6 +771,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
             eleBatteryServiceFeeOrderUpdate.setPayAmount(expireBatteryServiceFee);
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
 
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
