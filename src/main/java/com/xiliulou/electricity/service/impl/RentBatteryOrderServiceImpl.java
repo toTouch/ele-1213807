@@ -726,10 +726,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
 
                 //判断车电一体套餐状态
-                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
-                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
-                    return R.fail( "100210", "用户套餐不可用");
-                }
+//                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
+//                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
+//                    return R.fail( "100210", "用户套餐不可用");
+//                }
             }
 
             //分配开门格挡
