@@ -74,6 +74,9 @@
             <if test="query.disableMemberCardNo !=null and query.disableMemberCardNo != '' ">
                 and disable_member_card_no=#{query.disableMemberCardNo}
             </if>
+            <if test="query.uid !=null">
+                and uid=#{query.uid}
+            </if>
             <if test="query.phone !=null and query.phone != '' ">
                 and phone=#{query.phone}
             </if>
