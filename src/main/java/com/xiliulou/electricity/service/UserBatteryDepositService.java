@@ -62,4 +62,5 @@ public interface UserBatteryDepositService {
      */
     Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit);
 
+    UserBatteryDeposit queryByUid(Long uid);
 }
