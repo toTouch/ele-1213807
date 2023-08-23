@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.car.CarDataEntity;
+import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
+import com.xiliulou.electricity.query.car.CarDataQuery;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -136,7 +138,8 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer queryOfflineCarDataCount(@Param("query")CarDataConditionReq carDataConditionReq);
 
 
+    List<CarDataVO> queryCarPageByCondition(@Param("query") CarDataQuery carDataQuery,@Param("offset") Long offset, @Param("size") Long size);
 
-
+    Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);
 
 }
