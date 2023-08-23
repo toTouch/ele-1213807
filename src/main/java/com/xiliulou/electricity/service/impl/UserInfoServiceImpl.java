@@ -1441,6 +1441,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }else{
                 userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
             }
+
+            //车电一体套餐是否过期
+            if(Objects.nonNull(memberTermEntity) && Objects.nonNull(memberTermEntity.getDueTimeTotal()) && memberTermEntity.getDueTimeTotal()< System.currentTimeMillis()){
+                userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
+            }else{
+                userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
+            }
         }
 
         //套餐是否暂停
