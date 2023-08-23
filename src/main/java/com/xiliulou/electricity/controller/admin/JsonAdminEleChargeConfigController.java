@@ -48,10 +48,21 @@ public class JsonAdminEleChargeConfigController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
 
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        chargeConfigListQuery.setStoreIds(storeIds);
+        chargeConfigListQuery.setFranchiseeIds(franchiseeIds);
         chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnPairResult(eleChargeConfigService.queryList(chargeConfigListQuery));
     }
@@ -63,10 +74,21 @@ public class JsonAdminEleChargeConfigController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(NumberConstant.ZERO);
         }
 
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+
+        chargeConfigListQuery.setStoreIds(storeIds);
+        chargeConfigListQuery.setFranchiseeIds(franchiseeIds);
         chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnPairResult(eleChargeConfigService.queryListCount(chargeConfigListQuery));
     }
