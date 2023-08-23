@@ -62,7 +62,6 @@
     <!--查询单个-->
     <select id="queryById" resultMap="DivisionAccountRecordMap">
         <include refid="selectDivisionAccountRecord"/>
-        from t_division_account_record
         where id = #{id}
     </select>
     
@@ -159,7 +158,6 @@
 
     <select id="selectByPage" resultMap="DivisionAccountRecordMap">
         <include refid="selectDivisionAccountRecord"/>
-        from t_division_account_record
         <where>
             <if test="membercardName != null and membercardName != ''">
                 and membercard_name = #{membercardName}

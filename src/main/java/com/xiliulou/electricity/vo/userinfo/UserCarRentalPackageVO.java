@@ -24,6 +24,10 @@ public class UserCarRentalPackageVO {
      */
     private String phone;
     /**
+     * 用户可用状态 0--启用，1--禁用
+     */
+    private Integer usableStatus;
+    /**
      * 套餐ID
      */
     private Long packageId;
