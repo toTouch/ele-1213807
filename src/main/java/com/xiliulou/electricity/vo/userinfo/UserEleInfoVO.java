@@ -105,4 +105,9 @@ public class UserEleInfoVO {
      */
     private Long userCertificationTime;
 
+    /**
+     * 可用状态（0-禁用，1-可用）
+     */
+    private Integer usableStatus;
+
 }
