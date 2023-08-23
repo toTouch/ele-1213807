@@ -1,9 +1,6 @@
 package com.xiliulou.electricity.model.car.query;
 
-import com.xiliulou.electricity.enums.BuyTypeEnum;
-import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -53,6 +50,16 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * 套餐ID
      */
     private Long rentalPackageId;
+
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see RentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
 
     /**
      * 用户ID
