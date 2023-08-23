@@ -313,11 +313,9 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
---         门店和加盟
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
---         用户名和手机
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -340,11 +338,9 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -366,11 +362,9 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -393,11 +387,9 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -419,11 +411,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -447,11 +439,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -472,11 +464,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -496,11 +488,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -520,11 +512,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
@@ -545,11 +537,11 @@
         <if test="query.model != null and query.model !=''">
             and ec.model like concat('%',#{query.model, jdbcType=VARCHAR},'%')
         </if>
-        --         门店和加盟
+       
         <if test="query.franchiseeId != null ">
             and ec.franchisee_id = #{query.franchiseeId}
         </if>
-        --         用户名和手机
+        
         <if test="query.phone != null and query.phone != '' ">
             and ui.phone = #{query.phone}
         </if>
