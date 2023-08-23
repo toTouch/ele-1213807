@@ -13,6 +13,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
@@ -2436,7 +2437,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             throw new CustomBusinessException("用户租车列表信息为空！");
         }
 
-
         List<UserCarRentalInfoExcelVO> userCarRentalInfoExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -2445,9 +2445,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             userCarRentalInfoExcelVO.setUserName(userCarRentalPackageDO.getName());
             userCarRentalInfoExcelVO.setPhone(userCarRentalPackageDO.getPhone());
-            //userCarRentalInfoExcelVO.setPackageType();
+            if(RentalPackageTypeEnum.CAR.getCode().equals(userCarRentalPackageDO.getPackageType())){
+                userCarRentalInfoExcelVO.setPackageType(CarRentalPackageExlConstant.PACKAGE_TYPE_CAR);
+                userCarRentalInfoExcelVO.setDepositStatus(userCarRentalPackageDO.getCarDepositStatus() == 1 ? CarRentalPackageExlConstant.PACKAGE_DEPOSIT_PAID_STATUS : CarRentalPackageExlConstant.PACKAGE_DEPOSIT_UNPAID_STATUS);
+            }else if(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(userCarRentalPackageDO.getPackageType())){
+                userCarRentalInfoExcelVO.setPackageType(CarRentalPackageExlConstant.PACKAGE_TYPE_CAR_WITH_BATTERY);
+                userCarRentalInfoExcelVO.setDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus() == 0 ? CarRentalPackageExlConstant.PACKAGE_DEPOSIT_PAID_STATUS : CarRentalPackageExlConstant.PACKAGE_DEPOSIT_UNPAID_STATUS);
+            }
+
+            //设置套餐冻结状态
+            if(MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())){
+                userCarRentalInfoExcelVO.setPackageFreezeStatus(CarRentalPackageExlConstant.PACKAGE_FROZE_STATUS);
+            }else{
+                userCarRentalInfoExcelVO.setPackageFreezeStatus(CarRentalPackageExlConstant.PACKAGE_UN_FREEZE_STATUS);
+            }
 
             userCarRentalInfoExcelVO.setCurrentCar(userCarRentalPackageDO.getCarModel());
+
+            userCarRentalInfoExcelVO.setPackageExpiredTime(simpleDateFormat.format(new Date(userCarRentalPackageDO.getPackageExpiredTime())));
 
             //获取电池信息
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userCarRentalPackageDO.getUid());
@@ -2459,84 +2474,55 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userCarRentalInfoExcelVO.setPackageName(carRentalPackagePo.getName());
             }
 
-            //TODO 设置套餐冻结状态
-
+            //获取保险信息
+            InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userCarRentalPackageDO.getUid(), userCarRentalPackageDO.getPackageType());
+            userCarRentalInfoExcelVO.setInsuranceStatus(Objects.isNull(insuranceUserInfoVo) ? "" : getInsuranceStatusDesc(insuranceUserInfoVo.getIsUse()));
+            userCarRentalInfoExcelVO.setInsuranceExpiredTime(Objects.isNull(insuranceUserInfoVo) ? "" : simpleDateFormat.format(new Date(insuranceUserInfoVo.getInsuranceExpireTime())));
 
             //获取用户所属加盟商
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userCarRentalPackageDO.getFranchiseeId());
             userCarRentalInfoExcelVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-            //获取保险信息
-            InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userCarRentalPackageDO.getUid(), userCarRentalPackageDO.getPackageType());
-            //userCarRentalInfoExcelVO.setInsuranceStatus(Objects.isNull(insuranceUserInfoVo) ? "" : insuranceUserInfoVo.getIsUse());
-            userCarRentalInfoExcelVO.setInsuranceExpiredTime(Objects.isNull(insuranceUserInfoVo) ? "" : simpleDateFormat.format(new Date(insuranceUserInfoVo.getInsuranceExpireTime())));
+            userCarRentalInfoExcelVO.setUserAuthTime(simpleDateFormat.format(new Date(userCarRentalPackageDO.getUserAuthTime())));
 
+            userCarRentalInfoExcelVOS.add(userCarRentalInfoExcelVO);
 
         }
 
-        //处理租车/车店一体押金状态 和 当前套餐冻结状态
-        List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
-        for(UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList){
-            UserCarRentalPackageVO userCarRentalPackageVO = new UserCarRentalPackageVO();
-            BeanUtils.copyProperties(userCarRentalPackageDO, userCarRentalPackageVO);
-            if(RentalPackageTypeEnum.CAR.getCode().equals(userCarRentalPackageDO.getPackageType())){
-                userCarRentalPackageVO.setDepositStatus(userCarRentalPackageDO.getCarDepositStatus());
-            }else if(RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(userCarRentalPackageDO.getPackageType())){
-                userCarRentalPackageVO.setDepositStatus(convertCarBatteryDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus()));
-            }
-
-            if(MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())){
-                userCarRentalPackageVO.setPackageFreezeStatus(0);
-            }else{
-                userCarRentalPackageVO.setPackageFreezeStatus(1);
-            }
-
-            userCarRentalPackageVOList.add(userCarRentalPackageVO);
-        }
-
-        //获取用户电池相关信息
-        CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> {
-            userCarRentalPackageVOList.forEach(item -> {
-
-                //获取用户电池信息
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
-                //item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
-                item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
-
-                //获取用户所属加盟商
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("Query user battery info error for car rental.", e);
-            return null;
-        });
-
-        //获取用户租车保险相关信息
-        CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
-            userCarRentalPackageVOList.forEach(item -> {
-                InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(item.getUid(), item.getPackageType());
-                if (Objects.isNull(insuranceUserInfoVo)) {
-                    return;
-                }
-
-                item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
-                item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
-            });
-        }, threadPool).exceptionally(e -> {
-            log.error("Query user insurance info error for car rental.", e);
-            return null;
-        });
-
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo, queryUserInsuranceInfo);
+        String fileName = "会员租车列表报表.xlsx";
         try {
-            resultFuture.get(10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error("Data summary browsing error for car rental.", e);
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, UserCarRentalInfoExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(userCarRentalInfoExcelVOS);
+            return;
+        } catch (IOException e) {
+            log.error("导出租车报表失败！", e);
         }
 
+    }
+
+    private String getInsuranceStatusDesc(Integer status) {
+        String result = "";
+        switch (status) {
+            case 0:
+                result = CarRentalPackageExlConstant.PACKAGE_INSURANCE_STATUS_UNUSED;
+                break;
+            case 1:
+                result = CarRentalPackageExlConstant.PACKAGE_INSURANCE_STATUS_USED;
+                break;
+            case 2:
+                result = CarRentalPackageExlConstant.PACKAGE_INSURANCE_STATUS_EXPIRED;
+                break;
+            case 3:
+                result = CarRentalPackageExlConstant.PACKAGE_INSURANCE_STATUS_INVALID;
+                break;
+            default:
+                result = StringUtils.EMPTY;
+        }
+        return result;
     }
 
     //TODO 优化
