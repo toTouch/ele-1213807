@@ -1420,16 +1420,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) //如果送的次数卡  首页提示没有购买套餐
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
-
-            //是否购买车电一体套餐
-            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
-            if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
-                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
-                userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
-            }else{
-                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
-            }
-
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
             userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
@@ -1440,6 +1430,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
         } else {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
+        }
+
+        //是否购买车电一体套餐
+        if(Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())){
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+            if(Objects.nonNull(memberTermEntity) && Objects.equals( memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(memberTermEntity.getRentalPackageId())){
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
+                userBatteryDetail.setMemberCardExpireTime(memberTermEntity.getDueTimeTotal());
+            }else{
+                userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
+            }
         }
 
         //套餐是否暂停
