@@ -154,6 +154,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -722,6 +725,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //1.获取滞纳金订单
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
             if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {//兼容2.0版本小程序
+                //用户绑定的电池型号
+                List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
                 //生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
                 eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
@@ -731,6 +736,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .name(userInfo.getName())
                         .payAmount(BigDecimal.ZERO)
                         .status(EleDepositOrder.STATUS_INIT)
+                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime())
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
                         .tenantId(userInfo.getTenantId())
@@ -738,7 +744,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .franchiseeId(franchisee.getId())
                         .storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType())
-                        .batteryType("")
+                        .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                         .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
@@ -771,6 +777,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
             eleBatteryServiceFeeOrderUpdate.setPayAmount(expireBatteryServiceFee);
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
 
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());

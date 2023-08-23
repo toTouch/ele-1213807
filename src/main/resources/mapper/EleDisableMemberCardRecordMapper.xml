@@ -54,7 +54,7 @@
                 </foreach>
             </if>
         </where>
-        order by dmcr.create_time desc
+        order by dmcr.id desc
         limit #{query.offset},#{query.size}
     </select>
 

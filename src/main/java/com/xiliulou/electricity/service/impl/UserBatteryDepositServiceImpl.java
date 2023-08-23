@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -40,7 +41,17 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     public UserBatteryDeposit selectByUidFromDB(Long uid) {
         return this.userBatteryDepositMapper.selectByUid(uid);
     }
-    
+
+    /**
+     * 删除了的也能查出来
+     * @param uid
+     * @return
+     */
+    @Override
+    public UserBatteryDeposit queryByUid(Long uid) {
+        return this.userBatteryDepositMapper.selectOne(new LambdaQueryWrapper<UserBatteryDeposit>().eq(UserBatteryDeposit::getUid,uid));
+    }
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -150,7 +161,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     @Override
     public Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit) {
         Integer result = null;
-        UserBatteryDeposit userBatteryDeposit = this.selectByUidFromCache(uid);
+        UserBatteryDeposit userBatteryDeposit = this.queryByUid(uid);
         if (Objects.isNull(userBatteryDeposit)) {
             UserBatteryDeposit userBatteryDepositInsert = new UserBatteryDeposit();
             userBatteryDepositInsert.setUid(uid);

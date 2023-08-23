@@ -30,7 +30,7 @@
 
     <!-- 查询总数 -->
     <select id="count" resultType="java.lang.Integer">
-        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
             `del_flag` = 0
             <include refid="where_field" />
