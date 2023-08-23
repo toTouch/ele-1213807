@@ -22,24 +22,53 @@
         <result property="source" column="source" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="divisionAccountStatus" column="division_account_status" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
+    <!-- 基础字段 -->
+    <sql id="selectDivisionAccountRecord">
+        select
+            id,
+            division_account_config_id,
+            membercard_name,
+            uid,
+            order_no,
+            price,
+            pay_amount,
+            pay_time,
+            operator_income,
+            franchisee_income,
+            store_income,
+            operator_rate,
+            franchisee_rate,
+            store_rate,
+            tenant_id,
+            status,
+            source,
+            type,
+            division_account_status,
+            store_id,
+            franchisee_id,
+            del_flag,
+            create_time,
+            update_time
+        from t_division_account_record
+    </sql>
+
     <!--查询单个-->
     <select id="queryById" resultMap="DivisionAccountRecordMap">
-        select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, type, division_account_status, del_flag, create_time, update_time
+        <include refid="selectDivisionAccountRecord"/>
         from t_division_account_record
         where id = #{id}
     </select>
     
     
     <select id="selectByOrderId" resultMap="DivisionAccountRecordMap">
-        select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, type, division_account_status, del_flag, create_time, update_time
-        from t_division_account_record
+        <include refid="selectDivisionAccountRecord"/>
         where order_no = #{orderId}
     </select>
 
@@ -129,21 +158,7 @@
     </select>
 
     <select id="selectByPage" resultMap="DivisionAccountRecordMap">
-        select
-        id,
-        division_account_config_id,
-        membercard_name,
-        uid,
-        order_no,
-        price,
-        pay_amount,
-        pay_time,
-        operator_income,
-        franchisee_income,
-        store_income,status,
-        source,
-        type,
-        create_time
+        <include refid="selectDivisionAccountRecord"/>
         from t_division_account_record
         <where>
             <if test="membercardName != null and membercardName != ''">
