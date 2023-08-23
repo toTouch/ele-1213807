@@ -716,7 +716,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 //判断车电一体滞纳金
                 if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(),userInfo.getUid()))) {
                     log.warn("RETURNBATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
-                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                    return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
 
                 //判断车电一体套餐状态
