@@ -397,7 +397,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         Integer franchiseeIdExit = memberTermEntity.getFranchiseeId();
-        if (ObjectUtils.isNotEmpty(franchiseeIdExit) && ObjectUtils.isNotEmpty(franchiseeIdExit) && !franchiseeId.equals(franchiseeIdExit)) {
+        if (ObjectUtils.isNotEmpty(franchiseeIdExit) && ObjectUtils.isNotEmpty(franchiseeId) && !franchiseeId.equals(franchiseeIdExit)) {
             log.error("bindingCarByQR, t_car_rental_package_member_term franchiseeId and param franchiseeId mismatching. param franchiseeId is {}, member franchiseeId is {}", franchiseeId, franchiseeIdExit);
             throw new BizException("300059", "该车辆SN码与加盟商不匹配，请重新扫码");
         }
