@@ -510,7 +510,6 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
             userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-            userBatteryDeposit.setTenantId(eleDepositOrder.getTenantId());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);

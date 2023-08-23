@@ -421,7 +421,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     private void freeDepositOrderThaw(UserBatteryDeposit userBatteryDeposit , FreeDepositOrder freeDepositOrder){
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
         if(Objects.isNull(pxzConfig)) {
-            log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", userBatteryDeposit.getTenantId());
+            log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", freeDepositOrder.getTenantId());
             return;
         }
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
@@ -1530,7 +1530,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             updateUserBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
             updateUserBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-            updateUserBatteryDeposit.setTenantId(userInfo.getTenantId());
             updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
             updateUserBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(updateUserBatteryDeposit);
