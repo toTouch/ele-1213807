@@ -1238,15 +1238,15 @@ public class UnionTradeOrderServiceImpl extends
 //                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
 //                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
 //                userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
-//
-//                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
-//                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-//                serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-//                serviceFeeUserInfoUpdate.setPauseOrderNo("");
-//                serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+
+                //解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
+                serviceFeeUserInfoUpdate.setPauseOrderNo("");
+                serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
 //                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
-//                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }
 
             //生成启用记录
