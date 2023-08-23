@@ -118,7 +118,7 @@ public class CarDataServiceImpl implements CarDataService {
                 if (Objects.nonNull(item.getStoreId())){
                     Store store = storeService.queryByIdFromCache(item.getStoreId());
                     if(Objects.nonNull(store)) {
-                        item.setFranchiseeName(store.getName());
+                        item.setStoreName(store.getName());
                     }
                 }
                 if (Objects.nonNull(item.getRentalPackageId())){
@@ -190,7 +190,7 @@ public class CarDataServiceImpl implements CarDataService {
                 if (Objects.nonNull(item.getStoreId())){
                     Store store = storeService.queryByIdFromCache(item.getStoreId());
                     if(Objects.nonNull(store)) {
-                        item.setFranchiseeName(store.getName());
+                        item.setStoreName(store.getName());
                     }
                 }
                 if (Objects.nonNull(item.getRentalPackageId())){
@@ -261,7 +261,7 @@ public class CarDataServiceImpl implements CarDataService {
                 if (Objects.nonNull(item.getStoreId())){
                     Store store = storeService.queryByIdFromCache(item.getStoreId());
                     if(Objects.nonNull(store)) {
-                        item.setFranchiseeName(store.getName());
+                        item.setStoreName(store.getName());
                     }
                 }
                 if (Objects.nonNull(item.getRentalPackageId())){
@@ -334,7 +334,7 @@ public class CarDataServiceImpl implements CarDataService {
                 if (Objects.nonNull(item.getStoreId())){
                     Store store = storeService.queryByIdFromCache(item.getStoreId());
                     if(Objects.nonNull(store)) {
-                        item.setFranchiseeName(store.getName());
+                        item.setStoreName(store.getName());
                     }
                 }
                 if (Objects.nonNull(item.getRentalPackageId())){
