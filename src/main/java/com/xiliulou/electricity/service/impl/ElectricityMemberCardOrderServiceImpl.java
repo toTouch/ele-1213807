@@ -3587,7 +3587,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
         userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
-        userBatteryDeposit.setTenantId(userInfo.getTenantId());
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
