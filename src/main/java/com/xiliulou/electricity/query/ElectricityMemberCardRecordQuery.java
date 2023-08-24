@@ -37,4 +37,9 @@ public class ElectricityMemberCardRecordQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+
+    private Long beginTime;
+
+    private Long endTime;
+
 }

@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Kenneth
  * @Date: 2023/8/19 14:10
@@ -41,5 +43,9 @@ public class ChannelActivityHistoryQuery {
     private Long beginTime;
 
     private Long endTime;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 
 }

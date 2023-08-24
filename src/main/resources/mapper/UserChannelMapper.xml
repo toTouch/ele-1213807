@@ -151,6 +151,18 @@
             <if test="uid != null">
                 and ui.uid = #{uid}
             </if>
+            <if test="franchiseeIds != null">
+                and ui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and ui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}
@@ -171,6 +183,18 @@
             </if>
             <if test="uid != null">
                 and ui.uid = #{uid}
+            </if>
+            <if test="franchiseeIds != null">
+                and ui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and ui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

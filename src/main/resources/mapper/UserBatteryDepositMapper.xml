@@ -9,7 +9,6 @@
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="batteryDeposit" column="battery_deposit" jdbcType="DECIMAL"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
-        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="applyDepositTime" column="apply_deposit_time" jdbcType="INTEGER"/>
@@ -45,9 +44,6 @@
             </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
             </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
@@ -95,9 +91,6 @@
             </if>
             <if test="depositType != null">
                 deposit_type = #{depositType},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

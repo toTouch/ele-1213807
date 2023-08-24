@@ -372,6 +372,8 @@ public class JsonAdminElectricityMemberCardController {
                                                  @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
                                                  @RequestParam(value = "phone", required = false) String phone,
                                                  @RequestParam(value = "status", required = false) Integer status,
+                                                 @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                                 @RequestParam(value = "endTime", required = false) Long endTime,
                                                  @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -408,6 +410,8 @@ public class JsonAdminElectricityMemberCardController {
                 .phone(phone)
                 .status(status)
                 .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return eleDisableMemberCardRecordService.list(electricityMemberCardRecordQuery);
@@ -422,6 +426,8 @@ public class JsonAdminElectricityMemberCardController {
     public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
                                                   @RequestParam(value = "phone", required = false) String phone,
                                                   @RequestParam(value = "status", required = false) Integer status,
+                                                  @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                                  @RequestParam(value = "endTime", required = false) Long endTime,
                                                   @RequestParam(value = "uid", required = false) Long uid) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -449,6 +455,8 @@ public class JsonAdminElectricityMemberCardController {
                 .uid(uid)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return eleDisableMemberCardRecordService.queryCount(electricityMemberCardRecordQuery);

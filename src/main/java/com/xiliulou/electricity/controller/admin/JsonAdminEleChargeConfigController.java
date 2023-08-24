@@ -102,45 +102,18 @@ public class JsonAdminEleChargeConfigController extends BaseController {
     @PostMapping("/admin/charge/config/save")
     @Log(title = "增加电费规则")
     public R saveConfig(@RequestBody @Validated ChargeConfigQuery chargeConfigQuery) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-
         return returnPairResult(eleChargeConfigService.saveConfig(chargeConfigQuery));
     }
 
     @PostMapping("/admin/charge/config/modify")
     @Log(title = "修改电费规则")
     public R modifyConfig(@RequestBody @Validated(UpdateGroup.class) ChargeConfigQuery chargeConfigQuery) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-
         return returnPairResult(eleChargeConfigService.modifyConfig(chargeConfigQuery));
     }
 
     @PostMapping("/admin/charge/config/del/{id}")
     @Log(title = "删除电费规则")
     public R delConfig(@PathVariable("id") Long id) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-
         return returnPairResult(eleChargeConfigService.delConfig(id));
     }
 

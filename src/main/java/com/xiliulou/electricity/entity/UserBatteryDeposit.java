@@ -57,8 +57,6 @@ public class UserBatteryDeposit {
      */
     private Integer delFlag;
 
-    private Integer tenantId;
-    
     private Long createTime;
     
     private Long updateTime;

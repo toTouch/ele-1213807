@@ -3587,7 +3587,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
         userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
-        userBatteryDeposit.setTenantId(userInfo.getTenantId());
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
@@ -3726,20 +3725,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
-        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-                .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
-                .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT)
-                .operateUid(user.getUid())
-                .uid(userInfo.getUid())
-                .name(user.getName())
-                .oldValidDays(userBatteryMemberCard.getMemberCardExpireTime().intValue())
-                .newValidDays(userBatteryMemberCardUpdate.getMemberCardExpireTime().intValue())
-                .oldMaxUseCount(userBatteryMemberCard.getRemainingNumber())
-                .newMaxUseCount(query.getUseCount())
-                .tenantId(TenantContextHolder.getTenantId())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
-        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
+                    .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT)
+                    .operateUid(user.getUid())
+                    .uid(userInfo.getUid())
+                    .name(user.getName())
+                    .oldValidDays(userBatteryMemberCard.getMemberCardExpireTime().intValue())
+                    .newValidDays(userBatteryMemberCardUpdate.getMemberCardExpireTime().intValue())
+                    .oldMaxUseCount(userBatteryMemberCard.getRemainingNumber())
+                    .newMaxUseCount(query.getUseCount())
+                    .tenantId(TenantContextHolder.getTenantId())
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
+        }
 
         ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(channelActivityHistory) && Objects.equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {

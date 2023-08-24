@@ -73,6 +73,7 @@
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_user_info tu on tu.uid=iajh.uid
         left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
@@ -106,13 +107,13 @@
                 and iajh.create_time &lt;=#{endTime}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tu.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null and storeIds.size()>0">
-                and tui.store_id in
+                and tu.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -139,6 +140,7 @@
         select count(*)
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_user_info tu on tu.uid=iajh.uid
         left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
@@ -169,13 +171,13 @@
                 and iajh.create_time &lt;=#{endTime}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tu.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null and storeIds.size()>0">
-                and tui.store_id in
+                and tu.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>

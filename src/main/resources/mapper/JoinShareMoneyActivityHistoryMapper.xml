@@ -164,6 +164,7 @@
 
         from t_join_share_money_activity_history tjsmah
         left join t_user_info as tui on tui.uid = tjsmah.join_uid
+        left join t_user_info as tu on tu.uid = tjsmah.uid
         left join t_share_money_activity as tsma on tsma.id = tjsmah.activity_id
         <where>
             <if test="uid != null">
@@ -197,13 +198,13 @@
                 and tjsmah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and tu.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and tu.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
@@ -221,6 +222,7 @@
             count(1)
         from t_join_share_money_activity_history tjsmah
         left join t_user_info as tui on tui.uid = tjsmah.join_uid
+        left join t_user_info as tu on tu.uid = tjsmah.uid
         left join t_share_money_activity as tsa on tsa.id = tjsmah.activity_id
         <where>
             <if test="uid != null">
@@ -254,13 +256,13 @@
                 and tjsmah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and tu.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and tu.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
