@@ -131,9 +131,13 @@ public class CarDataServiceImpl implements CarDataService {
                     // 获取设备信息
                     Pair<Boolean, Object> carDevice = jt808CarService.queryDeviceInfo(item.getSn());
                     if (carDevice.getLeft()) {
-                        jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
-
+                        if(Objects.nonNull(carDevice.getRight())){
+                            jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
+                        }
                     }
+                }
+                if (Objects.isNull(jt808DeviceInfoVo)){
+                    jt808DeviceInfoVo=new Jt808DeviceInfoVo();
                 }
                 vo.setJt808DeviceInfoVo(jt808DeviceInfoVo);
                 vo.setCarDataVO(item);
@@ -203,9 +207,13 @@ public class CarDataServiceImpl implements CarDataService {
                     // 获取设备信息
                     Pair<Boolean, Object> carDevice = jt808CarService.queryDeviceInfo(item.getSn());
                     if (carDevice.getLeft()) {
-                        jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
-
+                        if(Objects.nonNull(carDevice.getRight())){
+                            jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
+                        }
                     }
+                }
+                if (Objects.isNull(jt808DeviceInfoVo)){
+                    jt808DeviceInfoVo=new Jt808DeviceInfoVo();
                 }
                 vo.setJt808DeviceInfoVo(jt808DeviceInfoVo);
                 vo.setCarDataVO(item);
@@ -274,9 +282,14 @@ public class CarDataServiceImpl implements CarDataService {
                     // 获取设备信息
                     Pair<Boolean, Object> carDevice = jt808CarService.queryDeviceInfo(item.getSn());
                     if (carDevice.getLeft()) {
-                        jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
+                        if(Objects.nonNull(carDevice.getRight())){
+                            jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
+                        }
 
                     }
+                }
+                if (Objects.isNull(jt808DeviceInfoVo)){
+                    jt808DeviceInfoVo=new Jt808DeviceInfoVo();
                 }
                 vo.setJt808DeviceInfoVo(jt808DeviceInfoVo);
                 vo.setCarDataVO(item);
@@ -347,9 +360,13 @@ public class CarDataServiceImpl implements CarDataService {
                     // 获取设备信息
                     Pair<Boolean, Object> carDevice = jt808CarService.queryDeviceInfo(item.getSn());
                     if (carDevice.getLeft()) {
-                        jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
-
+                        if(Objects.nonNull(carDevice.getRight())){
+                            jt808DeviceInfoVo = (Jt808DeviceInfoVo) carDevice.getRight();
+                        }
                     }
+                }
+                if (Objects.isNull(jt808DeviceInfoVo)){
+                    jt808DeviceInfoVo=new Jt808DeviceInfoVo();
                 }
                 vo.setJt808DeviceInfoVo(jt808DeviceInfoVo);
                 vo.setCarDataVO(item);

@@ -68,7 +68,7 @@
                 and tui.phone = #{phone}
             </if>
             <if test="uid != null">
-                and tui.uid = #{uid}
+                and iar.uid = #{uid}
             </if>
             <if test="status != null">
                 and iar.status = #{status}
@@ -111,7 +111,7 @@
                 and tui.phone = #{phone}
             </if>
             <if test="uid != null">
-                and tui.uid = #{uid}
+                and iar.uid = #{uid}
             </if>
             <if test="status != null">
                 and iar.status = #{status}
