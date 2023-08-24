@@ -213,4 +213,15 @@
         delete from t_battery_membercard_refund_order where id = #{id}
     </delete>
 
+    <select id="selectUserTotalRefund" resultType="decimal">
+        select sum(pay_amount) from t_battery_membercard_refund_order
+        where status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+    </select>
+
 </mapper>

@@ -75,4 +75,6 @@ public interface BatteryMembercardRefundOrderService {
     WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException;
 
     List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid);
+
+    BigDecimal selectUserTotalRefund(Integer tenantId, Long uid);
 }

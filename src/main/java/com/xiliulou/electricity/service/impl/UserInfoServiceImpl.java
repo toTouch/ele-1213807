@@ -218,6 +218,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
     /**
      * 分页查询
      *
@@ -1250,8 +1253,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
         //用户电池总套餐消费额
         CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+            //用户套餐总支付金额
             BigDecimal pay = electricityMemberCardOrderService.queryTurnOver(tenantId, id);
-            userTurnoverVo.setMemberCardTurnover(pay);
+            BigDecimal refund = batteryMembercardRefundOrderService.selectUserTotalRefund(tenantId, id);
+            userTurnoverVo.setMemberCardTurnover(pay.subtract(refund));
 
             userBatteryMemberCardPackageService.batteryMembercardTransform(id);
         }, threadPool).exceptionally(e -> {

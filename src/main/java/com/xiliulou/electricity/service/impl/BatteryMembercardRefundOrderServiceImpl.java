@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -670,6 +671,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Override
     public List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid) {
         return this.batteryMembercardRefundOrderMapper.selectList(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getUid, uid).in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_AUDIT, BatteryMembercardRefundOrder.STATUS_REFUND));
+    }
+
+    @Slave
+    @Override
+    public BigDecimal selectUserTotalRefund(Integer tenantId, Long uid) {
+        return Optional.ofNullable(batteryMembercardRefundOrderMapper.selectUserTotalRefund(tenantId, uid)).orElse(BigDecimal.ZERO);
     }
 
     @Override
