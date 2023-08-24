@@ -2012,7 +2012,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
             EleBatteryServiceFeeOrder disableMembercardServiceFeeOrder = new EleBatteryServiceFeeOrder();
             disableMembercardServiceFeeOrder.setOrderId(serviceFeeUserInfo.getPauseOrderNo());
-            disableMembercardServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
+            disableMembercardServiceFeeOrder.setPayAmount(pauseBatteryServiceFee);
             disableMembercardServiceFeeOrder.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
             disableMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(disableMembercardServiceFeeOrder);
@@ -2021,7 +2021,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             EleBatteryServiceFeeOrder expireMembercardServiceFeeOrder = new EleBatteryServiceFeeOrder();
             expireMembercardServiceFeeOrder.setOrderId(serviceFeeUserInfo.getExpireOrderNo());
             expireMembercardServiceFeeOrder.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
-            expireMembercardServiceFeeOrder.setPayAmount(pauseBatteryServiceFee);
+            expireMembercardServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
         }
