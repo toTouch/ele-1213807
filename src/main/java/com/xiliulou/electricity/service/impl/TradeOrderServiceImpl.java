@@ -233,7 +233,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
             if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(), integratedPaymentAdd.getMemberCardId());
-                return Triple.of(false, "100375", "柜机加盟商与套餐加盟商不一致");
+                return Triple.of(false, "100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
             }
 
             //押金订单
