@@ -124,7 +124,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .sn(sn)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
-                //.uid(uid)
+                .uid(uid)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
@@ -132,7 +132,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectInCabinetBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectInCabinetBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -167,6 +167,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(tenantId)
                 .sn(sn)
+                .uid(uid)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
@@ -176,10 +177,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -199,10 +200,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectInCabinetBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectInCabinetBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
+                .uid(uid)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
@@ -212,7 +214,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectPendingRentalBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectPendingRentalBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -247,6 +249,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(tenantId)
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
@@ -256,10 +259,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -279,10 +282,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectPendingRentalBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectPendingRentalBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
@@ -292,7 +296,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectLeasedBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectLeasedBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -327,6 +331,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(tenantId)
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
@@ -335,10 +340,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -358,10 +363,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectLeasedBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectLeasedBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
@@ -370,7 +376,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectStrayBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectStrayBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -405,6 +411,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(tenantId)
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
@@ -415,10 +422,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -438,10 +445,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectStrayBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectStrayBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
@@ -452,7 +460,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectOverdueBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectOverdueBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -487,6 +495,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(tenantId)
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
@@ -497,10 +506,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
         electricityBatteries.parallelStream().forEach(item->{
-            Long uid = item.getUid();
+            Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
-            if (Objects.nonNull(uid)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userId)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(userId);
                 if (Objects.nonNull(userInfo)) {
                     item.setName(userInfo.getName());
                     item.setUserName(userInfo.getUserName());
@@ -520,10 +529,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
 	@Slave
-    public R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
+                .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
