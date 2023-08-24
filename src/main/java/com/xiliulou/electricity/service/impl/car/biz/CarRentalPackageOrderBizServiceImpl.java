@@ -916,9 +916,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             for (CarRentalPackageOrderFreezePo freezeEntity : pageEntityList) {
                 try {
                     Integer applyTerm = freezeEntity.getApplyTerm();
-                    Long auditTime = freezeEntity.getAuditTime();
+                    Long createTime = freezeEntity.getCreateTime();
                     // 到期时间
-                    long expireTime = auditTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
+                    long expireTime = createTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
 
                     if (nowTime < expireTime) {
                         continue;
@@ -944,8 +944,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         orderSlippageUpdate.setId(slippagePo.getId());
                         orderSlippageUpdate.setUpdateTime(nowTime);
                         // 启用时间
-                        Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getApplyTime(), true);
-                        orderSlippageUpdate.setLateFeeEndTime(realTermPair.getLeft());
+                        //Pair<Long, Integer> realTermPair = carRentalPackageOrderFreezeService.calculateRealTerm(applyTerm, freezeEntity.getApplyTime(), true);
+                        orderSlippageUpdate.setLateFeeEndTime(expireTime);
                         // 计算滞纳金金额
                         long diffDay = DateUtils.diffDay(slippagePo.getLateFeeStartTime(), orderSlippageUpdate.getLateFeeEndTime());
                         orderSlippageUpdate.setLateFeePay(slippagePo.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));

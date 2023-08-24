@@ -274,8 +274,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
 
         //是否已购买套餐
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        /*UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getCardPayCount()) && userBatteryMemberCard.getCardPayCount() > 0) {
+            return Triple.of(true, null, null);
+        }*/
+
+        //3.0 判断用户是否购买套餐(包含换电, 租车, 车电一体套餐)
+        if(userInfo.getPayCount() > 0){
+            log.info("Exist package pay count for current user, uid = {}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
 
