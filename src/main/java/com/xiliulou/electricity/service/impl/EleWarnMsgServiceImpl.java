@@ -189,8 +189,10 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         if (Objects.nonNull(eleWarnMsgRankingVos)) {
             for (EleWarnMsgVo eleWarnMsgVo : eleWarnMsgRankingVos) {
                 EleWarnMsgVo eleWarnMsgVoForTenant = eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgVo.getElectricityCabinetId());
-                eleWarnMsgVo.setElectricityCabinetName(eleWarnMsgVoForTenant.getElectricityCabinetName());
-                eleWarnMsgVo.setTenantName(eleWarnMsgVoForTenant.getTenantName());
+                if(Objects.nonNull(eleWarnMsgVoForTenant)){
+                    eleWarnMsgVo.setElectricityCabinetName(eleWarnMsgVoForTenant.getElectricityCabinetName());
+                    eleWarnMsgVo.setTenantName(eleWarnMsgVoForTenant.getTenantName());
+                }
             }
         }
         return R.ok(eleWarnMsgRankingVos);
