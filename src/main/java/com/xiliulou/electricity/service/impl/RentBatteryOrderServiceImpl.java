@@ -471,14 +471,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false,"ELECTRICITY.0038", "加盟商不存在");
         }
 
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
-        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
-            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-            Triple<Boolean, String, Object> booleanStringObjectTriple = checkUserCarMemberCard(userCarMemberCard, userInfo);
-            if (Boolean.FALSE.equals(booleanStringObjectTriple.getLeft())) {
-                return booleanStringObjectTriple;
-            }
-        }
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+//        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+//            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+//            Triple<Boolean, String, Object> booleanStringObjectTriple = checkUserCarMemberCard(userCarMemberCard, userInfo);
+//            if (Boolean.FALSE.equals(booleanStringObjectTriple.getLeft())) {
+//                return booleanStringObjectTriple;
+//            }
+//        }
 
         //是否有正在退款中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
