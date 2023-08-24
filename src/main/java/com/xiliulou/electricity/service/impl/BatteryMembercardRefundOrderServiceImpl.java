@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -570,6 +569,24 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
             electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
             electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUSED);
+            electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+            return Triple.of(true, "", null);
+        }
+
+        //套餐是否过期
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
+            batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
+            batteryMembercardRefundOrderUpdate.setMsg(msg);
+            batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
+            this.update(batteryMembercardRefundOrderUpdate);
+
+            ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+            electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
+            electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             return Triple.of(true, "", null);
