@@ -105,7 +105,7 @@ public class CarDataServiceImpl implements CarDataService {
             return R.ok(new ArrayList<CarDataResultVO>());
         }
         ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEach(item->{
+        carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
@@ -181,7 +181,7 @@ public class CarDataServiceImpl implements CarDataService {
             return R.ok(new ArrayList<CarDataResultVO>());
         }
         ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEach(item->{
+        carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
@@ -256,7 +256,7 @@ public class CarDataServiceImpl implements CarDataService {
             return R.ok(new ArrayList<CarDataResultVO>());
         }
         ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEach(item->{
+        carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
@@ -334,7 +334,7 @@ public class CarDataServiceImpl implements CarDataService {
             return R.ok(new ArrayList<CarDataResultVO>());
         }
         ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEach(item->{
+        carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
