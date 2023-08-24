@@ -31,8 +31,9 @@ public class JsonAdminCarDataController extends BasicController {
                                  @RequestParam(value = "modelId", required = false) Integer modelId,
                                  @RequestParam(value = "sn", required = false) String sn,
                                  @RequestParam(value = "userName", required = false) String userName,
-                                 @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryAllCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone);
+                                 @RequestParam(value = "phone", required = false) String phone,
+                                 @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryAllCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -45,8 +46,9 @@ public class JsonAdminCarDataController extends BasicController {
             @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "userName", required = false) String userName,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryAllCarDataCount(franchiseeId,storeId, modelId, sn, userName, phone);
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryAllCarDataCount(franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -60,8 +62,9 @@ public class JsonAdminCarDataController extends BasicController {
                                            @RequestParam(value = "modelId", required = false) Integer modelId,
                                            @RequestParam(value = "sn", required = false) String sn,
                                            @RequestParam(value = "userName", required = false) String userName,
-                                           @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryPendingRentalCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone);
+                                           @RequestParam(value = "phone", required = false) String phone,
+                                           @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryPendingRentalCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -74,8 +77,9 @@ public class JsonAdminCarDataController extends BasicController {
             @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "userName", required = false) String userName,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryPendingRentalCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone);
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryPendingRentalCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -89,8 +93,9 @@ public class JsonAdminCarDataController extends BasicController {
                                     @RequestParam(value = "modelId", required = false) Integer modelId,
                                     @RequestParam(value = "sn", required = false) String sn,
                                     @RequestParam(value = "userName", required = false) String userName,
-                                    @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryLeasedCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone);
+                                    @RequestParam(value = "phone", required = false) String phone,
+                                    @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryLeasedCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -103,8 +108,9 @@ public class JsonAdminCarDataController extends BasicController {
             @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "userName", required = false) String userName,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryLeasedCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone);
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryLeasedCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -118,8 +124,9 @@ public class JsonAdminCarDataController extends BasicController {
                                      @RequestParam(value = "modelId", required = false) Integer modelId,
                                      @RequestParam(value = "sn", required = false) String sn,
                                      @RequestParam(value = "userName", required = false) String userName,
-                                     @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryOverdueCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone);
+                                     @RequestParam(value = "phone", required = false) String phone,
+                                     @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryOverdueCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
     /**
@@ -132,7 +139,8 @@ public class JsonAdminCarDataController extends BasicController {
             @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "userName", required = false) String userName,
-            @RequestParam(value = "phone", required = false) String phone) {
-        return carDataService.queryOverdueCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone);
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid) {
+        return carDataService.queryOverdueCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 }

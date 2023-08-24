@@ -85,7 +85,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
-    public R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = Long.valueOf(10);
         }
@@ -99,7 +99,7 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
@@ -148,20 +148,20 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
-    public R queryAllCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryAllCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Integer.valueOf(0));
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }
 
     @Override
-    public R queryPendingRentalCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryPendingRentalCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = Long.valueOf(10);
         }
@@ -175,7 +175,7 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_NOT_RENT).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
@@ -224,19 +224,19 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
-    public R queryPendingRentalCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryPendingRentalCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Integer.valueOf(0));
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_NOT_RENT).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
     }
 
     @Override
-    public R queryLeasedCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryLeasedCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = Long.valueOf(10);
         }
@@ -250,7 +250,7 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_IS_RENT).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
@@ -300,20 +300,20 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
-    public R queryLeasedCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryLeasedCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Integer.valueOf(0));
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_IS_RENT).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }
 
     @Override
-    public R queryOverdueCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryOverdueCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = Long.valueOf(10);
         }
@@ -327,7 +327,7 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
 
         if(CollectionUtils.isEmpty(carDataVOS)){
@@ -377,7 +377,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
-    public R queryOverdueCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone) {
+    public R queryOverdueCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -385,7 +385,7 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Integer.valueOf(0));
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }
