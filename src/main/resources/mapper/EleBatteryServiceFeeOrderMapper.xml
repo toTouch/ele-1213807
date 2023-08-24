@@ -6,6 +6,9 @@
     <update id="updateByOrderNo">
         update t_ele_battery_service_fee_order
         <set>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
             <if test="status != null">
                 status = #{status},
             </if>

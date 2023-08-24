@@ -56,4 +56,5 @@ public class CarDataQuery implements Serializable {
      */
     private Long overdueTime;
 
+    private Long uid;
 }

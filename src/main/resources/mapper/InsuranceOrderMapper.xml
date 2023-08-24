@@ -24,9 +24,6 @@
             <if test="query.isUse != null">
                 and tio.is_use = #{query.isUse}
             </if>
-            <if test="query.insuranceType != null">
-                and tio.insurance_type = #{query.insuranceType}
-            </if>
             <if test="query.type != null and query.type == 0">
                 and tio.insurance_type = 0
             </if>
@@ -61,8 +58,7 @@
                 and tio.pay_type = #{query.payType}
             </if>
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
-                and tio.franchisee_id in (select id from t_franchisee where name like
-                concat('%',#{query.franchiseeName},'%'))
+                and tf.name like  concat('%',#{query.franchiseeName},'%')
             </if>
             <if test="query.franchiseeIds != null">
                 and tio.franchisee_id in
@@ -82,19 +78,13 @@
     </select>
 
     <select id="queryCount" resultType="integer">
-        select count(1) from t_insurance_order tio
+        select count(1) from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id
         <where>
             <if test="query.orderId != null and query.orderId !=''">
                 and tio.order_id = #{query.orderId}
             </if>
-            <if test="query.franchiseeId != null">
-                and tio.franchisee_id = #{query.franchiseeId}
-            </if>
             <if test="query.isUse != null">
-                and tio.insurance_type = #{query.isUse}
-            </if>
-            <if test="query.insuranceType != null">
-                and tio.franchisee_id = #{query.insuranceType}
+                and tio.is_use = #{query.isUse}
             </if>
             <if test="query.userName != null and query.userName !=''">
                 and tio.user_name = #{query.userName}
@@ -127,8 +117,7 @@
                 and tio.pay_type = #{query.payType}
             </if>
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
-                and franchisee_id in (select id from t_franchisee where name like
-                concat('%',#{query.franchiseeName},'%'))
+                and tf.name like  concat('%',#{query.franchiseeName},'%')
             </if>
             <if test="query.franchiseeIds != null">
                 and tio.franchisee_id in

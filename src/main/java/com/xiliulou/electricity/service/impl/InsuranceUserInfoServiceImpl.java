@@ -92,6 +92,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户不存在保险");
@@ -553,6 +557,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(userInfo.getUid(), query.getType());

@@ -23,40 +23,40 @@ public  interface CarDataService {
     /**
      * 获取全部车辆的分页数据
      */
-    R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone);
+    R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid);
 
     /**
      * 获取全部车辆的数据总数
      */
-    R queryAllCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone);
+    R queryAllCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid);
 
     /**
      * 获取待租车辆的分页数据
      */
-    R queryPendingRentalCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryPendingRentalCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 
     /**
      * 获取待租车辆的数据总数
      */
-    R queryPendingRentalCarDataCount(Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryPendingRentalCarDataCount(Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 
     /**
      * 获取已租车辆的分页数据
      */
-    R queryLeasedCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryLeasedCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 
     /**
      * 获取已租车辆的数据总数
      */
-    R queryLeasedCarDataCount(Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryLeasedCarDataCount(Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 
     /**
      * 获取逾期车辆的分页数据
      */
-    R queryOverdueCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryOverdueCarDataPage(Long offset,Long size,Long franchiseeId,Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 
     /**
      * 获取逾期车辆的数据总数
      */
-    R queryOverdueCarDataCount(Long franchiseeId, Long storeId,Integer modelId,String sn,String userName,String phone);
+    R queryOverdueCarDataCount(Long franchiseeId, Long storeId,Integer modelId,String sn,String userName,String phone,Long uid);
 }

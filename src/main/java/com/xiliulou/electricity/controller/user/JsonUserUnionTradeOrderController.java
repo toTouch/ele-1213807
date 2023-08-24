@@ -51,7 +51,7 @@ public class JsonUserUnionTradeOrderController extends BaseController{
     }
 
     /**
-     * 电池滞纳金混合支付
+     * 滞纳金混合支付
      */
     @PostMapping("/user/payServiceFee")
     public R payServiceFee(HttpServletRequest request) {
