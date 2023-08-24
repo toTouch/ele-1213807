@@ -1098,7 +1098,11 @@
                     #{id}
                 </foreach>
             </if>
-            order by NULLIF(ubmc.member_card_expire_time,-1) desc
+            order by  CASE
+                        WHEN ubmc.member_card_expire_time IS NULL THEN 2
+                        WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
+                        WHEN ubmc.member_card_expire_time > 0 THEN 0
+                    END,ubmc.member_card_expire_time
             limit  #{query.offset}, #{query.size}
     </select>
     <select id="queryEleListCount" resultType="java.lang.Integer">
