@@ -1185,11 +1185,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.100000", "存在电池服务费");
             }
-
-            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                log.error("WEBBIND ERROR ERROR! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
-                return R.fail( "ELECTRICITY.0023", "套餐已过期");
-            }
         }else{
             //判断车电一体滞纳金
             if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(),oldUserInfo.getUid()))) {
