@@ -2443,6 +2443,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     }
 
+    @Deprecated
     @Override
     public void exportCarRentalExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
         userInfoQuery.setOffset(0L);

@@ -39,10 +39,11 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
         select
         tec.id,tec.sn,
-        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id, tec.phone, tec.franchisee_id,
+        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tui.name as userName,tec.store_id, tec.phone, tec.franchisee_id,
         tec.create_time,tec.update_time,ts.name as storeName,tec.uid
         from t_electricity_car tec
         left join t_store ts on tec.store_id=ts.id
+        left join t_user_info tui on tui.uid = tec.uid
         where tec.del_flag=0
         <if test="query.sn != null and query.sn!=''">
             and tec.sn = #{query.sn}
