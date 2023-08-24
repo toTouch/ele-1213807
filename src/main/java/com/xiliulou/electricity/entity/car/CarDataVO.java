@@ -10,7 +10,11 @@ import lombok.Data;
  */
 @Data
 public class CarDataVO {
-
+    /**
+     * 车辆Id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
     /**
      * 车辆sn
      */

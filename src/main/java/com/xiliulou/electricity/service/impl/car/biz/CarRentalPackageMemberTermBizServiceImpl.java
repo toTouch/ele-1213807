@@ -182,6 +182,18 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         Long uid = optReq.getUid();
 
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("updateCurrPackage failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("updateCurrPackage failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         // 查询滞纳金信息
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
         if (exitUnpaid) {
