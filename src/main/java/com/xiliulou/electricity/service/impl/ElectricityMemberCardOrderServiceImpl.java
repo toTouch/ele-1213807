@@ -1973,7 +1973,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .memberCardName(batteryMemberCard.getName())
                     .enableTime(System.currentTimeMillis())
                     .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
-                    .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
+                    .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_CLEAN)
                     .serviceFee(pauseBatteryServiceFee)
                     .disableDays(batteryMembercardDisableDays)
                     .disableTime(userBatteryMemberCard.getDisableMemberCardTime())
