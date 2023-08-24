@@ -486,6 +486,17 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         // 查询用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("unBindingCar failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("unBindingCar failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         if (UserInfo.CAR_RENT_STATUS_NO.equals(userInfo.getCarRentStatus())) {
             log.error("unBindingCar, t_user_info is unBind. uid is {}", uid);
             throw new BizException("100015", "用户未绑定车辆");

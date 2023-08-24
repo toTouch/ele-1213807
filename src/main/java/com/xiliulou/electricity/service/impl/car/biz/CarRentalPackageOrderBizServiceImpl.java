@@ -223,16 +223,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("CarRentalPackageOrderBizService.refundRentOrderHint failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRentalPackageOrderBizService.refundRentOrderHint failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         // 查询会员期限信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.error("CarRentalPackageOrderBizService.refundRentOrderHint failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
         if (memberTermEntity.getDueTimeTotal() < now) {
-            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
+            log.error("CarRentalPackageOrderBizService.refundRentOrderHint failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
             throw new BizException("300032", "套餐已过期，无法申请退租");
         }
 
@@ -979,10 +991,22 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("CarRentalPackageOrderBizService.enableFreezeRentOrder failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRentalPackageOrderBizService.enableFreezeRentOrder failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         // 查询套餐会员期限
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("CarRentalPackageOrderBizServiceImpl.enableFreezeRentOrder, memberTermEntity not found. uid is {}, tenantId is {}", uid, tenantId);
+            log.error("CarRentalPackageOrderBizService.enableFreezeRentOrder, memberTermEntity not found. uid is {}, tenantId is {}", uid, tenantId);
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -1001,7 +1025,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeService.selectFreezeByUidAndPackageOrderNo(uid, packageOrderNo);
         if (ObjectUtils.isEmpty(freezeEntity)) {
-            log.error("CarRentalPackageOrderBizServiceImpl.enableFreezeRentOrder error. not found order. uid is {}, packageOrderNo is {}",
+            log.error("CarRentalPackageOrderBizService.enableFreezeRentOrder error. not found order. uid is {}, packageOrderNo is {}",
                     uid, packageOrderNo);
             throw new BizException("300020", "订单编码不匹配");
         }
@@ -1123,16 +1147,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("CarRentalPackageOrderBizService.freezeRentOrder failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRentalPackageOrderBizService.freezeRentOrder failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         // 查询套餐会员期限
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.freezeRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.error("CarRentalPackageOrderBizService.freezeRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
         if (memberTermEntity.getDueTime() < now) {
-            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time is {}. now is {}", memberTermEntity.getDueTime(), now);
+            log.error("CarRentalPackageOrderBizService.freezeRentOrder failed. t_car_rental_package_member_term due time is {}. now is {}", memberTermEntity.getDueTime(), now);
             throw new BizException("300033", "套餐已过期，无法申请冻结");
         }
 
@@ -1313,16 +1349,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("CarRentalPackageOrderBizService.refundRentOrder failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRentalPackageOrderBizService.refundRentOrder failed. user is disable. uid is {}", uid);
+            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+        }
+
         // 查询会员期限信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+            log.error("CarRentalPackageOrderBizService.refundRentOrder failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
             throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
         }
 
         long now = System.currentTimeMillis();
         if (memberTermEntity.getDueTimeTotal() < now) {
-            log.error("CarRenalPackageDepositBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
+            log.error("CarRentalPackageOrderBizService.refundRentOrder failed. t_car_rental_package_member_term due time total is {}. now is {}", memberTermEntity.getDueTimeTotal(), now);
             throw new BizException("300032", "套餐已过期，无法申请退租");
         }
 
