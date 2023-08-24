@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
@@ -42,4 +44,6 @@ public interface BatteryMembercardRefundOrderMapper  extends BaseMapper<BatteryM
     Integer selectPageCount(BatteryMembercardRefundOrderQuery query);
 
     List<BatteryMembercardRefundOrder> selectByPage(BatteryMembercardRefundOrderQuery query);
+
+    BigDecimal selectUserTotalRefund(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 }

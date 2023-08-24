@@ -277,7 +277,7 @@
 
     <select id="queryTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
-        where status=1 and pay_type=0
+        where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
