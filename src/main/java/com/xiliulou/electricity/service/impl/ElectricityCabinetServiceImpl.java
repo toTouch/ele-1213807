@@ -2159,8 +2159,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             Long now = System.currentTimeMillis();
-            if (userBatteryMemberCard.getMemberCardExpireTime() < now
-                    || userBatteryMemberCard.getRemainingNumber() == 0) {
+            if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
                 log.error("rentBattery  ERROR! memberCard  is Expire,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0023", "月卡已过期");
             }
