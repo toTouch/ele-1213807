@@ -453,10 +453,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", userInfo.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
+//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
+//            log.warn("HOME WARN! user haven't memberCard uid={}", userInfo.getUid());
+//            return R.fail("100210", "用户未开通套餐");
+//        }
 
         Long validDays = null;
         Long memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime();
