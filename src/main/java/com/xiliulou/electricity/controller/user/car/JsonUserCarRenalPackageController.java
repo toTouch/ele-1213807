@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
@@ -61,7 +62,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
 
         // 获取优惠券ID集
         List<Long> couponIdList = entityList.stream()
-                .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && entity.getCouponId().longValue() > 0)
+                .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && YesNoEnum.YES.getCode().equals(entity.getGiveCoupon()))
                 .map(CarRentalPackagePo::getCouponId).distinct().collect(Collectors.toList());
 
         // 查询赠送的优惠券信息
