@@ -617,7 +617,7 @@ public class EleOperateQueueHandler {
             }
 
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-            handleExpireMemberCard(rentBatteryOrder);
+            //handleExpireMemberCard(rentBatteryOrder);
         }
 
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(

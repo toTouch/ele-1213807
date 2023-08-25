@@ -145,7 +145,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
 
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-        handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
+        //handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
     }
 
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet,
