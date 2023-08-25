@@ -11,18 +11,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
-import com.xiliulou.electricity.service.BatteryTrackRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOfflineReportOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.OperateMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -77,7 +66,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     ElectricityCabinetOrderService electricityCabinetOrderService;
     
     @Autowired
-    ElectricityMemberCardService electricityMemberCardService;
+    BatteryMemberCardService batteryMemberCardService;
+//    ElectricityMemberCardService electricityMemberCardService;
     
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
@@ -151,10 +141,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.warn("OFFLINE EXCHANGE ERROR! user haven't memberCard uid={}", user.getUid());
             return;
         }
-        
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(
-                userBatteryMemberCard.getMemberCardId().intValue());
-        if (Objects.isNull(electricityMemberCard)) {
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
             log.warn("OFFLINE EXCHANGE ERROR! user haven't memberCard uid={}", user.getUid());
             return;
         }
@@ -180,7 +168,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn()).orderSeq(null)
                 .status(orderStatus)
                 .source(Objects.isNull(offlineEleOrderVo.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE
-                        : offlineEleOrderVo.getOfflineOrderStatus()).paymentMethod(electricityMemberCard.getType())
+                        : offlineEleOrderVo.getOfflineOrderStatus()).paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY)
                 .createTime(offlineEleOrderVo.getStartTime()).updateTime(offlineEleOrderVo.getEndTime())
                 .storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
@@ -209,7 +197,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
-        if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT)) {
             //扣除月卡
             userBatteryMemberCardService.minCountForOffLineEle(userBatteryMemberCard);
         }
