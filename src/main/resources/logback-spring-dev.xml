@@ -34,7 +34,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %level [%logger{50}] - %msg%n</pattern>
+			<pattern>%date [traceId:%X{traceId}] [%thread] %level [%logger{50}] - %msg%n</pattern>
 		</encoder>
 	</appender>
 
@@ -48,7 +48,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %level [%logger{50}] - %msg%n</pattern>
+			<pattern>%date [traceId:%X{traceId}] [%thread] %level [%logger{50}] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
@@ -63,7 +63,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %level [%logger{50}] - %msg%n</pattern>
+			<pattern>%date [traceId:%X{traceId}] [%thread] %level [%logger{50}] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
@@ -78,34 +78,37 @@
 	<logger name="com.anji" level="ERROR">
 		<appender-ref ref="debug"/>
 	</logger>
-	
+
 	<appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="error"/>
 	</appender>
-	
-	
+
+
 	<appender name="ASYNC_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="debug"/>
 	</appender>
-	
+
 	<appender name="ASYNC_REQUEST" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
+		<neverBlock>true</neverBlock>
 		<appender-ref ref="request"/>
 	</appender>
-	
+
 	<logger name="com.xiliulou.electricity.*" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_DEBUG"/>
 	</logger>
-	
+
 	<logger name="com.xiliulou.electricity.filter.RequestFilter" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_REQUEST"/>
 	</logger>
-	
+
 	<logger name="com.xiliulou.electricity.aspectj.LogAspect" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_REQUEST"/>
 	</logger>

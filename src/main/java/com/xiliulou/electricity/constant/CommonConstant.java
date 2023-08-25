@@ -44,4 +44,9 @@ public interface CommonConstant {
     String APP_SAAS = "SAAS";
 
     String APP_SAAS_AES_KEY = "123abc*@saasxab$";
+
+    /**
+     * 链路ID
+     */
+    String TRACE_ID = "traceId";
 }
