@@ -302,7 +302,15 @@
             </if>
 
         </where>
-        order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total
+
+        <if test="query.sortType != null and query.sortType == 1">
+            order by ISNULL(tui.create_time) #{query.sortBy}, tui.create_time
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 2">
+            order by ISNULL(tcrpme.due_time_total) #{query.sortBy}, tcrpme.due_time_total
+        </if>
+
         limit #{query.offset}, #{query.size}
     </select>
 
