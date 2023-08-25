@@ -51,7 +51,7 @@ public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
         try {
             carRentalPackageMemberTermBizService.expirePackageOrder(offset, size);
         } catch (Exception e) {
-            log.info("CarRentalPackageOrderExpireTask error. ", e);
+            log.error("CarRentalPackageOrderExpireTask error. ", e);
         } finally {
             MDC.clear();
         }
