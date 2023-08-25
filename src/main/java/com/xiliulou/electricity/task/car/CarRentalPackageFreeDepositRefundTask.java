@@ -45,7 +45,7 @@ public class CarRentalPackageFreeDepositRefundTask extends IJobHandler {
         try {
             carRenalPackageDepositBizService.freeDepositRefundHandler(offset, size);
         } catch (Exception e) {
-            log.info("carRentalPackageFreeDepositRefundTask error. ", e);
+            log.error("carRentalPackageFreeDepositRefundTask error. ", e);
         } finally {
             MDC.clear();
         }

@@ -52,7 +52,7 @@ public class CarRentalPackageOrderFreezeAutoEnableTask extends IJobHandler {
         try {
             carRentalPackageOrderBizService.enableFreezeRentOrderAuto(offset, size);
         } catch (Exception e) {
-            log.info("CarRentalPackageOrderFreezeAutoEnableTask error. ", e);
+            log.error("CarRentalPackageOrderFreezeAutoEnableTask error. ", e);
         } finally {
             MDC.clear();
         }
