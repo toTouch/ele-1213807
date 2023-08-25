@@ -147,13 +147,13 @@ public class RequestFilter implements Filter {
                 filterChain.doFilter(httpServletRequest, servletResponse);
             } else {
                 httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
-        
+
                 if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
                     params = getRequestBody(httpServletRequest);
                 } else {
                     params = JsonUtil.toJson(httpServletRequest.getParameterMap());
                 }
-        
+
                 filterChain.doFilter(httpServletRequest, servletResponse);
             }
         }finally {

@@ -53,13 +53,13 @@ public interface CommonConstant {
     Integer DEL_Y = 1;
 
     /**
-     * 链路ID
-     */
-    String TRACE_ID = "traceId";
-
-    /**
      * 版本
      */
     String SWITCH_VERSION = "v3";
 
+
+    /**
+     * 链路ID
+     */
+    String TRACE_ID = "traceId";
 }
