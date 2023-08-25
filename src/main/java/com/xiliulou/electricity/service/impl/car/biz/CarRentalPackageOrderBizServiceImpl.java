@@ -1726,6 +1726,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         ElectricityUserBatteryVo userBatteryVo = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
+            if (!batteryTriple.getLeft()) {
+                log.error("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, batteryService.queryInfoByUid failed. uid is {}", uid);
+                throw new BizException(batteryTriple.getMiddle(), (String) batteryTriple.getRight());
+            }
             userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
 
