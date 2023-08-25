@@ -80,6 +80,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     TenantService tenantService;
 
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
 
 
@@ -145,7 +148,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
 
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-        //handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
+        handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
     }
 
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet,
@@ -378,6 +381,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.isNull(userBatteryMemberCard)) {
             log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},requestId={},orderId={}",
                     electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
+            return;
+        }
+
+        //判断套餐是否限次
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
+        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
             return;
         }
 

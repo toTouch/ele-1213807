@@ -107,6 +107,9 @@ public class EleOperateQueueHandler {
     TenantService tenantService;
 
     @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+
+    @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
@@ -617,7 +620,7 @@ public class EleOperateQueueHandler {
             }
 
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-            //handleExpireMemberCard(rentBatteryOrder);
+            handleExpireMemberCard(rentBatteryOrder);
         }
 
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
@@ -796,6 +799,12 @@ public class EleOperateQueueHandler {
         if (Objects.isNull(userBatteryMemberCard)) {
             log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},orderId={}",
                     rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());
+            return;
+        }
+
+        //判断套餐是否限次
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
+        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
             return;
         }
 
