@@ -303,12 +303,20 @@
 
         </where>
 
-        <if test="query.sortType != null and query.sortType == 1">
-            order by ISNULL(tui.create_time) #{query.sortBy}, tui.create_time
+        <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
+            order by ISNULL(tui.create_time) desc, tui.create_time
         </if>
 
-        <if test="query.sortType != null and query.sortType == 2">
-            order by ISNULL(tcrpme.due_time_total) #{query.sortBy}, tcrpme.due_time_total
+        <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
+            order by ISNULL(tui.create_time), tui.create_time
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
+            order by ISNULL(tcrpme.due_time_total) desc, tcrpme.due_time_total
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
+            order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total
         </if>
 
         limit #{query.offset}, #{query.size}
