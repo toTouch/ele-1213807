@@ -101,7 +101,7 @@ public class UserBatteryMemberCard {
     public static final Integer DEL_DEL = 1;
     
     /**
-     * 0--正常  1--停卡 2--停卡审核中 3-- 停卡被拒绝 4--退租中
+     * 0--正常  1--停卡 2--停卡审核中 3-- 停卡被拒绝
      */
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;

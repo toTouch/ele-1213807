@@ -1066,7 +1066,7 @@
             LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
             AND teb.del_flag = 0
             LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
-            AND tiui.del_flag = 0
+            AND tiui.del_flag = 0 AND tiui.type = 0
         WHERE
             tui.del_flag = 0
             AND tui.auth_status = 2
@@ -1115,7 +1115,7 @@
         LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
         AND teb.del_flag = 0
         LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
-        AND tiui.del_flag = 0
+        AND tiui.del_flag = 0 AND tiui.type = 0
         WHERE
         tui.del_flag = 0
         AND tui.auth_status = 2

@@ -2039,8 +2039,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //更新滞纳金订单状态
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
             EleBatteryServiceFeeOrder disableMembercardServiceFeeOrder = new EleBatteryServiceFeeOrder();
+            if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
+                disableMembercardServiceFeeOrder.setPayAmount(pauseBatteryServiceFee);
+            }
             disableMembercardServiceFeeOrder.setOrderId(serviceFeeUserInfo.getPauseOrderNo());
-            disableMembercardServiceFeeOrder.setPayAmount(pauseBatteryServiceFee);
             disableMembercardServiceFeeOrder.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
             disableMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(disableMembercardServiceFeeOrder);
@@ -2052,6 +2054,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
+        }
+
+        if(!Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())){
+            EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.selectLatestByUid(userInfo.getUid());
+            if(Objects.nonNull(enableMemberCardRecord)){
+                EnableMemberCardRecord enableMemberCardRecordUpdate =new EnableMemberCardRecord();
+                enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_CLEAN);
+                enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
+            }
+
+
         }
 /*
 

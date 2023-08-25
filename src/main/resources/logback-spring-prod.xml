@@ -77,29 +77,29 @@
 	<logger name="com.anji" level="ERROR">
 		<appender-ref ref="debug"/>
 	</logger>
-	
+
 	<appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
 		<neverBlock>true</neverBlock>
 		<appender-ref ref="error"/>
 	</appender>
-	
-	
+
+
 	<appender name="ASYNC_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
 		<neverBlock>true</neverBlock>
 		<appender-ref ref="debug"/>
 	</appender>
-	
+
 	<appender name="ASYNC_REQUEST" class="ch.qos.logback.classic.AsyncAppender">
 		<discardingThreshold>0</discardingThreshold>
 		<queueSize>10000</queueSize>
 		<neverBlock>true</neverBlock>
 		<appender-ref ref="request"/>
 	</appender>
-	
+
 	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_DEBUG"/>
 	</logger>
