@@ -120,5 +120,10 @@ public class BatteryMemberCardVO {
 
     private String couponName;
 
+    /**
+     * 优惠券减免金额
+     */
+    private BigDecimal amount;
+
     private Boolean editUserMembercard = Boolean.TRUE;
 }

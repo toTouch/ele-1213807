@@ -4,6 +4,7 @@ import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
@@ -67,6 +68,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         Set<Integer> carModelSet = new HashSet<>();
         Set<Long> batteryModelIdSet = new HashSet<>();
         Set<Long> storeIdSet = new HashSet<>();
+        Set<Long> franchiseeIds = new HashSet<>();
         carRentalPackageSlippageEntityList.forEach(n -> {
             rentalPackageIdSet.add(n.getRentalPackageId());
             if (ObjectUtils.isNotEmpty(n.getCarModelId())) {
@@ -76,6 +78,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
             if (ObjectUtils.isNotEmpty(n.getBatteryModelId())) {
                 batteryModelIdSet.add(n.getBatteryModelId());
             }
+            franchiseeIds.add(Long.valueOf(n.getFranchiseeId()));
         });
 
         // 套餐名称信息
@@ -86,6 +89,9 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         
         // 门店信息
         Map<Long, String> storeNameForMap = getStoreNameByIdsForMap(storeIdSet);
+
+        // 加盟商信息
+        Map<Long, Franchisee> franchiseeForMap = getFranchiseeByIdsForMap(franchiseeIds);
 
 
         List<CarRentalPackageOrderSlippageVo> carRentalPackageSlippageVoList = new ArrayList<>();
@@ -118,7 +124,13 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
             slippageVo.setRentalPackageName(packageNameMap.getOrDefault(slippageEntity.getRentalPackageId(), null));
             if (ObjectUtils.isNotEmpty(slippageEntity.getBatteryModelId())) {
-                slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(slippageEntity.getBatteryModelId(), new BatteryModel()).getBatteryType());
+                Franchisee franchisee = franchiseeForMap.getOrDefault(Long.valueOf(slippageEntity.getFranchiseeId()), new Franchisee());
+                if (Franchisee.OLD_MODEL_TYPE.equals(franchisee.getModelType())) {
+                    slippageVo.setBatteryModelType(null);
+                }
+                if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
+                    slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(slippageEntity.getBatteryModelId(), new BatteryModel()).getBatteryType());
+                }
             }
             slippageVo.setStoreName(storeNameForMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), null));
 

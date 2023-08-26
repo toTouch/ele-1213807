@@ -418,6 +418,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.nonNull(item.getCouponId())) {
                 Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+                batteryMemberCardVO.setAmount(Objects.isNull(coupon) ? null : coupon.getAmount());
             }
 
             result.add(batteryMemberCardVO);
