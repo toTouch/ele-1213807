@@ -2515,15 +2515,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
 
-        // 10. 发放优惠券
-        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
-            UserCouponDTO userCouponDTO = new UserCouponDTO();
-            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
-            userCouponDTO.setUid(uid);
-            userCouponDTO.setSourceOrderNo(orderNo);
-            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-            userCouponService.asyncSendCoupon(userCouponDTO);
-        }
+
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -2543,6 +2535,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
                 activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                 activityService.asyncProcessActivity(activityProcessDTO);
+
+                // 10. 发放优惠券
+                if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+                    UserCouponDTO userCouponDTO = new UserCouponDTO();
+                    userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+                    userCouponDTO.setUid(uid);
+                    userCouponDTO.setSourceOrderNo(orderNo);
+                    userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    userCouponService.asyncSendCoupon(userCouponDTO);
+                }
 
                 // 车电一体，同步电池会员信息
                 if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {

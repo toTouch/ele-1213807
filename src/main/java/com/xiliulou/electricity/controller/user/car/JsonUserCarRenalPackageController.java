@@ -94,11 +94,13 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVo.setFreeDeposit(entity.getFreeDeposit());
             packageVo.setConfine(entity.getConfine());
             packageVo.setConfineNum(entity.getConfineNum());
-            packageVo.setGiveCoupon(entity.getGiveCoupon());
             packageVo.setRemark(entity.getRemark());
             packageVo.setBatteryVoltage(entity.getBatteryVoltage());
+            packageVo.setGiveCoupon(entity.getGiveCoupon());
             // 设置辅助业务信息
-            packageVo.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
+            if (YesNoEnum.YES.getCode().equals(entity.getGiveCoupon())) {
+                packageVo.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
+            }
             return packageVo;
         }).collect(Collectors.toList());
     }
