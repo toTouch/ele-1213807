@@ -2625,7 +2625,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
 
     /**
-     * 构建租车套餐会员期限信息
+     * 构建租车套餐会员期限信息(首次新增数据，用此方法，此方法内有保存总到期时间)
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageEntity 租车套餐信息
@@ -2662,8 +2662,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
             dueTime = dueTime + (tenancy * TimeConstant.MINUTE_MILLISECOND);
         }
-
         carRentalPackageMemberTermEntity.setDueTime(dueTime);
+        carRentalPackageMemberTermEntity.setDueTimeTotal(dueTime);
 
         return carRentalPackageMemberTermEntity;
     }
