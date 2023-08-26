@@ -713,11 +713,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.warn("RETURNBATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.100000", "存在电池服务费");
                 }
-
-                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                    log.warn("RETURNBATTERY WARN ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
-                    return R.fail( "ELECTRICITY.0023", "套餐已过期");
-                }
             }else{
                 //判断车电一体滞纳金
                 if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(),userInfo.getUid()))) {

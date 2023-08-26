@@ -458,8 +458,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         ElectricityCar electricityCarUpdate = buildElectricityCar(electricityCar, uid, userInfo, RentalTypeEnum.RENTAL.getCode());
 
         // 生成车辆记录
-        User user = userService.queryByUidFromCache(optUid);
-        EleBindCarRecord eleBindCarRecord = buildEleBindCarRecord(electricityCar, userInfo, user, RentalTypeEnum.RENTAL.getCode());
+        EleBindCarRecord eleBindCarRecord = buildEleBindCarRecord(electricityCar, userInfo, null, RentalTypeEnum.RENTAL.getCode());
 
         // JT808
         CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RENTAL.getCode());
@@ -780,7 +779,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
                 .carId(electricityCar.getId())
                 .sn(electricityCar.getSn())
-                .operateUser(user.getName())
+                .operateUser(ObjectUtils.isNotEmpty(user) ? user.getName() : userInfo.getName())
                 .model(electricityCar.getModel())
                 .phone(userInfo.getPhone())
                 .userName(userInfo.getName())

@@ -1726,6 +1726,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         ElectricityUserBatteryVo userBatteryVo = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
+            if (!batteryTriple.getLeft()) {
+                log.error("CarRentalPackageOrderBizService.queryUseRentalPackageOrderByUid, batteryService.queryInfoByUid failed. uid is {}", uid);
+                throw new BizException(batteryTriple.getMiddle(), (String) batteryTriple.getRight());
+            }
             userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
 
@@ -2511,15 +2515,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
 
-        // 10. 发放优惠券
-        if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
-            UserCouponDTO userCouponDTO = new UserCouponDTO();
-            userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
-            userCouponDTO.setUid(uid);
-            userCouponDTO.setSourceOrderNo(orderNo);
-            userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-            userCouponService.asyncSendCoupon(userCouponDTO);
-        }
+
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -2539,6 +2535,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
                 activityProcessDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                 activityService.asyncProcessActivity(activityProcessDTO);
+
+                // 10. 发放优惠券
+                if (ObjectUtils.isNotEmpty(carRentalPackageOrderEntity.getCouponId())) {
+                    UserCouponDTO userCouponDTO = new UserCouponDTO();
+                    userCouponDTO.setCouponId(carRentalPackageOrderEntity.getCouponId());
+                    userCouponDTO.setUid(uid);
+                    userCouponDTO.setSourceOrderNo(orderNo);
+                    userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                    userCouponService.asyncSendCoupon(userCouponDTO);
+                }
 
                 // 车电一体，同步电池会员信息
                 if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
@@ -2794,7 +2800,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
         carRentalPackageOrderEntity.setPayType(payType);
-        carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+        if (YesNoEnum.YES.getCode().equals(packagePO.getGiveCoupon())) {
+            carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+        }
         carRentalPackageOrderEntity.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackageOrderEntity.setUseState(UseStateEnum.UN_USED.getCode());
         carRentalPackageOrderEntity.setTenantId(tenantId);

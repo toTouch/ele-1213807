@@ -577,6 +577,12 @@
         <if test="query.overdueTime != null ">
             and tt.due_time_total = #{query.overdueTime}
         </if>
+        <if test="query.uid != null ">
+            and ec.uid = #{query.uid}
+        </if>
+        <if test="query.storeId != null ">
+            and ec.store_id = #{query.storeId}
+        </if>
         order by ec.create_time desc limit #{offset}, #{size}
     </select>
 
@@ -606,6 +612,9 @@
         </if>
         <if test="query.uid != null ">
             and ec.uid = #{query.uid}
+        </if>
+        <if test="query.storeId != null ">
+            and ec.store_id = #{query.storeId}
         </if>
     </select>
 
