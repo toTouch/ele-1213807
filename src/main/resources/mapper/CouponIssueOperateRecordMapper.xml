@@ -68,7 +68,7 @@
     <!--3.0版本 查询优惠券发放记录数据-->
     <select id="queryRecordList" resultType="com.xiliulou.electricity.vo.CouponIssueOperateRecordVO">
         select distinct
-        tcior.id,
+        tuc.id,
         tcior.coupon_id,
         tcior.uid,
         tcior.name,
