@@ -142,15 +142,13 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         // 2. 查询是否存在可租的车辆
         boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
         if (!unleasedCarFlag) {
-            log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
-            throw new BizException("300043", "无可租车辆");
+            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isNotEmpty(electricityCar) && !electricityCar.getModelId().equals(carModelId)) {
+                log.error("CarModelBizService.checkBuyByCarModelId, User vehicle model mismatch. carModelId is {}, user car_model_id is {}", carModelId, electricityCar.getModelId());
+                throw new BizException("300043", "无可租车辆");
+            }
         }
 
-        ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(electricityCar) && !electricityCar.getModelId().equals(carModelId)) {
-            log.error("CarModelBizService.checkBuyByCarModelId, User vehicle model mismatch. carModelId is {}, user car_model_id is {}", carModelId, electricityCar.getModelId());
-            throw new BizException("300043", "无可租车辆");
-        }
 
         // 3. 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
