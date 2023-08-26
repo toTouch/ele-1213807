@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.DivisionAccountOperationRecordMapper;
 import com.xiliulou.electricity.query.DivisionAccountOperationRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.DivisionAccountOperationRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -121,12 +124,30 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
             List<String> membercardNames = list.stream().map(EleDivisionAccountOperationRecordDTO::getName).collect(Collectors.toList());
             recordVO.setMembercardNames(membercardNames);
 
-            recordVO.setBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_BATTERY));
-            recordVO.setCarRentalPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
-            recordVO.setCarWithBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
+            //recordVO.setBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_BATTERY));
+            //recordVO.setCarRentalPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
+            //recordVO.setCarWithBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
+
+            recordVO.setBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()));
+            recordVO.setCarRentalPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+            recordVO.setCarWithBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
 
             return recordVO;
         }).collect(Collectors.toList());
+    }
+
+    private List<BatteryMemberCardVO> getPackagesByType(List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordDTOList, Integer packageType){
+        List<BatteryMemberCardVO> batteryMemberCardVOS = Lists.newArrayList();
+        for(EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO : divisionAccountOperationRecordDTOList){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            if(packageType.equals(eleDivisionAccountOperationRecordDTO.getType())){
+                batteryMemberCardVO.setId(eleDivisionAccountOperationRecordDTO.getId().longValue());
+                batteryMemberCardVO.setName(eleDivisionAccountOperationRecordDTO.getName());
+                batteryMemberCardVO.setType(eleDivisionAccountOperationRecordDTO.getType());
+                batteryMemberCardVOS.add(batteryMemberCardVO);
+            }
+        }
+        return batteryMemberCardVOS;
     }
 
 

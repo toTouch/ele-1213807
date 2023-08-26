@@ -67,18 +67,17 @@
 
     <!--3.0版本 查询优惠券发放记录数据-->
     <select id="queryRecordList" resultType="com.xiliulou.electricity.vo.CouponIssueOperateRecordVO">
-        select distinct
-        tuc.id,
-        tcior.coupon_id,
-        tcior.uid,
-        tcior.name,
-        tcior.operate_name,
-        tcior.phone,
-        tcior.create_time,
-        tcior.update_time,
-        tuc.status
+        select
+            tcior.id,
+            tcior.coupon_id,
+            tcior.uid,
+            tui.name,
+            tcior.operate_name,
+            tui.phone,
+            tcior.create_time,
+            tcior.update_time
         from t_coupon_issue_operate_record tcior
-        left join t_user_coupon tuc on tuc.coupon_id = tcior.coupon_id and tuc.uid = tcior.uid
+        left join t_user_info tui on tui.uid = tcior.uid
         <where>
             <if test="query.couponId != null ">
                 and tcior.coupon_id = #{query.couponId}
@@ -87,10 +86,10 @@
                 and tcior.uid = #{query.uid}
             </if>
             <if test="query.phone!=null and query.phone!='' ">
-                and tcior.phone =#{query.phone}
+                and tui.phone =#{query.phone}
             </if>
             <if test="query.name!=null and query.name!='' ">
-                and tcior.name =#{query.name}
+                and tui.name =#{query.name}
             </if>
             <if test="query.beginTime != null">
                 and tcior.create_time &gt;=#{query.beginTime}
@@ -101,9 +100,7 @@
             <if test="query.tenantId != null ">
                 and tcior.tenant_id = #{query.tenantId}
             </if>
-            <if test="query.status != null ">
-                and tuc.status = #{query.status}
-            </if>
+
         </where>
         order by tcior.create_time desc
         <if test="query.offset != null and query.size != null">
@@ -112,9 +109,9 @@
     </select>
 
     <select id="queryRecordCount" resultType="java.lang.Integer">
-        select count(distinct tcior.id)
+        select count(1)
         from t_coupon_issue_operate_record tcior
-        left join t_user_coupon tuc on tuc.coupon_id = tcior.coupon_id and tuc.uid = tcior.uid
+        left join t_user_info tui on tui.uid = tcior.uid
         <where>
             <if test="query.couponId != null ">
                 and tcior.coupon_id = #{query.couponId}
@@ -123,10 +120,10 @@
                 and tcior.uid = #{query.uid}
             </if>
             <if test="query.phone!=null and query.phone!=''">
-                and tcior.phone =#{query.phone}
+                and tui.phone =#{query.phone}
             </if>
             <if test="query.name!=null and query.name!='' ">
-                and tcior.name =#{query.name}
+                and tui.name =#{query.name}
             </if>
             <if test="query.beginTime != null">
                 and tcior.create_time &gt;=#{query.beginTime}
@@ -137,9 +134,7 @@
             <if test="query.tenantId != null ">
                 and tcior.tenant_id = #{query.tenantId}
             </if>
-            <if test="query.status != null ">
-                and tuc.status = #{query.status}
-            </if>
+
         </where>
     </select>
 
