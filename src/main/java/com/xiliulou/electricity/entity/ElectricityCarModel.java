@@ -70,7 +70,8 @@ public class ElectricityCarModel {
     /**
      * 已租数量
      */
-    private Integer rentedQuantity;
+    @Builder.Default
+    private Integer rentedQuantity = 0;
 
 
     public static final Integer DEL_NORMAL = 0;
