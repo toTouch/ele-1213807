@@ -1477,10 +1477,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否有车电一体滞纳金
-        if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
-            userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
-        }else{
-            userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+        if(Objects.isNull(userBatteryMemberCard) || StringUtils.isBlank(userBatteryMemberCard.getOrderId())){
+            if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
+                userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
+            }else{
+                userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
+            }
         }
 
         //是否绑定的有电池
