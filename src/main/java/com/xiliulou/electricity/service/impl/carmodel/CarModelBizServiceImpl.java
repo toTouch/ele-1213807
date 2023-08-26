@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.carmodel;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
@@ -142,6 +143,12 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         boolean unleasedCarFlag = carService.checkUnleasedByCarModelId(carModelId);
         if (!unleasedCarFlag) {
             log.error("CarModelBizService.checkBuyByCarModelId, There are no rental vehicles available. carModelId is {}", carModelId);
+            throw new BizException("300043", "无可租车辆");
+        }
+
+        ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(electricityCar) && !electricityCar.getModelId().equals(carModelId)) {
+            log.error("CarModelBizService.checkBuyByCarModelId, User vehicle model mismatch. carModelId is {}, user car_model_id is {}", carModelId, electricityCar.getModelId());
             throw new BizException("300043", "无可租车辆");
         }
 
