@@ -119,6 +119,8 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
+		log.info("Generate share picture for share money activity start, activity id = {}, page = {}", activityId, page);
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
