@@ -281,6 +281,35 @@ public class BasicController {
     }
 
     /**
+     * 根据加盟商ID集获取加盟商<br />
+     * K：加盟商ID<br />
+     * V：加盟商名称
+     * @param franchiseeIds 加盟商ID集
+     * @return
+     */
+    protected Map<Long, Franchisee> getFranchiseeByIdsForMap(Set<Long> franchiseeIds) {
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return Collections.emptyMap();
+        }
+
+        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
+        franchiseeQuery.setIds(new ArrayList<>(franchiseeIds));
+        Triple<Boolean, String, Object> franchiseeTriple = franchiseeService.selectListByQuery(franchiseeQuery);
+        if (!franchiseeTriple.getLeft()) {
+            return Collections.emptyMap();
+        }
+        List<Franchisee> franchiseeList = (List<Franchisee>) franchiseeTriple.getRight();
+        if (franchiseeList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Long, Franchisee> franchiseeMap = franchiseeList.stream()
+                .collect(Collectors.toMap(Franchisee::getId, Function.identity(), (k1, k2) -> k1));
+
+        return franchiseeMap;
+    }
+
+    /**
      * 根据加盟商ID集获取加盟商名称<br />
      * K：加盟商ID<br />
      * V：加盟商名称
@@ -295,6 +324,9 @@ public class BasicController {
         FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
         franchiseeQuery.setIds(new ArrayList<>(franchiseeIds));
         Triple<Boolean, String, Object> franchiseeTriple = franchiseeService.selectListByQuery(franchiseeQuery);
+        if (!franchiseeTriple.getLeft()) {
+            return Collections.emptyMap();
+        }
         List<Franchisee> franchiseeList = (List<Franchisee>) franchiseeTriple.getRight();
         if (franchiseeList.isEmpty()) {
             return Collections.emptyMap();
