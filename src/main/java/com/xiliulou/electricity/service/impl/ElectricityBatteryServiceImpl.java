@@ -585,13 +585,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public Triple<Boolean, String, Object> queryInfoByUid(Long uid, Integer isNeedLocation) {
-        String sn = electricitybatterymapper.querySnByUid(uid);
+/*        String sn = electricitybatterymapper.querySnByUid(uid);
         if (StrUtil.isEmpty(sn)) {
+            return Triple.of(true, null, null);
+        }*/
+
+        ElectricityBattery electricityBattery = electricitybatterymapper.queryByUid(uid);
+        if(Objects.isNull(electricityBattery)){
             return Triple.of(true, null, null);
         }
 
         BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
-        batteryInfoQuery.setSn(sn);
+        batteryInfoQuery.setSn(electricityBattery.getSn());
 
         //为空也需要查询路径，兼容旧版本
         if (Objects.isNull(isNeedLocation) || Objects.equals(isNeedLocation, BatteryInfoQuery.NEED)) {
@@ -612,12 +617,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         ElectricityUserBatteryVo userBatteryVo = new ElectricityUserBatteryVo();
         userBatteryVo.setBatteryA(result.getRight().getBatteryA());
         userBatteryVo.setBatteryV(result.getRight().getBatteryV());
-        userBatteryVo.setSn(sn);
-        userBatteryVo.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
+        userBatteryVo.setSn(electricityBattery.getSn());
         userBatteryVo.setLatitude(result.getRight().getLatitude());
         userBatteryVo.setLongitude(result.getRight().getLongitude());
         userBatteryVo.setPower(Double.valueOf(result.getRight().getSoc()));
         userBatteryVo.setUpdateTime(result.getRight().getUpdateTime());
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityBattery.getFranchiseeId());
+        if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            userBatteryVo.setModel(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
+        }
+
         return Triple.of(true, null, userBatteryVo);
     }
 
