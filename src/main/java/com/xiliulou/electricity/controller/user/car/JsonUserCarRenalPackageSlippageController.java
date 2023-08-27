@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.user.car;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -17,6 +16,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,18 +65,17 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         }
 
         Set<Long> rentalPackageIdSet = new HashSet<>();
-        Set<Integer> carModelSet = new HashSet<>();
-        Set<Long> batteryModelIdSet = new HashSet<>();
+        Set<String> batterySnSet = new HashSet<>();
         Set<Long> storeIdSet = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
         carRentalPackageSlippageEntityList.forEach(n -> {
             rentalPackageIdSet.add(n.getRentalPackageId());
             if (ObjectUtils.isNotEmpty(n.getCarModelId())) {
-                carModelSet.add(n.getCarModelId());
                 storeIdSet.add(Long.valueOf(n.getStoreId()));
             }
-            if (ObjectUtils.isNotEmpty(n.getBatteryModelId())) {
-                batteryModelIdSet.add(n.getBatteryModelId());
+            String batterySn = n.getBatterySn();
+            if (StringUtils.isNoneBlank(batterySn)) {
+                batterySnSet.add(batterySn);
             }
             franchiseeIds.add(Long.valueOf(n.getFranchiseeId()));
         });
@@ -85,7 +84,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIdSet);
 
         // 电池型号信息
-        Map<Long, BatteryModel> batteryModelMap = getBatteryModelByIds(tenantId, batteryModelIdSet);
+        Map<String, String> batteryModelMap = getBatteryModelTypeBySns(tenantId, batterySnSet);
         
         // 门店信息
         Map<Long, String> storeNameForMap = getStoreNameByIdsForMap(storeIdSet);
@@ -123,13 +122,13 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
             }
 
             slippageVo.setRentalPackageName(packageNameMap.getOrDefault(slippageEntity.getRentalPackageId(), null));
-            if (ObjectUtils.isNotEmpty(slippageEntity.getBatteryModelId())) {
+            if (ObjectUtils.isNotEmpty(slippageEntity.getBatterySn())) {
                 Franchisee franchisee = franchiseeForMap.getOrDefault(Long.valueOf(slippageEntity.getFranchiseeId()), new Franchisee());
                 if (Franchisee.OLD_MODEL_TYPE.equals(franchisee.getModelType())) {
                     slippageVo.setBatteryModelType(null);
                 }
                 if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType())) {
-                    slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(slippageEntity.getBatteryModelId(), new BatteryModel()).getBatteryType());
+                    slippageVo.setBatteryModelType(batteryModelMap.getOrDefault(slippageEntity.getBatterySn(), null));
                 }
             }
             slippageVo.setStoreName(storeNameForMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), null));

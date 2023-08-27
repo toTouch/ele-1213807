@@ -72,9 +72,9 @@ public class CarRentalPackageOrderSlippagePo extends BasicCarPo {
     private String carSn;
 
     /**
-     * 电池型号ID
+     * 电池型号长编码
      */
-    private Long batteryModelId;
+    private String batteryModelType;
 
     /**
      * 电池SN码

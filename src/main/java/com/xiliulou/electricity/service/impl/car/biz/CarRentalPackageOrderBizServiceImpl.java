@@ -1288,14 +1288,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
-        Long batteryModelId = null;
+        String batteryModelType = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
-                BatteryModel batteryModel = batteryModelService.selectByBatteryType(packageOrderEntity.getTenantId(), battery.getModel());
-                if (ObjectUtils.isNotEmpty(batteryModel)) {
-                    batteryModelId = batteryModel.getId();
-                }
+                batteryModelType = battery.getModel();
                 createFlag = true;
             }
         }
@@ -1327,7 +1324,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
-            slippageEntity.setBatteryModelId(batteryModelId);
+            slippageEntity.setBatteryModelType(batteryModelType);
         }
 
         return slippageEntity;
