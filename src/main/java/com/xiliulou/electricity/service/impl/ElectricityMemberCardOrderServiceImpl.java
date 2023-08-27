@@ -3740,7 +3740,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
             }
             oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
         }
@@ -3866,7 +3866,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                    oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+                    oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
                 }
                 oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
             }
@@ -4103,7 +4103,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
             }
             oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
         }
