@@ -132,11 +132,6 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                     carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermEntity.getRentalPackageOrderNo(), null);
                 } else {
                     if (ObjectUtils.isNotEmpty(packageOrderUnUseEntity)) {
-                        // 1. 置为使用中
-                        carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderUnUseEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
-                        // 2. 旧的置为已失效
-                        carRentalPackageOrderService.updateUseStateByOrderNo(orderNo, UseStateEnum.RETURNED.getCode(), null);
-
                         // 2. 更新会员状态表
                         // 剩余的时间
                         Long tenancyResidue = rentRefundEntity.getTenancyResidue();
@@ -149,12 +144,16 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                             diffTenancyResidue = tenancyResidue * TimeConstant.MINUTE_MILLISECOND;
                         }
 
-                        // 计算总到期时间
-                        long dueTimeTotal = memberTermEntity.getDueTimeTotal() - diffTenancyResidue;
+                        // 计算总到期时间, 重新计算，不能获取
+                        Long dueTimeTotal = carRentalPackageOrderService.dueTimeTotal(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
+                        if (ObjectUtils.isEmpty(dueTimeTotal)) {
+                            log.error("WxRefundPayCarRentServiceImpl.process failed. dueTimeTotal is wrong. refundOrderNo is {}", outRefundNo);
+                            return;
+                        }
 
                         // 计算当前时间
-                        Integer tenancy = packageOrderEntity.getTenancy();
-                        Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
+                        Integer tenancy = packageOrderUnUseEntity.getTenancy();
+                        Integer tenancyUnit = packageOrderUnUseEntity.getTenancyUnit();
                         Long dueTime = System.currentTimeMillis();
                         if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                             dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
@@ -180,6 +179,10 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                             entityModify.setResidue(packageOrderUnUseEntity.getConfineNum());
                         }
                         carRentalPackageMemberTermService.updateById(entityModify);
+                        // 1. 置为使用中
+                        carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderUnUseEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+                        // 2. 旧的置为已失效
+                        carRentalPackageOrderService.updateUseStateByOrderNo(orderNo, UseStateEnum.RETURNED.getCode(), null);
                     } else {
                         // 计算总到期时间
                         Integer tenancy = packageOrderEntity.getTenancy();

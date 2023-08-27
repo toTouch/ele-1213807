@@ -15,6 +15,15 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
+     * 支付成功订单的总计剩余时间，退租使用<br />
+     * 此方法使用慎重
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return 支付成功订单的总计剩余时间
+     */
+    Long dueTimeTotal(Integer tenantId, Long uid);
+
+    /**
      * 根据用户UID查询支付成功的总金额(实际支付金额)
      * @param tenantId 租户ID
      * @param uid 用户ID

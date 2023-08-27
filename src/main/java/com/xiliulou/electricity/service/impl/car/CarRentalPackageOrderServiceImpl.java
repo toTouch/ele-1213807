@@ -2,11 +2,9 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper;
@@ -17,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -35,7 +34,53 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
-     * 根据用户UID查询支付成功的总金额(实际支付金额)
+     * 支付成功订单的总计剩余时间，退租使用<br />
+     * 此方法使用慎重
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return 支付成功订单的总计剩余时间
+     */
+    @Slave
+    @Override
+    public Long dueTimeTotal(Integer tenantId, Long uid) {
+
+        CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
+        qryModel.setTenantId(tenantId);
+        qryModel.setUid(uid);
+        qryModel.setPayState(PayStateEnum.SUCCESS.getCode());
+        qryModel.setUseState(UseStateEnum.UN_USED.getCode());
+
+        List<CarRentalPackageOrderPo> packageOrderPoList = carRentalPackageOrderMapper.list(qryModel);
+        if (CollectionUtils.isEmpty(packageOrderPoList)) {
+            return null;
+        }
+
+        long dueTimeTotal = 0L;
+
+        for (CarRentalPackageOrderPo carRentalPackageOrderPo : packageOrderPoList) {
+
+            Integer tenancy = carRentalPackageOrderPo.getTenancy();
+            Integer tenancyUnit = carRentalPackageOrderPo.getTenancyUnit();
+
+            long currDueTimeTotal = 0L;
+
+            if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
+                currDueTimeTotal = tenancy * TimeConstant.DAY_MILLISECOND;
+            }
+
+            if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
+                currDueTimeTotal = tenancy * TimeConstant.MINUTE_MILLISECOND;
+
+            }
+            dueTimeTotal = dueTimeTotal + currDueTimeTotal;
+        }
+
+        return dueTimeTotal == 0L ? null : dueTimeTotal;
+    }
+
+    /**
+     * 根据用户UID查询支付成功的总金额际支付金额)
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
