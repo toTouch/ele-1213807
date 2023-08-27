@@ -620,8 +620,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
                         // 判定构建逾期订单
                         // TODO 为了测试，更改为10分钟，实际值 DAY_MILLISECOND
-                        if (nowTime >= (memberTermEntity.getDueTime() + TimeConstant.TEN_MINUTE_MILLISECOND)) {
-                            slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity);
+                        Long expireTime = memberTermEntity.getDueTime() + TimeConstant.TEN_MINUTE_MILLISECOND;
+                        if (nowTime >= expireTime) {
+                            slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity, expireTime);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
                                 log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no device. skip. uid is {}", memberTermEntity.getUid());
                                 continue;
@@ -794,7 +795,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     }
 
 
-    private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageMemberTermPo memberTermEntity) {
+    private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageMemberTermPo memberTermEntity, Long expireTime) {
         // 查询当时购买的订单信息
         CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
         if (ObjectUtils.isEmpty(packageOrderEntity)) {
@@ -844,7 +845,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.EXPIRE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
-        slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
+        slippageEntity.setLateFeeStartTime(expireTime);
         slippageEntity.setPayState(PayStateEnum.UNPAID.getCode());
         slippageEntity.setTenantId(packageOrderEntity.getTenantId());
         slippageEntity.setFranchiseeId(packageOrderEntity.getFranchiseeId());
