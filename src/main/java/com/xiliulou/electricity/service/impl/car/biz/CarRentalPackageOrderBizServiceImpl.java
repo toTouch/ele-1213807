@@ -2364,6 +2364,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             }
 
                             carRentalPackageOrderService.updateUseStateByOrderNo(packageUnUseOrderEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null, memberTermEntity.getDueTime());
+                            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null, null);
                             carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
 
                         } else {
