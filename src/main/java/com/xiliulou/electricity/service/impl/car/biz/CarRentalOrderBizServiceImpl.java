@@ -27,6 +27,7 @@ import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -846,7 +847,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
 
-        if (ObjectUtils.isNotEmpty(newMemberTermEntity)) {
+        if (ObjectUtils.isNotEmpty(newMemberTermEntity) && StringUtils.isNoneBlank(newMemberTermEntity.getRentalPackageOrderNo())) {
             carRentalPackageMemberTermService.updateById(newMemberTermEntity);
             carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid, memberTermEntity.getDueTime());
             carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid, null);
