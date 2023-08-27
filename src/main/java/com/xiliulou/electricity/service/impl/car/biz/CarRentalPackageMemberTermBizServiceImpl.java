@@ -101,6 +101,42 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     /**
+     * 增加余量次数<br />
+     * 只有状态正常，增加成功返回为true
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean addResidue(Integer tenantId, Long uid) {
+        // 查询会员当前信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.error("addResidue, not found t_car_rental_package_member_term. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
+        }
+
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("addResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            throw new BizException("300002", "租车会员状态异常");
+        }
+
+        if (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())) {
+            CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
+            memberTermEntityUpdate.setId(memberTermEntity.getId());
+            memberTermEntityUpdate.setUpdateUid(uid);
+            memberTermEntityUpdate.setUpdateTime(System.currentTimeMillis());
+            memberTermEntityUpdate.setResidue(memberTermEntity.getResidue() + 1);
+            return carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
+        }
+
+        return true;
+    }
+
+    /**
      * 扣减余量次数
      * 只有状态正常且未过期，扣减成功返回为true
      * @param tenantId 租户ID
@@ -115,12 +151,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
 
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("isExpirePackageOrder, not found t_car_rental_package_member_term. uid is {}", uid);
+            log.error("substractResidue, not found t_car_rental_package_member_term. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("isExpirePackageOrder. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            log.error("substractResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
             throw new BizException("300002", "租车会员状态异常");
         }
 
