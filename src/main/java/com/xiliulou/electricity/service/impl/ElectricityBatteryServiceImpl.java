@@ -622,8 +622,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         userBatteryVo.setLongitude(result.getRight().getLongitude());
         userBatteryVo.setPower(Double.valueOf(result.getRight().getSoc()));
         userBatteryVo.setUpdateTime(result.getRight().getUpdateTime());
-
+log.error("===============================electricityBattery{}",JsonUtil.toJson(electricityBattery));
         Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityBattery.getFranchiseeId());
+log.error("===============================franchisee{}",JsonUtil.toJson(franchisee));
         if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             userBatteryVo.setModel(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
         }
