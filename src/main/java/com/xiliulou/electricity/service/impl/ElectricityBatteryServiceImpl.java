@@ -506,7 +506,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         Integer tenantId=TenantContextHolder.getTenantId();
 
-        List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.parallelStream().map(item -> {
+        List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(item, electricityBatteryVO);
 
