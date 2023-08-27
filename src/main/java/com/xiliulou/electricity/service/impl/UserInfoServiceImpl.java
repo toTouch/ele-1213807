@@ -2342,6 +2342,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
         }
 
+        if (Objects.nonNull(userBatteryDeposit.getOrderId())) {
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(eleDepositOrder)) {
             vo.setPayDepositTime(eleDepositOrder.getCreateTime());
@@ -2351,6 +2352,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 vo.setStoreId(store.getId());
                 vo.setStoreName(store.getName());
             }
+        }
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
