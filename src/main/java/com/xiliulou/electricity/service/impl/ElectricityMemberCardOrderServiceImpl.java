@@ -3739,13 +3739,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         long oldMaxUseCount = 0L;
         long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
-                oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-            } else {
-                newValidDays = Math.toIntExact(userBatteryMemberCardUpdate.getMemberCardExpireTime() / 24 / 60 / 60 / 1000);
-                newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
             }
+            oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
         }
 
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
@@ -3867,12 +3864,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             long oldMaxUseCount = 0L;
             long newMaxUseCount = 0L;
 
-            if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+                    oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+                }
                 oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-            } else {
-                newValidDays = Math.toIntExact(userBatteryMemberCardUpdate.getMemberCardExpireTime() / 24 / 60 / 60 / 1000);
-                newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
             }
 
             EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
@@ -4105,12 +4101,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         int newValidDays = 0;
         long oldMaxUseCount = 0L;
         long newMaxUseCount = 0L;
-        if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-            oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+                oldValidDays = Math.toIntExact((userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000));
+            }
             oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-        } else {
-            newValidDays = Math.toIntExact(userBatteryMemberCardUpdate.getMemberCardExpireTime() / 24 / 60 / 60 / 1000);
-            newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
         }
 
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
