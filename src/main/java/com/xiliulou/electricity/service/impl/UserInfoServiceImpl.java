@@ -2342,7 +2342,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
         }
 
-        if (Objects.nonNull(userBatteryDeposit.getOrderId())) {
+        if (Objects.nonNull(userBatteryDeposit) && StringUtils.isNotBlank(userBatteryDeposit.getOrderId())) {
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(eleDepositOrder)) {
             vo.setPayDepositTime(eleDepositOrder.getCreateTime());
