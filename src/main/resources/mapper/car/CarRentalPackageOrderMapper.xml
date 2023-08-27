@@ -323,7 +323,7 @@
         <set>
             `use_state` = #{useState}, `update_time` = #{optTime}
             <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
-            <if test=" useState == 2 "> , `use_begin_time` = #{optTime} </if>
+            <if test=" useState == 2 "> , `use_begin_time` = #{userBeginTime} </if>
         </set>
         <where>
             `order_no` = #{orderNo}

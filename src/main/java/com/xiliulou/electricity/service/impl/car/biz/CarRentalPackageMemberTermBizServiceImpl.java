@@ -363,8 +363,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     public void saveUpdateCurrPackageTx(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageMemberTermPo newMemberTermEntity, Long optUid) {
         carRentalPackageMemberTermService.updateById(newMemberTermEntity);
         if (StringUtils.isNotEmpty(newMemberTermEntity.getRentalPackageOrderNo())) {
-            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid);
-            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid);
+            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid, null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid, memberTermEntity.getDueTime());
         }
 
         // 此处二次查询，目的是为了拿在事务缓存中的最新数据
@@ -774,8 +774,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
 
             // 更改原订单状态及新订单状态
-            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null);
-            carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null, null);
+            // TODO 此处有一个小坑，正常逻辑来讲，需要传入使用时间，需要注意
+            carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null, null);
 
             // 车电一体，同步电池那边的数据
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntityNew.getRentalPackageType())) {

@@ -176,9 +176,10 @@ public interface CarRentalPackageOrderService {
      * @param orderNo 订单编码
      * @param useState 使用状态
      * @param optUid 操作人（可为空）
+     * @param userBeginTime 开始使用时间（可为空，取系统时间）
      * @return true(成功)、false(失败)
      */
-    Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid);
+    Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid, Long userBeginTime);
 
     /**
      * 根据ID更新使用状态

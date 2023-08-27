@@ -104,11 +104,12 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
             // 微信退款状态
             Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
 
+            long nowTime = System.currentTimeMillis();
             // 更新退款单数据
             CarRentalPackageOrderRentRefundPo rentRefundUpdate = new CarRentalPackageOrderRentRefundPo();
             rentRefundUpdate.setOrderNo(outRefundNo);
             rentRefundUpdate.setRefundState(refundState);
-            rentRefundUpdate.setUpdateTime(System.currentTimeMillis());
+            rentRefundUpdate.setUpdateTime(nowTime);
 
             if (RefundStateEnum.SUCCESS.getCode().equals(refundState)) {
                 // 是否退掉最后一个订单
@@ -154,7 +155,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         // 计算当前时间
                         Integer tenancy = packageOrderUnUseEntity.getTenancy();
                         Integer tenancyUnit = packageOrderUnUseEntity.getTenancyUnit();
-                        Long dueTime = System.currentTimeMillis();
+                        Long dueTime = nowTime;
                         if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                             dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
                         }
@@ -166,8 +167,8 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         CarRentalPackageMemberTermPo entityModify = new CarRentalPackageMemberTermPo();
                         entityModify.setId(memberTermEntity.getId());
                         entityModify.setDueTime(dueTime);
-                        entityModify.setDueTimeTotal(dueTimeTotal);
-                        entityModify.setUpdateTime(System.currentTimeMillis());
+                        entityModify.setDueTimeTotal(nowTime + dueTimeTotal);
+                        entityModify.setUpdateTime(nowTime);
                         entityModify.setRentalPackageId(packageOrderUnUseEntity.getRentalPackageId());
                         entityModify.setRentalPackageOrderNo(packageOrderUnUseEntity.getOrderNo());
                         entityModify.setRentalPackageType(packageOrderUnUseEntity.getRentalPackageType());
@@ -180,9 +181,9 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         }
                         carRentalPackageMemberTermService.updateById(entityModify);
                         // 1. 置为使用中
-                        carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderUnUseEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+                        carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderUnUseEntity.getOrderNo(), UseStateEnum.IN_USE.getCode(), null, nowTime);
                         // 2. 旧的置为已失效
-                        carRentalPackageOrderService.updateUseStateByOrderNo(orderNo, UseStateEnum.RETURNED.getCode(), null);
+                        carRentalPackageOrderService.updateUseStateByOrderNo(orderNo, UseStateEnum.RETURNED.getCode(), null, null);
                     } else {
                         // 计算总到期时间
                         Integer tenancy = packageOrderEntity.getTenancy();
@@ -199,7 +200,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                         CarRentalPackageMemberTermPo entityModify = new CarRentalPackageMemberTermPo();
                         entityModify.setDueTimeTotal(dueTimeTotal);
                         entityModify.setId(memberTermEntity.getId());
-                        entityModify.setUpdateTime(System.currentTimeMillis());
+                        entityModify.setUpdateTime(nowTime);
                         carRentalPackageMemberTermService.updateById(entityModify);
                     }
                 }

@@ -395,16 +395,20 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param orderNo  订单编码
      * @param useState 使用状态
      * @param optUid      操作人ID（可为空）
+     * @param userBeginTime 开始使用时间（可为空，取系统时间）
      * @return true(成功)、false(失败)
      */
     @Override
-    public Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid) {
+    public Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid, Long userBeginTime) {
         if (!ObjectUtils.allNotNull(orderNo, useState) || !BasicEnum.isExist(useState, UseStateEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        long now = System.currentTimeMillis();
-        int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, optUid, now);
+        long optTime = System.currentTimeMillis();
+        if (ObjectUtils.isEmpty(userBeginTime)) {
+            userBeginTime = optTime;
+        }
+        int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, optUid, optTime, userBeginTime);
 
         return num >= 0;
     }

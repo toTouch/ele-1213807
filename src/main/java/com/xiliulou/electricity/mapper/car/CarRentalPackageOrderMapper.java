@@ -164,7 +164,7 @@ public interface CarRentalPackageOrderMapper {
      * @param optTime 操作时间
      * @return 操作总条数
      */
-    int updateUseStateByOrderNo(@Param("orderNo") String orderNo, @Param("useState") Integer useState, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
+    int updateUseStateByOrderNo(@Param("orderNo") String orderNo, @Param("useState") Integer useState, @Param("optUid") Long optUid, @Param("optTime") Long optTime, @Param("userBeginTime") Long userBeginTime);
 
     /**
      * 根据ID更新使用状态
