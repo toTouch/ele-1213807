@@ -529,7 +529,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RENTAL.getCode());
 
         // 处理事务层
-        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, newMemberTermEntity, memberTermEntity);
+        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, newMemberTermEntity, memberTermEntity, optUid);
 
         return true;
     }
@@ -632,7 +632,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RETURN.getCode());
 
         // 处理事务层
-        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, null, null);
+        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, null, null, optUid);
 
         return true;
     }
@@ -812,7 +812,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarLockCtrlHistory carLockCtrlHistory = buildCarLockCtrlHistory(electricityCar, userInfo, RentalTypeEnum.RENTAL.getCode());
 
         // 处理事务层
-        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, newMemberTermEntity, memberTermEntity);
+        bindAndUnBindCarTx(carRentalOrderEntityInsert, userInfoUpdate, carModelUpdate, electricityCarUpdate, eleBindCarRecord, carLockCtrlHistory, newMemberTermEntity, memberTermEntity, optUid);
 
         return true;
     }
@@ -830,7 +830,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     @Transactional(rollbackFor = Exception.class)
     public void bindAndUnBindCarTx(CarRentalOrderPo carRentalOrderEntity, UserInfo userInfo, ElectricityCarModel carModelUpdate, ElectricityCar electricityCarUpdate,
                                    EleBindCarRecord eleBindCarRecord, CarLockCtrlHistory carLockCtrlHistory, CarRentalPackageMemberTermPo newMemberTermEntity,
-                                   CarRentalPackageMemberTermPo memberTermEntity) {
+                                   CarRentalPackageMemberTermPo memberTermEntity, Long optUid) {
         // 生成租赁订单
         carRentalOrderService.insert(carRentalOrderEntity);
         // 更改用户租赁状态
@@ -848,8 +848,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
 
         if (ObjectUtils.isNotEmpty(newMemberTermEntity)) {
             carRentalPackageMemberTermService.updateById(newMemberTermEntity);
-            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), null);
-            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid);
+            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid);
         }
     }
 
