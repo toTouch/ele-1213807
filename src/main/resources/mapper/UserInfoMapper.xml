@@ -1110,7 +1110,7 @@
                 WHEN ubmc.member_card_expire_time IS NULL THEN 2
                 WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
                 WHEN ubmc.member_card_expire_time > 0 THEN 0
-                END desc,ubmc.member_card_expire_time desc
+                END ,ubmc.member_card_expire_time desc
             </if>
 
             <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
