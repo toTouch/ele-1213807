@@ -101,6 +101,42 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     /**
+     * 增加余量次数<br />
+     * 只有状态正常，增加成功返回为true
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean addResidue(Integer tenantId, Long uid) {
+        // 查询会员当前信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.error("addResidue, not found t_car_rental_package_member_term. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
+        }
+
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("addResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            throw new BizException("300002", "租车会员状态异常");
+        }
+
+        if (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())) {
+            CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
+            memberTermEntityUpdate.setId(memberTermEntity.getId());
+            memberTermEntityUpdate.setUpdateUid(uid);
+            memberTermEntityUpdate.setUpdateTime(System.currentTimeMillis());
+            memberTermEntityUpdate.setResidue(memberTermEntity.getResidue() + 1);
+            return carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
+        }
+
+        return true;
+    }
+
+    /**
      * 扣减余量次数
      * 只有状态正常且未过期，扣减成功返回为true
      * @param tenantId 租户ID
@@ -115,12 +151,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
 
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("isExpirePackageOrder, not found t_car_rental_package_member_term. uid is {}", uid);
+            log.error("substractResidue, not found t_car_rental_package_member_term. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("isExpirePackageOrder. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            log.error("substractResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
             throw new BizException("300002", "租车会员状态异常");
         }
 
@@ -363,8 +399,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     public void saveUpdateCurrPackageTx(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageMemberTermPo newMemberTermEntity, Long optUid) {
         carRentalPackageMemberTermService.updateById(newMemberTermEntity);
         if (StringUtils.isNotEmpty(newMemberTermEntity.getRentalPackageOrderNo())) {
-            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid);
-            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid);
+            carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid, null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid, memberTermEntity.getDueTime());
         }
 
         // 此处二次查询，目的是为了拿在事务缓存中的最新数据
@@ -774,8 +810,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
 
             // 更改原订单状态及新订单状态
-            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null);
-            carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null);
+            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null, null);
+            // TODO 此处有一个小坑，正常逻辑来讲，需要传入使用时间，需要注意
+            carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null, null);
 
             // 车电一体，同步电池那边的数据
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntityNew.getRentalPackageType())) {
@@ -819,14 +856,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         // 2. 根据套餐类型，是否查询电池
         ElectricityBattery battery = null;
-        Long batteryModelId = null;
+        String batteryModelType = null;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
             battery = batteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
-                BatteryModel batteryModel = batteryModelService.selectByBatteryType(packageOrderEntity.getTenantId(), battery.getModel());
-                if (ObjectUtils.isNotEmpty(batteryModel)) {
-                    batteryModelId = batteryModel.getId();
-                }
+                batteryModelType = battery.getModel();
                 createFlag = true;
             }
         }
@@ -859,7 +893,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         if (ObjectUtils.isNotEmpty(battery)) {
             slippageEntity.setBatterySn(battery.getSn());
-            slippageEntity.setBatteryModelId(batteryModelId);
+            slippageEntity.setBatteryModelType(batteryModelType);
         }
 
         return slippageEntity;

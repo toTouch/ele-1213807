@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BasicController {
 
+
+    @Resource
+    private ElectricityBatteryService batteryService;
+
     @Resource
     private BatteryModelService batteryModelService;
 
@@ -64,6 +68,29 @@ public class BasicController {
 
     @Resource
     private UserDataScopeService userDataScopeService;
+
+
+    /**
+     * 根据电池型号ID集获取对应电池信息<br />
+     * K：电池型号ID<br />
+     * V：电池型号信息
+     * @param tenantId 租户ID集
+     * @param batterySns 电池SN集
+     * @return K：电池SN，V：电池型号
+     */
+    protected Map<String, String> getBatteryModelTypeBySns(Integer tenantId, Set<String> batterySns) {
+        if (ObjectUtils.isEmpty(tenantId) || CollectionUtils.isEmpty(batterySns)) {
+            return Collections.emptyMap();
+        }
+
+        List<ElectricityBattery> batterylists = batteryService.selectBySnList(tenantId, new ArrayList<>(batterySns));
+        if (CollectionUtils.isEmpty(batterylists)) {
+            return Collections.emptyMap();
+        }
+
+        return batterylists.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getModel, (k1, k2) -> k1));
+
+    }
 
 
     /**

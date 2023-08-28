@@ -931,6 +931,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            return R.fail("ELECTRICITY.0015", "未找到用户");
+        }
+
         //租电池
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
             if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)
@@ -940,17 +945,21 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
 
-            //回退月卡
-
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
-                        && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() && userBatteryMemberCard.getRemainingNumber() != -1) {
-                    //回退月卡次数
-                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+            //回退单电套餐次数
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                    }
                 }
             }
 
+            //回退车电一体套餐次数
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            }
         }
 
         //还电池

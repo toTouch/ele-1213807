@@ -379,6 +379,7 @@
                create_time,
                update_time,
                electricity_cabinet_id,
+               franchisee_id,
                uid
         FROM t_electricity_battery as teb
         WHERE teb.uid = #{uid}

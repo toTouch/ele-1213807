@@ -11,6 +11,15 @@ import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 public interface CarRentalPackageMemberTermBizService {
 
     /**
+     * 增加余量次数<br />
+     * 只有状态正常，增加成功返回为true
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true(成功)、false(失败)
+     */
+    boolean addResidue(Integer tenantId, Long uid);
+
+    /**
      * 扣减余量次数<br />
      * 只有状态正常，扣减成功返回为true
      * @param tenantId 租户ID

@@ -4,7 +4,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFranchisee">
-       	select   id, name, cid, region_id, tenant_id  from t_franchisee
+       	select   id, name, cid, region_id, tenant_id, model_type from t_franchisee
     </sql>
     
     <select id="checkBatteryModelIsUse" resultType="Integer">

@@ -759,7 +759,9 @@ public class JsonAdminUserInfoController extends BaseController {
                           @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
                           @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                           @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-                          @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
+                          @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                          @RequestParam(value = "sortType", required = false) Integer sortType,
+                          @RequestParam(value = "sortBy", required = false) String sortBy) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -799,6 +801,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryRentStatus(batteryRentStatus)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
+                .sortBy(sortBy)
+                .sortType(sortType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
