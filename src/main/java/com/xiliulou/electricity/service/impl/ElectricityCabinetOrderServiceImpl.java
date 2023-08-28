@@ -499,21 +499,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
 
-        //回退月卡
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                //回退单电套餐次数
-                if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        //回退单电套餐次数
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
                     userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
                 }
-
-                //回退车电一体套餐次数
-                if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-                    carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
-                }
             }
+        }
+
+        //回退车电一体套餐次数
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
         }
 
 
