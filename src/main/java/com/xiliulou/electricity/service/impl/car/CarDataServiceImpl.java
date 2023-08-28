@@ -18,9 +18,8 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
-import com.xiliulou.electricity.vo.car.PageDataResult;
 import com.xiliulou.electricity.vo.car.CarDataVO;
+import com.xiliulou.electricity.vo.car.PageDataResult;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -105,7 +104,7 @@ public class CarDataServiceImpl implements CarDataService {
             return R.ok(new ArrayList<CarDataResultVO>());
         }
         ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEachOrdered(item->{
+        carDataVOS.stream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
