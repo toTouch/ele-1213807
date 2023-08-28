@@ -1098,11 +1098,29 @@
                     #{id}
                 </foreach>
             </if>
-            order by  CASE
-                        WHEN ubmc.member_card_expire_time IS NULL THEN 2
-                        WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
-                        WHEN ubmc.member_card_expire_time > 0 THEN 0
-                    END,ubmc.member_card_expire_time
+            <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
+                order by tui.create_time desc
+            </if>
+
+            <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
+                order by tui.create_time
+            </if>
+            <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
+                order by  CASE
+                WHEN ubmc.member_card_expire_time IS NULL THEN 2
+                WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
+                WHEN ubmc.member_card_expire_time > 0 THEN 0
+                END desc,ubmc.member_card_expire_time desc
+            </if>
+
+            <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
+                order by  CASE
+                WHEN ubmc.member_card_expire_time IS NULL THEN 2
+                WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
+                WHEN ubmc.member_card_expire_time > 0 THEN 0
+                END ,ubmc.member_card_expire_time
+            </if>
+
             limit  #{query.offset}, #{query.size}
     </select>
     <select id="queryEleListCount" resultType="java.lang.Integer">
