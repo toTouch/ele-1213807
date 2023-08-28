@@ -3734,10 +3734,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserDepositOperateRecord);
 
-        int oldValidDays = 0;
-        int newValidDays = 0;
-        long oldMaxUseCount = 0L;
-        long newMaxUseCount = 0L;
+        Integer oldValidDays = 0;
+        Integer newValidDays = 0;
+        Long oldMaxUseCount = 0L;
+        Long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
@@ -3861,10 +3861,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
-            int oldValidDays = 0;
-            int newValidDays = 0;
-            long oldMaxUseCount = 0L;
-            long newMaxUseCount = 0L;
+            Integer oldValidDays = 0;
+            Integer newValidDays = 0;
+            Long oldMaxUseCount = 0L;
+            Long newMaxUseCount = 0L;
 
             if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
@@ -4101,10 +4101,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         this.insert(memberCardOrder);
 
-        int oldValidDays = 0;
-        int newValidDays = 0;
-        long oldMaxUseCount = 0L;
-        long newMaxUseCount = 0L;
+        Integer oldValidDays = 0;
+        Integer newValidDays = 0;
+        Long oldMaxUseCount = 0L;
+        Long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));

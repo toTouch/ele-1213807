@@ -661,7 +661,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
         } else {
             //未使用
-            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());
+            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L, System.currentTimeMillis());
             userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
         }
 
