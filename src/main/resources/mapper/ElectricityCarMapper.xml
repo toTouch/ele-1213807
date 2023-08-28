@@ -608,7 +608,7 @@
             and ec.status = #{query.status}
         </if>
         <if test="query.overdueTime != null ">
-            and tt.due_time_total = #{query.overdueTime}
+            and tt.due_time_total &lt;= #{query.overdueTime}
         </if>
         <if test="query.uid != null ">
             and ec.uid = #{query.uid}
