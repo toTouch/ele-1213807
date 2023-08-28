@@ -481,6 +481,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            return R.fail("ELECTRICITY.0015", "未找到用户");
+        }
+
         if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_CANCEL) || Objects
                 .equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
             return R.fail("100230", "订单状态异常");
@@ -497,10 +502,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //回退月卡
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
-                    && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() && userBatteryMemberCard.getRemainingNumber() != -1) {
-                //回退月卡次数
-                userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                //回退单电套餐次数
+                if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                }
+
+                //回退车电一体套餐次数
+                if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                    carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+                }
             }
         }
 
