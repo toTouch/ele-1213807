@@ -3865,7 +3865,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             int newValidDays = 0;
             long oldMaxUseCount = 0L;
             long newMaxUseCount = 0L;
-
+log.error("===============userBatteryMemberCard{}",JsonUtil.toJson(userBatteryMemberCard));
+log.error("===============userBatteryMemberCardUpdate{}",JsonUtil.toJson(userBatteryMemberCardUpdate));
             if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                     oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
