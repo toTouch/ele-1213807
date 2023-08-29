@@ -1055,6 +1055,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     return rentBatteryResult;
                 }
             } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                log.error("=====================handlerExchangeBatteryCar{}",JsonUtil.toJson(userInfo));
                 //处理车电一体
                 rentBatteryResult = handlerExchangeBatteryCar(userInfo, store, electricityCabinet,orderQuery);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
