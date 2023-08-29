@@ -144,7 +144,7 @@
         limit #{offset}, #{size}
     </select>
 
-    <select id="queryByFranchiseeIdAndBatteryType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+    <select id="queryByFranchiseeIdAndSimpleBatteryType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
         select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id,battery_type
         from t_franchisee_insurance
         where del_flag=0 and status=0
@@ -153,6 +153,22 @@
         </if>
         <if test="batteryType != null and batteryType != ''">
             and simple_battery_type = #{batteryType}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id limit 1
+    </select>
+
+    <select id="queryByFranchiseeIdAndBatteryType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id,battery_type
+        from t_franchisee_insurance
+        where del_flag=0 and status=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="batteryType != null and batteryType != ''">
+            and battery_type = #{batteryType}
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}

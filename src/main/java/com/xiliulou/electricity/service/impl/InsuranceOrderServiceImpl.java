@@ -312,7 +312,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }*/
         String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
 
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType, tenantId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeIdAndSimpleBatteryType(userInfo.getFranchiseeId(), batteryType, tenantId));
     }
 
     @Override
