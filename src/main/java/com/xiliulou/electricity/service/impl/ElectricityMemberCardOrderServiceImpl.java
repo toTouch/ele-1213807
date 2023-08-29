@@ -799,6 +799,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             //支付0元
             if (memberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 handlerBatteryMembercardZeroPayment(batteryMemberCard, memberCardOrder, userBatteryMemberCard, userInfo);
+                if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                    userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_USED, memberCardOrder.getOrderId()));
+                }
                 return Triple.of(true, null, null);
             }
 
@@ -4465,11 +4468,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityService.asyncProcessActivity(activityProcessDTO);
 
-
-
-        //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
-
+        electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, memberCardOrder);
     }
 
     private List<String> acquireUserBatteryType(List<String> userBatteryTypeList, List<String> membercardBatteryTypeList) {
