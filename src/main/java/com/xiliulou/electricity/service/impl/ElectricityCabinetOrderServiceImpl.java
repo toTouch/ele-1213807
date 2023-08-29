@@ -1255,9 +1255,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
-            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) && carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())) {
-                log.error("ORDER ERROR! user car memberCard expire,uid={}", userInfo.getUid());
-                return Triple.of(false, "100233","租车套餐已过期");
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
+                    log.error("ORDER ERROR! user car memberCard expire,uid={}", userInfo.getUid());
+                    return Triple.of(false, "100233","租车套餐已过期");
+                }
             }
         }
 

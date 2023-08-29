@@ -249,7 +249,7 @@ public class StoreServiceImpl implements StoreService {
         }
 
         if(!oldStore.getName().equals(storeAddAndUpdate.getName())){
-            User userNameExists = userService.queryByUserName(storeAddAndUpdate.getName());
+            User userNameExists = userService.queryByUserNameAndTenantId(storeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
             if (Objects.nonNull(userNameExists)) {
                 return Triple.of(false,"110200","用户名已经存在！");
             }

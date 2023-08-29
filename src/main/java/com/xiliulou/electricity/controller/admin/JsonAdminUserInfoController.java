@@ -651,6 +651,8 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryCarRentalList(@RequestParam("size") Long size,
                                 @RequestParam("offset") Long offset,
                                 @RequestParam(value = "uid", required = false) Long uid,
+                                @RequestParam(value = "name", required = false) String name,
+                                @RequestParam(value = "phone", required = false) String phone,
                                 @RequestParam(value = "sortType", required = false) Integer sortType,
                                 @RequestParam(value = "sortBy", required = false) String sortBy,
                                 @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
@@ -693,6 +695,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
                 .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
                 .uid(uid)
+                .name(name)
+                .phone(phone)
                 .sortType(sortType)
                 .sortBy(sortBy)
                 .franchiseeIds(franchiseeIds)
@@ -706,6 +710,8 @@ public class JsonAdminUserInfoController extends BaseController {
 
     @GetMapping(value = "/admin/userInfo/carRentalCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "sortType", required = false) Integer sortType,
                         @RequestParam(value = "sortBy", required = false) String sortBy,
                         @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
@@ -738,6 +744,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin)
                 .carMemberCardExpireTimeEnd(carRentalExpireTimeEnd)
                 .uid(uid)
+                .name(name)
+                .phone(phone)
                 .sortType(sortType)
                 .sortBy(sortBy)
                 .franchiseeIds(franchiseeIds)

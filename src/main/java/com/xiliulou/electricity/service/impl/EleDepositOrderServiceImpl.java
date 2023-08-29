@@ -32,6 +32,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -264,7 +265,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
-            return R.fail( "100220", "用户存在电池服务费");
+            return R.fail("100220", "用户存在电池服务费", checkUserBatteryServiceFeeResult.getRight());
         }
 
         //判断是否退电池
@@ -670,9 +671,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
-        String batteryType = null;
-        if (Objects.nonNull(batteryType)) {
-            Integer acquireBattery = batteryModelService.acquireBatteryModel(batteryType,TenantContextHolder.getTenantId());
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        //兼容2.0版本小程序
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityBattery) && Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(),Franchisee.NEW_MODEL_TYPE)) {
+            String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn());
+            Integer acquireBattery = null;
+            if (StringUtils.isNotBlank(batteryModel)) {
+                acquireBattery = batteryModelService.acquireBatteryModel(batteryModel, TenantContextHolder.getTenantId());
+            }
             map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
         } else {
             map.put("batteryType", null);
@@ -680,7 +688,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
                 && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+
 
             if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
