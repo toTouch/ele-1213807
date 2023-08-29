@@ -13,6 +13,7 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.*;
@@ -333,6 +334,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
                 shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+
+                //兼容2.0的旧数据，如果三个套餐均为空值，则默认使用全部的换电套餐
+                if(CollectionUtils.isEmpty(shareMoneyActivityVO.getBatteryPackages())
+                        && CollectionUtils.isEmpty(shareMoneyActivityVO.getCarRentalPackages())
+                        && CollectionUtils.isEmpty(shareMoneyActivityVO.getCarWithBatteryPackages())){
+                    shareMoneyActivityVO.setBatteryPackages(getAllBatteryPackages(shareMoneyActivityQuery.getTenantId()));
+                }
             }
 
             shareMoneyActivityVOList.add(shareMoneyActivityVO);
@@ -342,6 +350,17 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         return R.ok(shareMoneyActivityVOList);
     }
 
+    private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .status(BatteryMemberCard.STATUS_UP)
+                .isRefund(BatteryMemberCard.NO)
+                .tenantId(tenantId).build();
+
+        List<BatteryMemberCardVO> batteryMemberCardVOS = batteryMemberCardService.selectListByQuery(query);
+
+        return batteryMemberCardVOS;
+    }
 
     @Override
     public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
