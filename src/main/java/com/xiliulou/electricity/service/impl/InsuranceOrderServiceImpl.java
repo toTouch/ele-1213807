@@ -81,6 +81,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
     /**
      * 根据来源订单编码、类型查询保险订单信息
      *
@@ -307,9 +310,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             //返回成功为了兼容未更新的小程序
             return R.ok();
         }*/
+        String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
 
-
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), null, tenantId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeIdAndSimpleBatteryType(userInfo.getFranchiseeId(), batteryType, tenantId));
     }
 
     @Override
