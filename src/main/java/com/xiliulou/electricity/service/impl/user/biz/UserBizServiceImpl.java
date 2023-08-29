@@ -8,12 +8,14 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -88,6 +90,8 @@ public class UserBizServiceImpl implements UserBizService {
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+    @Autowired
+    private BatteryMemberCardService batteryMemberCardService;
 
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
@@ -325,7 +329,16 @@ public class UserBizServiceImpl implements UserBizService {
                 log.info("share money activity process start, join uid = {}, package id = {}, tenant id = {}", joinUid, packageId, tenantId);
                 //检查当前购买的套餐是否属于活动指定的套餐
                 List<ShareMoneyActivityPackage> shareMoneyActivityPackages = shareMoneyActivityPackageService.findActivityPackagesByActivityId(joinShareMoneyActivityRecord.getActivityId().longValue());
-                List<Long> packageIds = shareMoneyActivityPackages.stream().map(ShareMoneyActivityPackage::getPackageId).collect(Collectors.toList());
+                List<Long> packageIds;
+
+                //兼容2.0中，如果没选择套餐时，默认是针对全部的换电套餐
+                if(CollectionUtils.isEmpty(shareMoneyActivityPackages)){
+                    List<BatteryMemberCardVO> batteryMemberCardVOList = getAllBatteryPackages(tenantId);
+                    packageIds = batteryMemberCardVOList.stream().map(BatteryMemberCardVO::getId).collect(Collectors.toList());
+                }else{
+                    packageIds = shareMoneyActivityPackages.stream().map(ShareMoneyActivityPackage::getPackageId).collect(Collectors.toList());
+                }
+
                 if(CollectionUtils.isNotEmpty(packageIds) && packageIds.contains(packageId)){
                     //修改邀请状态
                     joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
@@ -360,6 +373,17 @@ public class UserBizServiceImpl implements UserBizService {
         }
     }
 
+    private List<BatteryMemberCardVO> getAllBatteryPackages(Integer tenantId){
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .status(BatteryMemberCard.STATUS_UP)
+                .isRefund(BatteryMemberCard.NO)
+                .tenantId(tenantId).build();
+
+        List<BatteryMemberCardVO> batteryMemberCardVOS = batteryMemberCardService.selectListByQuery(query);
+
+        return batteryMemberCardVOS;
+    }
 
     /**
      * 构建JT808
