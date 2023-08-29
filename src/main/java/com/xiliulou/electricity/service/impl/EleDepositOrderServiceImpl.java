@@ -674,7 +674,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(electricityBattery)) {
             String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn());
-            map.put("batteryType", StringUtils.isBlank(batteryModel) ? null : batteryModel);
+            Integer acquireBattery = null;
+            if (StringUtils.isNotBlank(batteryModel)) {
+                acquireBattery = batteryModelService.acquireBatteryModel(batteryModel, TenantContextHolder.getTenantId());
+            }
+            map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
         } else {
             map.put("batteryType", null);
         }

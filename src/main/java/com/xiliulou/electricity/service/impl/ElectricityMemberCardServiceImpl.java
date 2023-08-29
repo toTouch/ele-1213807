@@ -382,15 +382,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
 
     @Override
-    public R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId, Integer model) {
+    public R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId, String model) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        // TODO: 2022/12/21 判断空串 删掉
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
@@ -417,7 +415,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         //多电池型号查询套餐
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, batteryModelService.acquireBatteryShort(model,userInfo.getTenantId()), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, model, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
