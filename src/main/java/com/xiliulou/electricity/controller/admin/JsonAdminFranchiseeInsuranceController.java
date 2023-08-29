@@ -159,6 +159,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
                 .offset(offset)
                 .size(size)
+                .type(type)
                 .franchiseeId(franchiseeId)
                 .insuranceType(insuranceType)
                 .name(name)
