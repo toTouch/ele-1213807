@@ -152,11 +152,12 @@
             and franchisee_id = #{franchiseeId}
         </if>
         <if test="batteryType != null and batteryType != ''">
-            and battery_type = #{batteryType}
+            and simple_battery_type = #{batteryType}
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        order by id limit 1
     </select>
 
     <select id="selectByFranchiseeIdAndType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
