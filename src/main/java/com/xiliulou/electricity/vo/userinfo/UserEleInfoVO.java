@@ -65,9 +65,9 @@ public class UserEleInfoVO {
     private Integer memberCardFreezeStatus;
 
     /**
-     * 换电限制
+     * 月卡剩余次数
      */
-    private Integer limitCount;
+    private Long remainingNumber;
 
     /**
      * 套餐到期时间
@@ -109,5 +109,14 @@ public class UserEleInfoVO {
      * 可用状态（0-禁用，1-可用）
      */
     private Integer usableStatus;
+
+    /**
+     * 0:不限制,1:限制
+     */
+    private Integer limitCount;
+    /**
+     * 使用次数
+     */
+    private Long useCount;
 
 }
