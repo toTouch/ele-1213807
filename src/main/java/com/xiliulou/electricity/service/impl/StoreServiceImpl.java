@@ -248,6 +248,13 @@ public class StoreServiceImpl implements StoreService {
             }
         }
 
+        if(!oldStore.getName().equals(storeAddAndUpdate.getName())){
+            User userNameExists = userService.queryByUserNameAndTenantId(storeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
+            if (Objects.nonNull(userNameExists)) {
+                return Triple.of(false,"110200","用户名已经存在！");
+            }
+        }
+
         //若修改门店加盟商，需要判断门店是否绑定的有车辆型号
         if(Objects.nonNull(storeAddAndUpdate.getFranchiseeId()) && !Objects.equals(oldStore.getFranchiseeId().intValue(),storeAddAndUpdate.getFranchiseeId())){
 

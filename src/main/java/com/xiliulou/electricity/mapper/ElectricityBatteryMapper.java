@@ -106,6 +106,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
                                               @Param("offset") Long offset, @Param("size") Long size);
     Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 
+    List<ElectricityBatteryDataVO> queryOverdueCarBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                                           @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryOverdueCarBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
+
     /**
      * 物理状态和业务状态查询
      * @param electricityBatteryQuery

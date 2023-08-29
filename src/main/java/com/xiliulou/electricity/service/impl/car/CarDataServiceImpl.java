@@ -18,9 +18,8 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
-import com.xiliulou.electricity.vo.car.PageDataResult;
 import com.xiliulou.electricity.vo.car.CarDataVO;
+import com.xiliulou.electricity.vo.car.PageDataResult;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -87,11 +86,11 @@ public class CarDataServiceImpl implements CarDataService {
     @Override
     public R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
-            size = Long.valueOf(10);
+            size = 10L;
         }
 
         if (offset < 0) {
-            offset = Long.valueOf(0);
+            offset = 0L;
         }
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -104,8 +103,8 @@ public class CarDataServiceImpl implements CarDataService {
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
         }
-        ArrayList  resultList=new ArrayList<CarDataResultVO>();
-        carDataVOS.parallelStream().forEachOrdered(item->{
+        ArrayList<CarDataResultVO>  resultList=new ArrayList<>();
+        carDataVOS.stream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
                 Jt808DeviceInfoVo jt808DeviceInfoVo=new Jt808DeviceInfoVo();
@@ -153,7 +152,7 @@ public class CarDataServiceImpl implements CarDataService {
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Integer.valueOf(0));
+            return R.ok(0);
         }
         CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
@@ -163,11 +162,11 @@ public class CarDataServiceImpl implements CarDataService {
     @Override
     public R queryPendingRentalCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
-            size = Long.valueOf(10);
+            size = 10L;
         }
 
         if (offset < 0) {
-            offset = Long.valueOf(0);
+            offset = 0L;
         }
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -180,7 +179,7 @@ public class CarDataServiceImpl implements CarDataService {
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
         }
-        ArrayList  resultList=new ArrayList<CarDataResultVO>();
+        ArrayList<CarDataResultVO> resultList=new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
@@ -229,7 +228,7 @@ public class CarDataServiceImpl implements CarDataService {
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Integer.valueOf(0));
+            return R.ok(0);
         }
         CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
@@ -238,11 +237,11 @@ public class CarDataServiceImpl implements CarDataService {
     @Override
     public R queryLeasedCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
-            size = Long.valueOf(10);
+            size = 10L;
         }
 
         if (offset < 0) {
-            offset = Long.valueOf(0);
+            offset = 0L;
         }
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -255,7 +254,7 @@ public class CarDataServiceImpl implements CarDataService {
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
         }
-        ArrayList  resultList=new ArrayList<CarDataResultVO>();
+        ArrayList<CarDataResultVO>  resultList= new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
@@ -305,7 +304,7 @@ public class CarDataServiceImpl implements CarDataService {
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Integer.valueOf(0));
+            return R.ok(0);
         }
         CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
@@ -315,11 +314,11 @@ public class CarDataServiceImpl implements CarDataService {
     @Override
     public R queryOverdueCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
-            size = Long.valueOf(10);
+            size = 10L;
         }
 
         if (offset < 0) {
-            offset = Long.valueOf(0);
+            offset = 0L;
         }
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -333,7 +332,7 @@ public class CarDataServiceImpl implements CarDataService {
         if(CollectionUtils.isEmpty(carDataVOS)){
             return R.ok(new ArrayList<CarDataResultVO>());
         }
-        ArrayList  resultList=new ArrayList<CarDataResultVO>();
+        ArrayList<CarDataResultVO>  resultList=new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
             if (Objects.nonNull(item)){
                 CarDataResultVO vo= new CarDataResultVO();
@@ -383,7 +382,7 @@ public class CarDataServiceImpl implements CarDataService {
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Integer.valueOf(0));
+            return R.ok(0);
         }
         CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
@@ -514,6 +513,7 @@ public class CarDataServiceImpl implements CarDataService {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
+            return false;
         }
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -522,9 +522,6 @@ public class CarDataServiceImpl implements CarDataService {
                 return true;
             }
         }
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return true;
-        }
-        return false;
+        return Objects.equals(user.getDataType(), User.DATA_TYPE_STORE);
     }
 }

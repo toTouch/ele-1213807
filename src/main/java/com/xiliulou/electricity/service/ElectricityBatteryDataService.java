@@ -34,6 +34,10 @@ public interface ElectricityBatteryDataService extends IService<ElectricityBatte
 
     R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
 
+    R  selectOverdueCarBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
+
+    R selectOverdueCarBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
+
     BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery, Tenant tenant);
 
     R queryStockBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId);

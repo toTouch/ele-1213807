@@ -243,10 +243,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         }
 
-        //检查名称是否重复
-        User userNameExists = userService.queryByUserName(franchiseeAddAndUpdate.getName());
-        if (Objects.nonNull(userNameExists)) {
-            return R.fail("110200", "用户名已经存在！");
+        //检查修改后的名称是否重复.
+        if(!oldFranchisee.getName().equals(franchiseeAddAndUpdate.getName())){
+            User userNameExists = userService.queryByUserNameAndTenantId(franchiseeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
+            if (Objects.nonNull(userNameExists)) {
+                return R.fail("110200", "用户名已经存在！");
+            }
         }
 
         Franchisee updateFranchisee = new Franchisee();

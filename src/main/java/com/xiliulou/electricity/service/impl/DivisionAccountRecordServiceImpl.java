@@ -563,12 +563,18 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 log.info("Refund Division Account flow Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
                 if(Objects.isNull(electricityMemberCardOrder)){
-                    log.error("Refund Division Account error, Not found division account record for purchase battery package, refund order number = {}", orderNo);
+                    log.error("Refund Division Account error, Not found purchase battery package order data, refund order number = {}", orderNo);
                     return;
                 }
 
                 //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
                 DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+
+                //检查购买的分账记录是否存在，如果购买记录不存在，则返回。
+                if(Objects.isNull(divisionAccountRecord)){
+                    log.error("Refund Division Account error, Not found division account record for purchase battery package, refund order number = {}", orderNo);
+                    return;
+                }
 
                 //保存分帐记录
                 DivisionAccountRecord refundDivisionAccountRecord = new DivisionAccountRecord();
@@ -662,9 +668,14 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             return;
         }
 
-        //不需要再根据之前的分账设置去计算退款金额，直接按购买时的分账金额全部退回。同时将构面分账记录状态设置为失效状态。如果后续分账时只需查找分账状态为正常且创建时间大于7天的记录即可。
+        //检查套餐信息是否存在。
         CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
+        if(Objects.isNull(carRentalPackagePO)){
+            log.error("Refund Division Account error, Not found purchase car rental package data, refund order number = {}", orderNo);
+            return;
+        }
 
+        //不需要再根据之前的分账设置去计算退款金额，直接按购买时的分账金额全部退回。同时将构面分账记录状态设置为失效状态。如果后续分账时只需查找分账状态为正常且创建时间大于7天的记录即可。
         //保存分帐记录
         DivisionAccountRecord refundDivisionAccountRecord = new DivisionAccountRecord();
         refundDivisionAccountRecord.setMembercardName(carRentalPackagePO.getName());

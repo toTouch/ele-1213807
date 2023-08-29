@@ -163,6 +163,29 @@ public class JsonAdminElectricityBatteryDataController {
     }
 
     /**
+     * 获取逾期电池的分页数据(车电一体)
+     */
+    @GetMapping(value = "/admin/batteryData/overdueCarBattery/page")
+    public R getOverdueCarBatteryPageData( @RequestParam("offset") long offset,
+                                        @RequestParam("size") long size,
+                                        @RequestParam(value = "uid", required = false) Long uid,
+                                        @RequestParam(value = "sn", required =  false) String sn,
+                                        @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                        @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
+        return electricityBatteryDataService.selectOverdueCarBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId, uid);
+    }
+
+    /**
+     * 获取逾期电池的数据总数(车电一体)
+     */
+    @GetMapping(value = "/admin/batteryData/overdueCarBattery/count")
+    public R getOverdueCarBatteryDataCount(  @RequestParam(value = "sn", required =  false) String sn,
+                                          @RequestParam(value = "uid", required = false) Long uid,
+                                          @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                          @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
+        return electricityBatteryDataService.selectOverdueCarBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
+    }
+    /**
      * 获取库存电池的分页数据
      * @param offset 启示页
      * @param size 每页大小
