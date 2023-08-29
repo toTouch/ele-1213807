@@ -1055,7 +1055,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     return rentBatteryResult;
                 }
             } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-                log.error("=====================handlerExchangeBatteryCar{}",JsonUtil.toJson(userInfo));
                 //处理车电一体
                 rentBatteryResult = handlerExchangeBatteryCar(userInfo, store, electricityCabinet,orderQuery);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
@@ -1256,7 +1255,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
-            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
                 if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
                     log.error("ORDER ERROR! user car memberCard expire,uid={}", userInfo.getUid());
                     return Triple.of(false, "100233","租车套餐已过期");
