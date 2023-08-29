@@ -339,10 +339,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         String batteryType = null;
+        String batteryV = null;
         if (Objects.nonNull(model)) {
             batteryType = batteryModelService.acquireBatteryShort(model,tenantId);
+            if(StringUtils.isNotBlank(batteryType)){
+                batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+            }
         }
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType, tenantId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryV, tenantId));
 
     }
 
