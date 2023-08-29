@@ -382,7 +382,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
 
     @Override
-    public R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId, String model) {
+    public R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId, Integer model) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -415,7 +415,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         //多电池型号查询套餐
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, model, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, batteryModelService.acquireBatteryShort(model,userInfo.getTenantId()), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
