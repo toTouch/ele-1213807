@@ -103,6 +103,10 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
                     packageNames = getOldBatteryPackages(packageInfo);
                 }
                 shareActivityOperateRecordVO.setMembercardNames(packageNames);
+            }else{
+                //若存在2.0旧的数据，只能从memberCard中获取，处理查不出套餐信息的bug，该问题出现在后台代码已经更新，saas前端仍然是老版本的bug.
+                String memberCards = item.getMemberCard();
+                shareActivityOperateRecordVO.setMembercardNames(getOldBatteryPackages(memberCards));
             }
 
             return shareActivityOperateRecordVO;
