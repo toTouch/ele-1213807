@@ -671,8 +671,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        //兼容2.0版本小程序
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        if (Objects.nonNull(electricityBattery)) {
+        if (Objects.nonNull(electricityBattery) && Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(),Franchisee.NEW_MODEL_TYPE)) {
             String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn());
             Integer acquireBattery = null;
             if (StringUtils.isNotBlank(batteryModel)) {
@@ -685,7 +688,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
                 && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+
 
             if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
