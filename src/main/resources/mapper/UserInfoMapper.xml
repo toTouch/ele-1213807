@@ -1057,7 +1057,7 @@
             tui.create_time AS userCertificationTime,
             tui.franchisee_id,
             tui.tenant_id,
-            ubmc.remaining_number AS limitCount,
+            ubmc.remaining_number ,
             tui.usable_status
         FROM
             t_user_info tui
