@@ -4420,7 +4420,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     public void handlerBatteryMembercardZeroPayment(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
-
+        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         //用户未绑定套餐
         if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId() , NumberConstant.ZERO_L)){
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
@@ -4435,6 +4435,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
@@ -4456,6 +4457,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()+memberCardOrder.getMaxUseCount());
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
@@ -4476,6 +4478,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityService.asyncProcessActivity(activityProcessDTO);
 
         electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, memberCardOrder);
+
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(userInfoUpdate);
+
+        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setId(memberCardOrder.getId());
+        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        memberCardOrderUpdate.setPayCount(payCount + 1);
+        this.updateById(memberCardOrderUpdate);
     }
 
     private List<String> acquireUserBatteryType(List<String> userBatteryTypeList, List<String> membercardBatteryTypeList) {
