@@ -1334,6 +1334,7 @@ public class UnionTradeOrderServiceImpl extends
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(status);
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
     }
