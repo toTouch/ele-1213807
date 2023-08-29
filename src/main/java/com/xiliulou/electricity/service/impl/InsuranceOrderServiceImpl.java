@@ -183,9 +183,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("100305", "未找到保险");
         }
 
-        if(Objects.nonNull(insuranceUserInfo)){
+        if (Objects.nonNull(insuranceUserInfo)) {
             FranchiseeInsurance userBindFranchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
-            if(Objects.nonNull(userBindFranchiseeInsurance) && Objects.equals( userBindFranchiseeInsurance.getSimpleBatteryType(),franchiseeInsurance.getSimpleBatteryType() )){
+            if (Objects.nonNull(userBindFranchiseeInsurance) && !Objects.equals(userBindFranchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getSimpleBatteryType())) {
                 return R.fail("100310", "保险类型不一致");
             }
         }

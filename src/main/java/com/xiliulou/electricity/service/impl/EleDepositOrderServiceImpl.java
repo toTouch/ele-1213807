@@ -1061,7 +1061,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .modelType(franchisee.getModelType())
                 .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                 .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
-                .batteryServiceFeeEndTime(System.currentTimeMillis())
                 .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 

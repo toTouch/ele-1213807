@@ -800,6 +800,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
                 //生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+                List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
                 eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
                         .uid(userInfo.getUid())
@@ -814,7 +815,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .franchiseeId(franchisee.getId())
                         .storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType())
-                        .batteryType("")
+                        .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                         .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
