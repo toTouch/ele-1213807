@@ -425,9 +425,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
 
-
+        //兼容旧版小程序
 
         BatteryMemberCardQuery query=new BatteryMemberCardQuery();
+        query.setSize(size);
+        query.setOffset(offset);
+
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
 
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
