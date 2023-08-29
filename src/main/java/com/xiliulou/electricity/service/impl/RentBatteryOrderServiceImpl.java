@@ -711,7 +711,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 Triple<Boolean,Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                 if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                     log.warn("RETURNBATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
-                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费",acquireUserBatteryServiceFeeResult.getRight());
                 }
             }else{
                 //判断车电一体滞纳金
