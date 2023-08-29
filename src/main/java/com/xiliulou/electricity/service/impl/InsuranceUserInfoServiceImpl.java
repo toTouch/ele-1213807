@@ -377,6 +377,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
             InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
             BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
+            insuranceOrderVO.setOrderId(insuranceUserInfoVo.getInsuranceOrderId());
             insuranceOrderList.add(insuranceOrderVO);
 
             return R.ok(insuranceOrderList);
