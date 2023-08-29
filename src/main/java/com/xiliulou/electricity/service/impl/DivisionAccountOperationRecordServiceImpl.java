@@ -128,12 +128,31 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
             //recordVO.setCarRentalPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
             //recordVO.setCarWithBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
 
-            recordVO.setBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()));
-            recordVO.setCarRentalPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-            recordVO.setCarWithBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            if(DivisionAccountConfig.TYPE_BATTERY.equals(divisionAccountConfig.getType())){
+                recordVO.setBatteryPackages(getPackagesFromOperationRecord(list));
+            }else if(DivisionAccountConfig.TYPE_CAR.equals(divisionAccountConfig.getType())){
+                recordVO.setCarRentalPackages(getPackagesFromOperationRecord(list));
+            }else{
+                recordVO.setBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()));
+                recordVO.setCarRentalPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                recordVO.setCarWithBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }
 
             return recordVO;
         }).collect(Collectors.toList());
+    }
+
+    private List<BatteryMemberCardVO> getPackagesFromOperationRecord(List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordDTOList){
+        List<BatteryMemberCardVO> batteryMemberCardVOS = Lists.newArrayList();
+        for(EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO : divisionAccountOperationRecordDTOList){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+
+            batteryMemberCardVO.setId(eleDivisionAccountOperationRecordDTO.getId().longValue());
+            batteryMemberCardVO.setName(eleDivisionAccountOperationRecordDTO.getName());
+            batteryMemberCardVO.setType(eleDivisionAccountOperationRecordDTO.getType());
+            batteryMemberCardVOS.add(batteryMemberCardVO);
+        }
+        return batteryMemberCardVOS;
     }
 
     private List<BatteryMemberCardVO> getPackagesByType(List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordDTOList, Integer packageType){
