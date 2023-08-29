@@ -1042,6 +1042,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
 
+        /**
+         * 2.0接口每调起支付都会生成订单  3.0版本已优化该问题
+         */
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
                 .uid(user.getUid())
@@ -1058,6 +1061,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .modelType(franchisee.getModelType())
                 .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                 .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                .batteryServiceFeeEndTime(System.currentTimeMillis())
                 .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
