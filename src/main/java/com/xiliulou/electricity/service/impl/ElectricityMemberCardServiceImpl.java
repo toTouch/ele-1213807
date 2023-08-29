@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+import java.math.BigDecimal;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -7,13 +8,18 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -25,10 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -78,6 +81,18 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    BatteryMemberCardMapper batteryMemberCardMapper;
 
     /**
      * 新增卡包
@@ -411,6 +426,90 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
 
+
+        BatteryMemberCardQuery query=new BatteryMemberCardQuery();
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
+            //新租
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+        } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+            //非新租 购买押金套餐
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+            }
+
+        } else {
+            //续费
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.error("USER BATTERY MEMBERCARD ERROR!not found batteryMemberCard,uid={},mid={}", SecurityUtils.getUid(), userBatteryMemberCard.getMemberCardId());
+                return R.ok();
+            }
+
+            query.setDeposit(batteryMemberCard.getDeposit());
+            query.setLimitCount(batteryMemberCard.getLimitCount());
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+            query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
+        }
+
+        List<BatteryMemberCardAndTypeVO> batteryMemberCardVOS = batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(batteryMemberCardVOS)) {
+            return R.ok();
+        }
+
+        //用户绑定的电池型号串数
+        List<String> userBindBatteryType = null;
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            userBindBatteryType = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+        }
+
+        List<ElectricityMemberCardVO> electricityMemberCardVOS=new ArrayList<>();
+        for (BatteryMemberCardAndTypeVO item : batteryMemberCardVOS) {
+
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                List<String> number = null;
+                if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(item.getBatteryType())) {
+                    //套餐电池型号串数 number
+                    number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType())).map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+                }
+
+                if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                    if (!(org.apache.commons.collections4.CollectionUtils.isNotEmpty(number) && org.apache.commons.collections4.CollectionUtils.containsAll(number, userBindBatteryType))) {
+                        continue;
+                    }
+                }
+            }
+
+            ElectricityMemberCardVO electricityMemberCardVO = new ElectricityMemberCardVO();
+            electricityMemberCardVO.setId(item.getId().intValue());
+            electricityMemberCardVO.setName(item.getName());
+            electricityMemberCardVO.setHolidayPrice(item.getRentPrice());
+            electricityMemberCardVO.setValidDays(item.getValidDays());
+            electricityMemberCardVO.setMaxUseCount(item.getUseCount());
+            electricityMemberCardVO.setLimitCount(item.getLimitCount());
+            electricityMemberCardVO.setStatus(item.getStatus());
+            electricityMemberCardVO.setFranchiseeId(item.getFranchiseeId().intValue());
+//            electricityMemberCardVO.setModelType(0);
+//            electricityMemberCardVO.setBatteryType("");
+//            electricityMemberCardVO.setIsBindActivity(0);
+//            electricityMemberCardVO.setActivityId(0);
+//            electricityMemberCardVO.setOldUserActivityVO(new OldUserActivityVO());
+//            electricityMemberCardVO.setFranchiseeName("");
+
+            electricityMemberCardVOS.add(electricityMemberCardVO);
+        }
+
+
+/*
+
+
         List<ElectricityMemberCard> electricityMemberCardList;
 
         //多电池型号查询套餐
@@ -450,8 +549,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
             electricityMemberCardVOList.add(electricityMemberCardVO);
         }
+*/
 
-        return R.ok(electricityMemberCardVOList);
+        return R.ok(electricityMemberCardVOS);
     }
 
     @Override
