@@ -411,7 +411,6 @@ public class ElectricityTradeOrderServiceImpl extends
             activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
             activityProcessDTO.setTraceId(IdUtil.simpleUUID());
             activityService.asyncProcessActivity(activityProcessDTO);
-            //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
 
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
 

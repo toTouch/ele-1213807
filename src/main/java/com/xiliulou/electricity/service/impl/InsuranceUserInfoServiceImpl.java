@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
@@ -369,7 +370,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
 
         if (Objects.equals(status, InsuranceUserInfo.NOT_USE)) {
-
+log.error("============111");
             InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
             if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
@@ -378,9 +379,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
             BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
             insuranceOrderList.add(insuranceOrderVO);
-
+            log.error("============111{}", JsonUtil.toJson(insuranceUserInfoVo));
+            log.error("============111{}", JsonUtil.toJson(insuranceOrderList));
             return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
+            log.error("============222");
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
                     .offset(offset)
                     .size(size)
@@ -394,9 +397,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                     item.setInsuranceExpireTime(item.getCreateTime() + (item.getValidDays() * (24 * 60 * 60 * 1000L)));
                 });
             }
-
+            log.error("============222{}", JsonUtil.toJson(insuranceOrderVOList));
             return R.ok(insuranceOrderVOList);
         } else {
+            log.error("============333");
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
                     .offset(offset)
                     .size(size)
@@ -415,6 +419,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
                 });
             }
+            log.error("============333{}", JsonUtil.toJson(expireInsuranceOrderList));
             return R.ok(expireInsuranceOrderList);
         }
     }

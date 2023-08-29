@@ -736,7 +736,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", user.getUid(), query.getMemberId());
-                return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
+                return Triple.of(false,"ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
             }
 
             Triple<Boolean, String, Object> verifyUserBatteryInsuranceResult = verifyUserBatteryInsurance(userInfo, franchisee,batteryMemberCard);
@@ -799,6 +799,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             //支付0元
             if (memberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 handlerBatteryMembercardZeroPayment(batteryMemberCard, memberCardOrder, userBatteryMemberCard, userInfo);
+                if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                    userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_USED, memberCardOrder.getOrderId()));
+                }
                 return Triple.of(true, null, null);
             }
 
@@ -1116,7 +1119,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.100000", "存在电池服务费");
+            return R.fail("ELECTRICITY.100000", "存在电池服务费",acquireUserBatteryServiceFeeResult.getRight());
         }
 
         Long memberCardExpireTime = null;
@@ -1399,7 +1402,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.100000", "存在电池服务费");
+            return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
         }
 
         int disableCardDays=(int) Math.ceil((System.currentTimeMillis() - (userBatteryMemberCard.getDisableMemberCardTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
@@ -4417,7 +4420,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     public void handlerBatteryMembercardZeroPayment(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
-
+        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         //用户未绑定套餐
         if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId() , NumberConstant.ZERO_L)){
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
@@ -4432,6 +4435,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
@@ -4453,9 +4457,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()+memberCardOrder.getMaxUseCount());
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
-
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
             //获取用户电池型号
             List<String> userBatteryTypes = acquireUserBatteryType(userBatteryTypeService.selectByUid(userInfo.getUid()),memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId()));
@@ -4466,11 +4470,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
+        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
+        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
+        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
+        activityService.asyncProcessActivity(activityProcessDTO);
 
+        electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, memberCardOrder);
 
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(userInfoUpdate);
 
-        //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
-
+        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setId(memberCardOrder.getId());
+        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        memberCardOrderUpdate.setPayCount(payCount + 1);
+        this.updateById(memberCardOrderUpdate);
     }
 
     private List<String> acquireUserBatteryType(List<String> userBatteryTypeList, List<String> membercardBatteryTypeList) {
@@ -4588,10 +4608,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
         }
 
-//        if (!Objects.equals(userBindBatteryMemberCard.getLimitCount(), batteryMemberCard.getLimitCount())) {
-//            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard limitCount inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
-//            return Triple.of(false, "100276", "换电套餐类型不一致");
-//        }
+        if (!Objects.equals(userBindBatteryMemberCard.getLimitCount(), batteryMemberCard.getLimitCount())) {
+            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard limitCount inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100276", "换电套餐类型不一致");
+        }
 
         boolean flag = batteryMemberCard.getDeposit().compareTo(userBindBatteryMemberCard.getDeposit()) == 0;
         if (!flag) {

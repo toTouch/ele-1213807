@@ -2593,22 +2593,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-                if (Objects.nonNull(item) && Objects.nonNull(item.getMemberCardStatus()) ) {
+                if (Objects.nonNull(item.getMemberCardStatus())) {
                     if(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)){
                         //冻结
-                        item.setMemberCardFreezeStatus(Integer.valueOf(1));
+                        item.setMemberCardFreezeStatus(1);
                     }else{
                         //正常
-                        item.setMemberCardFreezeStatus(Integer.valueOf(0));
+                        item.setMemberCardFreezeStatus(0);
                     }
                 }else{
                     //正常
-                    item.setMemberCardFreezeStatus(Integer.valueOf(0));
+                    item.setMemberCardFreezeStatus(0);
                 }
 
                 //获取用户当前绑定的套餐
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-                item.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+                if (Objects.nonNull(batteryMemberCard)) {
+                    item.setMemberCardName(batteryMemberCard.getName());
+                    item.setLimitCount(batteryMemberCard.getLimitCount());
+                    item.setUseCount(batteryMemberCard.getUseCount());
+                }
+
 
             });
         }, threadPool).exceptionally(e -> {

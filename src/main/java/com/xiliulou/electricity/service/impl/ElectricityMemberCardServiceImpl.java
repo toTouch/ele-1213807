@@ -390,8 +390,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        // TODO: 2022/12/21 判断空串 删掉
-
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
