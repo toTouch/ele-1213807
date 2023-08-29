@@ -378,8 +378,8 @@ log.error("============111");
             List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
             InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
             BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
-            insuranceOrderVO.setOrderId(insuranceUserInfoVo.getInsuranceOrderId());
             insuranceOrderList.add(insuranceOrderVO);
+            log.error("============111{}", JsonUtil.toJson(insuranceUserInfoVo));
             log.error("============111{}", JsonUtil.toJson(insuranceOrderList));
             return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
