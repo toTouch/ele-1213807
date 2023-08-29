@@ -430,6 +430,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         BatteryMemberCardQuery query=new BatteryMemberCardQuery();
         query.setSize(size);
         query.setOffset(offset);
+        query.setFranchiseeId(franchiseeId);
 
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
