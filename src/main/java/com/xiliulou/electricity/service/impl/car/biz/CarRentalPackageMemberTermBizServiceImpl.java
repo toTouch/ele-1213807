@@ -647,7 +647,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                     CarRentalPackageOrderSlippagePo slippageEntityInsert = null;
                     if (ObjectUtils.isEmpty(packageOrderEntity)) {
                         log.info("CarRentalPackageMemberTermBizService.expirePackageOrder. user no available orders. uid is {}", memberTermEntity.getUid());
-                        // JT808，套餐过期级锁
+                        // JT808，套餐过期加锁
                         ElectricityCar electricityCar = carService.selectByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
                         if (ObjectUtils.isNotEmpty(electricityCar)) {
                             UserInfo userInfo = userInfoService.queryByUidFromCache(memberTermEntity.getUid());

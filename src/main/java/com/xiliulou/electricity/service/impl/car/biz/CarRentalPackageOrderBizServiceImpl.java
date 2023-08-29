@@ -2802,7 +2802,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setApplicableType(packagePO.getApplicableType());
         carRentalPackageOrderEntity.setRentRebate(packagePO.getRentRebate());
         carRentalPackageOrderEntity.setRentRebateTerm(packagePO.getRentRebateTerm());
-        carRentalPackageOrderEntity.setRentRebateEndTime(TimeConstant.DAY_MILLISECOND * packagePO.getRentRebateTerm() + System.currentTimeMillis());
+        if (ObjectUtils.isNotEmpty(packagePO.getRentRebateTerm())) {
+            carRentalPackageOrderEntity.setRentRebateEndTime(TimeConstant.DAY_MILLISECOND * packagePO.getRentRebateTerm() + System.currentTimeMillis());
+        }
         carRentalPackageOrderEntity.setDeposit(packagePO.getDeposit());
         carRentalPackageOrderEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
