@@ -169,7 +169,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceOrderAdd.getInsuranceId());
-
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100305", "未找到保险!");
@@ -182,6 +181,13 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
             log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", userInfo.getFranchiseeId());
             return R.fail("100305", "未找到保险");
+        }
+
+        if(Objects.nonNull(insuranceUserInfo)){
+            FranchiseeInsurance userBindFranchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
+            if(Objects.nonNull(userBindFranchiseeInsurance) && Objects.equals( userBindFranchiseeInsurance.getSimpleBatteryType(),franchiseeInsurance.getSimpleBatteryType() )){
+                return R.fail("100310", "保险类型不一致");
+            }
         }
 
         //生成保险订单

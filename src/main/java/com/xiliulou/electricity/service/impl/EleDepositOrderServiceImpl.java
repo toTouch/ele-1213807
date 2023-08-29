@@ -1040,6 +1040,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
 
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
@@ -1055,7 +1056,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .storeId(userInfo.getStoreId())
                 .modelType(franchisee.getModelType())
-                .batteryType("")
+                .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
                 .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                 .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
