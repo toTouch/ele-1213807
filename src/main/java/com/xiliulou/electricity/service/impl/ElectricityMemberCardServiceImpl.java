@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-import java.math.BigDecimal;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,7 +18,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
-import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -31,7 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -431,6 +432,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         query.setSize(size);
         query.setOffset(offset);
         query.setFranchiseeId(franchiseeId);
+
+        String batteryType = batteryModelService.acquireBatteryShort(model, userInfo.getTenantId());
+        if (StringUtils.isNotBlank(batteryType)) {
+            String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+            query.setBatteryV(batteryV);
+        }
 
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
