@@ -15,6 +15,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="batteryServiceFeeEndTime != null">
+                battery_service_fee_end_time = #{batteryServiceFeeEndTime},
+            </if>
         </set>
         where order_id = #{orderId}
     </update>
