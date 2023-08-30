@@ -684,7 +684,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 //                }
 //            } else {
                 if (Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-                        || System.currentTimeMillis() >= userBatteryMemberCard.getMemberCardExpireTime() || userBatteryMemberCard.getRemainingNumber() == 0) {
+                        || System.currentTimeMillis() >= userBatteryMemberCard.getMemberCardExpireTime()) {
                     return R.ok();
                 }
 //            }
