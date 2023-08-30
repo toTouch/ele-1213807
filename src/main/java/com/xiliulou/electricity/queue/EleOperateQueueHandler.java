@@ -107,6 +107,9 @@ public class EleOperateQueueHandler {
     TenantService tenantService;
 
     @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+
+    @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
     @Autowired
@@ -772,6 +775,12 @@ public class EleOperateQueueHandler {
         if (Objects.isNull(userBatteryMemberCard)) {
             log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},orderId={}",
                     rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());
+            return;
+        }
+
+        //判断套餐是否限次
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
+        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
             return;
         }
 
