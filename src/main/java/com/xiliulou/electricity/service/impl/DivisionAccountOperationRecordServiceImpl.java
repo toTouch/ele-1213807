@@ -128,14 +128,19 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
             //recordVO.setCarRentalPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
             //recordVO.setCarWithBatteryPackages(divisionAccountConfigService.getMemberCardVOListByConfigIdAndType(item.getDivisionAccountId().longValue(), DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
 
-            if(DivisionAccountConfig.TYPE_BATTERY.equals(divisionAccountConfig.getType())){
-                recordVO.setBatteryPackages(getPackagesFromOperationRecord(list));
-            }else if(DivisionAccountConfig.TYPE_CAR.equals(divisionAccountConfig.getType())){
-                recordVO.setCarRentalPackages(getPackagesFromOperationRecord(list));
-            }else{
-                recordVO.setBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()));
-                recordVO.setCarRentalPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-                recordVO.setCarWithBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            recordVO.setBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()));
+            recordVO.setCarRentalPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+            recordVO.setCarWithBatteryPackages(getPackagesByType(list, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+
+            //兼容2.0的旧数据，如果三个套餐均为空值，则需要根据分账配置表中的type来设置对应的套餐信息
+            if(CollectionUtils.isEmpty(recordVO.getBatteryPackages())
+                    && CollectionUtils.isEmpty(recordVO.getCarRentalPackages())
+                    && CollectionUtils.isEmpty(recordVO.getCarWithBatteryPackages())){
+                if(DivisionAccountConfig.TYPE_BATTERY.equals(divisionAccountConfig.getType())){
+                    recordVO.setBatteryPackages(getPackagesFromOperationRecord(list));
+                }else if(DivisionAccountConfig.TYPE_CAR.equals(divisionAccountConfig.getType())){
+                    recordVO.setCarRentalPackages(getPackagesFromOperationRecord(list));
+                }
             }
 
             return recordVO;
