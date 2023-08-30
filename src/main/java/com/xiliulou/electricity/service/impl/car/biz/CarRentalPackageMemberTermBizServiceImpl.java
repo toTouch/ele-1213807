@@ -236,7 +236,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 查询滞纳金信息
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
         if (exitUnpaid) {
-            throw new BizException("300006", "未缴纳押金");
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         long now = System.currentTimeMillis();
