@@ -4564,11 +4564,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(userBatteryTypes,userInfo));
             }
         }
-
-    }
-
-    private Long calculateMembercardTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder){
-        return Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L);
     }
 
     private Triple<Boolean, String, Object> assignOrderSource(ElectricityMemberCardOrderQuery query, ElectricityMemberCardOrder memberCardOrder) {
