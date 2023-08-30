@@ -284,8 +284,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300017", "存在未使用的订单");
             }
             // 查询设备信息，存在设备，不允许退租
-            UserCar userCar = userCarService.selectByUidFromCache(uid);
-            if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
+            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
                 throw new BizException("300018", "存在未归还的车辆");
             }
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
