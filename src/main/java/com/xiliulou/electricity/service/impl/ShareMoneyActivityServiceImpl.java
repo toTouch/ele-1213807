@@ -450,6 +450,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
             shareMoneyActivityVO.setCarRentalPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
             shareMoneyActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareMoneyActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+
+            //兼容2.0的旧数据，如果三个套餐均为空值，则默认使用全部的换电套餐
+            if(CollectionUtils.isEmpty(shareMoneyActivityVO.getBatteryPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityVO.getCarRentalPackages())
+                    && CollectionUtils.isEmpty(shareMoneyActivityVO.getCarWithBatteryPackages())){
+                shareMoneyActivityVO.setBatteryPackages(getAllBatteryPackages(tenantId));
+            }
         }
 
         return R.ok(shareMoneyActivityVO);
