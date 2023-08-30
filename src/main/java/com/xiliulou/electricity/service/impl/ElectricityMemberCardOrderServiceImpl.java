@@ -718,7 +718,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             Boolean isFirstBuyMemberCard = Boolean.FALSE;
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO_L, userBatteryMemberCard.getMemberCardId()) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
                 isFirstBuyMemberCard = Boolean.TRUE;
             }
 
