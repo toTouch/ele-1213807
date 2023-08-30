@@ -656,7 +656,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
                         // 判定构建逾期订单
                         // TODO 为了测试，更改为10分钟，实际值 DAY_MILLISECOND
-                        Long expireTime = memberTermEntity.getDueTime() + TimeConstant.TEN_MINUTE_MILLISECOND;
+                        Long expireTime = memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND;
                         if (nowTime >= expireTime) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity, expireTime);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
