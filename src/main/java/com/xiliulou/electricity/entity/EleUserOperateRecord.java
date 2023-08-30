@@ -61,8 +61,6 @@ public class EleUserOperateRecord {
      * 操作后月卡可用天数
      */
     private Integer newValidDays;
-    //换电套餐租赁方式
-    private Integer rentUnit;
 
     /**
      * 初始电池编号
