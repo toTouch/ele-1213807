@@ -94,18 +94,37 @@ public class FranchiseeInsurance {
     private Long createTime;
 
     private Long updateTime;
+    /**
+     * 门店
+     */
+    private Long storeId;
+    /**
+     * 车辆型号
+     */
+    private Long carModelId;
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 
 
     //禁用状态
     public static final Integer STATUS_UN_USABLE = 1;
     //可用状态
     public static final Integer STATUS_USABLE = 0;
-    
+
+    //是否强制购买 0--非强制 1--强制
     public static final Integer CONSTRAINT_NOT_FORCE = 0;
-    
     public static final Integer CONSTRAINT_FORCE = 1;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    /**
+     * 保险类型 0--电池 1--车辆 2--车电一体
+     */
+    public static final int INSURANCE_TYPE_BATTERY = 0;
+    public static final int INSURANCE_TYPE_CAR = 1;
+    public static final int INSURANCE_TYPE_BATTERY_CAR = 2;
 
 }

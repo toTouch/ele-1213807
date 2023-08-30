@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.service.Jt808CarService;
 import com.xiliulou.electricity.web.query.CarControlRequest;
 import com.xiliulou.electricity.web.query.CarGpsQuery;
@@ -34,6 +35,7 @@ public class JsonAdminJt808CarController extends BaseController {
     }
     
     @PostMapping("/admin/jt808/car/control")
+    @Log(title = "车辆断/启电")
     public R controlCar(@RequestBody @Validated CarControlRequest request) {
         return returnPairResult(jt808CarService.controlCar(request));
     }

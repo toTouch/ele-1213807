@@ -89,9 +89,14 @@ public class EleDepositOrder {
     private Integer carModelId;
 
     /**
-     * 交易方式
+     * 交易方式 0 线上，1线下，2免押
      */
     private Integer payType;
+
+    /**
+     * 套餐Id
+     */
+    private Long mid;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
@@ -104,10 +109,9 @@ public class EleDepositOrder {
     public static final Integer OFFLINE_PAYMENT = 1;
     
     /**
-     * 免押
+     * 0 线上，1线下，2免押
      */
     public static final Integer ONLINE_DEPOSIT_PAYMENT = 0;
-    
     public static final Integer OFFLINE_DEPOSIT_PAYMENT = 1;
     public static final Integer FREE_DEPOSIT_PAYMENT = 2;
 

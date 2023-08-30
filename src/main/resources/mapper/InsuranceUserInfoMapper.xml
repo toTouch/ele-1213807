@@ -2,7 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.InsuranceUserInfoMapper">
 
-
+    <select id="selectByUidAndTypeFromDB" resultType="com.xiliulou.electricity.entity.InsuranceUserInfo">
+        select id,  uid,  franchisee_id,  premium,  forehead,  insurance_id,  insurance_order_id,  insurance_expire_time,  is_use,  tenant_id,  type from t_insurance_user_info
+        where del_flag=0 and uid = #{uid} and type=#{type}
+    </select>
 
     <update id="update">
         update t_insurance_user_info
@@ -28,6 +31,9 @@
             <if test="isUse != null">
                 is_use = #{isUse},
             </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
@@ -44,6 +50,16 @@
          ,tfi.name as insuranceName ,tfi.cid,tio.update_time as payInsuranceTime from t_insurance_user_info tiui left join t_franchisee_insurance tfi on tiui.insurance_id=tfi.id
          left join t_insurance_order tio on tiui.insurance_order_id=tio.order_id
          where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid} and tiui.del_flag=0
+    </select>
+
+    <delete id="deleteByUidAndType">
+        delete from t_insurance_user_info where uid = #{uid} and type=#{type}
+    </delete>
+
+    <select id="selectUserInsuranceList" resultType="com.xiliulou.electricity.entity.InsuranceUserInfo">
+        select id,  uid,  franchisee_id,  premium,  forehead,  insurance_id,  insurance_order_id,  insurance_expire_time,  is_use,  tenant_id,  type from t_insurance_user_info
+        where del_flag=0 and is_use=0
+        limit #{offset},#{size}
     </select>
 
 </mapper>

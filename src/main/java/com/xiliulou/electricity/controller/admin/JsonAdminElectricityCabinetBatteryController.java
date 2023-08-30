@@ -124,9 +124,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                                        @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                                        @RequestParam(value = "sn", required = false) String sn,
+                                       @RequestParam(value = "model", required = false) String model,
                                        @RequestParam(value = "power", required = false) Double power,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                                       @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
 
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -158,6 +160,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setPower(power);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
@@ -165,6 +168,12 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+
+        //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+            electricityBatteryQuery.setBindStatus(bindStatus);
+        }
+
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
@@ -198,9 +207,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                         @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                         @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "model", required = false) String model,
                         @RequestParam(value = "power", required = false) Double power,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                        @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -224,6 +235,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setPower(power);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
@@ -231,6 +243,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+
+        //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+            electricityBatteryQuery.setBindStatus(bindStatus);
+        }
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
 
@@ -339,7 +356,17 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @Log(title = "电池绑定/解绑加盟商")
     public R bindElectricityBattery(
             @RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
-        return electricityBatteryService.bindFranchisee(bindElectricityBatteryQuery);
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
+        return electricityBatteryService.bindFranchiseeForBattery(bindElectricityBatteryQuery);
     }
 
 
@@ -354,10 +381,10 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel")
     @Transactional(rollbackFor = Exception.class)
-    public R upload(@RequestParam("file") MultipartFile file) {
+    public R upload(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListener(electricityBatteryService)).sheet().doRead();
+                    new BatteryExcelListener(electricityBatteryService, franchiseeId)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -372,10 +399,10 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v2")
     @Transactional(rollbackFor = Exception.class)
-    public R uploadV2(@RequestParam("file") MultipartFile file) {
+    public R uploadV2(@RequestParam("file") MultipartFile file,  @RequestParam("franchiseeId") Long franchiseeId) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode())).sheet().doRead();
+                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -494,19 +521,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
 
     /**
      * 根据电池名字获取电池详情
-     *
-     * @param batteryName
      * @return
      */
     @GetMapping("/admin/battery/selectByBatteryName")
     public R batteryInfo(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-                         @RequestParam(value = "batteryName") String batteryName) {
-        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
+                         @RequestParam(value = "name") String name) {
+        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(name).offset(offset)
                 .size(size).tenantId(TenantContextHolder.getTenantId()).build();
 
-        List<ElectricityBattery> electricityBatterys = electricityBatteryService.selectBatteryInfoByBatteryName(
-                batteryQuery);
-        return R.ok(electricityBatterys);
+        return R.ok(electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery));
     }
 
 

@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @Builder
 @TableName("t_user_battery")
+@Deprecated
 public class UserBattery {
     
     /**
@@ -29,27 +30,27 @@ public class UserBattery {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    
+
     /**
      * 用户id
      */
     private Long uid;
-    
+
     /**
      * 初始电池编号
      */
     private String initBatterySn;
-    
+
     /**
      * 当前电池编号
      */
     private String nowBatterySn;
-    
+
     /**
      * 电池类型
      */
     private String batteryType;
-    
+
     private Integer delFlag;
 
     private Integer tenantId;

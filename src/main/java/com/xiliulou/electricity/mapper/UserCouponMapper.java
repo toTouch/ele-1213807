@@ -1,13 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserCoupon;
-import java.util.List;
-
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * 优惠券表(TCoupon)表数据库访问层
@@ -17,6 +17,34 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface UserCouponMapper extends BaseMapper<UserCoupon>{
 
+    /**
+     * 根据来源订单编码作废掉未使用的优惠券
+     *
+     * @param sourceOrderId     来源订单编码
+     * @param optTime 操作时间
+     * @return 操作条数
+     */
+    int cancelBySourceOrderIdAndUnUse(@Param("sourceOrderId") String sourceOrderId, @Param("optTime") Long optTime);
+
+    /**
+     * 根据订单编码更新优惠券状态
+     *
+     * @param orderId     订单编码
+     * @param status      状态
+     * @param optTime      操作时间
+     * @return 操作条数
+     */
+    int updateStatusByOrderId(@Param("orderId") String orderId, @Param("status") Integer status, @Param("optTime") Long optTime);
+
+    /**
+     * 查询用户名下有效的优惠券
+     *
+     * @param uid      用户ID
+     * @param ids      主键ID
+     * @param deadline 到期时间
+     * @return
+     */
+    List<UserCoupon> selectEffectiveByUid(@Param("uid") Long uid, @Param("ids") List<Long> ids, @Param("deadline") Long deadline);
 
     /**
      * 查询指定行数据
@@ -37,4 +65,5 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList);
 
     Integer updateUserCouponStatus(UserCoupon userCoupon);
+
 }

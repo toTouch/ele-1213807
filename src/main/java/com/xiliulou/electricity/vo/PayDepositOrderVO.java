@@ -41,7 +41,10 @@ public class PayDepositOrderVO {
      * 电池型号
      */
     private Integer model;
-    
+
+
+    private Integer payType;
+
     /**
      * 电池型号
      */

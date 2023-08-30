@@ -435,7 +435,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, userInfo.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setUid(userInfo.getUid());

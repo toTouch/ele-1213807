@@ -499,9 +499,10 @@ public class JsonAdminStoreController extends BaseController {
 
     //搜索search
     @GetMapping("/admin/store/search")
-    public R storeSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-                         @RequestParam(value = "name", required = false) String name,
-                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+    public R storeSearch(@RequestParam("size") Long size,
+                         @RequestParam("offset") Long offset,
+                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                         @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 20) {
             size = 20L;
         }
@@ -510,7 +511,7 @@ public class JsonAdminStoreController extends BaseController {
             offset = 0L;
         }
 
-        return storeService.storeSearch(size, offset, name, franchiseeId,TenantContextHolder.getTenantId());
+        return storeService.storeSearch(size, offset, franchiseeId, name, TenantContextHolder.getTenantId());
     }
 
 }

@@ -98,6 +98,8 @@ public class ElectricityCabinetOrder {
     //租户id
     private Integer tenantId;
 
+    private Long franchiseeId;
+
     //门店id
     private Long storeId;
 

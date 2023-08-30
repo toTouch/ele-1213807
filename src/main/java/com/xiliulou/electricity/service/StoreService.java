@@ -18,6 +18,14 @@ import java.util.List;
  */
 public interface StoreService {
 
+    /**
+     * 根据车辆<code>SN</code>码获取门店信息
+     * @param tenantId
+     * @param sn
+     * @return
+     */
+    Store queryByCarSn(Integer tenantId, String sn);
+
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -86,5 +94,5 @@ public interface StoreService {
 
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
     
-    R storeSearch(Long size, Long offset, String name , Long franchiseeId, Integer tenantId);
+    R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId);
 }

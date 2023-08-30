@@ -49,4 +49,10 @@ public class UserCouponQuery {
     private Long beginTime;
 
     private Long endTime;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
+
+    private Integer superposition;
 }

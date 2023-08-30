@@ -66,4 +66,7 @@ public interface InvitationActivityMemberCardService {
     List<Long> selectMemberCardIdsByActivityId(Long id);
 
     Integer deleteByActivityId(Long id);
+
+    List<InvitationActivityMemberCard> selectPackagesByActivityIdAndType(Long id, Integer packageType);
+
 }

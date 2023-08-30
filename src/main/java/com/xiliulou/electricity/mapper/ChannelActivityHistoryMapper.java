@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -75,4 +76,8 @@ public interface ChannelActivityHistoryMapper extends BaseMapper<ChannelActivity
     
     Long queryCount(@Param("phone") String phone, @Param("tenantId") Integer tenantId,
             @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
+    List<ChannelActivityHistoryVo> queryActivityHistoryList(ChannelActivityHistoryQuery channelActivityHistoryQuery);
+
+    Long queryActivityHistoryCount(ChannelActivityHistoryQuery channelActivityHistoryQuery);
 }

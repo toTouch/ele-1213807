@@ -16,6 +16,10 @@ public class RentBatteryOrderQuery {
     private Long size;
     private Long offset;
     /**
+     * 用户UID
+     */
+    private Long uid;
+    /**
      * 用户名字
      */
     private String name;
@@ -28,4 +32,6 @@ public class RentBatteryOrderQuery {
     private Integer type;
     private List<Integer> eleIdList;
     private Integer tenantId;
+    private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }

@@ -2,12 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.CouponMapper">
 
+    <select id="search" resultType="com.xiliulou.electricity.vo.SearchVo">
+        select
+        id, name  from t_coupon
+        <where>
+            del_flag=0
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="status != null ">
+                and status = #{status}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select
           id, name, status, apply_type,  discount_type, amount, discount, count, days,  description, superposition,
-          uid, user_name, create_time, update_time, del_flag,franchisee_id,type
+          uid, user_name, create_time, update_time, del_flag,franchisee_id, type, specific_packages
         from t_coupon
         <where>
             del_flag=0
@@ -28,6 +46,15 @@
             </if>
             <if test="query.tenantId != null ">
                 and tenant_id = #{query.tenantId}
+            </if>
+            <if test=" query.ids !=null and query.ids.size > 0 ">
+                AND `id` IN
+                <foreach collection="query.ids" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.superposition != null">
+                and superposition = #{query.superposition}
             </if>
         </where>
         order by create_time desc
@@ -59,10 +86,26 @@
             <if test="query.tenantId != null ">
                 and tenant_id = #{query.tenantId}
             </if>
+            <if test="query.superposition != null">
+                and superposition = #{query.superposition}
+            </if>
         </where>
     </select>
-    
-    
+
+    <select id="selectCouponByQuery" resultType="com.xiliulou.electricity.entity.Coupon">
+        select
+        id, name  from t_coupon
+        <where>
+            del_flag = 0
+            <if test="name != null and name != ''">
+                and name = #{name,jdbcType=VARCHAR}
+            </if>
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_coupon where id = #{id} and tenant_id = #{tenantId}

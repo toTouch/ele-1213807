@@ -3,15 +3,23 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
 import com.xiliulou.electricity.query.ChargeConfigQuery;
 import com.xiliulou.electricity.service.EleChargeConfigService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,6 +30,8 @@ import java.util.Objects;
 public class JsonAdminEleChargeConfigController extends BaseController {
     @Autowired
     EleChargeConfigService eleChargeConfigService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     @GetMapping("/admin/charge/config/list")
     public R getList(ChargeConfigListQuery chargeConfigListQuery) {
@@ -33,12 +43,58 @@ public class JsonAdminEleChargeConfigController extends BaseController {
             chargeConfigListQuery.setOffset(0);
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        chargeConfigListQuery.setStoreIds(storeIds);
+        chargeConfigListQuery.setFranchiseeIds(franchiseeIds);
         chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnPairResult(eleChargeConfigService.queryList(chargeConfigListQuery));
     }
 
     @GetMapping("/admin/charge/config/list/count")
     public R getListCount(ChargeConfigListQuery chargeConfigListQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+
+        chargeConfigListQuery.setStoreIds(storeIds);
+        chargeConfigListQuery.setFranchiseeIds(franchiseeIds);
         chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnPairResult(eleChargeConfigService.queryListCount(chargeConfigListQuery));
     }

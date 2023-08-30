@@ -68,5 +68,6 @@ public interface PxzConfigService {
     Pair<Boolean, Object> save(PxzConfigQuery pxzConfigQuery);
     
     Pair<Boolean, Object> modify(PxzConfigQuery pxzConfigQuery);
-    
+
+    Pair<Boolean, Object> check();
 }

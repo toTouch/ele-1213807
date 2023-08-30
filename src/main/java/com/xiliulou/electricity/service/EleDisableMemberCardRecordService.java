@@ -30,4 +30,6 @@ public interface EleDisableMemberCardRecordService {
     int updateBYId(EleDisableMemberCardRecord eleDisableMemberCardRecord);
     
     EleDisableMemberCardRecord queryByDisableMemberCardNo(String disableMemberCardNo, Integer tenantId);
+
+    EleDisableMemberCardRecord selectByDisableMemberCardNo(String disableMemberCardNo);
 }

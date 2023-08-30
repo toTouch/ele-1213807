@@ -51,10 +51,5 @@ public class JsonUserRentBatteryOrderController {
         return rentBatteryOrderService.queryNewStatus(orderId);
     }
 
-    //换电柜自助开仓
-    @PostMapping("/user/rentBatteryOrder/orderSelfOpenCell")
-    public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
-        return rentBatteryOrderService.selfOpenCell(orderSelfOpenCellQuery);
-    }
 
 }

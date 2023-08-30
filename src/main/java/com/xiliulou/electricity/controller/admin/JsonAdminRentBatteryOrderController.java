@@ -3,8 +3,10 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +42,8 @@ public class JsonAdminRentBatteryOrderController {
     private RentBatteryOrderService rentBatteryOrderService;
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //列表查询
     @GetMapping(value = "/admin/rentBatteryOrder/list")
@@ -48,6 +53,7 @@ public class JsonAdminRentBatteryOrderController {
                        @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "orderId", required = false) String orderId) {
@@ -61,20 +67,21 @@ public class JsonAdminRentBatteryOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -84,12 +91,14 @@ public class JsonAdminRentBatteryOrderController {
                 .size(size)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
@@ -113,10 +122,8 @@ public class JsonAdminRentBatteryOrderController {
 			offset = 0L;
 		}
 
-		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -149,10 +156,8 @@ public class JsonAdminRentBatteryOrderController {
 							 @RequestParam(value = "endTime", required = false) Long endTime,
 							 @RequestParam(value = "orderId", required = false) String orderId) {
 
-		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -174,33 +179,34 @@ public class JsonAdminRentBatteryOrderController {
 		return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
 	}
 
-
 	//列表查询
 	@GetMapping(value = "/admin/rentBatteryOrder/queryCount")
 	public R queryCount(@RequestParam(value = "status", required = false) String status,
 			@RequestParam(value = "type", required = false) Integer type,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
 			@RequestParam(value = "orderId", required = false) String orderId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -208,12 +214,14 @@ public class JsonAdminRentBatteryOrderController {
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
@@ -273,6 +281,60 @@ public class JsonAdminRentBatteryOrderController {
     @PostMapping(value = "/admin/rentBatteryOrder/endOrder")
     public R endOrder(@RequestParam("orderId") String orderId) {
         return rentBatteryOrderService.endOrder(orderId);
+    }
+
+    /**
+     * 电柜使用记录，（租，换，退）电池订单列表信息查询
+     * @param size
+     * @param offset
+     * @param userName
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/admin/rentBatteryOrder/usedRecords")
+    public R usedRecords(@RequestParam("size") Long size,
+                         @RequestParam("offset") Long offset,
+                         @RequestParam(value = "id", required = true) Long id,
+                         @RequestParam(value = "userName", required = false) String userName,
+                         @RequestParam(value = "beginTime", required = false) Long beginTime,
+                         @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
+                .offset(offset)
+                .size(size)
+                .id(id)
+                .userName(userName)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+        return R.ok(rentBatteryOrderService.findEleCabinetUsedRecords(eleCabinetUsedRecordQuery));
+    }
+
+    /**
+     * 电柜使用记录，（租，换，退）电池订单列表总数
+     * @param userName
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/admin/rentBatteryOrder/usedRecordsTotalCount")
+    public R usedRecordsTotalCount(@RequestParam(value = "id", required = true) Long id,
+                                   @RequestParam(value = "userName", required = false) String userName,
+                                   @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                   @RequestParam(value = "endTime", required = false) Long endTime) {
+        EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
+                .id(id)
+                .userName(userName)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+        return R.ok(rentBatteryOrderService.findUsedRecordsTotalCount(eleCabinetUsedRecordQuery));
     }
 
 }

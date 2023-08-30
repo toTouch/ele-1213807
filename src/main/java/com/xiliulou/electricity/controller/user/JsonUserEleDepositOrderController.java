@@ -2,11 +2,10 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -35,21 +34,14 @@ public class JsonUserEleDepositOrderController {
     @Autowired
     EleDepositOrderService eleDepositOrderService;
     @Autowired
+    EleRefundOrderService eleRefundOrderService;
+    @Autowired
     FranchiseeService franchiseeService;
     @Autowired
     UserService userService;
     @Autowired
     UserInfoService userInfoService;
 
-    //缴纳押金
-    @PostMapping("/user/payDeposit")
-    public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
-                        @RequestParam(value = "deviceName", required = false) String deviceName,
-                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                        @RequestParam(value = "model", required = false) Integer model,
-                        HttpServletRequest request) {
-        return eleDepositOrderService.payDeposit(productKey, deviceName, franchiseeId, model, request);
-    }
 
     //退还押金
     @PostMapping("/user/returnDeposit")
@@ -71,9 +63,15 @@ public class JsonUserEleDepositOrderController {
     }
 
     //用户查询缴纳押金
+    @Deprecated
     @GetMapping(value = "/user/queryUserDeposit")
     public R queryUserDeposit() {
         return eleDepositOrderService.queryUserDeposit();
+    }
+
+    @GetMapping(value = "/user/batteryDeposit/info")
+    public R selectUserBatteryDeposit() {
+        return eleDepositOrderService.selectUserBatteryDeposit();
     }
 
     //用户查询押金
@@ -166,24 +164,6 @@ public class JsonUserEleDepositOrderController {
         return eleDepositOrderService.payBatteryServiceFee(request);
     }
 
-
-    /**
-     * 缴纳租车押金(旧小程序)
-     *
-     * @return
-     */
-    @PostMapping("/user/payRentCarDeposit")
-    @Deprecated
-    public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId,
-                               @RequestParam(value = "carModelId") Integer carModelId,
-                               HttpServletRequest request) {
-        //旧版小程序不允许操作
-        if(Boolean.TRUE){
-            return R.fail("100257","该版本暂不支持租车,请升级小程序");
-        }
-        return eleDepositOrderService.payRentCarDeposit(storeId, carModelId, request);
-    }
-
     //用户查询租车押金
     @GetMapping(value = "/user/queryRentCarDeposit")
     @Deprecated
@@ -211,6 +191,22 @@ public class JsonUserEleDepositOrderController {
     public R refundCarDeposit() {
         return eleDepositOrderService.refundCarDeposit();
     }
-  
+
+    /**
+     * 用户端退款订单分页
+     */
+    @GetMapping(value = "/user/batteryDeposit/refund")
+    public R batteryDepositRefund(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
+                .offset(offset)
+                .size(size)
+                .status(EleRefundOrder.STATUS_SUCCESS)
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(SecurityUtils.getUid())
+                .build();
+
+        return eleRefundOrderService.queryList(eleRefundQuery);
+    }
 }
 

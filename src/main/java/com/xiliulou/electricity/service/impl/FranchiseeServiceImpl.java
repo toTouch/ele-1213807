@@ -9,37 +9,22 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeAmount;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
-import com.xiliulou.electricity.entity.FranchiseeMoveRecord;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.Region;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBattery;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserDataScope;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
+import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
-import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -51,13 +36,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -134,8 +113,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Slave
     @Override
-    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
-        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+    public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
+        List<FranchiseeSearchVO>  list=franchiseeMapper.search(franchiseeQuery);
         if(CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
         }
@@ -203,6 +182,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setTenantId(tenantId);
         franchisee.setUid(uid);
         franchisee.setCid(franchiseeAddAndUpdate.getCityId());
+        franchisee.setDisableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME);
         int insert = franchiseeMapper.insert(franchisee);
 
         //新增加盟商账户
@@ -263,10 +243,19 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         }
 
+        //检查修改后的名称是否重复.
+        if(!oldFranchisee.getName().equals(franchiseeAddAndUpdate.getName())){
+            User userNameExists = userService.queryByUserNameAndTenantId(franchiseeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
+            if (Objects.nonNull(userNameExists)) {
+                return R.fail("110200", "用户名已经存在！");
+            }
+        }
+
         Franchisee updateFranchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, updateFranchisee);
         updateFranchisee.setUpdateTime(System.currentTimeMillis());
         updateFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
+        updateFranchisee.setDisableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME);
         int update = this.franchiseeMapper.editFranchisee(updateFranchisee);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_FRANCHISEE + updateFranchisee.getId());
@@ -717,6 +706,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
         Franchisee franchisee = this.queryByIdFromCache(id);
@@ -733,11 +723,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(true, null, null);
         }
 
-        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
-        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
-        if (batteryList.contains(batteryType)) {
-            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
-        }
+//        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
+//        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+//        if (batteryList.contains(batteryType)) {
+//            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+//        }
 
         return Triple.of(true, null, null);
     }
@@ -746,6 +736,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId) {
         return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectById(Long id) {
+        Franchisee franchisee = this.queryByIdFromCache(id);
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        return Triple.of(true, null, franchisee);
     }
 
     /**
@@ -870,11 +870,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         userInfoService.update(updateUserInfo);
 
         //更新用户绑定的电池型号
-        UserBattery userBatteryUpdate = new UserBattery();
-        userBatteryUpdate.setUid(userInfo.getUid());
-        userBatteryUpdate.setBatteryType(batteryType);
-        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBatteryUpdate);
+//        UserBattery userBatteryUpdate = new UserBattery();
+//        userBatteryUpdate.setUid(userInfo.getUid());
+//        userBatteryUpdate.setBatteryType(batteryType);
+//        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+//        userBatteryService.updateByUid(userBatteryUpdate);
 
         //生成迁移记录
         franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType));

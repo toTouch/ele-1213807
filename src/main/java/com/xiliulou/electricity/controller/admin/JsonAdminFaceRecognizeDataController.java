@@ -151,7 +151,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+            return R.ok();
         }
 
         return R.ok(this.faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId()));

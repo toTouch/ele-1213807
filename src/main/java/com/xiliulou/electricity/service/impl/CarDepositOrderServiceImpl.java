@@ -12,7 +12,6 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
-import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -438,7 +437,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         BigDecimal refundAmount =
                 getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -449,6 +448,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
     
         //零元直接退
@@ -634,7 +634,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid);
+        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid);
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -647,6 +647,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
@@ -765,7 +766,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid);
+        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid);
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -777,6 +778,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);

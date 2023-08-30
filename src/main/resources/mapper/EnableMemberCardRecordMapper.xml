@@ -2,6 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EnableMemberCardRecordMapper">
 
+    <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.EnableMemberCardRecord">
+        select id ,user_name,phone,member_card_name,enable_type,disable_days,battery_service_fee_status,disable_member_card_no
+        ,uid,franchisee_id,disable_time,enable_time,create_time,update_time,tenant_id,service_fee from
+        t_enable_member_card_record  where uid = #{uid} ORDER BY id DESC limit 1
+    </select>
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EnableMemberCardRecord">
         select id
@@ -33,6 +38,12 @@
             <if test="franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -71,6 +82,12 @@
             <if test="franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>

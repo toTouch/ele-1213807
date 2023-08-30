@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -28,6 +29,13 @@ import java.util.Set;
  * @since 2020-11-25 11:00:14
  */
 public interface ElectricityCabinetService {
+
+    /**
+     * 根据主键ID集获取柜机基本信息
+     * @param ids 主键ID集
+     * @return
+     */
+    List<ElectricityCabinet> listByIds(Set<Integer> ids);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -112,11 +120,9 @@ public interface ElectricityCabinetService {
 
     R queryCabinetBelongFranchisee(Integer id);
 
-    Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
-
     Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-    @Deprecated
-    void unlockElectricityCabinet(Integer eid);
+
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
 
@@ -155,6 +161,9 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
     List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
+
+    List<ElectricityCabinet> selectByFranchiseeIds(List<Long> franchiseeIds);
+
     R acquireIdcardFileSign();
 
     R queryName(Integer tenant,Integer id);
@@ -180,6 +189,8 @@ public interface ElectricityCabinetService {
     
     void sendFullBatteryMessage(List<Message>  messageList);
 
+    List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet);
+
     List<Integer> selectEidByStoreId(Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
@@ -193,6 +204,8 @@ public interface ElectricityCabinetService {
     boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox);
 
     boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox);
+
+    boolean isFullBattery(ElectricityCabinetBox electricityCabinetBox);
 
     boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged);
 

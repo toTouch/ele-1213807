@@ -69,7 +69,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
 
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleSelfOPenCellOrderVo.getOrderId());
-        if (Objects.isNull(electricityCabinet)) {
+        if (Objects.isNull(electricityCabinetOrder)) {
             log.error("SELF OPEN CELL ERROR! not found order! orderId:{}", eleSelfOPenCellOrderVo.getOrderId());
             return;
         }

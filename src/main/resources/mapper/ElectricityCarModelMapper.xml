@@ -5,8 +5,21 @@
 
     <!-- 基础字段 -->
     <sql id="selectElectricityCarModel">
-       	select   id, name, franchisee_id, del_flag, create_time, update_time, tenant_id, store_id, rent_type, car_deposit, other_properties  from t_electricity_car_model
+       	select   id, name, franchisee_id, del_flag, create_time, update_time, tenant_id, store_id, rent_type, car_deposit, other_properties, `rented_quantity`  from t_electricity_car_model
     </sql>
+
+    <!-- 根据门店ID集，获取指定数量的数据，已租数量降序 -->
+    <select id="selectByStoreIdListLimit" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
+        <include refid="selectElectricityCarModel"/>
+        <where>
+            `del_flag` = 0 AND `store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </where>
+        ORDER BY `rented_quantity` DESC
+        LIMIT #{size}
+    </select>
 
     <!--查询单个-->
     <select id="selectById" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
@@ -19,7 +32,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
         select
         tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id,
-        tecm.store_id, tecm.rent_type, tecm.car_deposit, tecm.other_properties
+        tecm.store_id, tecm.rent_type, tecm.car_deposit, tecm.other_properties, tecm.`rented_quantity`
         from t_electricity_car_model tecm
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -40,13 +53,19 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null">
+            and tecm.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
-        from t_electricity_car_model tecm  left join t_franchisee tf on tecm.franchisee_id=tf.id
+        from t_electricity_car_model tecm
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tecm.name = #{query.name}
@@ -60,6 +79,12 @@
         <if test="query.franchiseeIds != null">
             and tecm.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null">
+            and tecm.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>
@@ -105,6 +130,9 @@
             <if test="otherProperties != null and otherProperties != ''">
                 and other_properties = #{otherProperties}
             </if>
+            <if test=" rentedQuantity != null ">
+                AND `rented_quantity` = #{rentedQuantity}
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}
@@ -144,6 +172,9 @@
             <if test="carDeposit != null">
                 and car_deposit = #{carDeposit}
             </if>
+            <if test=" rentedQuantity != null ">
+                AND `rented_quantity` = #{rentedQuantity}
+            </if>
         </where>
     </select>
     
@@ -178,6 +209,9 @@
             <if test="otherProperties != null and otherProperties != ''">
                 other_properties = #{otherProperties},
             </if>
+            <if test=" rentedQuantity != null ">
+                `rented_quantity` = #{rentedQuantity},
+            </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
@@ -207,4 +241,29 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="search" resultType="com.xiliulou.electricity.vo.ElectricityCarModelSearchVO">
+        select id,name from t_electricity_car_model
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test=" rentedQuantity != null ">
+                AND `rented_quantity` = #{rentedQuantity}
+            </if>
+        </where>
+    </select>
+
 </mapper>

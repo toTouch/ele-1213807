@@ -43,14 +43,6 @@ public interface FreeDepositAlipayHistoryMapper extends BaseMapper<FreeDepositAl
     List<FreeDepositAlipayHistory> queryAll(FreeDepositAlipayHistory freeDepositAlipayHistory);
     
     /**
-     * 新增数据
-     *
-     * @param freeDepositAlipayHistory 实例对象
-     * @return 影响行数
-     */
-    int insertOne(FreeDepositAlipayHistory freeDepositAlipayHistory);
-    
-    /**
      * 修改数据
      *
      * @param freeDepositAlipayHistory 实例对象

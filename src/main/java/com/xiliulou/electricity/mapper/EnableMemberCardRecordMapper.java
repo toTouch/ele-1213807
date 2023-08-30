@@ -25,4 +25,5 @@ public interface EnableMemberCardRecordMapper extends BaseMapper<EnableMemberCar
 
     Integer queryCount(EnableMemberCardRecordQuery enableMemberCardRecordQuery);
 
+    EnableMemberCardRecord selectLatestByUid(Long uid);
 }

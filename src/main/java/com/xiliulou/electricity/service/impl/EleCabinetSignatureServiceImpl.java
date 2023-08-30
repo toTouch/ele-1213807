@@ -470,26 +470,26 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //获取当前用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.error("eSign error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
         }
 
         //用户是否被限制
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            log.error("eSign error! user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "000101", "用户已被禁用");
         }
 
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
+            log.error("eSign error! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000102", "系统异常！");
         }
 
         //未启用该功能，则正常进行其他操作
         if (!Objects.equals(EleEsignConstant.ESIGN_ENABLE, electricityConfig.getIsEnableEsign())) {
-            log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
+            log.warn("eSign warning, The eSign feature not enable, tenantId = {}", TenantContextHolder.getTenantId());
             return Triple.of(true, "", "电子签名功能未启用！");
         }
 
@@ -499,7 +499,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())
                 || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
-            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.error("eSign error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }

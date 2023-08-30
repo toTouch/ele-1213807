@@ -31,9 +31,19 @@ public class ServiceFeeUserInfo {
     private String disableMemberCardNo;
 
     /**
+     * 暂停套餐电池服务费订单号
+     */
+    private String pauseOrderNo;
+
+    /**
+     * 套餐过期电池服务费订单号
+     */
+    private String expireOrderNo;
+
+    /**
      * 是否存在电池服务费 (1--存在电池服务费)
      */
-    private Integer existBatteryServiceFee;
+//    private Integer existBatteryServiceFee;
 
     /**
      * 用户Id

@@ -63,6 +63,8 @@ public class EleRefundOrder {
     //租户id
     private Integer tenantId;
 
+    private Long franchiseeId;
+
     /**
      * 套餐欠费次数
      */

@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -21,26 +23,49 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfo queryByUid(Long uid, Integer tenantId);
 
-    R updateInsuranceStatus(Long uid, Integer insuranceStatus);
+    R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus,Integer type);
 
     InsuranceUserInfo queryByUidFromCache(Long uid);
+
+    InsuranceUserInfo selectByUidAndTypeFromDB(Long uid,Integer type);
+
+    InsuranceUserInfo selectByUidAndTypeFromCache(Long uid,Integer type);
 
     Integer insert(InsuranceUserInfo insuranceUserInfo);
 
     Integer update(InsuranceUserInfo insuranceUserInfo);
 
+    int updateInsuranceUserInfoById(InsuranceUserInfo insuranceUserInfo);
+
     InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId);
 
     R queryUserInsurance();
+
+    R queryUserInsurance(Long uid,Integer type);
+
+    InsuranceUserInfoVo selectUserInsuranceInfo(Long uid,Integer type);
 
     R queryInsuranceByStatus(Integer status, Long offset, Long size);
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
 
-    R insertUserInsurance(InsuranceUserInfo insuranceOrder);
+    int deleteByUidAndType(Long uid,Integer type);
 
-    R editUserInsuranceInfo(InsuranceUserInfo order);
+    R insertUserBatteryInsurance(InsuranceUserInfoQuery query);
 
-    R renewalUserInsurance(InsuranceUserInfo insuranceOrder);
+    R editUserInsuranceInfo(InsuranceUserInfoQuery query);
 
+    R renewalUserBatteryInsurance(InsuranceUserInfoQuery query);
+
+    Boolean verifyUserIsNeedBuyInsurance(UserInfo userInfo, Integer type, String simpleBatteryType, Long carModelId);
+
+    InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type);
+
+    InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
+
+    void saveUserInsurance(InsuranceOrder insuranceOrder);
+
+    void updateUserInsuranceOrderStatusTask();
+
+    List<InsuranceUserInfo> selectByUid(Long uid);
 }

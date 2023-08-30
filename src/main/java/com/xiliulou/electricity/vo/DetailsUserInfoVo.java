@@ -21,14 +21,37 @@ public class DetailsUserInfoVo {
      * 联系方式
      */
     private String phone;
+
+    /**
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中
+     */
+    private Integer batteryDepositStatus;
+
+    /**
+     * 车辆押金状态
+     */
+    private Integer carDepositStatus;
+
+    /**
+     * 车电一体押金状态
+     */
+    private Integer carBatteryDepositStatus;
     
     /**
      * 电池租借状态
+     * <pre>
+     *     0-未租
+     *     1-已租
+     * </pre>
      */
     private Integer batteryRentStatus;
     
     /**
      * 车辆租借状态
+     * <pre>
+     *     0-未租
+     *     1-已租
+     * </pre>
      */
     private Integer carRentStatus;
     
@@ -56,4 +79,24 @@ public class DetailsUserInfoVo {
      * 认证时间
      */
     private Long userCertificationTime;
+
+    private Integer modelType;
+
+    private String franchiseeName;
+
+    private String storeName;
+
+    private Long franchiseeId;
+
+    private Long storeId;
+
+    /**
+     * 租车套餐金额（总支付成功-总退租成功）
+     */
+    private BigDecimal carRentalPackageOrderAmountTotal;
+
+    /**
+     * 租车滞纳金金额（总支付成功）
+     */
+    private BigDecimal carRentalPackageOrderSlippageAmountTotal;
 }

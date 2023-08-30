@@ -62,6 +62,8 @@ public interface InvitationActivityRecordService {
 
     void handleInvitationActivity(UserInfo userInfo, String orderId);
 
+    void handleInvitationActivityByPackage(UserInfo userInfo, String orderId, Integer packageType);
+
     Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query);
 
     Triple<Boolean, String, Object> generateCode();

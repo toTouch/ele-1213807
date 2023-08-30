@@ -23,6 +23,13 @@ import java.util.List;
  */
 public interface ElectricityBatteryService extends IService<ElectricityBattery> {
 
+    /**
+     * 根据电池SN码集查询
+     * @param tenantId 租户ID
+     * @param snList 电池SN码
+     * @return 电池信息集
+     */
+    List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList);
 
     R saveElectricityBattery(EleBatteryQuery electricityBattery);
 
@@ -43,8 +50,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn);
     
     ElectricityBattery queryPartAttrBySnFromCache(String sn);
-    
-    
+
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
@@ -52,8 +58,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
 
     R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
-
-    void handlerBatteryNotInCabinetWarning();
 
     R batteryOutTimeInfo(Long uid);
 
@@ -64,7 +68,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void insert(ElectricityBattery electricityBattery);
 
     Triple<Boolean, String, Object> queryInfoByUid(Long uid, Integer isNeedLocation);
-
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
     
@@ -82,13 +85,13 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
-    R bindFranchisee(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+    R bindFranchiseeForBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
     List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds);
 
     ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
     
-    List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
+    List<ElectricityBatteryVO> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
 

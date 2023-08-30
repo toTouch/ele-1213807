@@ -75,17 +75,18 @@ public class TypeUserFranchiseeServiceImpl implements UserTypeService {
             return Collections.EMPTY_LIST;
         }
 
-        List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
-        if (CollectionUtils.isEmpty(storeList)) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<Long> storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(storeIds)) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<ElectricityCabinet> electricityCabinetList =electricityCabinetService.selectBystoreIds(storeIds);
+//        List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+//        if (CollectionUtils.isEmpty(storeList)) {
+//            return Collections.EMPTY_LIST;
+//        }
+//
+//        List<Long> storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
+//        if (CollectionUtils.isEmpty(storeIds)) {
+//            return Collections.EMPTY_LIST;
+//        }
+//
+//        List<ElectricityCabinet> electricityCabinetList =electricityCabinetService.selectBystoreIds(storeIds);
+        List<ElectricityCabinet> electricityCabinetList =electricityCabinetService.selectByFranchiseeIds(franchiseeIds);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
             return Collections.EMPTY_LIST;
         }

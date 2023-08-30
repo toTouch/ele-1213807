@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
+import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -31,7 +34,7 @@ import java.util.Objects;
  **/
 @RestController
 @Slf4j
-public class JsonAdminElectricityMemberCardOrderController {
+public class JsonAdminElectricityMemberCardOrderController extends BaseController {
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     @Autowired
@@ -53,11 +56,13 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "useStatus", required = false) Integer useStatus,
                                           @RequestParam(value = "source", required = false) Integer source,
                                           @RequestParam(value = "payCount", required = false) Integer payCount,
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
+                                          @RequestParam(value = "uid", required = false) Long uid,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                                           @RequestParam(value = "payType",required = false) Integer payType) {
 
@@ -71,18 +76,21 @@ public class JsonAdminElectricityMemberCardOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -98,15 +106,19 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .size(size)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .uid(uid)
+                .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .cardPayCount(payCount)
 		        .userName(userName)
                 .payType(payType)
-		        .franchiseeIds(franchiseeIds).build();
+		        .build();
 
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
     }
@@ -122,29 +134,34 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "useStatus", required = false) Integer useStatus,
                         @RequestParam(value = "payCount", required = false) Integer payCount,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "refId", required = false) Long refId,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "payType",required = false) Integer payType) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -158,15 +175,19 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .uid(uid)
+                .useStatus(useStatus)
                 .source(source)
                 .payType(payType)
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .cardPayCount(payCount)
 		        .userName(userName)
                 .payType(payType)
-		        .franchiseeIds(franchiseeIds).build();
+		        .build();
 
         return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
     }
@@ -179,6 +200,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
                             @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                             @RequestParam(value = "status", required = false) Integer status,
+                            @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "payType", required = false) Integer payType,
                             @RequestParam(value = "payCount", required = false) Integer payCount,
@@ -214,6 +236,7 @@ public class JsonAdminElectricityMemberCardOrderController {
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .payType(payType)
                 .phone(phone)
+                .uid(uid)
                 .orderId(orderId)
                 .cardType(cardType)
                 .queryStartTime(queryStartTime)
@@ -229,6 +252,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
     @Log(title = "用户绑定套餐")
     public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -240,6 +264,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
 	@Log(title = "编辑用户套餐")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -251,6 +276,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
     @Log(title = "用户套餐续费")
     public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -264,8 +290,8 @@ public class JsonAdminElectricityMemberCardOrderController {
      */
     @PutMapping("/admin/memberCard/disableUserMemberCard")
 	@Log(title = "暂停用户套餐")
-	public R adminDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
-        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
+	public R adminDisableMemberCard(@RequestParam("uid") Long uid, @RequestParam("days") Integer days) {
+        return electricityMemberCardOrderService.adminDisableMemberCard(uid, days);
     }
 
     /**
@@ -274,8 +300,9 @@ public class JsonAdminElectricityMemberCardOrderController {
      */
     @PutMapping("/admin/memberCard/enableUserMemberCard")
     @Log(title = "启用用户套餐")
-    public R adminEnableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
-        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
+    public R adminEnableMemberCard(@RequestParam("uid") Long uid) {
+//        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid,null);
+        return electricityMemberCardOrderService.adminEnableMemberCard(uid);
     }
 
     /**
@@ -289,5 +316,42 @@ public class JsonAdminElectricityMemberCardOrderController {
 	public R cleanBatteryServiceFee(@RequestParam("uid") Long uid) {
         return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
     }
+
+    /**
+     * 用户交押金绑定套餐(3.0)
+     *
+     */
+    @PostMapping(value = "/admin/electricityMemberCard/addUserDepositAndMemberCard")
+    @Log(title = "用户交押金绑定套餐")
+    public R addUserDepositAndMemberCard(@RequestBody @Validated UserBatteryDepositAndMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.addUserDepositAndMemberCard(query));
+    }
+
+    /**
+     * 编辑用户套餐(3.0)
+     */
+    @PutMapping(value = "/admin/electricityMemberCard/editUserBatteryMemberCard")
+    @Log(title = "编辑用户套餐")
+    public R editUserBatteryMemberCard(@RequestBody @Validated UserBatteryMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.editUserBatteryMemberCard(query));
+    }
+
+    /**
+     * 续费用户套餐(3.0)
+     */
+    @PutMapping(value = "/admin/electricityMemberCard/renewalUserBatteryMemberCard")
+    @Log(title = "用户套餐续费")
+    public R renewalUserBatteryMemberCard(@RequestBody @Validated UserBatteryMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.renewalUserBatteryMemberCard(query));
+    }
+
+    /**
+     * 获取用户当前绑定的套餐详情
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/userBatteryMembercardInfo")
+    public R userBatteryMembercardInfo(@RequestParam("uid") Long uid) {
+        return returnTripleResult(electricityMemberCardOrderService.userBatteryMembercardInfo(uid));
+    }
+
 
 }

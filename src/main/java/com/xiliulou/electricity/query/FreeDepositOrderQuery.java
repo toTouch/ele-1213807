@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -37,6 +39,8 @@ public class FreeDepositOrderQuery {
      */
     private String realName;
 
+    private Long uid;
+
     /**
      * 授权免押的状态
      */
@@ -50,4 +54,8 @@ public class FreeDepositOrderQuery {
      * 押金类型 1：电池，2：租车
      */
     private Integer depositType;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

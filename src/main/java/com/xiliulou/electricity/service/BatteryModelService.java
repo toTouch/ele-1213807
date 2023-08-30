@@ -18,6 +18,30 @@ import java.util.List;
 public interface BatteryModelService {
 
     /**
+     * 根据电池型号查询数据
+     * @param tenantId 租户ID
+     * @param batteryType 电池型号
+     * @return 电池型号信息
+     */
+    BatteryModel selectByBatteryType(Integer tenantId, String batteryType);
+
+    /**
+     * 根据电池型号集查询数据
+     * @param tenantId 租户ID
+     * @param idList 电池型号ID集
+     * @return 电池型号集
+     */
+    List<BatteryModel> selectByIds(Integer tenantId, List<Long> idList);
+
+    /**
+     * 根据电池型号集查询数据
+     * @param tenantId 租户ID
+     * @param batteryTypes 电池型号集
+     * @return 电池型号集
+     */
+    List<BatteryModel> selectByBatteryTypes(Integer tenantId, List<String> batteryTypes);
+
+    /**
      * 通过ID查询单条数据从数据库
      *
      * @param id 主键
@@ -77,9 +101,18 @@ public interface BatteryModelService {
 
     Integer acquireBatteryModel(String type, Integer tenantId);
 
+    String acquireBatteryShortType(String batteryType, Integer tenantId);
+
     String analysisBatteryTypeByBatteryName(String batteryName);
 
     List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
 
     List<BatteryTypeVO> selectBatteryTypeAll();
+    List<BatteryTypeVO> selectBatteryTypeAll(Integer tenantId);
+
+    List<String> selectBatteryVAll();
+
+    List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes);
+
+    List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId);
 }

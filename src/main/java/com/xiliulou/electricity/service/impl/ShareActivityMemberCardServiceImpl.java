@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityMemberCard;
 import com.xiliulou.electricity.mapper.ShareActivityMemberCardMapper;
@@ -104,11 +105,19 @@ public class ShareActivityMemberCardServiceImpl implements ShareActivityMemberCa
         return shareActivityMemberCardMapper.batchInsert(shareActivityMemberCards);
     }
 
+    @Slave
     @Override
     public List<ShareActivityMemberCard> selectByActivityId(Integer id) {
         return shareActivityMemberCardMapper.selectByActivityId(id);
     }
 
+    @Slave
+    @Override
+    public List<ShareActivityMemberCard> selectByActivityIdAndPackageType(Integer id, Integer packageType) {
+        return shareActivityMemberCardMapper.selectByActivityIdAndPackageType(id, packageType);
+    }
+
+    @Slave
     @Override
     public List<Long> selectMemberCardIdsByActivityId(Integer id) {
         return shareActivityMemberCardMapper.selectMemberCardIdsByActivityId(id);

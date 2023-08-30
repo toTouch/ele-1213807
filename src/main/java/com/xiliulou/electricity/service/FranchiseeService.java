@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -74,7 +75,9 @@ public interface FranchiseeService {
 
     Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryType);
 
-    List<SearchVo> search(FranchiseeQuery franchiseeQuery);
+    List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery);
 
     Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
+
+    Triple<Boolean, String, Object> selectById(Long id);
 }

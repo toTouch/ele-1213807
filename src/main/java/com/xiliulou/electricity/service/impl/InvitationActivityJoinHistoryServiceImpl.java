@@ -130,6 +130,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         return list.parallelStream().peek(item -> {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             item.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            item.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
         }).collect(Collectors.toList());
 
     }

@@ -68,6 +68,8 @@ public class ElectricityCarVO {
      */
     private Integer storeId;
 
+    private Long franchiseeId;
+
     /**
      * 门店名称
      */

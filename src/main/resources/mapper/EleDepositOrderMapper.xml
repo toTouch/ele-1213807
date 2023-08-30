@@ -149,6 +149,9 @@
             <if test="query.phone != null and query.phone != ''">
                 and edo.phone = #{query.phone}
             </if>
+            <if test="query.uid != null">
+                and edo.uid = #{query.uid}
+            </if>
             <if test="query.beginTime != null">
                 and edo.create_time &gt;=#{query.beginTime}
             </if>
@@ -243,7 +246,7 @@
 
     <select id="payDepositOrderList" resultType="com.xiliulou.electricity.vo.PayDepositOrderVO">
         select
-        edo.pay_amount, edo.create_time as payTime ,edo.order_id, battery_type
+        edo.pay_amount, edo.create_time as payTime ,edo.order_id, battery_type,edo.pay_type
         from t_ele_deposit_order edo
 
         where edo.status=1

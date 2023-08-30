@@ -20,6 +20,7 @@ import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -67,7 +68,61 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     
     @Autowired
     private FranchiseeService franchiseeService;
-    
+
+    /**
+     * 根据电池型号查询数据
+     *
+     * @param tenantId    租户ID
+     * @param batteryType 电池型号
+     * @return 电池型号信息
+     */
+    @Slave
+    @Override
+    public BatteryModel selectByBatteryType(Integer tenantId, String batteryType) {
+        if (ObjectUtils.isEmpty(tenantId) || StringUtils.isBlank(batteryType)) {
+            return null;
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).eq(BatteryModel::getBatteryType, batteryType);
+        return batteryModelMapper.selectOne(queryWrapper);
+    }
+
+    /**
+     * 根据电池型号集查询数据
+     *
+     * @param tenantId 租户ID
+     * @param idList   电池型号ID集
+     * @return 电池型号集
+     */
+    @Slave
+    @Override
+    public List<BatteryModel> selectByIds(Integer tenantId, List<Long> idList) {
+        if (!ObjectUtils.allNotNull(tenantId, idList) || CollectionUtils.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getId, idList);
+        return batteryModelMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 根据电池型号集查询数据
+     *
+     * @param tenantId     租户ID
+     * @param batteryTypes 电池型号集
+     * @return 电池型号集
+     */
+    @Slave
+    @Override
+    public List<BatteryModel> selectByBatteryTypes(Integer tenantId, List<String> batteryTypes) {
+        if (!ObjectUtils.allNotNull(tenantId, batteryTypes) || CollectionUtils.isEmpty(batteryTypes)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<BatteryModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getBatteryType, batteryTypes);
+        return batteryModelMapper.selectList(queryWrapper);
+    }
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -132,14 +187,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     public Integer selectByPageCount(BatteryModelQuery query) {
         return this.batteryModelMapper.selectByPageCount(query);
     }
-    
+
+    @Deprecated
     @Override
     public List<BatteryTypeVO> selectBatteryTypeAll() {
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(tenant)) {
-            return Collections.emptyList();
-        }
-        
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
@@ -157,7 +208,60 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryTypeVO;
         }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<BatteryTypeVO> selectBatteryTypeAll(Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryMaterials)) {
+            return Collections.emptyList();
+        }
+
+        return batteryModels.stream().map(item -> {
+            BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
+            BeanUtils.copyProperties(item, batteryTypeVO);
+            batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
+            return batteryTypeVO;
+        }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> selectBatteryVAll() {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
+    }
+
+    /**
+     * 长电池型号转为短电池型号
+     * @param batteryModels 租户所有电池型号
+     * @param batteryTypes 待转换长电池型号
+     * @return
+     */
+    @Override
+    @Deprecated
+    public List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes) {
+        if (CollectionUtils.isEmpty(batteryTypes) || CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> batteryModelMap = batteryModels.stream().collect(Collectors.toMap(BatteryTypeVO::getBatteryType, BatteryTypeVO::getBatteryVShort));
+
+        return batteryTypes.stream().map(batteryModelMap::get).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId) {
+        return this.batteryModelMapper.selectShortBatteryType(batteryTypes, tenantId);
+    }
+
     /**
      * 获取用户自定义电池型号列表
      */
@@ -380,7 +484,20 @@ public class BatteryModelServiceImpl implements BatteryModelService {
                 Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel, (item1, item2) -> item2))
                 .getOrDefault(type, NumberConstant.ZERO);
     }
-    
+
+    @Override
+    public String acquireBatteryShortType(String batteryType, Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            log.warn("GET BATTERY SHORT TYPE WARN! batteryModels is empty,tenantId={}", tenantId);
+            return "";
+        }
+
+        return batteryModels.stream().collect(
+                        Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2))
+                .getOrDefault(batteryType, "");
+    }
+
     @Override
     public String analysisBatteryTypeByBatteryName(String batteryName) {
         String type = "";

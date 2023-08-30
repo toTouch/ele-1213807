@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
+import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
@@ -404,9 +405,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Override
     @Slave
-    public void queryExportExcel(String phone, Long beginTime, Long endTime, HttpServletResponse response) {
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
+    public void queryExportExcel(String phone, Long uid, Long beginTime, Long endTime, HttpServletResponse response) {
+        Long userId = SecurityUtils.getUid();
+        if (Objects.isNull(userId)) {
             log.error("USER CHANNEL QUERY CODE ERROR! not found user");
             throw new CustomBusinessException("未查询到用户");
         }
@@ -425,9 +426,19 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         Long size = 2000L;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
-        
-        List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper
-                .queryList(size, offset, phone, TenantContextHolder.getTenantId(), beginTime, endTime);
+
+        ChannelActivityHistoryQuery channelActivityHistoryQuery = ChannelActivityHistoryQuery.builder()
+                .offset(offset)
+                .size(size)
+                .uid(uid)
+                .phone(phone)
+                .tenantId(TenantContextHolder.getTenantId())
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .build();
+
+        List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper.queryActivityHistoryList(channelActivityHistoryQuery);
+
         List<ChannelActivityHistoryExcelVo> voList = new ArrayList<>();
         
         Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
@@ -466,7 +477,41 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             log.error("导出报表失败！", e);
         }
     }
-    
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryActivityHistoryList(ChannelActivityHistoryQuery channelActivityHistoryQuery) {
+
+        List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper.queryActivityHistoryList(channelActivityHistoryQuery);
+
+        if (CollectionUtils.isEmpty(query)) {
+            return Triple.of(true, "", new ArrayList<>());
+        }
+
+        query.forEach(item -> {
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
+            if (Objects.nonNull(inviteUserInfo)) {
+                item.setInviteName(inviteUserInfo.getName());
+                item.setInvitePhone(inviteUserInfo.getPhone());
+            }
+
+            UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
+            if (Objects.nonNull(channelUserInfo)) {
+                item.setChannelName(channelUserInfo.getName());
+                item.setChannelPhone(channelUserInfo.getPhone());
+            }
+        });
+        return Triple.of(true, "", query);
+    }
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryActivityHistoryCount(ChannelActivityHistoryQuery channelActivityHistoryQuery) {
+        Long count = channelActivityHistoryMapper.queryActivityHistoryCount(channelActivityHistoryQuery);
+
+        return Triple.of(true, "", count);
+    }
+
     private String queryStatus(Integer status) {
         String result = "";
         switch (status) {

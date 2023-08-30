@@ -29,6 +29,7 @@ public class DivisionAccountRecordStatisticVO {
      */
     private Double storeIncome;
     private String storeName;
+    private Long storeId;
 
 
 }

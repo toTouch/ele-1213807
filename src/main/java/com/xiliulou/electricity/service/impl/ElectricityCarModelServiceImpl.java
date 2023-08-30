@@ -5,13 +5,11 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.UserCarQuery;
@@ -19,10 +17,11 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +64,45 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Autowired
     ElectricityConfigService electricityConfigService;
 
+    /**
+     * 根据主键ID进行更新
+     *
+     * @param carModel
+     * @return
+     */
+    @Override
+    public boolean updateById(ElectricityCarModel carModel) {
+        if (ObjectUtils.isEmpty(carModel) || ObjectUtils.isEmpty(carModel.getId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        int num = electricityCarModelMapper.updateById(carModel);
+        if (num > 0) {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + carModel.getId());
+        }
+
+        return true;
+    }
+
+    /**
+     * 根据门店ID集，获取指定数量的数据，已租数量降序
+     *
+     * @param size        取值范围
+     * @param storeIdList 门店ID集
+     * @return 车辆型号集
+     */
+    @Slave
+    @Override
+    public List<ElectricityCarModelVO> selectByStoreIdListLimit(Integer size, List<Long> storeIdList) {
+        if (ObjectUtils.isEmpty(size) || CollectionUtils.isEmpty(storeIdList)) {
+            return null;
+        }
+        return electricityCarModelMapper.selectByStoreIdListLimit(size, storeIdList);
+    }
+
+    @Override
+    public List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery) {
+        return electricityCarModelMapper.search(electricityCarModelQuery);
+    }
 
     /**
      * 通过ID查询单条数据从缓存
@@ -98,10 +136,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R save(ElectricityCarModelQuery query) {
-        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+       /* Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
         if (!verifyResult.getLeft()) {
             return R.failMsg(verifyResult.getRight());
-        }
+        }*/
 
         //校验当前加盟商是否为待迁移加盟商，若是  不允许新建
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -139,6 +177,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
         electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
+        //页面移除车辆押金输入项，数据库有约束，设置默认值为0
+        electricityCarModel.setCarDeposit(BigDecimal.ZERO);
         int insert = electricityCarModelMapper.insert(electricityCarModel);
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -157,10 +197,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R edit(ElectricityCarModelQuery query) {
-        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+        /*Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
         if (!verifyResult.getLeft()) {
             return R.failMsg(verifyResult.getRight());
-        }
+        }*/
 
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(query.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
@@ -170,18 +210,19 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.ok();
         }
 
-
-//        Integer count = electricityCarService.queryByModelId(query.getId());
-//        if (count > 0) {
-//            return R.fail("100006", "型号已绑定车辆，不能操作");
-//        }
-
+        // 判定，车辆型号是否绑定了车辆
+        if (electricityCarService.checkBindingByCarModelId(oldElectricityCarModel.getId())) {
+            if (!oldElectricityCarModel.getName().equals(query.getName()) || !oldElectricityCarModel.getStoreId().equals(query.getStoreId())) {
+                return R.fail("100432", "已有车辆绑定该型号，请先删除对应车辆后再修改");
+            }
+        }
 
         ElectricityCarModel updateCarModel = new ElectricityCarModel();
         BeanUtils.copyProperties(query, updateCarModel);
 
         updateCarModel.setUpdateTime(System.currentTimeMillis());
         updateCarModel.setTenantId(TenantContextHolder.getTenantId());
+
         int update = electricityCarModelMapper.update(updateCarModel);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -315,6 +356,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId().longValue());
             carModelVO.setPictures(pictureService.pictureParseVO(pictures));
+
+            List<CarModelTag> tagList = carModelTagService.selectByCarModelId(item.getId());
+            if (!CollectionUtils.isEmpty(tagList)) {
+
+                // 兼容老数据，最多四个
+                List<String> carModelTagNames = null;
+                if (tagList.size() > 4) {
+                    List<List<CarModelTag>> partitionList = Lists.partition(tagList, 4);
+                    carModelTagNames = partitionList.get(0).stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+                } else {
+                    carModelTagNames = tagList.stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+                }
+
+                carModelVO.setCarModelTag(carModelTagNames);
+            }
             return carModelVO;
         }).collect(Collectors.toList());
 
@@ -440,13 +496,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         this.updateFranchiseeById(electricityCarModels,franchiseeMoveInfo.getToFranchiseeId());
     }
 
-    private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
+    /*private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
         if (NumberConstant.ZERO_BD.compareTo(query.getCarDeposit()) == NumberConstant.ONE) {
             return Pair.of(false, "车辆押金不合法！");
         }
 
         return Pair.of(true, "");
-    }
+    }*/
 
     private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query, ElectricityCarModel carModel) {
         List<CarModelTag> list = Lists.newArrayList();
@@ -455,6 +511,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         List<String> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), String.class);
+        if (!CollectionUtils.isEmpty(carModelTags) && carModelTags.size() > 5) {
+            throw new BizException("100433", "车辆标签数量，最多设置4个");
+        }
         if (!CollectionUtils.isEmpty(carModelTags)) {
             for (int i = 0; i < carModelTags.size(); i++) {
                 CarModelTag carModelTag = new CarModelTag();

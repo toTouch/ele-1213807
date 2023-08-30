@@ -54,4 +54,6 @@ public class InvitationActivityJoinHistoryVO {
      */
     private Long createTime;
 
+    private String activityName;
+
 }

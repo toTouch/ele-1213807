@@ -60,7 +60,13 @@ public class EleBatteryServiceFeeOrder {
 
     //租户id
     private Integer tenantId;
-
+    /**
+     * 门店Id
+     */
+    private Long storeId;
+    /**
+     * 加盟商Id
+     */
     private Long franchiseeId;
 
     /**
@@ -79,7 +85,7 @@ public class EleBatteryServiceFeeOrder {
     private String sn;
 
     /**
-     * 电池服务费
+     * 电池服务费单价
      */
     private BigDecimal batteryServiceFee;
 
@@ -101,6 +107,7 @@ public class EleBatteryServiceFeeOrder {
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
+    public static final Integer STATUS_CLEAN = 3;
 
     public static final Integer MEMBER_CARD_OVERDUE = 0;
     public static final Integer DISABLE_MEMBER_CARD = 1;

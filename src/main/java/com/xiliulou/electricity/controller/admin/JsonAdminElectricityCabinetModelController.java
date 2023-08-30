@@ -3,15 +3,18 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -67,6 +70,15 @@ public class JsonAdminElectricityCabinetModelController {
 			offset = 0L;
 		}
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+			return R.ok(Collections.EMPTY_LIST);
+		}
+
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
@@ -81,6 +93,14 @@ public class JsonAdminElectricityCabinetModelController {
 	//列表查询
 	@GetMapping(value = "/admin/electricityCabinetModel/queryCount")
 	public R queryCount(@RequestParam(value = "name", required = false) String name) {
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+			return R.ok(0);
+		}
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 

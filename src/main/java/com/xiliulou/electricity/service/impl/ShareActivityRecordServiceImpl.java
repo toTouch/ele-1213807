@@ -8,16 +8,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordExcelVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordVO;
 import com.xiliulou.pay.weixin.entity.SharePicture;
@@ -70,6 +67,15 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    private ShareActivityRuleService shareActivityRuleService;
+
+    @Autowired
+    private CouponService couponService;
+
+    @Autowired
+    UserCouponService userCouponService;
 
 
     /**
@@ -130,6 +136,8 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+
+        log.info("Generate share picture for share activity start, activity id = {}, page = {}", activityId, page);
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -222,7 +230,48 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     @Override
     public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
         List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper.queryList(shareActivityRecordQuery);
+        //获取用户领取的优惠券数量
+        for(ShareActivityRecordVO shareActivityRecordVO : shareActivityRecordVOList){
+            shareActivityRecordVO.setCouponCount(getReceivedCouponCount(shareActivityRecordVO));
+        }
         return R.ok(shareActivityRecordVOList);
+    }
+
+    private int getReceivedCouponCount(ShareActivityRecordVO shareActivityRecordVO){
+        int couponCount = 0;
+        ShareActivity shareActivity = shareActivityService.queryByIdFromCache(shareActivityRecordVO.getActivityId());
+        Long uid = shareActivityRecordVO.getUid();
+
+        if(Objects.isNull(shareActivity)){
+            return couponCount;
+        }
+        List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
+        if (ShareActivity.RECEIVE_TYPE_CYCLE.equals(shareActivity.getReceiveType())){
+            //循环领取的领取规则有且仅有一个
+            ShareActivityRule shareActivityRule = shareActivityRuleList.get(0);
+            Coupon coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
+            if (Objects.nonNull(coupon)) {
+                List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivity.getId(), shareActivityRule.getId(), coupon.getId(), uid);
+                if (Objects.nonNull(userCoupons)) {
+                    couponCount = userCoupons.size();
+                }
+            }
+        } else {
+            for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
+                Integer couponId = shareActivityRule.getCouponId();
+                Coupon coupon = couponService.queryByIdFromCache(couponId);
+                if (Objects.nonNull(coupon)) {
+                    UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivity.getId(), shareActivityRule.getId(), coupon.getId(), uid);
+                    if (Objects.nonNull(userCoupon)) {
+                        couponCount = couponCount + 1;
+                    }
+                }
+            }
+
+        }
+
+        return couponCount;
+
     }
 
     @Override
@@ -260,7 +309,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             
             date.setTime(item.getCreateTime());
             vo.setCreateTime(sdf.format(date));
-            vo.setStatus(getStatusName(item.getStatus()));
+            //vo.setStatus(getStatusName(item.getStatus()));
+
+            Integer couponCount = getReceivedCouponCount(item);
+            vo.setCouponCount(String.valueOf(couponCount));
             
             voList.add(vo);
         });

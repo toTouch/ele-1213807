@@ -30,6 +30,7 @@ public class ElectricityBatteryVO {
      * sn码
      */
     private String sn;
+    private String name;//前端组件需要使用
     /**
      * 电池型号
      */
@@ -92,6 +93,12 @@ public class ElectricityBatteryVO {
      * 所属换电柜柜
      */
     private String electricityCabinetName;
+
+    /**
+     * 所属加盟商ID
+     */
+    private Long franchiseeId;
+
     /**
      * 所属加盟商
      */

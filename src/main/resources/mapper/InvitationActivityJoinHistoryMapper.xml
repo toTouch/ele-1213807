@@ -63,20 +63,27 @@
         iajh.start_time,
         iajh.expired_time,
         iajh.activity_id,
+        tia.name as activityName,
         iajh.status,
         iajh.pay_count,
         iajh.money,
         iajh.create_time,
+        iajh.join_uid joinUid,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_user_info tu on tu.uid=iajh.uid
+        left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="joinUid != null">
+                and iajh.join_uid = #{joinUid}
             </if>
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
@@ -99,6 +106,31 @@
             <if test="endTime != null">
                 and iajh.create_time &lt;=#{endTime}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tu.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tu.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+            <if test="activityName != null and activityName != ''">
+                and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
+            </if>
+
+            <if test="payCount != null and payCount == 1">
+                and iajh.pay_count = 1
+            </if>
+
+            <if test="payCount != null and payCount == 2">
+                and iajh.pay_count > 1
+            </if>
+
         </where>
         order by iajh.id desc
         limit #{offset}, #{size}
@@ -108,12 +140,17 @@
         select count(*)
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_user_info tu on tu.uid=iajh.uid
+        left join t_invitation_activity as tia on tia.id = iajh.activity_id
         <where>
             <if test="userName != null and userName != ''">
                 and tui.name = #{userName}
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="joinUid != null">
+                and iajh.join_uid = #{joinUid}
             </if>
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
@@ -132,6 +169,28 @@
             </if>
             <if test="endTime != null">
                 and iajh.create_time &lt;=#{endTime}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tu.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tu.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and tia.name like concat('%',#{activityName, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="payCount != null and payCount == 1">
+                and iajh.pay_count = 1
+            </if>
+
+            <if test="payCount != null and payCount == 2">
+                and iajh.pay_count > 1
             </if>
         </where>
     </select>

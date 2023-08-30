@@ -43,4 +43,12 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 	
 	List<JoinShareMoneyActivityHistoryExcelQuery> queryExportExcel(
 			JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+	List<JoinShareMoneyActivityHistoryVO> queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+	Long queryParticipantsRecordCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
+	List<JoinShareMoneyActivityHistory> queryUserJoinedShareMoneyActivity(@Param("joinUid") Long joinUid, @Param("tenantId") Integer tenantId);
+
+	List<JoinShareMoneyActivityHistory> queryJoinedActivityByJoinerAndInviter(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("activityId") Long activityId);
 }

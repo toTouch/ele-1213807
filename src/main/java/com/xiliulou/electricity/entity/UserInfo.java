@@ -2,13 +2,11 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.math.BigDecimal;
 
 /**
  * 用户绑定列表(TUserInfo)实体类
@@ -83,7 +81,13 @@ public class UserInfo {
     private Integer carDepositStatus;
 
     /**
-     * 实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
+     * 车电一体押金状态
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer carBatteryDepositStatus;
+
+    /**
+     实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
      */
     private Integer authType;
 
@@ -91,6 +95,8 @@ public class UserInfo {
      *
      */
     private Long franchiseeId;
+
+    private Long storeId;
 
     /**
      * 0--正常 1--删除
@@ -110,6 +116,10 @@ public class UserInfo {
     //租户
     private Integer tenantId;
 
+    /**
+     * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     */
+    private Integer payCount;
 
     public static final Integer DEL_NORMAL = 0;
 
@@ -146,10 +156,9 @@ public class UserInfo {
     public static final Integer BATTERY_RENT_STATUS_NO = 0;
     public static final Integer BATTERY_RENT_STATUS_YES = 1;
 
-    //电池押金状态 0--未缴纳押金，1--已缴纳押金，2--押金退款中,3--押金退款失败
+    //电池押金状态 0--未缴纳押金，1--已缴纳押金
     public static final Integer BATTERY_DEPOSIT_STATUS_NO = 0;
     public static final Integer BATTERY_DEPOSIT_STATUS_YES = 1;
-    public static final Integer BATTERY_DEPOSIT_STATUS_REFUNDING = 2;
 
 
     //车辆赁状态 0--未租车辆，1--已租车辆
@@ -157,10 +166,9 @@ public class UserInfo {
     public static final Integer CAR_RENT_STATUS_YES = 1;
 
 
-    //车辆押金状态 0--未缴纳押金，1--已缴纳押金，2--押金退款中,3--押金退款失败
+    //车辆押金状态 0--未缴纳押金，1--已缴纳押金
     public static final Integer CAR_DEPOSIT_STATUS_NO = 0;
     public static final Integer CAR_DEPOSIT_STATUS_YES = 1;
-    public static final Integer CAR_DEPOSIT_STATUS_REFUNDING = 2;
 
 
     public static final Integer RENT_BATTERY_TYPE = 0;
@@ -170,5 +178,8 @@ public class UserInfo {
     public static final Integer AUTH_TYPE_PERSON = 1;
     public static final Integer AUTH_TYPE_SYSTEM = 2;
     public static final Integer AUTH_TYPE_FACE = 3;
+
+    /** 虚拟门店ID */
+    public static final Long VIRTUALLY_STORE_ID = 0L;
 
 }

@@ -21,6 +21,9 @@ import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -242,8 +245,52 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 			log.error("导出报表失败！", e);
 		}
 	}
-    
-    private String queryStatus(Integer status) {
+
+	@Slave
+	@Override
+	public R queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
+		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
+			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
+			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
+			if(Objects.nonNull(userInfo)){
+				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
+				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());
+			}
+		}
+
+		return R.ok(Optional.ofNullable(joinShareMoneyActivityHistoryVOS).orElse(new ArrayList<>()));
+	}
+
+	@Slave
+	@Override
+	public R queryParticipantsCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+		Long count = joinShareMoneyActivityHistoryMapper.queryParticipantsRecordCount(jsonShareMoneyActivityHistoryQuery);
+		return R.ok(count);
+	}
+
+	@Override
+	public List<JoinShareMoneyActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId) {
+		return joinShareMoneyActivityHistoryMapper.queryUserJoinedShareMoneyActivity(joinUid, tenantId);
+	}
+
+	@Override
+	public Pair<Boolean, String> checkJoinedActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId) {
+		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryMapper.queryJoinedActivityByJoinerAndInviter(joinUid, inviterUid, activityId);
+		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+			for(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory : joinShareMoneyActivityHistories){
+				if(JoinShareMoneyActivityHistory.STATUS_SUCCESS.equals(joinShareMoneyActivityHistory.getStatus())){
+					return Pair.of(Boolean.TRUE, "已参与过邀请返现活动");
+				}
+			}
+			//如果没有参与成功。但是属于二次扫同一个人的码，则直接返回。
+			return Pair.of(Boolean.TRUE, StringUtils.EMPTY);
+		}
+
+		return Pair.of(Boolean.FALSE, null);
+	}
+
+	private String queryStatus(Integer status) {
         //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
         String result = "";
         switch (status) {

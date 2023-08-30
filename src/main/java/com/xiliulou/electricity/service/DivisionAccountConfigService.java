@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.DivisionAccountConfig;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import com.xiliulou.electricity.vo.SearchVo;
@@ -75,6 +76,12 @@ public interface DivisionAccountConfigService {
 
     Triple<Boolean, String, Object> save(DivisionAccountConfigQuery divisionAccountConfigQue);
 
+    Triple<Boolean, String, Object> saveDivisionAccountWithPackage(DivisionAccountConfigQuery divisionAccountConfigQue);
+
+    Triple<Boolean, String, Object> modifyDivisionAccountWithPackage(DivisionAccountConfigQuery divisionAccountConfigQuery);
+
+    Triple<Boolean, String, Object> updateDAStatus(DivisionAccountConfigStatusQuery divisionAccountConfigQuery);
+
     Triple<Boolean, String, Object> selectInfoById(Long id);
 
     List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query);
@@ -84,4 +91,6 @@ public interface DivisionAccountConfigService {
     Triple<Boolean, String, Object> updateStatus(DivisionAccountConfigStatusQuery divisionAccountConfigQuery);
 
     List<SearchVo> configSearch(Long size, Long offset, String name, Integer tenantId);
+
+    List<BatteryMemberCardVO> getMemberCardVOListByConfigIdAndType(Long daConfigId, Integer packageType);
 }

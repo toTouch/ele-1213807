@@ -40,7 +40,6 @@ public class ElectricityCabinetModel {
     /**
     * 电压
     */
-    @NotEmpty(message = "电压不能为空!")
     private String voltage;
     /**
     * 0--未删除，1--删除

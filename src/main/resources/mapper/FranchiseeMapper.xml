@@ -4,7 +4,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFranchisee">
-       	select   id, name, cid, region_id, tenant_id  from t_franchisee
+       	select   id, name, cid, region_id, tenant_id, model_type from t_franchisee
     </sql>
     
     <select id="checkBatteryModelIsUse" resultType="Integer">
@@ -12,8 +12,8 @@
     </select>
 
     <!--搜索-->
-    <select id="search" resultType="com.xiliulou.electricity.vo.SearchVo">
-        select   id, name  from t_franchisee
+    <select id="search" resultType="com.xiliulou.electricity.vo.FranchiseeSearchVO">
+        select   id, name,model_type  from t_franchisee
         where del_flag=0
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')

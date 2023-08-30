@@ -44,9 +44,15 @@
             <if test="query.uid != null">
                 and teco.uid = #{query.uid}
             </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and teco.electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+            <if test="query.franchiseeIds != null">
+                and teco.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and teco.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -93,9 +99,15 @@
             <if test="query.uid != null">
                 and teco.uid = #{query.uid}
             </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and teco.electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+            <if test="query.franchiseeIds != null">
+                and teco.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and teco.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>

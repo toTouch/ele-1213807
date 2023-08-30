@@ -22,6 +22,10 @@
         tel.coupon_id ,
         tel.source ,
         tel.ref_id ,
+        tel.uid,
+        tel.member_card_id ,
+        tel.use_status ,
+        tel.send_coupon_id ,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
 
@@ -36,6 +40,9 @@
         </if>
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.uid != null">
+            and tel.uid = #{query.uid}
         </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
@@ -54,6 +61,9 @@
         </if>
         <if test="query.source != null">
             and tel.source =#{query.source}
+        </if>
+        <if test="query.useStatus != null">
+            and tel.use_status =#{query.useStatus}
         </if>
         <if test="query.refId != null">
             and tel.ref_id =#{query.refId}
@@ -79,7 +89,13 @@
                 #{id}
             </foreach>
         </if>
-        order by tel.create_time desc
+        <if test="query.storeIds != null">
+            and tel.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by tel.id desc
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -90,6 +106,9 @@
         WHERE 0= 0
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.uid != null">
+            and tel.uid = #{query.uid}
         </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
@@ -121,6 +140,9 @@
         <if test="query.status != null">
             and tel.status =#{query.status}
         </if>
+        <if test="query.useStatus != null">
+            and tel.use_status =#{query.useStatus}
+        </if>
         <if test="query.tenantId != null">
             and tel.tenant_id = #{query.tenantId}
         </if>
@@ -130,6 +152,12 @@
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null">
+            and tel.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -157,11 +185,9 @@
     
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
-        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id
-        FROM
-        t_electricity_member_card_order
-        WHERE uid =#{uid}
-        and member_card_model=0
+        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status ,refund_status
+        FROM t_electricity_member_card_order
+        WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
@@ -174,9 +200,8 @@
         <if test="queryEndTime != null">
             and create_time &lt;= #{queryEndTime}
         </if>
-        order by create_time desc
+        order by id desc
         limit #{offset},#{size}
-    
     </select>
     
     <select id="selectUserMemberCardOrderCount" resultType="java.lang.Integer">
@@ -252,7 +277,7 @@
 
     <select id="queryTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
-        where status=1 and pay_type=0
+        where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
@@ -422,4 +447,33 @@
     <select id="selectFirstMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select id,ref_id from t_electricity_member_card_order where uid=#{uid} and status=1 and pay_count=1 order by create_time desc limit 1
     </select>
+
+    <select id="checkOrderByMembercardId" resultType="Integer">
+        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId} LIMIT 1
+    </select>
+
+    <update id="updateStatusByOrderNo">
+        update t_electricity_member_card_order
+        <set>
+            <if test="useStatus != null">
+                use_status = #{useStatus},
+            </if>
+            <if test="refundStatus != null">
+                refund_status = #{refundStatus},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <update id="batchUpdateStatusByOrderNo">
+        update t_electricity_member_card_order set use_status = #{useStatus},update_time = UNIX_TIMESTAMP()*1000
+        where order_id in
+        <foreach collection="orderIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
 </mapper>

@@ -83,6 +83,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
 
 
@@ -390,7 +393,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        if (Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || !Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("EXCHANGE ORDER ERROR! batteryMemberCard is null!uid={},orderId={}", userBatteryMemberCard.getUid(), exchangeOrderRsp.getOrderId());
+            return;
+        }
+
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
             return;
         }
 

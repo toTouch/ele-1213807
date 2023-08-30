@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="storeId" column="store_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="updateUid" column="update_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="BIGINT" />
+        <result property="updateTime" column="update_time" jdbcType="BIGINT" />
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="uid" column="uid" jdbcType="BIGINT" />
+        <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
+        <result property="rentalPackageConfine" column="rental_package_confine" jdbcType="INTEGER" />
+        <result property="dueTime" column="due_time" jdbcType="BIGINT" />
+        <result property="dueTimeTotal" column="due_time_total" jdbcType="BIGINT" />
+        <result property="residue" column="residue" jdbcType="BIGINT" />
+        <result property="status" column="status" jdbcType="INTEGER" />
+        <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="deposit" column="deposit" jdbcType="DECIMAL" />
+        <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
+        <result property="payCount" column="pay_count" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="table_name">`t_car_rental_package_member_term`</sql>
+
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
+    </sql>
+
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `rental_package_confine`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `pay_count`
+    </sql>
+
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+
+    <!-- where 查询条件 -->
+    <sql id="where_field">
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
+    </sql>
+
+    <!-- 条件新增字段 -->
+    <sql id="insert_field">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> `tenant_id`, </if>
+            <if test=" franchiseeId != null "> `franchisee_id`, </if>
+            <if test=" storeId != null "> `store_id`, </if>
+            <if test=" createUid != null "> `create_uid`, </if>
+            <if test=" updateUid != null "> `update_uid`, </if>
+            <if test=" createTime != null "> `create_time`, </if>
+            <if test=" updateTime != null "> `update_time`, </if>
+            <if test=" delFlag != null "> `del_flag`, </if>
+            <if test=" uid != null "> `uid`, </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
+            <if test=" rentalPackageConfine != null "> `rental_package_confine`, </if>
+            <if test=" dueTime != null "> `due_time`, </if>
+            <if test=" dueTimeTotal != null "> `due_time_total`, </if>
+            <if test=" residue != null "> `residue`, </if>
+            <if test=" status != null "> `status`, </if>
+            <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" deposit != null "> `deposit`, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
+            <if test=" payCount != null "> `pay_count`, </if>
+        </trim>
+    </sql>
+    <!-- 条件新增字段值 -->
+    <sql id="insert_value">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> #{tenantId}, </if>
+            <if test=" franchiseeId != null "> #{franchiseeId}, </if>
+            <if test=" storeId != null "> #{storeId}, </if>
+            <if test=" createUid != null "> #{createUid}, </if>
+            <if test=" updateUid != null "> #{updateUid}, </if>
+            <if test=" createTime != null "> #{createTime}, </if>
+            <if test=" updateTime != null "> #{updateTime}, </if>
+            <if test=" delFlag != null "> #{delFlag}, </if>
+            <if test=" uid != null "> #{uid}, </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
+            <if test=" rentalPackageConfine != null "> #{rentalPackageConfine}, </if>
+            <if test=" dueTime != null "> #{dueTime}, </if>
+            <if test=" dueTimeTotal != null "> #{dueTimeTotal}, </if>
+            <if test=" residue != null "> #{residue}, </if>
+            <if test=" status != null "> #{status}, </if>
+            <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" deposit != null "> #{deposit}, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
+            <if test=" payCount != null "> #{payCount}, </if>
+        </trim>
+    </sql>
+
+    <!-- 分页查询过期的会员套餐信息 -->
+    <select id="pageExpire" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `due_time` <![CDATA[ <= ]]> #{nowTime}
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 根据用户ID和套餐购买订单编码进行退租，用于退掉最后一个订单的时候，即当前正在使用的订单进行退租 -->
+    <update id="rentRefundByUidAndPackageOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `rental_package_order_no` = NULL, `rental_package_id` = NULL, `due_time` = NULL, `due_time_total` = NULL, `residue` = NULL, `status` = 1
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+        </set>
+        <where>
+            `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据用户ID和套餐订单编码查询 -->
+    <select id="selectByUidAndPackageOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 根据用户ID和租户ID删除数据 -->
+    <update id="delByUidAndTenantId">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `del_flag` = 1
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据用户ID和租户ID更新状态 -->
+    <update id="updateStatusByUidAndTenantId">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `status` = #{status}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据主键ID更新状态 -->
+    <update id="updateStatusById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `status` = #{status}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据主键ID更新数据 -->
+    <update id="updateById" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{updateTime}
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> , `rental_package_order_no` = #{rentalPackageOrderNo} </if>
+            <if test=" rentalPackageId != null "> , `rental_package_id` = #{rentalPackageId} </if>
+            <if test=" rentalPackageType != null "> , `rental_package_type` = #{rentalPackageType} </if>
+            <if test=" rentalPackageConfine != null "> , `rental_package_confine` = #{rentalPackageConfine} </if>
+            <if test=" dueTime != null "> , `due_time` = #{dueTime} </if>
+            <if test=" dueTimeTotal != null "> , `due_time_total` = #{dueTimeTotal} </if>
+            <if test=" residue != null "> , `residue` = #{residue} </if>
+            <if test=" status != null "> , `status` = #{status} </if>
+            <if test=" deposit != null "> , `deposit` = #{deposit} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> , `deposit_pay_order_no` = #{depositPayOrderNo} </if>
+            <if test=" payCount != null "> , `pay_count` = #{payCount} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据租户ID和用户ID查询租车套餐会员限制信息 -->
+    <select id="selectByTenantIdAndUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 条件查询列表 -->
+    <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 条件查询分页 -->
+    <select id="page" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 条件查询总数 -->
+    <select id="count" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `id` = #{id}
+        </where>
+    </select>
+
+    <!-- 条件新增 -->
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
+    </insert>
+
+    <!--3.0 会员列表查询租车用户信息-->
+    <select id="queryUserCarRentalPackageList" resultType="com.xiliulou.electricity.domain.car.UserCarRentalPackageDO">
+        select
+            tcrpme.id as id,
+            tui.uid as uid,
+            tui.usable_status as usableStatus,
+            tui.name as name,
+            tui.phone as phone,
+            tui.battery_rent_status as batteryRentStatus,
+            tui.car_deposit_status as carDepositStatus,
+            tui.car_battery_deposit_status as carBatteryDepositStatus,
+            tcrpme.rental_package_id as packageId,
+            tcrpme.rental_package_type as packageType,
+            tcrpme.status as packageStatus,
+            tcrpme.deposit_pay_order_no as depositOrderNo,
+            tcrpme.due_time_total as packageExpiredTime,
+            tec.sn as carSn,
+            tec.model as carModel,
+            tui.tenant_id as tenantId,
+            tui.franchisee_id as franchiseeId,
+            tui.create_time as userAuthTime
+        from t_user_info tui
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid and tcrpme.del_flag = 0
+        left join t_electricity_car tec on tec.uid = tui.uid and tec.del_flag = 0
+
+        <where>
+            tui.del_flag = 0 and tui.tenant_id = #{query.tenantId} and tui.auth_status = 2
+            <if test="query.uid != null">
+                and tui.uid = #{query.uid}
+            </if>
+
+            <if test="query.name != null and query.name != ''">
+                and tui.name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and tui.phone = #{query.phone}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeBegin !=null">
+                and tcrpme.due_time_total &gt;=#{query.carMemberCardExpireTimeBegin}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeEnd !=null">
+                and tcrpme.due_time_total &lt;=#{query.carMemberCardExpireTimeEnd}
+            </if>
+
+            <if test="query.carMemberCardExpireType == 4">
+                and tcrpme.due_time_total is not null and tcrpme.due_time_total !=0
+            </if>
+
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+
+        <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
+            order by tui.create_time desc
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
+            order by ISNULL(tui.create_time), tui.create_time
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
+            order by tcrpme.due_time_total desc
+        </if>
+
+        <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
+            order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total
+        </if>
+
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryUserCarRentalPackageCount" resultType="Integer">
+        select
+            count(1)
+        from t_user_info tui
+        left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid and tcrpme.del_flag = 0
+        left join t_electricity_car tec on tec.uid = tui.uid and tec.del_flag = 0
+
+        <where>
+            tui.del_flag = 0 and tui.tenant_id = #{query.tenantId} and tui.auth_status = 2
+            <if test="query.uid != null">
+                and tui.uid = #{query.uid}
+            </if>
+
+            <if test="query.name != null and query.name != ''">
+                and tui.name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and tui.phone = #{query.phone}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeBegin !=null">
+                and tcrpme.due_time_total &gt;=#{query.carMemberCardExpireTimeBegin}
+            </if>
+
+            <if test="query.carMemberCardExpireTimeEnd !=null">
+                and tcrpme.due_time_total &lt;=#{query.carMemberCardExpireTimeEnd}
+            </if>
+
+            <if test="query.carMemberCardExpireType == 4">
+                and tcrpme.due_time_total is not null and tcrpme.due_time_total !=0
+            </if>
+
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+
+</mapper>

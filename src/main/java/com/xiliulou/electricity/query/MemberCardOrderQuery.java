@@ -33,8 +33,10 @@ public class MemberCardOrderQuery {
 
     private Long franchiseeId;
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
     private String franchiseeName;
     private String userName;
+    private Long uid;
 
     /**
      * 套餐订单来源，1：扫码，2：线上，3：后台
@@ -50,4 +52,6 @@ public class MemberCardOrderQuery {
      * 套餐购买次数
      */
     private Integer cardPayCount;
+
+    private Integer useStatus;
 }
