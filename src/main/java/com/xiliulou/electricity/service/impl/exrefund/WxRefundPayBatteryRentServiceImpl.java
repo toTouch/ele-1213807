@@ -14,6 +14,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,9 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
     @Autowired
     private DivisionAccountRecordService divisionAccountRecordService;
 
+    @Autowired
+    private BatteryMemberCardService batteryMemberCardService;
+
 
     @Override
     public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
@@ -71,6 +75,12 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
         if (Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
             log.error("BATTERY MEMBERCARD REFUND ERROR!order status illegal,refundOrderNo={}", callBackResource.getOutRefundNo());
             return;
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(batteryMembercardRefundOrder.getMid());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("BATTERY MEMBERCARD REFUND ERROR!not found batteryMemberCard,mid={},refundOrderNo={}",batteryMembercardRefundOrder.getMid(),batteryMembercardRefundOrder.getRefundOrderNo());
+            return ;
         }
 
         String memberCardOrderNo = batteryMembercardRefundOrder.getMemberCardOrderNo();
@@ -120,8 +130,21 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
                     serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
                 }
             } else {
+
+                long deductionExpireTime = 0L;
+                if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
+                    deductionExpireTime = electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+                } else {
+                    deductionExpireTime = electricityMemberCardOrder.getValidDays() * 60 * 1000L;
+                }
+
                 //退未使用的
-                userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue() * 24 * 60 * 60 * 1000L, System.currentTimeMillis());
+                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+                userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - electricityMemberCardOrder.getMaxUseCount());
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - deductionExpireTime);
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                 userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
             }
 

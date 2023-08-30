@@ -660,8 +660,27 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
             }
         } else {
+
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(batteryMembercardRefundOrder.getMid());
+            if(Objects.isNull(batteryMemberCard)){
+                log.error("ELE REFUND RENT ERROR!not found batteryMemberCard,mid={},refundOrderNo={}",batteryMembercardRefundOrder.getMid(),batteryMembercardRefundOrder.getRefundOrderNo());
+                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+            }
+
+            long deductionExpireTime = 0L;
+            if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
+                deductionExpireTime = electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+            } else {
+                deductionExpireTime = electricityMemberCardOrder.getValidDays() * 60 * 1000L;
+            }
+
             //未使用
-            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L, System.currentTimeMillis());
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - electricityMemberCardOrder.getMaxUseCount());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - deductionExpireTime);
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
             userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
         }
 
