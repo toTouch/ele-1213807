@@ -3824,7 +3824,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
+        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays()) || Objects.nonNull(query.getUseCount())) {
             if (Objects.isNull(query.getUseCount())) {
                 //不限次套餐
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
@@ -3841,17 +3841,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || userBatteryMemberCard.getRemainingNumber() <= 0) {
                     userBatteryMemberCardUpdate.setOrderRemainingNumber(query.getUseCount());
                     userBatteryMemberCardUpdate.setRemainingNumber(query.getUseCount());
-                    userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
+
+                    if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
+                        userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
+                        userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
+                    }
                 } else {
-                    Long tempTime = Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() - userBatteryMemberCard.getOrderExpireTime() : (System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays())) - userBatteryMemberCard.getOrderExpireTime();
-
                     Long tempUseCount = query.getUseCount() - userBatteryMemberCard.getOrderRemainingNumber();
-
                     userBatteryMemberCardUpdate.setOrderRemainingNumber(query.getUseCount());
                     userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + tempUseCount);
-                    userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + tempTime);
+
+                    if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
+                        Long tempTime = Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() - userBatteryMemberCard.getOrderExpireTime() : (System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays())) - userBatteryMemberCard.getOrderExpireTime();
+                        userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, query.getValidDays()));
+                        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + tempTime);
+                    }
                 }
             }
         }
@@ -3865,20 +3869,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
-        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays())) {
+        if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays()) || Objects.nonNull(query.getUseCount())) {
             Integer oldValidDays = 0;
             Integer newValidDays = 0;
             Long oldMaxUseCount = 0L;
             Long newMaxUseCount = 0L;
 
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                    oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                    newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                }
-                oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-                newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCardUpdate.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
             }
+
+            oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
+            newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
 
             EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
@@ -4230,9 +4233,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
         if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
-            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000L) : 0);
+            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000.0) : 0);
         } else {
-            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000L) : 0);
+            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000.0) : 0);
         }
 
         //套餐订单金额
