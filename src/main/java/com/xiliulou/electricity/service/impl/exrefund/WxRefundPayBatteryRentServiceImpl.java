@@ -139,7 +139,12 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
                 }
 
                 //退未使用的
-                userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), deductionExpireTime, System.currentTimeMillis());
+                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+                userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - electricityMemberCardOrder.getMaxUseCount());
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - deductionExpireTime);
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                 userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
             }
 
