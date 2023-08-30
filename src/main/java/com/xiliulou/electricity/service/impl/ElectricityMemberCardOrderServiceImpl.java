@@ -4529,7 +4529,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+            if(Objects.isNull(userBatteryMemberCard)){
+                userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+            }else{
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            }
 
         }else{
             //用户已绑定套餐
@@ -4560,9 +4564,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(userBatteryTypes,userInfo));
             }
         }
-
-
-        //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
 
     }
 
