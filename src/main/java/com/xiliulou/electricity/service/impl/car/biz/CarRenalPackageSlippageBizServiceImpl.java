@@ -237,7 +237,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
             carLockCtrlHistory
-                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
@@ -245,7 +245,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_SLIPPAGE_UN_LOCK);
 
             return carLockCtrlHistory;
         }

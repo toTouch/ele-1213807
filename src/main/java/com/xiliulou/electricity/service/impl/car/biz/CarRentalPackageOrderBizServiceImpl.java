@@ -2508,7 +2508,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistory.setName(userInfo.getName());
                 carLockCtrlHistory.setPhone(userInfo.getPhone());
                 carLockCtrlHistory
-                        .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                        .setStatus(result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
                 carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
                 carLockCtrlHistory.setCarModel(electricityCar.getModel());
                 carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
@@ -2516,7 +2516,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistory.setCreateTime(currentTimeMillis);
                 carLockCtrlHistory.setUpdateTime(currentTimeMillis);
                 carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-                carLockCtrlHistory.setType(CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
 
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }

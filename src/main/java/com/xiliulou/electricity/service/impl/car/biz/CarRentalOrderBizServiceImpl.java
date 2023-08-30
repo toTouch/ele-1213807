@@ -880,8 +880,12 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory
-                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            if (RentalTypeEnum.RENTAL.getCode().equals(rentalType)) {
+                carLockCtrlHistory.setStatus(result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            }
+            if (RentalTypeEnum.RETURN.getCode().equals(rentalType)) {
+                carLockCtrlHistory.setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            }
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
