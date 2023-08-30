@@ -1565,6 +1565,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return
      */
     private Long calculateResidue(Integer confine, Long memberResidue, long useBeginTime, Integer tenancy, Integer tenancyUnit) {
+        log.info("calculateResidue, confine is {}, memberResidue is {}, useBeginTime is {}, tenancy is {}, tenancyUnit is {}");
         // 1. 若限制次数，取余量
         if (RenalPackageConfineEnum.NUMBER.getCode().equals(confine)) {
             return memberResidue;
@@ -1573,19 +1574,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 2. 若不限制，则根据时间单位（天、分钟）计算退款金额
         if (RenalPackageConfineEnum.NO.getCode().equals(confine)) {
             long nowTime = System.currentTimeMillis();
-
+            log.info("calculateResidue, nowTime is {}", nowTime);
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                 // 已使用天数
                 long diffDay = DateUtils.diffDay(useBeginTime, nowTime);
-
                 return tenancy - diffDay;
-
             }
 
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 // 已使用分钟数
                 long diffMinute = DateUtils.diffMinute(useBeginTime, nowTime);
-
                 return tenancy - diffMinute;
             }
         }
@@ -2508,7 +2506,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistory.setName(userInfo.getName());
                 carLockCtrlHistory.setPhone(userInfo.getPhone());
                 carLockCtrlHistory
-                        .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                        .setStatus(result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
                 carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
                 carLockCtrlHistory.setCarModel(electricityCar.getModel());
                 carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
@@ -2516,7 +2514,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistory.setCreateTime(currentTimeMillis);
                 carLockCtrlHistory.setUpdateTime(currentTimeMillis);
                 carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
-                carLockCtrlHistory.setType(CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
 
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }

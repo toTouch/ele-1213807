@@ -462,7 +462,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        String sn = null;
+      /*  String sn = null;
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCar)) {
             Integer tenantId = TenantContextHolder.getTenantId();
@@ -478,12 +478,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 return R.fail("100007", "未找到车辆");
             }
             sn = userCar.getSn();
+        }*/
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityCar electricityCar = selectByUid(tenantId, user.getUid());
+        if (ObjectUtils.isEmpty(electricityCar)) {
+            log.error("attrList, not found t_electricity_car. uid is {}", user.getUid());
+            throw new BizException("100015", "用户未绑定车辆");
         }
 
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
 
-        List<CarAttr> query = jt808CarService.queryListBySn(sn, begin, end);
+        List<CarAttr> query = jt808CarService.queryListBySn(electricityCar.getSn(), begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }
