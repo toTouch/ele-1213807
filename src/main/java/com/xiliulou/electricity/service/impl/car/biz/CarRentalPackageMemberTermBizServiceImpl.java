@@ -384,7 +384,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             newMemberTermEntity.setResidue(residueNew);
         }
 
-        saveUpdateCurrPackageTx(memberTermEntity, newMemberTermEntity, optUid);
+        saveUpdateCurrPackageTx(memberTermEntity, newMemberTermEntity, optUid, now);
 
         return true;
     }
@@ -396,11 +396,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @param optUid 操作人用户UID
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveUpdateCurrPackageTx(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageMemberTermPo newMemberTermEntity, Long optUid) {
+    public void saveUpdateCurrPackageTx(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageMemberTermPo newMemberTermEntity, Long optUid, Long nowTime) {
         carRentalPackageMemberTermService.updateById(newMemberTermEntity);
         if (StringUtils.isNotEmpty(newMemberTermEntity.getRentalPackageOrderNo())) {
             carRentalPackageOrderService.updateUseStateByOrderNo(memberTermEntity.getRentalPackageOrderNo(), UseStateEnum.EXPIRED.getCode(), optUid, null);
-            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid, memberTermEntity.getDueTime());
+            carRentalPackageOrderService.updateUseStateByOrderNo(newMemberTermEntity.getRentalPackageOrderNo(), UseStateEnum.IN_USE.getCode(), optUid, nowTime);
         }
 
         // 此处二次查询，目的是为了拿在事务缓存中的最新数据
