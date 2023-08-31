@@ -180,7 +180,6 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         List<Integer> tenantIds = null;
         if (StringUtils.isNotBlank(s)) {
             tenantIds = JsonUtil.fromJsonArray(s, Integer.class);
-            log.error("=========================tenantIds{}",JsonUtil.toJson(tenantIds));
         }
 
         while (true) {
