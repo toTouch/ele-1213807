@@ -589,11 +589,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
+                Integer fullyElectricityBattery = 0;
                 int electricityBatteryTotal = 0;
                 int noElectricityBattery = 0;
                 int batteryInElectricity = 0;
-                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
+/*                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
                         .queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
@@ -608,7 +608,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream()
                             .filter(this::isElectricityBattery).count();
+                }*/
+
+                Double fullyCharged = e.getFullyCharged();
+
+                List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+                if (!CollectionUtils.isEmpty(cabinetBoxList)) {
+                    //空仓
+                    noElectricityBattery = (int) cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+                    //有电池数量
+                    batteryInElectricity = (int) cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+                    //电池总数
+                    electricityBatteryTotal = (int) cabinetBoxList.stream().filter(this::isElectricityBattery).count();
+                    //可换电电池数
+                    fullyElectricityBattery=(int) cabinetBoxList.stream().filter(i -> isExchangeable(i, fullyCharged)).count();
                 }
+
 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
 
@@ -2338,7 +2353,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public boolean isFullBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.nonNull(electricityCabinetBox.getPower()) && electricityCabinetBox.getPower() == 100d;
+        return Objects.nonNull(electricityCabinetBox.getPower()) && electricityCabinetBox.getPower() == 100d && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWith(electricityCabinetBox.getSn(),"UNKNOW");
     }
 
     public Long getTime(Long time) {

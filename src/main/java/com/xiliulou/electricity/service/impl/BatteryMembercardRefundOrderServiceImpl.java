@@ -589,6 +589,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+
+            //更新用户套餐状态为正常
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+
             return Triple.of(true, "", null);
         }
 
