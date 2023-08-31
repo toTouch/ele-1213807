@@ -7,5 +7,7 @@ package com.xiliulou.electricity.service.feishu;
  **/
 public interface FeishuService {
 
-    void sendException(Exception e, String traceId);
+    void sendException(String requestURI, String traceId, Exception e);
+
+    void sendException(String traceId, Exception e);
 }

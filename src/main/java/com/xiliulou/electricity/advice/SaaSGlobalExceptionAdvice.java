@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author xiaohui.song
@@ -22,12 +23,22 @@ public class SaaSGlobalExceptionAdvice {
     @Resource
     private FeishuService feishuService;
 
+
+
     @ResponseBody
     @ExceptionHandler(BizException.class)
-    public R handlerBizException(BizException e) {
+    public R handlerBizException(HttpServletRequest request, BizException e) {
         log.error("BizException error: ", e);
-        feishuService.sendException(e, MDC.get(CommonConstant.TRACE_ID));
+        feishuService.sendException(request.getRequestURI(), MDC.get(CommonConstant.TRACE_ID), e);
         return R.fail(e.getErrCode(), e.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(BizException.class)
+    public R handlerBizException(HttpServletRequest request, Exception e) {
+        log.error("BizException error: ", e);
+        feishuService.sendException(request.getRequestURI(), MDC.get(CommonConstant.TRACE_ID), e);
+        return R.fail("000001", "系统异常");
     }
 
 }
