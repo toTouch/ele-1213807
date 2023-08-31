@@ -414,6 +414,12 @@ public class ElectricityTradeOrderServiceImpl extends
 
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
 
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(userInfo.getUid());
+            userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
+
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         } else {
 
