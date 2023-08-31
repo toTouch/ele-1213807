@@ -6,8 +6,12 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="INTEGER"/>
         <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
+        <result property="orderExpireTime" column="order_expire_time" jdbcType="INTEGER"/>
+        <result property="orderEffectiveTime" column="order_effective_time" jdbcType="INTEGER"/>
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
+        <result property="orderRemainingNumber" column="order_remaining_number" jdbcType="INTEGER"/>
         <result property="memberCardStatus" column="member_card_status" jdbcType="INTEGER"/>
         <result property="disableMemberCardTime" column="disable_member_card_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>

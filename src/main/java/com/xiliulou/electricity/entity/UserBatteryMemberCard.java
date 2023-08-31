@@ -41,14 +41,34 @@ public class UserBatteryMemberCard {
     private Long memberCardId;
 
     /**
+     * 套餐订单
+     */
+    private String orderId;
+
+    /**
      * 套餐到期时间
      */
     private Long memberCardExpireTime;
 
     /**
-     * 套餐剩余次数
+     * 当前套餐订单到期时间
      */
-    private Integer remainingNumber;
+    private Long orderExpireTime;
+
+    /**
+     * 当前套餐订单生效时间
+     */
+    private Long orderEffectiveTime;
+
+    /**
+     * 当前套餐剩余次数
+     */
+    private Long orderRemainingNumber;
+
+    /**
+     * 套餐总剩余次数
+     */
+    private Long remainingNumber;
 
     /**
      * 套餐状态
@@ -56,10 +76,9 @@ public class UserBatteryMemberCard {
     private Integer memberCardStatus;
 
     /**
-     * 月卡暂停启用更新时间
+     * 套餐暂停时间
      */
     private Long disableMemberCardTime;
-
 
     /**
      * 0:正常，1：删除
@@ -80,15 +99,12 @@ public class UserBatteryMemberCard {
     public static final Integer DEL_NORMAL = 0;
 
     public static final Integer DEL_DEL = 1;
-    
+
     /**
-     * 0--没有停卡  1--停卡 2--停卡审核中 3-- 停卡被拒绝
+     * 0--正常  1--停卡 2--停卡审核中 3-- 停卡被拒绝
      */
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
-    /**
-     * 月卡审核中
-     */
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
@@ -100,7 +116,7 @@ public class UserBatteryMemberCard {
     public static final Integer MEMBER_CARD_OWE = 1;
 
     public static final Long SEND_REMAINING_NUMBER = -1L;
-    
+
     public static final Long SEND_MEMBER_CARD_ID_ZERO = 0L;
 
 }
