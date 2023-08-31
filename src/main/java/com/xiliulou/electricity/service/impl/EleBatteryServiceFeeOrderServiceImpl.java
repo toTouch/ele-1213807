@@ -173,12 +173,19 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void membercardExpireGenerateServiceFeeOrder() {
+    public void membercardExpireGenerateServiceFeeOrder(String s) {
         int offset = 0;
         int size = 200;
 
+        List<Integer> tenantIds = null;
+        if (StringUtils.isNotBlank(s)) {
+            tenantIds = JsonUtil.fromJsonArray(s, Integer.class);
+            log.error("=========================tenantIds{}",JsonUtil.toJson(tenantIds));
+        }
+
         while (true) {
-            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
+//            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableListByTenantIds(offset, size, tenantIds);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }
@@ -190,7 +197,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     return;
                 }
 
-                if (item.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > System.currentTimeMillis()) {
+                if (Objects.isNull(item.getMemberCardExpireTime()) || item.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > System.currentTimeMillis()) {
                     return;
                 }
 

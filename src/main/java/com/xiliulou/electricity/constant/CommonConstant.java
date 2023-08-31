@@ -62,4 +62,7 @@ public interface CommonConstant {
      * 链路ID
      */
     String TRACE_ID = "traceId";
+
+    /** 飞书预警机器人地址 */
+    String FEISHU_WARNING_ROBOT_WEB_HOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/5f47012b-b311-444e-b7c4-c433b1c100f3";
 }

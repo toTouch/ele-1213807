@@ -86,4 +86,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     List<UserBatteryMemberCard> selectByList(@Param("offset") int offset, @Param("size") int size);
 
     List<UserBatteryMemberCard> selectUseableList(@Param("offset") int offset, @Param("size") int size);
+
+    List<UserBatteryMemberCard> selectUseableListByTenantIds(@Param("offset") int offset, @Param("size") int size, @Param("tenantIds") List<Integer> tenantIds);
 }

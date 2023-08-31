@@ -145,7 +145,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
+        if (Objects.isNull(batteryMemberCard) || Objects.isNull(userBatteryMemberCard.getOrderExpireTime()) || Objects.isNull(userBatteryMemberCard.getOrderRemainingNumber())) {
             log.warn("BATTERY MEMBER TRANSFORM WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(true, null, null);
         }
