@@ -276,6 +276,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.selectUseableList(offset, size);
     }
 
+    @Override
+    public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
+        return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size , tenantIds);
+    }
+
     /**
      * 校验用户电池i套餐是否过期
      */

@@ -26,7 +26,7 @@ public class BatteryMembercardExpireServiceFeeOrderTask extends IJobHandler {
     public ReturnT<String> execute(String s) throws Exception {
 
         try {
-            batteryServiceFeeOrderService.membercardExpireGenerateServiceFeeOrder();
+            batteryServiceFeeOrderService.membercardExpireGenerateServiceFeeOrder(s);
         } catch (Exception e) {
             log.error("xxl-job电池套餐过期生成滞纳金订单失败", e);
         }

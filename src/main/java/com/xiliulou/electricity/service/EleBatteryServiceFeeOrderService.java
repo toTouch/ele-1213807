@@ -82,5 +82,5 @@ public interface EleBatteryServiceFeeOrderService {
 
     Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
 
-    void membercardExpireGenerateServiceFeeOrder();
+    void membercardExpireGenerateServiceFeeOrder(String s);
 }

@@ -779,11 +779,6 @@ public class EleOperateQueueHandler {
         }
 
         //判断套餐是否限次
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
-        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
-            return;
-        }
-
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if(Objects.isNull(batteryMemberCard)){
             log.error("EXCHANGE ORDER ERROR! batteryMemberCard is null!uid={},orderId={}", rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());

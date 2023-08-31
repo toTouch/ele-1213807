@@ -117,4 +117,5 @@ public interface UserBatteryMemberCardService {
 
     Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
+    List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds);
 }
