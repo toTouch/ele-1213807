@@ -6,10 +6,10 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.service.feishu.FeishuService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -22,7 +22,6 @@ import java.util.Map;
 @Service
 public class FeishuServiceImpl implements FeishuService {
 
-    @Resource
     private ApplicationContext context;
 
     @Override
@@ -83,6 +82,10 @@ public class FeishuServiceImpl implements FeishuService {
      */
     public String getActiveProfile() {
         return context.getEnvironment().getActiveProfiles()[0];
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 
 }
