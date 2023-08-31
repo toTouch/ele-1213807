@@ -88,9 +88,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
-    @Autowired
-    UserExtraService userExtraService;
-
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
         String code = (String) authMap.get("code");

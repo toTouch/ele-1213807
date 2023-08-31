@@ -122,9 +122,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
 
-    @Autowired
-    UserExtraService userExtraService;
-
     /**
      * 通过ID查询单条数据从缓存
      *

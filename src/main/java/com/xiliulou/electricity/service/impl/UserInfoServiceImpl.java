@@ -209,9 +209,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     FranchiseeInsuranceService franchiseeInsuranceService;
 
     @Autowired
-    UserExtraService userExtraService;
-
-    @Autowired
     CarRentalPackageService carRentalPackageService;
 
     @Autowired

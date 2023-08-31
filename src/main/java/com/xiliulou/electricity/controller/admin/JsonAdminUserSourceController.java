@@ -4,12 +4,10 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserExtra;
 import com.xiliulou.electricity.query.UpdateUserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserExtraService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -38,8 +36,6 @@ public class JsonAdminUserSourceController extends BaseController {
     private UserService userService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    UserExtraService userExtraService;
     @Autowired
     UserDataScopeService userDataScopeService;
 

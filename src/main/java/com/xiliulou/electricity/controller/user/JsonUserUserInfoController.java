@@ -3,11 +3,9 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserSourceQuery;
-import com.xiliulou.electricity.service.UserExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,9 +27,6 @@ public class JsonUserUserInfoController extends BaseController {
 
     @Autowired
     UserService userService;
-
-    @Autowired
-    UserExtraService userExtraService;
 
     //TODO  这三个接口都要优化
 
