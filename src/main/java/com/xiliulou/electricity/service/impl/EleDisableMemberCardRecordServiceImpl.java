@@ -133,6 +133,13 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
             eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
 
+            //更新用户套餐状态为正常
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
