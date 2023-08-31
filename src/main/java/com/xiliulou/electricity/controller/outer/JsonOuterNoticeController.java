@@ -2,13 +2,13 @@ package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.UserNoticeQuery;
+import com.xiliulou.electricity.service.CarProtocolService;
 import com.xiliulou.electricity.service.DepositProtocolService;
 import com.xiliulou.electricity.service.OrderProtocolService;
 import com.xiliulou.electricity.service.UserNoticeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author : eclair
@@ -24,6 +24,9 @@ public class JsonOuterNoticeController extends BaseController {
 
     @Autowired
     OrderProtocolService orderProtocolService;
+
+    @Autowired
+    CarProtocolService carProtocolService;
 
 
     @GetMapping("/outer/userNotice")
@@ -43,6 +46,12 @@ public class JsonOuterNoticeController extends BaseController {
     public R queryOrderProtocol() {
 
         return orderProtocolService.queryOrderProtocol();
+    }
+
+    @GetMapping("/outer/carRentalAndRefundProtocol")
+    public R queryCarRentalAndRefundProtocol() {
+
+        return R.ok(carProtocolService.findProtocolByQuery());
     }
 
 }

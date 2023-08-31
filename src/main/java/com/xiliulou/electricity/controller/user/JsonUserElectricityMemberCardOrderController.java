@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
@@ -39,7 +40,13 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
 
     @PostMapping("user/memberCard/payMemberCard")
     public R payMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
-        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
+//        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
+        return returnTripleResult(electricityMemberCardOrderService.buyBatteryMemberCard(electricityMemberCardOrderQuery, request));
+    }
+
+    @GetMapping("user/battery/membercard/info")
+    public R userBatteryDepositAndMembercardInfo(){
+        return returnTripleResult(electricityMemberCardOrderService.userBatteryDepositAndMembercardInfo());
     }
     
     @GetMapping("user/memberCardOrder/list")
@@ -71,6 +78,37 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
         orderQuery.setQueryEndTime(queryEndTime);
         
         return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderList(orderQuery));
+    }
+
+    @GetMapping("/user/memberCardOrder/listV3")
+    public R selectElectricityMemberCardOrderList(@RequestParam("offset") long offset, @RequestParam("size") long size,
+                           @RequestParam(value = "status", required = false) Integer status,
+                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        ElectricityMemberCardOrderQuery orderQuery = new ElectricityMemberCardOrderQuery();
+        orderQuery.setSize(size);
+        orderQuery.setOffset(offset);
+        orderQuery.setUid(uid);
+        orderQuery.setStatus(status);
+        orderQuery.setTenantId(TenantContextHolder.getTenantId());
+        orderQuery.setQueryStartTime(queryStartTime);
+        orderQuery.setQueryEndTime(queryEndTime);
+
+        return R.ok(electricityMemberCardOrderService.selectElectricityMemberCardOrderList(orderQuery));
     }
     
     @GetMapping("user/memberCardOrder/count")
@@ -107,8 +145,10 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
      * @return
      */
     @PutMapping("user/memberCard/disableMemberCardForLimitTime")
-    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays, @RequestParam(value = "disableDeadline",required = false) Long disableDeadline) {
-        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline);
+    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays,
+                                           @RequestParam(value = "disableDeadline",required = false) Long disableDeadline,
+                                           @RequestParam(value = "applyReason",required = false) String applyReason) {
+        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline,applyReason);
     }
 
     /**
@@ -166,22 +206,6 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     }
 
     /**
-     * 购买租车套餐(旧小程序租车套餐)
-     * @param
-     * @return
-     */
-    @PostMapping("user/memberCard/payRentCarMemberCard")
-    @Deprecated
-    public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
-        //旧版小程序不允许操作
-        if(Boolean.TRUE){
-            return R.fail("100257","该版本暂不支持租车,请升级小程序");
-        }
-        return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
-    }
-
-
-    /**
      * 查询用户是否存在换电和租车套餐
      * @return
      */
@@ -211,9 +235,4 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     
         return returnTripleResult(electricityMemberCardOrderService.endOrder(orderNo, uid));
     }
-    
-    
-    
-
-
 }

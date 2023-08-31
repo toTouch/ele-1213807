@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.DepositProtocol;
 
+import java.util.List;
+
 /**
  * (Faq)表数据库访问层
  *
@@ -13,4 +15,7 @@ import com.xiliulou.electricity.entity.DepositProtocol;
 public interface DepositProtocolMapper extends BaseMapper<DepositProtocol> {
     
     Integer update(DepositProtocol depositProtocol);
+
+    List<DepositProtocol> selectByQuery(DepositProtocol depositProtocol);
+
 }

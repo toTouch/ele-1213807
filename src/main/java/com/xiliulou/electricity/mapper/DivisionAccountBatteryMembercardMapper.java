@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
 
 import java.util.List;
 
+import com.xiliulou.electricity.vo.DivisionAccountBatteryMemberCardVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -67,11 +68,19 @@ public interface DivisionAccountBatteryMembercardMapper extends BaseMapper<Divis
 
     Integer batchInsert(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList);
 
+    Integer batchInsertMemberCards(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList);
+
     List<Long> selectByDivisionAccountConfigId(@Param("id") Long id);
+
+    List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(@Param("id") Long id);
+
+    List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(@Param("id") Long id, @Param("type") Integer type);
 
     Long selectByBatteryMembercardId(@Param("membercardId") Long membercardId);
 
     List<Long> selectByTenantId(@Param("tenantId")Integer tenantId);
 
     Integer deleteByDivisionAccountId(@Param("divisionAccountId") Long divisionAccountId);
+
+    List<DivisionAccountBatteryMemberCardVO> selectMemberCardsByDAConfigIdAndHierarchy(@Param("id") Long id, @Param("hierarchy") Integer hierarchy);
 }

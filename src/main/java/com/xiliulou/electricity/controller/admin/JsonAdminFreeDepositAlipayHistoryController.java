@@ -1,12 +1,20 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FreeDepositAlipayHistoryQuery;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +31,9 @@ public class JsonAdminFreeDepositAlipayHistoryController {
      */
     @Resource
     private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+
+    @Autowired
+    UserDataScopeService userDataScopeService;
     
     @GetMapping("/admin/freeDepositAlipayHistory/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
@@ -40,6 +51,27 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
         
         FreeDepositAlipayHistoryQuery query = new FreeDepositAlipayHistoryQuery();
         query.setSize(size);
@@ -52,6 +84,8 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setBeginTime(beginTime);
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
+        query.setStoreIds(storeIds);
+        query.setFranchiseeIds(franchiseeIds);
         
         return freeDepositAlipayHistoryService.queryList(query);
     }
@@ -64,6 +98,27 @@ public class JsonAdminFreeDepositAlipayHistoryController {
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
         
         FreeDepositAlipayHistoryQuery query = new FreeDepositAlipayHistoryQuery();
         query.setOrderId(orderId);
@@ -74,6 +129,8 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setBeginTime(beginTime);
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
+        query.setStoreIds(storeIds);
+        query.setFranchiseeIds(franchiseeIds);
         
         return freeDepositAlipayHistoryService.queryCount(query);
     }

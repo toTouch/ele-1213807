@@ -197,7 +197,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User queryByUserName(String username) {
-        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
+        return this.userMapper.queryByUserName(username);
+//        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
 
     @Override
@@ -867,7 +868,7 @@ public class UserServiceImpl implements UserService {
 
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-            if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(),UserBatteryMemberCard.SEND_REMAINING_NUMBER) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+            if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
                 userBatteryMemberCardDetailVO = new UserBatteryMemberCardDetailVO();
                 userBatteryMemberCardDetailVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -924,7 +925,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public synchronized void loginCallBack(UserSourceQuery query) {
+    public void loginCallBack(UserSourceQuery query) {
 
         User user = userMapper.selectById(SecurityUtils.getUid());
 
@@ -948,7 +949,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
-        if(!verifyParams(userSourceQuery)){
+        if (!verifyParams(userSourceQuery)) {
             return Collections.EMPTY_LIST;
         }
 
@@ -987,7 +988,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
-        if(!verifyParams(userSourceQuery)){
+        if (!verifyParams(userSourceQuery)) {
             return NumberConstant.ZERO;
         }
         return this.userMapper.selectUserSourcePageCount(userSourceQuery);
@@ -1016,7 +1017,7 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
-    
+
     private Boolean verifyParams(UserSourceQuery userSourceQuery) {
         //        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
         if (Objects.nonNull(userSourceQuery.getStoreId())) {
@@ -1028,7 +1029,7 @@ public class UserServiceImpl implements UserService {
                 return Boolean.FALSE;
             }
         }
-        
+
         return Boolean.TRUE;
     }
 

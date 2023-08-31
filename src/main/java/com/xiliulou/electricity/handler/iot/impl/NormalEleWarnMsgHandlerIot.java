@@ -1,6 +1,16 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.util.StrUtil;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
@@ -9,29 +19,20 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.vo.EleWarnMsgVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
+
+import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author: hrp
@@ -224,7 +225,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         
         if (!CollectionUtils.isEmpty(messageNotifyList)) {
             messageNotifyList.forEach(item -> {
-                rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
                 log.info("ELE WARN MSG INFO! ele warn message notify, msg={}", JsonUtil.toJson(item));
             });
         }

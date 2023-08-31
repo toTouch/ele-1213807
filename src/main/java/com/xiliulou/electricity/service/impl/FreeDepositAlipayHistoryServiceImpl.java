@@ -73,7 +73,7 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     @Override
     @Transactional(rollbackFor = Exception.class)
     public FreeDepositAlipayHistory insert(FreeDepositAlipayHistory freeDepositAlipayHistory) {
-        this.freeDepositAlipayHistoryMapper.insertOne(freeDepositAlipayHistory);
+        this.freeDepositAlipayHistoryMapper.insert(freeDepositAlipayHistory);
         return freeDepositAlipayHistory;
     }
     

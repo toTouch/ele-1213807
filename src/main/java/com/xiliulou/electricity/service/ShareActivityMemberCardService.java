@@ -66,6 +66,8 @@ public interface ShareActivityMemberCardService {
 
     List<ShareActivityMemberCard> selectByActivityId(Integer id);
 
+    List<ShareActivityMemberCard> selectByActivityIdAndPackageType(Integer id, Integer packageType);
+
     List<Long> selectMemberCardIdsByActivityId(Integer id);
 
     Integer deleteByActivityId(Integer id);

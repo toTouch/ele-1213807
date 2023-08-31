@@ -115,7 +115,7 @@ public class ElectricityCabinetAddAndUpdate {
 
     //门店id
     @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
-    private Integer storeId;
+    private Long storeId;
 
     /**
      * 换电方式 1：有屏，2：无屏，3：单片机

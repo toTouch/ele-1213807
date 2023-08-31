@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CarMoveRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.CarMoveRecord" id="CarMoveRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="carId" column="car_id" jdbcType="INTEGER"/>
+        <result property="carSn" column="car_sn" jdbcType="VARCHAR"/>
+        <result property="carModelId" column="car_model_id" jdbcType="INTEGER"/>
+        <result property="oldFranchiseeId" column="old_franchisee_id" jdbcType="INTEGER"/>
+        <result property="oldStoreId" column="old_store_id" jdbcType="INTEGER"/>
+        <result property="newFranchiseeId" column="new_franchisee_id" jdbcType="INTEGER"/>
+        <result property="newStoreId" column="new_store_id" jdbcType="INTEGER"/>
+        <result property="operator" column="operator" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectCarMoveRecord">
+        select id, tenant_id,car_id, car_sn, car_model_id, old_franchisee_id, old_store_id, new_franchisee_id, new_store_id, operator, del_flag, create_time, update_time from t_car_move_record
+    </sql>
+
+    <!--根据ID查询单条记录-->
+    <select id="selectById" resultMap="CarMoveRecordMap">
+        <include refid="selectCarMoveRecord"/>
+        where id = #{id}
+    </select>
+
+    <!--根据条件查询多条记录-->
+    <select id="selectByPage" resultMap="CarMoveRecordMap">
+        <include refid="selectCarMoveRecord"/>
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+            <if test="carSn != null and carSn != ''">
+                and car_sn = #{carSn}
+            </if>
+
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+
+            <if test="newFranchiseeId != null">
+                and new_franchisee_id = #{newFranchiseeId}
+            </if>
+
+            <if test="newStoreId != null">
+                and new_store_id = #{newStoreId}
+            </if>
+
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <!--根据条件查询总记录数-->
+    <select id="selectCount" resultType="Integer">
+        select count(1)
+        from t_car_move_record
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+            <if test="carSn != null and carSn != ''">
+                and car_sn = #{carSn}
+            </if>
+
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+
+            <if test="newFranchiseeId != null">
+                and new_franchisee_id = #{newFranchiseeId}
+            </if>
+
+            <if test="newStoreId != null">
+                and new_store_id = #{newStoreId}
+            </if>
+
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+
+        </where>
+    </select>
+
+    <!--新增车辆转移记录-->
+    <insert id="insertCarMoveRecord" keyProperty="id" useGeneratedKeys="true">
+        insert into t_car_move_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            tenant_id,
+            car_id,
+            car_sn,
+            car_model_id,
+            old_franchisee_id,
+            old_store_id,
+            new_franchisee_id,
+            new_store_id,
+            operator,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{tenantId},
+            #{carId},
+            #{carSn, jdbcType=VARCHAR},
+            #{carModelId},
+            #{oldFranchiseeId},
+            #{oldStoreId},
+            #{newFranchiseeId},
+            #{newStoreId},
+            #{operator},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+
+    </insert>
+
+    <!--批量新增车辆转移记录-->
+    <insert id="batchInsertCarMoveRecord" keyProperty="id" useGeneratedKeys="true">
+        insert into t_car_move_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            tenant_id,
+            car_id,
+            car_sn,
+            car_model_id,
+            old_franchisee_id,
+            old_store_id,
+            new_franchisee_id,
+            new_store_id,
+            operator,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (
+            #{item.tenantId},
+            #{item.carId},
+            #{item.carSn, jdbcType=VARCHAR},
+            #{item.carModelId},
+            #{item.oldFranchiseeId},
+            #{item.oldStoreId},
+            #{item.newFranchiseeId},
+            #{item.newStoreId},
+            #{item.operator},
+            #{item.delFlag},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

@@ -145,7 +145,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(), tenantId);
             //检查手机号是否存在
             Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber, tenantId);
-
+            log.info("new user logon, existsOpenId = {}, existPhone = {}", JsonUtil.toJson(existsOpenId), JsonUtil.toJson(existPhone));
             //如果两个都不存在，创建用户
             if (!existPhone.getLeft() && !existsOpenId.getLeft()) {
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
@@ -289,7 +289,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
             }
-
+        }catch(Exception e){
+            log.error("ELE AUTH ERROR!",e);
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
@@ -336,33 +337,32 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
-
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
         if (Objects.nonNull(newUserActivity)) {
 
 
-            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
-                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
-
-                UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
-
-                userBatteryMemberCard.setUid(userInfo.getUid());
-                userBatteryMemberCard.setCreateTime(System.currentTimeMillis());
-                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-                userBatteryMemberCard.setTenantId(tenantId);
-                userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
-                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-                userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
-                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
-
-
-                userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
-                userBatteryMemberCard.setMemberCardExpireTime(
-                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
-                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
-            }
-
+//            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
+//                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
+//
+//                UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
+//
+//                userBatteryMemberCard.setUid(userInfo.getUid());
+//                userBatteryMemberCard.setCreateTime(System.currentTimeMillis());
+//                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+//                userBatteryMemberCard.setTenantId(tenantId);
+//                userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+//                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+//                userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
+//                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
+//
+//
+//                userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
+//                userBatteryMemberCard.setMemberCardExpireTime(
+//                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
+//                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
+//            }
+            log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
             //优惠券
             if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(
                     newUserActivity.getCouponId())) {

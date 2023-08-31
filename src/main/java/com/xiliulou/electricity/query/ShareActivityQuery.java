@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -47,4 +48,11 @@ public class ShareActivityQuery {
      */
     @NotEmpty(message = "领券套餐不能为空!", groups = {UpdateGroup.class})
     private List<Long> membercardIds;
+
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
+
 }

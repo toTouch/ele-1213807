@@ -57,5 +57,14 @@ public class UnionTradeOrder {
 
     public static final String ATTACH_INTEGRATED_PAYMENT = "integratedPayment";
 
+    /**
+     * 保险套餐混合支付
+     */
+    public static final String ATTACH_MEMBERCARD_INSURANCE = "membercardInsurance";
+
+    /**
+     * 滞纳金混合支付
+     */
+    public static final String ATTACH_SERVUCE_FEE = "serviceFee";
 
 }

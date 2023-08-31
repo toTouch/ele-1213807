@@ -36,4 +36,13 @@ public class JsonAdminPxzController extends BaseController {
     public R modifyConfig(@RequestBody @Validated PxzConfigQuery pxzConfigQuery) {
         return returnPairResult(pxzConfigService.modify(pxzConfigQuery));
     }
+
+    /**
+     * 校验当前用户是否可免押
+     */
+    @GetMapping("/admin/pxz/check")
+    public R check() {
+        return returnPairResult(pxzConfigService.check());
+    }
+
 }

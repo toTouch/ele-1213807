@@ -4,20 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCarBindUser;
-import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
-import com.xiliulou.electricity.query.ElectricityCarQuery;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserTypeFactory;
-import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -32,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 换电柜表(TElectricityCar)表控制层
@@ -59,6 +47,8 @@ public class JsonAdminElectricityCarController {
     
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    CarMoveRecordService carMoveRecordService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -91,6 +81,7 @@ public class JsonAdminElectricityCarController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -118,18 +109,12 @@ public class JsonAdminElectricityCarController {
             }
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -139,8 +124,10 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -155,6 +142,7 @@ public class JsonAdminElectricityCarController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "storeId", required = false) Long storeId,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -166,23 +154,17 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Long> storeIds=null;
+        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -190,8 +172,10 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -314,4 +298,67 @@ public class JsonAdminElectricityCarController {
             @RequestBody @Validated(value = UpdateGroup.class) ElectricityCarMoveQuery electricityCarMoveQuery) {
         return electricityCarService.electricityCarMove(electricityCarMoveQuery);
     }
+
+    @GetMapping(value = "/admin/electricityCar/moveCarRecords")
+    public R queryMoveCarRecords(@RequestParam("size") Long size,
+                                 @RequestParam("offset") Long offset,
+                                 @RequestParam(value = "carSn", required = false) String carSn,
+                                 @RequestParam(value = "newFranchiseeId", required = false) Long newFranchiseeId,
+                                 @RequestParam(value = "newStoreId", required = false) Long newStoreId,
+                                 @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                 @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        CarMoveRecordQuery carMoveRecordQuery = CarMoveRecordQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId().longValue())
+                .carSn(carSn)
+                .newFranchiseeId(newFranchiseeId)
+                .newStoreId(newStoreId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return R.ok(carMoveRecordService.queryCarMoveRecords(carMoveRecordQuery));
+
+    }
+
+    @GetMapping(value = "/admin/electricityCar/moveCarRecordsCount")
+    public R queryMoveCarRecordsCount(@RequestParam(value = "carSn", required = false) String carSn,
+                                      @RequestParam(value = "newFranchiseeId", required = false) Long newFranchiseeId,
+                                      @RequestParam(value = "newStoreId", required = false) Long newStoreId,
+                                      @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                      @RequestParam(value = "endTime", required = false) Long endTime){
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        CarMoveRecordQuery carMoveRecordQuery = CarMoveRecordQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId().longValue())
+                .carSn(carSn)
+                .newFranchiseeId(newFranchiseeId)
+                .newStoreId(newStoreId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return R.ok(carMoveRecordService.queryCarMoveRecordsCount(carMoveRecordQuery));
+
+    }
+
 }

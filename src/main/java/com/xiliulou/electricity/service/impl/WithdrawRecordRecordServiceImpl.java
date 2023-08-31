@@ -218,6 +218,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 //			withdrawRecordVO.setBankNumber(DesensitizationUtil.bankCard(withdrawRecordVO.getBankNumber()));
 			withdrawRecordVO.setBankNumber(withdrawRecordVO.getBankNumber());
 
+			//设置请求提现金额
+			BigDecimal amount = BigDecimal.valueOf(withdrawRecord.getAmount());
+			BigDecimal handlingFee = BigDecimal.valueOf(withdrawRecord.getHandlingFee());
+			BigDecimal requestAmount = amount.add(handlingFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+			withdrawRecordVO.setRequestAmount(requestAmount.doubleValue());
+
 			//查询用户名称
 			User user = userService.queryByUidFromCache(withdrawRecordVO.getUid());
 			if (Objects.nonNull(user)) {
@@ -558,6 +564,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			handlingFee = BigDecimal.valueOf(1);
 		}
 		if (amount > 1000 && amount <= 25000) {
+			//TODO 这里有问题待处理，遇到大目金额时会报错，Non-terminating decimal expansion; no exact representable decimal result
 			handlingFee = BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(1.001)).multiply(BigDecimal.valueOf(0.001));
 		}
 		return Double.valueOf(handlingFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  *
@@ -53,14 +54,16 @@ public class UserBatteryInfoVO {
      * 加盟商id
      */
     private Long franchiseeId;
+
+    private String franchiseeName;
     /**
-     * 套餐id
+     * 换电套餐id
      */
-    private Integer cardId;
+    private Long memberCardId;
     /**
      * 套餐名称
      */
-    private String cardName;
+    private String memberCardName;
     /**
      * 类型(0:月卡,1:季卡,2:年卡)
      */
@@ -188,10 +191,15 @@ public class UserBatteryInfoVO {
     /**
      * 购买套餐次数
      */
-    private Integer cardPayCount;
+    private Integer payCount;
     
     /**
      * 邀请人
      */
     private String inviterUserName;
+
+    /**
+     * 保险名称
+     */
+    List<String> insuranceNames;
 }

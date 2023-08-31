@@ -1,16 +1,16 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoDataEntity;
+import com.xiliulou.electricity.query.UserInfoDataQuery;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.vo.DetailsUserInfoVo;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
+import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +23,19 @@ import java.util.List;
  */
 public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
+    /**
+     * 分页查询
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    List<UserInfo> page(UserInfoQuery userInfoQuery);
+
+    /**
+     * 查询总数
+     * @param userInfoQuery 查询条件
+     * @return 总数
+     */
+    Integer count(UserInfoQuery userInfoQuery);
 
     /**
      * 查询指定行数据
@@ -70,4 +83,81 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserBatteryInfoVO> queryListByCarMemberCardExpireTime(@Param("query") UserInfoQuery userInfoQuery);
 
     Integer queryCountByCarMemberCardExpireTime(@Param("query") UserInfoQuery userInfoQuery);
+
+    /**
+     * 查询所有用户信息
+     * @param userInfoDataQuery
+     * @return
+     */
+    List<UserInfoDataEntity>  queryAllUserInfoDataByParam(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 统计用户信息
+     * @param userInfoDataQuery
+     * @return
+     */
+    Integer  queryAllUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 套餐未过期用户
+     * @param userInfoDataQuery
+     * @return
+     */
+    List<UserInfoDataEntity>  queryEffectiveUserInfoDataByParam(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 套餐未过期用户总数
+     * @param userInfoDataQuery
+     * @return
+     */
+    Integer  queryEffectiveUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+
+
+    /**
+     * 在租用户
+     * @param userInfoDataQuery
+     * @return
+     */
+    List<UserInfoDataEntity>  queryRentUserInfoDataByParam(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 在租用户总数
+     * @param userInfoDataQuery
+     * @return
+     */
+    Integer  queryRentUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+
+    /**
+     * 逾期用户
+     * @param userInfoDataQuery
+     * @return
+     */
+    List<UserInfoDataEntity>  queryOverdueUserInfoDataByParam(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 逾期用户count
+     * @param userInfoDataQuery
+     * @return
+     */
+    Integer  queryOverdueUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+
+    /**
+     * 静默用户
+     * @param userInfoDataQuery
+     * @return
+     */
+    List<UserInfoDataEntity> querySilentUserInfoDataByParam(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    /**
+     * 静默用户count
+     * @param userInfoDataQuery
+     * @return
+     */
+    Integer querySilentUserInfoDataCount(@Param("query") UserInfoDataQuery userInfoDataQuery);
+
+    List<UserEleInfoVO> queryEleList(@Param("query") UserInfoQuery userInfoQuery);
+    Integer queryEleListCount(@Param("query") UserInfoQuery userInfoQuery);
 }

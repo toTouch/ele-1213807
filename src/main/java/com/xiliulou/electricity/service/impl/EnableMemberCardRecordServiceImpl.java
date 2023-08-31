@@ -69,4 +69,9 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     public EnableMemberCardRecord queryByDisableCardNO(String disableCardNO, Integer tenantId) {
         return enableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EnableMemberCardRecord>().eq(EnableMemberCardRecord::getDisableMemberCardNo, disableCardNO).eq(EnableMemberCardRecord::getTenantId, tenantId));
     }
+
+    @Override
+    public EnableMemberCardRecord selectLatestByUid(Long uid) {
+        return enableMemberCardRecordMapper.selectLatestByUid(uid);
+    }
 }

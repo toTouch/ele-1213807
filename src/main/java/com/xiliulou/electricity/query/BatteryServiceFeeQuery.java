@@ -31,7 +31,8 @@ public class BatteryServiceFeeQuery {
     private Integer source;
     private Integer tenantId;
 
-    private String sn;
+    private String orderId;
     
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }

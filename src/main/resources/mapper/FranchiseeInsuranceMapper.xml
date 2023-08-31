@@ -3,6 +3,63 @@
 <mapper namespace="com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper">
 
 
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.FranchiseeInsuranceVo">
+        select tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id
+        ,ti.instruction,tf.battery_type,tf.create_time,tf.update_time,tf.store_id,tf.simple_battery_type,tf.car_model_id
+        from t_franchisee_insurance tf left join t_insurance_instruction ti on tf.id=ti.insurance_id
+        where tf.del_flag=0
+        <if test="status != null">
+            AND tf.status = #{status}
+        </if>
+        <if test="insuranceType != null">
+            AND tf.insurance_type = #{insuranceType}
+        </if>
+        <if test="type != null and type == 0">
+            and tf.insurance_type = 0
+        </if>
+        <if test="type != null and type == 1">
+            and tf.insurance_type in (1,2)
+        </if>
+        <if test="tenantId != null ">
+            and tf.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and tf.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="name != null and name!=''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY tf.id DESC
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectPageCount" resultType="int">
+        SELECT COUNT(1)
+        FROM t_franchisee_insurance
+        where del_flag=0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="insuranceType != null">
+            AND insurance_type = #{insuranceType}
+        </if>
+        <if test="type != null and type == 0">
+            and insurance_type = 0
+        </if>
+        <if test="type != null and type == 1">
+            and insurance_type in (1,2)
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="name != null and name!=''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
 
     <select id="queryCount" resultType="integer">
         SELECT COUNT(1)
@@ -68,7 +125,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.FranchiseeInsuranceVo">
         select tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id
-        ,ti.instruction,tf.battery_type,tf.create_time,tf.update_time
+        ,ti.instruction,tf.battery_type,tf.create_time,tf.update_time,tf.store_id,tf.simple_battery_type,tf.car_model_id
         from t_franchisee_insurance tf left join t_insurance_instruction ti on tf.id=ti.insurance_id
         where tf.del_flag=0
         <if test="status != null">
@@ -87,6 +144,22 @@
         limit #{offset}, #{size}
     </select>
 
+    <select id="queryByFranchiseeIdAndSimpleBatteryType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id,battery_type
+        from t_franchisee_insurance
+        where del_flag=0 and status=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="batteryType != null and batteryType != ''">
+            and simple_battery_type = #{batteryType}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id limit 1
+    </select>
+
     <select id="queryByFranchiseeIdAndBatteryType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
         select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id,battery_type
         from t_franchisee_insurance
@@ -95,10 +168,75 @@
             and franchisee_id = #{franchiseeId}
         </if>
         <if test="batteryType != null and batteryType != ''">
-            and battery_type = #{batteryType}
+            and simple_battery_type = #{batteryType}
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+        order by id limit 1
+    </select>
+
+    <select id="selectByFranchiseeIdAndType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,simple_battery_type
+        from t_franchisee_insurance
+        where del_flag=0 and status=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="insuranceType != null">
+            and insurance_type = #{insuranceType}
+        </if>
+        order by id desc limit 1
+    </select>
+
+    <select id="selectInsuranceByType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,simple_battery_type
+        from t_franchisee_insurance
+        where del_flag=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="insuranceType != null">
+            and insurance_type = #{insuranceType}
+        </if>
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="carModelId != null">
+            and car_model_id = #{carModelId}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id desc limit 1
+    </select>
+
+    <select id="checkInsuranceExist" resultType="Integer">
+        SELECT 1 FROM t_franchisee_insurance
+        where del_flag=0 and status=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="carModelId != null">
+            and car_model_id = #{carModelId}
+        </if>
+        <if test="insuranceType != null">
+            and insurance_type = #{insuranceType}
         </if>
     </select>
 
@@ -135,4 +273,5 @@
             </otherwise>
         </choose>
     </select>
+
 </mapper>

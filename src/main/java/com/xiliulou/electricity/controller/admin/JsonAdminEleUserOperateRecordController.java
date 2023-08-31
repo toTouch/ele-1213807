@@ -30,7 +30,18 @@ public class JsonAdminEleUserOperateRecordController {
 	@Autowired
 	EleUserOperateRecordService eleUserOperateRecordService;
 
+	/**
+	 * 用户操作记录  3.0已作废
+	 * @param uid
+	 * @param size
+	 * @param offset
+	 * @param beginTime
+	 * @param endTime
+	 * @param operateModel
+	 * @return
+	 */
 	@GetMapping(value = "/admin/eleUserOperateRecord/list")
+	@Deprecated
 	public R queryList(@RequestParam(value = "uid") Long uid,
 					   @RequestParam("size") Long size,
 					   @RequestParam("offset") Long offset,
@@ -40,7 +51,16 @@ public class JsonAdminEleUserOperateRecordController {
 		return eleUserOperateRecordService.queryList(uid,size,offset,beginTime,endTime,operateModel);
 	}
 
+	/**
+	 * 用户操作记录  3.0已作废
+	 * @param uid
+	 * @param beginTime
+	 * @param endTime
+	 * @param operateModel
+	 * @return
+	 */
 	@GetMapping(value = "/admin/eleUserOperateRecord/queryCount")
+	@Deprecated
 	public R queryCount(@RequestParam(value = "uid") Long uid,
 						@RequestParam(value = "beginTime", required = false) Long beginTime,
 						@RequestParam(value = "endTime", required = false) Long endTime,

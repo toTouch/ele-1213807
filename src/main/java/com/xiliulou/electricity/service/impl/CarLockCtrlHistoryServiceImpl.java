@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.mapper.CarLockCtrlHistoryMapper;
+import com.xiliulou.electricity.query.CarLockCtrlHistoryQuery;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.CarLockCtrlHistoryVo;
@@ -104,17 +105,15 @@ public class CarLockCtrlHistoryServiceImpl implements CarLockCtrlHistoryService 
     
     @Override
     @Slave
-    public R queryList(Long offset, Long size, String name, String phone, String carSn, Long beginTime, Long endTime) {
-        List<CarLockCtrlHistoryVo> listVo = this.carLockCtrlHistoryMapper
-                .queryList(offset, size, name, phone, carSn, TenantContextHolder.getTenantId(), beginTime, endTime);
+    public R queryList(CarLockCtrlHistoryQuery query) {
+        List<CarLockCtrlHistoryVo> listVo = this.carLockCtrlHistoryMapper.queryList(query);
         return R.ok(listVo);
     }
     
     @Override
     @Slave
-    public R queryCount(String name, String phone, String carSn, Long beginTime, Long endTime) {
-        Integer count = this.carLockCtrlHistoryMapper
-                .queryCount(name, phone, carSn, TenantContextHolder.getTenantId(), beginTime, endTime);
+    public R queryCount(CarLockCtrlHistoryQuery query) {
+        Integer count = this.carLockCtrlHistoryMapper.queryCount(query);
         return R.ok(count);
     }
 }

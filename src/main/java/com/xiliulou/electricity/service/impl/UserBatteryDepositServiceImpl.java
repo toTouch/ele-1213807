@@ -1,20 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.mapper.UserBatteryDepositMapper;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.utils.DbUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserBatteryDeposit)表服务实现类
@@ -42,7 +41,17 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     public UserBatteryDeposit selectByUidFromDB(Long uid) {
         return this.userBatteryDepositMapper.selectByUid(uid);
     }
-    
+
+    /**
+     * 删除了的也能查出来
+     * @param uid
+     * @return
+     */
+    @Override
+    public UserBatteryDeposit queryByUid(Long uid) {
+        return this.userBatteryDepositMapper.selectOne(new LambdaQueryWrapper<UserBatteryDeposit>().eq(UserBatteryDeposit::getUid,uid));
+    }
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -75,13 +84,9 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserBatteryDeposit insert(UserBatteryDeposit userBatteryDeposit) {
+    public Integer insert(UserBatteryDeposit userBatteryDeposit) {
         int insert = this.userBatteryDepositMapper.insertOne(userBatteryDeposit);
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid(), userBatteryDeposit);
-            return null;
-        });
-        return userBatteryDeposit;
+        return insert;
     }
 
     @Override
@@ -142,5 +147,43 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             return null;
         });
         return update;
+    }
+
+    /**
+     *同步车电一体数据
+     *
+     * @param uid 用户uid
+     * @param mid 交押金时押金所属套餐id
+     * @param orderId 押金订单号
+     * @param batteryDeposit  押金金额
+     * @return
+     */
+    @Override
+    public Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit) {
+        Integer result = null;
+        UserBatteryDeposit userBatteryDeposit = this.queryByUid(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            UserBatteryDeposit userBatteryDepositInsert = new UserBatteryDeposit();
+            userBatteryDepositInsert.setUid(uid);
+            userBatteryDepositInsert.setDid(0L);
+            userBatteryDepositInsert.setOrderId(orderId);
+            userBatteryDepositInsert.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+            userBatteryDepositInsert.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDepositInsert.setBatteryDeposit(batteryDeposit);
+            userBatteryDepositInsert.setCreateTime(System.currentTimeMillis());
+            userBatteryDepositInsert.setUpdateTime(System.currentTimeMillis());
+            result = this.insert(userBatteryDepositInsert);
+        } else {
+            UserBatteryDeposit userBatteryDepositUpdate = new UserBatteryDeposit();
+            userBatteryDepositUpdate.setUid(uid);
+            userBatteryDepositUpdate.setDid(0L);
+            userBatteryDepositUpdate.setOrderId(orderId);
+            userBatteryDepositUpdate.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDepositUpdate.setBatteryDeposit(batteryDeposit);
+            userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
+            result = this.updateByUid(userBatteryDepositUpdate);
+        }
+
+        return result;
     }
 }

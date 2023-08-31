@@ -2,12 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityMapper">
 
+    <resultMap type="com.xiliulou.electricity.entity.ShareMoneyActivity" id="ShareMoneyActivityMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="uid" column="uid" jdbcType="INTEGER" />
+        <result property="userName" column="user_name" jdbcType="VARCHAR" />
+        <result property="hours" column="hours" jdbcType="INTEGER" />
+        <result property="money" column="money" jdbcType="INTEGER" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="invitationCriteria" column="invitation_criteria" jdbcType="INTEGER" />
+        <result property="delFlg" column="del_flg" jdbcType="INTEGER" />
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectShareMoneyActivity">
+        select id, name, status, type, description, uid, user_name, hours, money, tenant_id, franchisee_id, invitation_criteria, del_flg, create_time, update_time from t_share_money_activity
+    </sql>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
         select
         id, name, type, status,  description, del_flg, create_time,
-        update_time, uid,user_name,franchisee_id,hours,money
+        update_time, uid,user_name,franchisee_id,hours,money, invitation_criteria
         from t_share_money_activity
         <where>
             <if test="query.name != null and query.name != ''">
@@ -42,5 +64,31 @@
         </where>
     </select>
 
+    <select id="selectActivityByTenantIdAndStatus" resultMap="ShareMoneyActivityMap">
+        <include refid="selectShareMoneyActivity"/>
+        <where>
+            del_flg = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!--修改活动数据-->
+    <update id="updateActivity">
+        update t_share_money_activity
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 
 </mapper>

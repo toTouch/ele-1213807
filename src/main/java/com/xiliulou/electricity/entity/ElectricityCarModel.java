@@ -3,15 +3,11 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 
@@ -70,6 +66,12 @@ public class ElectricityCarModel {
     private Long franchiseeId;
 
     private Integer tenantId;
+
+    /**
+     * 已租数量
+     */
+    @Builder.Default
+    private Integer rentedQuantity = 0;
 
 
     public static final Integer DEL_NORMAL = 0;

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityPackageMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ShareMoneyActivityPackage" id="ShareMoneyActivityPackageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="packageId" column="package_id" jdbcType="INTEGER"/>
+        <result property="packageType" column="package_type" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectActivityPackage">
+        select id, activity_id, package_id, package_type, tenant_id, del_flag, create_time, update_time from t_share_money_activity_package
+    </sql>
+
+    <!-- 新增优惠券关联套餐信息-->
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.ShareMoneyActivityPackage" useGeneratedKeys="true" keyProperty="id">
+        insert into t_share_money_activity_package
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            activity_id,
+            package_id,
+            package_type,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{activityId},
+            #{packageId},
+            #{packageType},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="updateOne">
+        update t_share_money_activity_package
+        <set>
+            <if test="activityId != null">
+                activity_id = #{activityId},
+            </if>
+            <if test="packageId != null">
+                package_id = #{packageId},
+            </if>
+            <if test="packageType != null">
+                package_type = #{packageType},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteActivityPackage">
+        delete from t_share_money_activity_package where id = #{id}
+    </delete>
+
+    <!--批量新增优惠券套餐记录-->
+    <insert id="batchInsertActivityPackages" keyProperty="id" useGeneratedKeys="true">
+        insert into t_share_money_activity_package
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            activity_id,
+            package_id,
+            package_type,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (
+            #{item.activityId},
+            #{item.packageId},
+            #{item.packageType},
+            #{item.tenantId},
+            #{item.delFlag},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectByQuery" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="activityId != null">
+                and activity_id = #{activityId}
+            </if>
+            <if test="packageId != null">
+                and package_id = #{packageId}
+            </if>
+            <if test="packageType != null">
+                and package_type = #{packageType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="selectActivityPackagesByActivityId" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
+        where activity_id = #{activityId}
+    </select>
+
+    <select id="selectPackagesByActivityIdAndPackageType" resultMap="ShareMoneyActivityPackageMap">
+        <include refid="selectActivityPackage"/>
+        where activity_id = #{activityId}
+        and package_type = #{packageType}
+    </select>
+
+</mapper>

@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -22,6 +21,20 @@ import java.util.List;
  * @since 2020-12-07 15:00:00
  */
 public interface UserInfoService extends IService<UserInfo> {
+
+    /**
+     * 分页查询
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    List<UserInfo> page(UserInfoQuery userInfoQuery);
+
+    /**
+     * 查询总数
+     * @param userInfoQuery 查询条件
+     * @return 总数
+     */
+    Integer count(UserInfoQuery userInfoQuery);
 
     /**
      * 通过ID查询单条数据从数据库
@@ -58,6 +71,10 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryList(UserInfoQuery userInfoQuery);
 
+    R queryCarRentalList(UserInfoQuery userInfoQuery);
+
+    R queryCarRentalCount(UserInfoQuery userInfoQuery);
+
     R updateStatus(Long uid, Integer usableStatus);
 
     UserInfo queryByUidFromCache(Long uid);
@@ -71,9 +88,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R getMemberCardInfo(Long uid);
 
     R getRentCarMemberCardInfo(Long uid);
-
-    @Deprecated
-    R queryUserInfo();
 
     R verifyAuth(Long id, Integer authStatus);
 
@@ -109,6 +123,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
 
+    void exportCarRentalExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
+
     R deleteUserInfo(Long uid);
 
     Integer updateByUid(UserInfo userInfo);
@@ -140,4 +156,7 @@ public interface UserInfoService extends IService<UserInfo> {
     R webUnBindCar(Long uid);
     
     R userInfoSearch(Long size, Long offset, String name);
+
+    R queryEleList(UserInfoQuery userInfoQuery);
+    R queryEleListCount(UserInfoQuery userInfoQuery);
 }

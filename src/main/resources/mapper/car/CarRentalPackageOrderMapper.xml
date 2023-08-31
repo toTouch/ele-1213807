@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="storeId" column="store_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="updateUid" column="update_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="BIGINT" />
+        <result property="updateTime" column="update_time" jdbcType="BIGINT" />
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="uid" column="uid" jdbcType="BIGINT" />
+        <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
+        <result property="confine" column="confine" jdbcType="INTEGER" />
+        <result property="confineNum" column="confine_num" jdbcType="BIGINT" />
+        <result property="tenancy" column="tenancy" jdbcType="INTEGER" />
+        <result property="tenancyUnit" column="tenancy_unit" jdbcType="INTEGER" />
+        <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
+        <result property="rent" column="rent" jdbcType="DECIMAL" />
+        <result property="rentPayment" column="rent_payment" jdbcType="DECIMAL" />
+        <result property="applicableType" column="applicable_type" jdbcType="INTEGER" />
+        <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
+        <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
+        <result property="rentRebateEndTime" column="rent_rebate_end_time" jdbcType="BIGINT" />
+        <result property="deposit" column="deposit" jdbcType="DECIMAL" />
+        <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
+        <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
+        <result property="payType" column="pay_type" jdbcType="INTEGER" />
+        <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
+        <result property="payState" column="pay_state" jdbcType="INTEGER" />
+        <result property="useState" column="use_state" jdbcType="INTEGER" />
+        <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="useBeginTime" column="use_begin_time" jdbcType="BIGINT" />
+
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="table_name">`t_car_rental_package_order`</sql>
+
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
+    </sql>
+
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `confine`, `deposit`, `confine_num`, `tenancy`, `tenancy_unit`, `rent_unit_price`, `rent`, `rent_payment`,
+        `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `coupon_id`,
+        `pay_state`, `use_state`, `remark`, `use_begin_time`
+    </sql>
+
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+
+    <!-- where 查询条件 -->
+    <sql id="where_field">
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
+        <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
+        <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
+        <if test=" rentalPackageId != null "> AND `rental_package_id` = #{rentalPackageId} </if>
+        <if test=" rentalPackageType != null "> AND `rental_package_type` = #{rentalPackageType} </if>
+        <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
+        <if test=" uid != null "> AND `uid` = #{uid} </if>
+        <if test=" payState != null "> AND `pay_state` = #{payState} </if>
+        <if test=" payType != null "> AND `pay_type` = #{payType} </if>
+        <if test=" useState != null "> AND `use_state` = #{useState} </if>
+        <if test=" buyTimeBegin != null and buyTimeEnd != null "> AND `create_time` BETWEEN #{buyTimeBegin} AND #{buyTimeEnd} </if>
+        <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
+            AND `franchisee_id` IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test=" storeIdList != null and storeIdList.size > 0 ">
+            AND `store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 条件新增字段 -->
+    <sql id="insert_field">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> `tenant_id`, </if>
+            <if test=" franchiseeId != null "> `franchisee_id`, </if>
+            <if test=" storeId != null "> `store_id`, </if>
+            <if test=" createUid != null "> `create_uid`, </if>
+            <if test=" updateUid != null "> `update_uid`, </if>
+            <if test=" createTime != null "> `create_time`, </if>
+            <if test=" updateTime != null "> `update_time`, </if>
+            <if test=" delFlag != null "> `del_flag`, </if>
+            <if test=" uid != null "> `uid`, </if>
+            <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
+            <if test=" confine != null "> `confine`, </if>
+            <if test=" confineNum != null "> `confine_num`, </if>
+            <if test=" tenancy != null "> `tenancy`, </if>
+            <if test=" tenancyUnit != null "> `tenancy_unit`, </if>
+            <if test=" rentUnitPrice != null "> `rent_unit_price`, </if>
+            <if test=" rent != null "> `rent`, </if>
+            <if test=" rentPayment != null "> `rent_payment`, </if>
+            <if test=" applicableType != null "> `applicable_type`, </if>
+            <if test=" rentRebate != null "> `rent_rebate`, </if>
+            <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
+            <if test=" rentRebateEndTime != null "> `rent_rebate_end_time`, </if>
+            <if test=" deposit != null "> `deposit`, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
+            <if test=" lateFee != null "> `late_fee`, </if>
+            <if test=" payType != null "> `pay_type`, </if>
+            <if test=" couponId != null "> `coupon_id`, </if>
+            <if test=" payState != null "> `pay_state`, </if>
+            <if test=" useState != null "> `use_state`, </if>
+            <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" useBeginTime != null "> `use_begin_time`, </if>
+        </trim>
+    </sql>
+    <!-- 条件新增字段值 -->
+    <sql id="insert_value">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> #{tenantId}, </if>
+            <if test=" franchiseeId != null "> #{franchiseeId}, </if>
+            <if test=" storeId != null "> #{storeId}, </if>
+            <if test=" createUid != null "> #{createUid}, </if>
+            <if test=" updateUid != null "> #{updateUid}, </if>
+            <if test=" createTime != null "> #{createTime}, </if>
+            <if test=" updateTime != null "> #{updateTime}, </if>
+            <if test=" delFlag != null "> #{delFlag}, </if>
+            <if test=" uid != null "> #{uid}, </if>
+            <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
+            <if test=" confine != null "> #{confine}, </if>
+            <if test=" confineNum != null "> #{confineNum}, </if>
+            <if test=" tenancy != null "> #{tenancy}, </if>
+            <if test=" tenancyUnit != null "> #{tenancyUnit}, </if>
+            <if test=" rentUnitPrice != null "> #{rentUnitPrice}, </if>
+            <if test=" rent != null "> #{rent}, </if>
+            <if test=" rentPayment != null "> #{rentPayment}, </if>
+            <if test=" applicableType != null "> #{applicableType}, </if>
+            <if test=" rentRebate != null "> #{rentRebate}, </if>
+            <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>
+            <if test=" rentRebateEndTime != null "> #{rentRebateEndTime}, </if>
+            <if test=" deposit != null "> #{deposit}, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
+            <if test=" lateFee != null "> #{lateFee}, </if>
+            <if test=" payType != null "> #{payType}, </if>
+            <if test=" couponId != null "> #{couponId}, </if>
+            <if test=" payState != null "> #{payState}, </if>
+            <if test=" useState != null "> #{useState}, </if>
+            <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" useBeginTime != null "> #{useBeginTime}, </if>
+        </trim>
+    </sql>
+
+    <!-- 根据用户UID查询支付成功的总金额(实际支付金额) -->
+    <select id="selectPaySuccessAmountTotal" resultType="java.math.BigDecimal">
+        SELECT SUM( `rent_payment` ) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `pay_state` = 2 AND `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </select>
+
+    <!-- 根据用户ID查找最后一条未支付成功的购买记录信息 -->
+    <select id="selectLastUnPayByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 1 AND `del_flag` = 0
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+
+    <!-- 根据用户ID查询第一条未使用的支付成功的订单信息 -->
+    <select id="selectFirstUnUsedAndPaySuccessByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 2 AND `use_state` = 1 AND `del_flag` = 0
+        </where>
+        ORDER BY `id` ASC LIMIT 1
+    </select>
+
+    <!-- 根据用户ID查找最后一条支付成功的购买记录信息 -->
+    <select id="selectLastPaySuccessByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 2 AND `del_flag` = 0
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+
+    <!-- 根据用户ID进行退押操作, 将使用中、未使用的订单全部设置为已失效 -->
+    <update id="refundDepositByUid">
+        UPDATE <include refid="table_name" />
+        <set>
+            `use_state` = 3, `update_time` = #{optTime}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` IN (1, 2) AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据订单编号更改支付状态、使用状态、使用时间 -->
+    <update id="updateStateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `pay_state` = #{payState}, `use_state` = #{useState}, `use_begin_time` = #{useBeginTime}, `update_time` = #{useBeginTime}
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
+    <!-- 根据用户ID查询是否存在未使用且可退的订单 -->
+    <select id="isExitUnUseAndRefund" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `pay_state` = 2 AND `rent_rebate` = 0 AND `rent_rebate_end_time` > #{rentRebateEndTime} AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 根据用户ID查询未使用的订单总数 -->
+    <select id="countByUnUseByUid" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `use_state` = 1 AND `pay_state` = 2 AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 据套餐ID查询购买记录总数 -->
+    <select id="countByRentalPackageId" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `rental_package_id` = #{rentalPackageId}
+        </where>
+    </select>
+
+    <!-- 条件查询列表 -->
+    <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 条件查询分页 -->
+    <select id="page" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 条件查询总数 -->
+    <select id="count" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 根据订单编码查询 -->
+    <select id="selectByOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `id` = #{id}
+        </where>
+    </select>
+
+    <!-- 根据订单编码更新支付状态 -->
+    <update id="updatePayStateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `pay_state` = #{payState}, `update_time` = #{optTime}
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
+    <!-- 根据ID更新支付状态 -->
+    <update id="updatePayStateById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `pay_state` = #{payState}, `update_time` = #{optTime}
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据订单编码更新使用状态 -->
+    <update id="updateUseStateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `use_state` = #{useState}, `update_time` = #{optTime}
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+            <if test=" useState == 2 "> , `use_begin_time` = #{userBeginTime} </if>
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
+    <!-- 根据ID更新使用状态 -->
+    <update id="updateUseStateById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `use_state` = #{useState}, `update_time` = #{optTime}
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+            <if test=" useState == 2 "> , `use_begin_time` = #{optTime} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 条件新增 -->
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
+    </insert>
+
+</mapper>

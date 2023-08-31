@@ -23,6 +23,8 @@ public class FranchiseeInsuranceVo {
      */
     private Long franchiseeId;
 
+    private String franchiseeName;
+
     /**
      * 城市Id
      */
@@ -86,4 +88,19 @@ public class FranchiseeInsuranceVo {
      * 城市名称
      */
     private String cityName;
+
+    /**
+     * 门店
+     */
+    private Long storeId;
+    private String storeName;
+    /**
+     * 车辆型号
+     */
+    private Long carModelId;
+    private String carModelName;
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 }

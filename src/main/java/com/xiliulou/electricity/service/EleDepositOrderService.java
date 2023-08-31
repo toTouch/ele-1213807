@@ -24,8 +24,6 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryByOrderId(String orderNo);
 
-    R payDeposit(String productKey, String deviceName, Long franchiseeId, Integer model, HttpServletRequest request);
-
     R returnDeposit(HttpServletRequest request);
 
     Triple<Boolean, String, Object> returnDepositPreCheck(UserInfo userInfo);
@@ -58,9 +56,6 @@ public interface EleDepositOrderService {
 
     R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
-    @Deprecated
-    R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
-
     R refundRentCarDeposit(HttpServletRequest request);
 
     R queryRentCarDeposit();
@@ -81,10 +76,12 @@ public interface EleDepositOrderService {
     Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer memberCardId,Integer model, UserInfo userInfo);
     
     R adminPayCarDeposit(RentCarDepositQuery rentCarDepositQuery);
-    
-    //R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd);
-    
+
     R refundCarDeposit();
 
     BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds);
+
+    R selectUserBatteryDeposit();
+
+    Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId);
 }

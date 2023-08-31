@@ -1,0 +1,134 @@
+package com.xiliulou.electricity.vo.userinfo;
+
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
+import com.xiliulou.electricity.vo.car.CarVo;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * 用户会员全量信息
+ *
+ * @author xiaohui.song
+ **/
+@Data
+public class UserMemberInfoVo implements Serializable {
+
+    private static final long serialVersionUID = 7182615524517491404L;
+
+    /**
+     * 类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see RentalPackageTypeEnum
+     */
+    private Integer type;
+
+    /**
+     * 到期时间
+     */
+    private Long dueTime;
+
+    /**
+     * 总计到期时间
+     */
+    private Long dueTimeTotal;
+
+    /**
+     * 当前余量
+     */
+    private Long residue;
+
+    /**
+     * 状态
+     * <pre>
+     *     -1-已过期
+     *     0-待生效
+     *     1-正常
+     *     2-申请冻结
+     *     3-冻结
+     *     4-申请退押
+     *     5-申请退租
+     * </pre>
+     * @see MemberTermStatusEnum
+     */
+    private Integer status;
+
+    /**
+     * 滞纳金金额
+     */
+    private BigDecimal lateFeeAmount;
+
+    /**
+     * 租车套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
+     * 租车套餐名称
+     */
+    private String rentalPackageName;
+
+    /**
+     * 加盟商ID
+     */
+    private Integer franchiseeId;
+
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
+
+    /**
+     * 门店名称
+     */
+    private String storeName;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
+     * 车辆型号名称
+     */
+    private String carModelName;
+
+    /**
+     * 电池型号名称集
+     */
+    private List<String> batteryVShortList;
+
+    /**
+     * 套餐购买订单信息
+     */
+    private CarRentalPackageOrderVo carRentalPackageOrder;
+
+    /**
+     * 押金缴纳订单信息
+     */
+    private CarRentalPackageDepositPayVo carRentalPackageDepositPay;
+
+    /**
+     * 车辆信息
+     * */
+    private CarVo car;
+
+    /**
+     * 购买订单，是否可退，默认可退
+     */
+    private boolean carRentalPackageOrderRefundFlag = true;
+
+}

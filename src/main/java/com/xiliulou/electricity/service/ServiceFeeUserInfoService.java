@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.UserServiceFeeDetail;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,10 +17,7 @@ import java.util.List;
  */
 public interface ServiceFeeUserInfoService {
 
-
     int insert(ServiceFeeUserInfo serviceFeeUserInfo);
-
-    int update(ServiceFeeUserInfo serviceFeeUserInfo);
 
     ServiceFeeUserInfo queryByUidFromCache(Long uid);
 
@@ -28,4 +26,16 @@ public interface ServiceFeeUserInfoService {
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
     
     BigDecimal queryUserBatteryServiceFee(UserInfo userInfo);
+
+    Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
+
+    Integer deleteByUid(Long uid);
+
+    void unbindServiceFeeInfoByUid(Long uid);
+
+    List<ServiceFeeUserInfo> selectDisableMembercardList(int offset, int size);
+
+    List<UserServiceFeeDetail> selectUserBatteryServiceFee();
+
+    BigDecimal selectBatteryServiceFeeByUid(Long uid);
 }

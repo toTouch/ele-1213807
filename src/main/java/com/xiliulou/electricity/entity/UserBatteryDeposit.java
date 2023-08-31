@@ -38,7 +38,7 @@ public class UserBatteryDeposit {
     private Long uid;
     
     /**
-     * 押金订单表id
+     * 交押金 对应的套餐id
      */
     private Long did;
     
@@ -57,8 +57,6 @@ public class UserBatteryDeposit {
      */
     private Integer delFlag;
 
-    private Integer tenantId;
-    
     private Long createTime;
     
     private Long updateTime;

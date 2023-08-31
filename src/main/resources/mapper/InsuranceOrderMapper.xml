@@ -8,7 +8,7 @@
         insuranceType,tio.user_name as userName,tio.order_id as orderId
         ,tui.id_number as idCard,tio.phone as phone,tio.cid as cid,tio.pay_amount as insuranceAmount,tio.create_time as
         createTime,tio.valid_days as validDays,tio.status,tio.pay_type as payType
-        ,tio.forehead,tio.update_time,tio.is_use
+        ,tio.forehead,tio.update_time,tio.is_use, tio.`source_order_no`
         from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id left join t_user_info tui on
         tio.uid=tui.uid
         <where>
@@ -17,6 +17,18 @@
             </if>
             <if test="query.franchiseeId != null">
                 and tio.franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.status != null">
+                and tio.status = #{query.status}
+            </if>
+            <if test="query.isUse != null">
+                and tio.is_use = #{query.isUse}
+            </if>
+            <if test="query.type != null and query.type == 0">
+                and tio.insurance_type = 0
+            </if>
+            <if test="query.type != null and query.type == 1">
+                and tio.insurance_type in (1,2)
             </if>
             <if test="query.userName != null and query.userName !=''">
                 and tio.user_name = #{query.userName}
@@ -46,8 +58,19 @@
                 and tio.pay_type = #{query.payType}
             </if>
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
-                and tio.franchisee_id in (select id from t_franchisee where name like
-                concat('%',#{query.franchiseeName},'%'))
+                and tf.name like  concat('%',#{query.franchiseeName},'%')
+            </if>
+            <if test="query.franchiseeIds != null">
+                and tio.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and tio.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by tio.create_time desc
@@ -55,19 +78,22 @@
     </select>
 
     <select id="queryCount" resultType="integer">
-        select count(1) from t_insurance_order tio
+        select count(1) from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id
         <where>
             <if test="query.orderId != null and query.orderId !=''">
                 and tio.order_id = #{query.orderId}
             </if>
-            <if test="query.franchiseeId != null">
-                and tio.franchisee_id = #{query.franchiseeId}
+            <if test="query.isUse != null">
+                and tio.is_use = #{query.isUse}
             </if>
             <if test="query.userName != null and query.userName !=''">
                 and tio.user_name = #{query.userName}
             </if>
             <if test="query.phone != null and query.phone !=''">
                 and tio.phone = #{query.phone}
+            </if>
+            <if test="query.uid != null">
+                and tio.uid = #{query.uid}
             </if>
             <if test="query.beginTime != null">
                 and tio.create_time &gt;= #{query.beginTime}
@@ -81,18 +107,43 @@
             <if test="query.status != null">
                 and tio.status = #{query.status}
             </if>
+            <if test="query.type != null and query.type == 0">
+                and tio.insurance_type = 0
+            </if>
+            <if test="query.type != null and query.type == 1">
+                and tio.insurance_type in (1,2)
+            </if>
             <if test="query.payType != null">
                 and tio.pay_type = #{query.payType}
             </if>
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
-                and franchisee_id in (select id from t_franchisee where name like
-                concat('%',#{query.franchiseeName},'%'))
+                and tf.name like  concat('%',#{query.franchiseeName},'%')
+            </if>
+            <if test="query.franchiseeIds != null">
+                and tio.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and tio.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>
 
     <update id="updateIsUseByOrderId">
         update t_insurance_order set is_use=#{isUse},update_time=#{updateTime} where order_id=#{orderId} and tenant_id=#{tenantId}
+    </update>
+
+    <update id="updateUseStatusByOrderId">
+        update t_insurance_order set is_use=#{useStatus},update_time=UNIX_TIMESTAMP()*1000 where order_id=#{orderId}
+    </update>
+
+    <update id="updateUseStatusForRefund">
+        update t_insurance_order set is_use=#{useStatus},update_time=UNIX_TIMESTAMP()*1000 where order_id=#{orderId} and is_use=0
     </update>
 
 </mapper>

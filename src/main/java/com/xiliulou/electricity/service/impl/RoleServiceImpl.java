@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Lists;
+import com.jpay.util.StringUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
@@ -115,6 +116,7 @@ public class RoleServiceImpl implements RoleService {
         Role role = new Role();
         BeanUtils.copyProperties(roleQuery, role);
 
+        role.setDesc(StringUtils.EMPTY);
         role.setUpdateTime(System.currentTimeMillis());
         role.setCreateTime(System.currentTimeMillis());
         role.setTenantId(tenantId);

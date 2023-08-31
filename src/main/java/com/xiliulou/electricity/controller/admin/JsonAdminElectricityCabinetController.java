@@ -550,27 +550,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
 
         return electricityCabinetService.queryAllElectricityCabinet(electricityCabinetQuery);
     }
-    
-    
-/*    //核心板上报数据分页
-    @GetMapping(value = "/admin/electricityCabinet/core_data_list")
-    public R queryEleCabinetCoreDataList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "id", required = false) Integer id) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-
-        if (offset < 0) {
-            offset = 0L;
-        }
-
-        EleCabinetCoreDataQuery eleCabinetCoreDataQuery = EleCabinetCoreDataQuery.builder().offset(offset).size(size)
-                .id(id).tenantId(TenantContextHolder.getTenantId()).build();
-
-        List<EleCabinetCoreData> eleCabinetCoreData = eleCabinetCoreDataService
-                .selectListByQuery(eleCabinetCoreDataQuery);
-        return R.ok(eleCabinetCoreData);
-    }*/
 
     //核心板上报数据详情
     @GetMapping(value = "/admin/electricityCabinet/core_data_list/{electricityCabinetId}")
@@ -893,7 +872,8 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                               @RequestParam("offset") Long offset,
                               @RequestParam(value = "name", required = false) String name,
                               @RequestParam(value = "modelId", required = false) Integer modelId,
-                              @RequestParam(value = "sn", required = false) String sn) {
+                              @RequestParam(value = "sn", required = false) String sn,
+                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -929,6 +909,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .name(name)
                 .modelId(modelId)
                 .sn(sn)
+                .onlineStatus(onlineStatus)
                 .eleIdList(eleIdList)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 

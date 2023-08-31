@@ -24,6 +24,11 @@ public class UserAmountHistoryVO {
     private Long uid;
 
     /**
+     * 用户名称
+     */
+    private String name;
+
+    /**
      * 收益来源 1--邀人返现
      */
     private Integer type;

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: lxc
  * @Date: 2021/4/15 16:02
@@ -22,6 +24,8 @@ public class JsonShareMoneyActivityHistoryQuery {
     private Integer tenantId;
     
     private String joinName;
+
+    private Long joinUid;
     
     private Long beginTime;
     
@@ -29,4 +33,13 @@ public class JsonShareMoneyActivityHistoryQuery {
     
     private Integer status;
     private Long id;
+
+    private String phone;
+
+    private String activityName;
+
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

@@ -3,7 +3,10 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -14,7 +17,10 @@ import java.math.BigDecimal;
  * @create: 2020-12-03 09:45
  **/
 @Data
+@Builder
 @TableName("t_electricity_member_card_order")
+@AllArgsConstructor
+@NoArgsConstructor
 public class ElectricityMemberCardOrder {
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -32,7 +38,7 @@ public class ElectricityMemberCardOrder {
     // 0,未支付,1,支付成功 2,支付失败,3取消支付
     private Integer status;
     //月卡id
-    private Integer memberCardId;
+    private Long memberCardId;
     //用户名
     private String userName;
     //月卡类型
@@ -49,11 +55,21 @@ public class ElectricityMemberCardOrder {
     //租户id
     private Integer tenantId;
 
+    private Long storeId;
+
     private Long franchiseeId;
 
     private Integer isBindActivity;
 
     private Integer payType;
+    /**
+     * 套餐订单使用状态 1未使用,2：使用中,3：已失效, 4:已退租
+     */
+    private Integer useStatus;
+    /**
+     * 退租状态 1未退租,2：审核中,3：退租中, 4:退租成功, 5:退租失败
+     */
+    private Integer refundStatus;
 
     /**
      * 活动id
@@ -82,7 +98,12 @@ public class ElectricityMemberCardOrder {
      * 扫码的柜机
      */
     private Long refId;
-    
+
+    /**
+     * 套餐赠送的优惠券id
+     */
+    private Long sendCouponId;
+
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
@@ -103,4 +124,19 @@ public class ElectricityMemberCardOrder {
     public static final Integer SOURCE_SCAN = 1;
     public static final Integer SOURCE_NOT_SCAN = 2;
     public static final Integer SOURCE_ARTIFICIAL = 3;
+
+    //套餐订单使用状态 1未使用,2：使用中,3：已失效, 4:已退租
+    public static final Integer USE_STATUS_NOT_USE = 1;
+    public static final Integer USE_STATUS_USING = 2;
+    public static final Integer USE_STATUS_EXPIRE = 3;
+    public static final Integer USE_STATUS_REFUND = 4;
+
+    //退租状态 1未退租,2：审核中,3：退租中, 4:退租成功, 5:退租失败, 6:审核拒绝
+    public static final Integer REFUND_STATUS_NON = 1;
+    public static final Integer REFUND_STATUS_AUDIT = 2;
+    public static final Integer REFUND_STATUS_REFUNDING = 3;
+    public static final Integer REFUND_STATUS_SUCCESS = 4;
+    public static final Integer REFUND_STATUS_FAIL = 5;
+    public static final Integer REFUND_STATUS_REFUSED = 6;
+
 }

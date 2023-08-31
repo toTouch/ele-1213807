@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 缴纳电池服务费订单表(tEleBatteryServiceFeeOrder)实体类
@@ -70,6 +71,7 @@ public class EleBatteryServiceFeeOrderVo {
      * 电池类型
      */
     private String batteryType;
+    private List<String> batteryTypeList;
 
     /**
      * 电池sn码

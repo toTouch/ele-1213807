@@ -94,6 +94,8 @@ public class EnableMemberCardRecord {
      */
     private Long franchiseeId;
 
+    private Long storeId;
+
     /**
      * 服务费金额
      */
@@ -106,6 +108,7 @@ public class EnableMemberCardRecord {
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 2;
     public static final Integer STATUS_NOT_PAY = 1;
+    public static final Integer STATUS_CLEAN = 3;
 
 
 }

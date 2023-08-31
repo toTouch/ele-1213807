@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
-import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -16,11 +19,10 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -31,7 +33,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminFranchiseeInsuranceController {
+public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
@@ -50,6 +52,15 @@ public class JsonAdminFranchiseeInsuranceController {
      */
     @PostMapping(value = "/admin/franchiseeInsurance")
     public R updateEleAuthEntries(@RequestBody @Validated FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.add(franchiseeInsuranceAddAndUpdate);
     }
 
@@ -65,6 +76,16 @@ public class JsonAdminFranchiseeInsuranceController {
         if (Objects.isNull(franchiseeInsuranceAddAndUpdate)) {
             return R.failMsg("请求参数不能为空!");
         }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.update(franchiseeInsuranceAddAndUpdate);
     }
 
@@ -77,6 +98,16 @@ public class JsonAdminFranchiseeInsuranceController {
     @PutMapping("admin/franchiseeInsurance/enableOrDisable")
     @Log(title = "禁启用保险保险")
     public R enableOrDisable(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.enableOrDisable(id, usableStatus);
     }
 
@@ -88,6 +119,16 @@ public class JsonAdminFranchiseeInsuranceController {
     @DeleteMapping("admin/franchiseeInsurance/{id}")
     @Log(title = "删除保险")
     public R delete(@PathVariable(value = "id") Integer id) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
         return franchiseeInsuranceService.delete(id);
     }
 
@@ -100,29 +141,34 @@ public class JsonAdminFranchiseeInsuranceController {
     @GetMapping("admin/franchiseeInsurance/list")
     public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
                                           @RequestParam(value = "size") Long size,
+                                          @RequestParam(value = "name", required = false) String name,
+                                          @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                           @RequestParam(value = "status", required = false) Integer status) {
 
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.emptyList());
         }
 
-        return franchiseeInsuranceService.queryList(offset, size, status, insuranceType, tenantId, franchiseeId);
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
+                .offset(offset)
+                .size(size)
+                .type(type)
+                .franchiseeId(franchiseeId)
+                .insuranceType(insuranceType)
+                .name(name)
+                .status(status)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+
+//        return franchiseeInsuranceService.queryList(offset, size, status, insuranceType, tenantId, franchiseeId);
+        return R.ok(franchiseeInsuranceService.selectByPage(query));
     }
 
     /**
@@ -132,27 +178,31 @@ public class JsonAdminFranchiseeInsuranceController {
      */
     @GetMapping("admin/franchiseeInsurance/queryCount")
     public R getElectricityMemberCardPage(@RequestParam(value = "insuranceType", required = false) Integer insuranceType,
+                                          @RequestParam(value = "name", required = false) String name,
+                                          @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
         }
 
-        return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
+                .franchiseeId(franchiseeId)
+                .type(type)
+                .insuranceType(insuranceType)
+                .name(name)
+                .status(status)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+//        return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
+        return R.ok(franchiseeInsuranceService.selectPageCount(query));
     }
 
     /**
@@ -187,7 +237,17 @@ public class JsonAdminFranchiseeInsuranceController {
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
 
-        return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
+        return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
+
+
+    /**
+     * 获取用户可购买保险
+     */
+    @GetMapping("/admin/franchiseeInsurance/selectInsuranceByUid")
+    public R selectInsuranceByUid(@RequestParam(value = "uid") Long uid, @RequestParam(value = "type") Integer type) {
+        return returnTripleResult(franchiseeInsuranceService.selectInsuranceByUid(uid, type));
+    }
+
 
 }

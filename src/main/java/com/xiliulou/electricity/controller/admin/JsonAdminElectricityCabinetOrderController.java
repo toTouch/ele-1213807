@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -39,6 +40,8 @@ public class JsonAdminElectricityCabinetOrderController {
     ElectricityCabinetOrderService electricityCabinetOrderService;
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //换电柜订单查询
     @GetMapping("/admin/electricityCabinetOrder/list")
@@ -65,20 +68,21 @@ public class JsonAdminElectricityCabinetOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -92,7 +96,8 @@ public class JsonAdminElectricityCabinetOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -122,7 +127,6 @@ public class JsonAdminElectricityCabinetOrderController {
             offset = 0L;
         }
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -163,23 +167,24 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "uid", required = false) Long uid) {
 
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -191,7 +196,8 @@ public class JsonAdminElectricityCabinetOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -210,7 +216,6 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid) {
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -260,7 +265,6 @@ public class JsonAdminElectricityCabinetOrderController {
             throw new CustomBusinessException("搜索日期不能大于33天");
         }
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user ");

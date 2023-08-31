@@ -27,4 +27,10 @@ public class CouponIssueOperateRecordQuery {
 
     private Integer tenantId;
 
+    /**
+     * 优惠券使用状态 1--未使用， 2--已使用 ，3--已过期，
+     *             4--已核销， 5--使用中， 6--已失效
+     */
+    private Integer status;
+
 }

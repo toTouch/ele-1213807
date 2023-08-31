@@ -31,13 +31,6 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
 	@Autowired
 	ElectricityCabinetOrderService electricityCabinetOrderService;
 
-	//换电柜下单
-	@Deprecated
-	@PostMapping("/user/electricityCabinetOrder/order")
-	public R order(@RequestBody @Validated(value = CreateGroup.class) OrderQuery orderQuery) {
-		return electricityCabinetOrderService.order(orderQuery);
-	}
-
 	/**
 	 * 换电柜下单，用新的命令
 	 * @param orderQuery
@@ -49,6 +42,7 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
 	}
 
 	//换电柜再次开门
+	@Deprecated
 	@PostMapping("/user/electricityCabinetOrder/openDoor")
 	public R openDoor(@RequestBody OpenDoorQuery openDoorQuery) {
 		return electricityCabinetOrderService.openDoor(openDoorQuery);

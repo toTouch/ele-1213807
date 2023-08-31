@@ -13,6 +13,13 @@ import java.util.List;
 public interface CarModelTagService {
 
     /**
+     * 根据车辆型号ID集获取对应标签集
+     * @param carModelIdList 车辆型号ID集
+     * @return 标签集
+     */
+    List<CarModelTag> selectByCarModelIds(List<Integer> carModelIdList);
+
+    /**
      * 通过ID查询单条数据从数据库
      *
      * @param id 主键

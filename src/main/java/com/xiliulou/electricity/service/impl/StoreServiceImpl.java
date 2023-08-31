@@ -10,8 +10,12 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.StoreMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.query.StoreAddAndUpdate;
+import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -23,6 +27,7 @@ import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -49,6 +54,10 @@ import java.util.stream.Collectors;
 @Service("storeService")
 @Slf4j
 public class StoreServiceImpl implements StoreService {
+
+    @Resource
+    private ElectricityCarService carService;
+
     @Resource
     private StoreMapper storeMapper;
     @Autowired
@@ -82,6 +91,28 @@ public class StoreServiceImpl implements StoreService {
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     ElectricityConfigService electricityConfigService;
+
+    /**
+     * 根据车辆<code>SN</code>码获取门店信息
+     *
+     * @param tenantId
+     * @param sn
+     * @return
+     */
+    @Slave
+    @Override
+    public Store queryByCarSn(Integer tenantId, String sn) {
+        if (!ObjectUtils.allNotNull(tenantId, sn)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        ElectricityCar car = carService.selectBySn(sn, tenantId);
+        if (ObjectUtils.isEmpty(car)) {
+            return null;
+        }
+
+        return queryByIdFromCache(car.getStoreId());
+    }
 
     /**
      * 通过ID查询单条数据从缓存
@@ -214,6 +245,13 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
             if (checkParam(storeAddAndUpdate, store)) {
                 return Triple.of(false,"ELECTRICITY.0007", "不合法的参数");
+            }
+        }
+
+        if(!oldStore.getName().equals(storeAddAndUpdate.getName())){
+            User userNameExists = userService.queryByUserNameAndTenantId(storeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
+            if (Objects.nonNull(userNameExists)) {
+                return Triple.of(false,"110200","用户名已经存在！");
             }
         }
 
@@ -641,6 +679,10 @@ public class StoreServiceImpl implements StoreService {
             return Collections.EMPTY_LIST;
         }
 
+        if (!storeQuery.isQueryPictureFlag()) {
+            return list;
+        }
+
         return list.parallelStream().map(item -> {
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
@@ -650,6 +692,7 @@ public class StoreServiceImpl implements StoreService {
 
             return item;
         }).collect(Collectors.toList());
+
 
     }
 
@@ -686,8 +729,8 @@ public class StoreServiceImpl implements StoreService {
     }
     
     @Override
-    public R storeSearch(Long size, Long offset, String name , Long franchiseeId, Integer tenantId) {
-        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name , tenantId,franchiseeId);
+    public R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId) {
+        List<SearchVo> voList = storeMapper.storeSearch(size, offset, franchiseeId, name , tenantId);
         return R.ok(voList);
     }
     
@@ -701,9 +744,35 @@ public class StoreServiceImpl implements StoreService {
         }
         return stores.parallelStream().map(item -> {
 
+            //营业时间
+            if (Objects.nonNull(item.getBusinessTime())) {
+                String businessTime = item.getBusinessTime();
+                if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                    item.setBusinessTimeType(StoreVO.ALL_DAY);
+                } else {
+                    item.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                    Integer index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 0) {
+                        item.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                        item.setBeginTime(beginTime);
+                        item.setEndTime(endTime);
+                    }
+                }
+            }
+
+            // 图片信息
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
             if (!CollectionUtils.isEmpty(pictures)) {
                 item.setPictureList(pictureService.pictureParseVO(pictures));
+            }
+
+            //标签
+            List<StoreTag> storeTags = storeTagService.selectByStoreId(item.getId());
+            if (!CollectionUtils.isEmpty(storeTags)) {
+                List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
+                item.setServiceType(tags);
             }
 
             return item;

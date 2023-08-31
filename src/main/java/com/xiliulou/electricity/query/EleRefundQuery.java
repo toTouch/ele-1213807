@@ -47,6 +47,8 @@ public class EleRefundQuery {
      */
     private String name;
 
+    private Long uid;
+
     /**
      * 退押金类型
      */

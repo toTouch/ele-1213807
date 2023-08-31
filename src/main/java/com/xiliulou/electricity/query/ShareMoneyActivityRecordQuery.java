@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: lxc
  * @Date: 2021/4/15 16:02
@@ -19,9 +21,12 @@ public class ShareMoneyActivityRecordQuery {
     private Long offset;
     private String phone;
     private String name;
+    private Long uid;
 
     private Integer tenantId;
 
+    private List<Long> franchiseeIds;
 
+    private List<Long> storeIds;
 
 }

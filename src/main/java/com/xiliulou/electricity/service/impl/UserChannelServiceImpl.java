@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserChannelVo;
@@ -73,6 +75,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    CarRentalPackageOrderService carRentalPackageOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -190,7 +195,43 @@ public class UserChannelServiceImpl implements UserChannelService {
         Long count = this.userChannelMapper.queryCount(name, phone, TenantContextHolder.getTenantId());
         return Triple.of(true, null, count);
     }
-    
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryUserChannelActivityList(UserChannelQuery userChannelQuery) {
+
+        List<UserChannel> queryList = this.userChannelMapper.queryActivityList(userChannelQuery);
+
+        List<UserChannelVo> voList = new ArrayList<>();
+
+        Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
+            UserChannelVo vo = new UserChannelVo();
+            BeanUtils.copyProperties(item, vo);
+
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                vo.setName(userInfo.getName());
+                vo.setPhone(userInfo.getPhone());
+            }
+
+            User user = userService.queryByUidFromCache(item.getOperateUid());
+            if (Objects.nonNull(user)) {
+                vo.setOperateName(user.getName());
+            }
+
+            voList.add(vo);
+        });
+
+        return Triple.of(true, null, voList);
+    }
+
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryUserChannelActivityCount(UserChannelQuery userChannelQuery) {
+        Long count = this.userChannelMapper.queryActivityCount(userChannelQuery);
+        return Triple.of(true, null, count);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> saveOne(Long uid) {
@@ -260,19 +301,28 @@ public class UserChannelServiceImpl implements UserChannelService {
     }
     
     private boolean userBuyMemberCardCheck(Long uid) {
-        boolean batteryMemberCard = true;
-        boolean carMemberCard = true;
+        boolean batteryMemberCard = false;
+        boolean carMemberCard = false;
     
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            batteryMemberCard = false;
+        if (Objects.nonNull(electricityMemberCardOrder)) {
+            log.info("Found battery package order info, uid = {}", uid);
+            batteryMemberCard = true;
         }
-        
+        //3.0之前的租车信息查询
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(carMemberCardOrder)) {
-            carMemberCard = false;
+        if (Objects.nonNull(carMemberCardOrder)) {
+            log.info("Found car member card order info, uid = {}", uid);
+            carMemberCard = true;
+        }
+
+        //3.0之后租车，车电一体购买套餐信息查询
+        CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectLastPaySuccessByUid(TenantContextHolder.getTenantId(), uid);
+        if(Objects.nonNull(carRentalPackageOrderPo)){
+            log.info("Found car rental package order info, uid = {}", uid);
+            carMemberCard = true;
         }
         
         return batteryMemberCard || carMemberCard;

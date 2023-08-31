@@ -1,14 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.MaintenanceUserNotifyConfigQuery;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -212,7 +210,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             mqDeviceNotify.setDeviceName(electricityCabinet.getName());
             query.setData(mqDeviceNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", status.equals(ElectricityCabinet.IOT_STATUS_OFFLINE) ? 4 : 0);
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", status.equals(ElectricityCabinet.IOT_STATUS_OFFLINE) ? 4 : 0);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
             }
@@ -248,7 +246,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
             query.setData(mqHardwareNotify);
 
-            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
+            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
 
         });
     }
@@ -282,7 +280,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
             query.setData(mqHardwareNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 3);
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 3);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
             }
@@ -319,7 +317,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             mqDeviceNotify.setDeviceName("test");
             query.setData(mqDeviceNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", "test", result.getRight());
             }

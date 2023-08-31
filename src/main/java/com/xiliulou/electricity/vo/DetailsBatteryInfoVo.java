@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zgw
@@ -68,7 +69,7 @@ public class DetailsBatteryInfoVo {
     /**
      * 套餐次数
      */
-    private Integer remainingNumber;
+    private Long remainingNumber;
     
     /**
      * 套餐时间
@@ -79,6 +80,8 @@ public class DetailsBatteryInfoVo {
      * 到期时间
      */
     private Long memberCardExpireTime;
+    private Long orderExpireTime;
+    private Long orderRemainingNumber;
     
     /**
      * 剩余天数
@@ -111,4 +114,10 @@ public class DetailsBatteryInfoVo {
      * 电量
      */
     private Double power;
+
+    /**
+     * 用户绑定的电池型号
+     */
+    private List<String> batteryModels;
+
 }

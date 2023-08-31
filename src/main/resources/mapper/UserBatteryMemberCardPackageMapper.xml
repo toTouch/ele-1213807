@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserBatteryMemberCardPackage" id="UserBatteryMemberCardPackageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
+        <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserBatteryMemberCardPackageMap">
+        select
+          id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status
+        from t_user_battery_member_card_package
+        where id = #{id}
+    </select>
+
+    <select id="checkUserBatteryMemberCardPackageByUid" resultType="Integer">
+       SELECT	1 FROM	t_user_battery_member_card_package ubmcp	LEFT JOIN t_battery_member_card bmc ON ubmcp.member_card_id = bmc.id
+       WHERE	bmc.is_refund = 0 	AND ubmcp.uid = #{uid} LIMIT 1
+    </select>
+
+    <select id="selectByUid" resultMap="UserBatteryMemberCardPackageMap">
+        select
+          id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status
+        from t_user_battery_member_card_package
+        where uid = #{uid}
+    </select>
+
+    <select id="selectByOrderNo" resultMap="UserBatteryMemberCardPackageMap">
+        select
+          id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status
+        from t_user_battery_member_card_package
+        where order_id = #{orderId}
+    </select>
+
+    <select id="selectNearestByUid" resultMap="UserBatteryMemberCardPackageMap">
+        select
+          id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status
+        from t_user_battery_member_card_package
+        where uid = #{uid} order by id limit 1
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_user_battery_member_card_package
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="memberCardId != null">
+                member_card_id = #{memberCardId},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="memberCardExpireTime != null">
+                member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_user_battery_member_card_package where id = #{id}
+    </delete>
+
+    <delete id="deleteByUid">
+        delete from t_user_battery_member_card_package where uid = #{uid}
+    </delete>
+
+    <delete id="deleteByOrderId">
+        delete from t_user_battery_member_card_package where order_id = #{orderId}
+    </delete>
+
+</mapper>

@@ -15,6 +15,7 @@ public interface CacheConstant {
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
     String CACHE_USER_PHONE = "user_phone:";
+    String CACHE_USER_EXTRA = "user_extra:";
     String CACHE_MEMBER_CARD = "CACHE_MEMBER_CARD:";
     String CACHE_USER_INFO_UID = "user_info_uid:";
     //最后一个操作格挡缓存
@@ -89,6 +90,8 @@ public interface CacheConstant {
 
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
+
+    String ELE_CACHE_SERVICE_FEE_LOCK_KEY = "ele_cache_service_fee_lock_key:";
     //用户还车审核
     String CACHE_USER_RETURN_CAR_LOCK = "cache_user_return_car_lock:";
 
@@ -96,6 +99,8 @@ public interface CacheConstant {
 
     //用户集成支付
     String ELE_CACHE_USER_INTEGRATED_PAYMENT_LOCK_KEY = "ele_cache_user_integrated_payment_lock_key:";
+
+    String ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY = "ele_battery_membercard_refund_lock_key:";
 
     //下单周期限制
     String ORDER_TIME_UID = "order_time_uid:";
@@ -324,6 +329,36 @@ public interface CacheConstant {
     String CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY = "electricity_cabinet_esign_sign_lock_key:";
 
     /**
+     * 购买套餐分账缓存锁
+     */
+    String CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY = "cache_division_account_package_purchase_key:";
+
+    /**
+     * 退租套餐分账缓存锁
+     */
+    String CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY = "cache_division_account_package_refund_key:";
+
+    /**
+     * 购买套餐是处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY = "cache_handle_activity_package_purchase_key:";
+
+    /**
+     * 实名认证后处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY = "cache_handle_activity_real_name_auth_key:";
+
+    /**
+     * 用户登录注册后处理活动信息缓存锁
+     */
+    String CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY = "cache_handle_activity_user_register_key:";
+
+    /**
+     * 购买套餐后发放优惠券给用户缓存锁
+     */
+    String CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY = "cache_send_coupon_package_purchase_key:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
@@ -403,6 +438,8 @@ public interface CacheConstant {
     String CACHE_INVITATION_ACTIVITY = "invitation_activity:";
 
     String CACHE_GET_COUPON = "get_coupon:";
+
+    String CACHE_BATTERY_MEMBERCARD = "battery_membercard:";
 
     String CACHE_CHARGE_POWER_CONFIG ="charge_p_conf:";
     String CACHE_CHARGE_POWER_CONFIG_NONE ="charge_p_conf_none:";

@@ -4,7 +4,7 @@
 
 
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.UserAmountVO">
-		select tua.id as id,tua.uid as uid,tua.create_time as createTime,
+		select tua.id as id,tua.uid as uid,tui.name, tua.create_time as createTime,
 		tua.update_time as updateTime,tua.total_income as totalIncome,
 		tua.balance as balance,tua.withdraw as withdraw,tua.tenant_id as tenantId,
 		tua.del_flg as delFlg,tui.phone as phone
@@ -14,9 +14,24 @@
 		<if test="tenantId != null">
 			and tua.tenant_id = #{tenantId}
 		</if>
+		<if test="uid != null">
+			and tui.uid = #{uid}
+		</if>
 		<if test="phone != null and phone != ''">
 			and tui.phone = #{phone}
 		</if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 		ORDER BY tua.create_time DESC
 		limit #{offset}, #{size}
@@ -30,8 +45,23 @@
 			<if test="tenantId != null">
 				and tua.tenant_id = #{tenantId}
 			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
+			</if>
 			<if test="phone != null and phone != ''">
 				and tui.phone = #{phone}
+			</if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>

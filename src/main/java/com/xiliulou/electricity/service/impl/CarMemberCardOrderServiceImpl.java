@@ -4,8 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -18,10 +16,8 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
@@ -34,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -419,7 +414,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
 
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, user.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setOrderId(orderId);
@@ -550,7 +545,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
 
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, user.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setOrderId(orderId);
@@ -640,7 +635,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, userInfo.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setUid(userInfo.getUid());
@@ -775,7 +770,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             }
         
             BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
-            String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+            String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, userInfo.getUid());
         
             CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
             carMemberCardOrder.setUid(userInfo.getUid());
@@ -954,7 +949,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, userInfo.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setUid(userInfo.getUid());
@@ -1107,7 +1102,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return R.fail("100237", "车辆租赁方式不存在!");
         }
         
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, userInfo.getUid());
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
         
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();

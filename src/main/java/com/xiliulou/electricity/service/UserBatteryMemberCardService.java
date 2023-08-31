@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -40,8 +43,6 @@ public interface UserBatteryMemberCardService {
      * @return 实例对象
      */
     UserBatteryMemberCard insert(UserBatteryMemberCard userBatteryMemberCard);
-
-    UserBatteryMemberCard insertOrUpdate(UserBatteryMemberCard userBatteryMemberCard);
 
     /**
      * 修改数据
@@ -99,4 +100,21 @@ public interface UserBatteryMemberCardService {
                                                              Long lastTime);
 
     List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime);
+
+    Integer checkUserByMembercardId(Long id);
+
+    Integer deductionExpireTime(Long uid, Long time,Long updateTime);
+
+    List<UserBatteryMemberCard> selectList(int offset, int size);
+
+    List<String> selectUserBatteryMemberCardOrder(Long uid);
+
+    List<UserBatteryMemberCard> selectUseableList(int offset, int size);
+
+    Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
+
+    void batteryMembercardExpireUpdateStatusTask();
+
+    Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
+
 }

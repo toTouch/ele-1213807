@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.entity.Picture;
-import com.xiliulou.electricity.entity.StoreDetail;
 import lombok.Data;
 
 import java.util.List;
@@ -113,7 +111,6 @@ public class StoreVO {
      * 门店详情
      */
     private String detail;
-
 
     //全天
     public static final String ALL_DAY = "-1";
