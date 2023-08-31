@@ -156,24 +156,18 @@ public class JsonAdminUserSourceController extends BaseController {
         return R.ok(userService.selectUserSourcePageCount(userSourceQuery));
     }
 
-//    @PutMapping(value = "/admin/userSource")
-//    @Log(title = "修改用户来源")
-//    public R updateUserSource(@RequestBody @Validated UpdateUserSourceQuery userSourceQuery){
-//        User updateUser = new User();
-//        updateUser.setUid(userSourceQuery.getUid());
-//        updateUser.setRefId(userSourceQuery.getRefId());
-//        updateUser.setSource(userSourceQuery.getSource());
-//        updateUser.setTenantId(TenantContextHolder.getTenantId());
-//        updateUser.setUpdateTime(System.currentTimeMillis());
-//
-//        userService.updateUserSource(updateUser);
-//        return R.ok();
-//    }
-
     @PutMapping(value = "/admin/userSource")
     @Log(title = "修改用户来源")
     public R updateUserSource(@RequestBody @Validated UpdateUserSourceQuery userSourceQuery){
-        return returnTripleResult(userExtraService.updateUserSource(userSourceQuery));
+        User updateUser = new User();
+        updateUser.setUid(userSourceQuery.getUid());
+        updateUser.setRefId(userSourceQuery.getRefId());
+        updateUser.setSource(userSourceQuery.getSource());
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        userService.updateUserSource(updateUser);
+        return R.ok();
     }
 
 }

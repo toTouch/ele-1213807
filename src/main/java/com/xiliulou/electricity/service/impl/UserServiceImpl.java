@@ -804,8 +804,6 @@ public class UserServiceImpl implements UserService {
         deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);
 
-        userExtraService.deleteById(uid);
-
         userBatteryMemberCardService.deleteByUid(uid);
 
         userCarService.deleteByUid(uid);
