@@ -363,7 +363,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return Triple.of(true, null, Collections.emptyList());
+            return Triple.of(false, null, Collections.emptyList());
         }
 
         return Triple.of(true, null, null);
