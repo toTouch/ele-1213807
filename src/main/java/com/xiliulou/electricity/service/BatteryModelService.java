@@ -103,6 +103,8 @@ public interface BatteryModelService {
 
     String acquireBatteryShortType(String batteryType, Integer tenantId);
 
+    String acquireOriginalModelByShortType(String shortType, Integer tenantId);
+
     String analysisBatteryTypeByBatteryName(String batteryName);
 
     List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
