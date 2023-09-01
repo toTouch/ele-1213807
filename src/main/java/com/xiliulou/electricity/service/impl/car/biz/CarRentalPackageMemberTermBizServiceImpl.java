@@ -374,7 +374,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 newMemberTermEntity.setDueTime(dueTimeNow);
                 // 更改了限制总数
                 if (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && residueNew <= 0L) {
-                    newMemberTermEntity.setDueTimeTotal(carRentalPackageOrderService.dueTimeTotal(tenantId, uid));
+                    newMemberTermEntity.setDueTimeTotal(now + carRentalPackageOrderService.dueTimeTotal(tenantId, uid));
                 } else {
                     newMemberTermEntity.setDueTimeTotal(dueTimeTotalNew);
                 }
