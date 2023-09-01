@@ -54,7 +54,7 @@ public class JsonAdminCarDataController extends BaseController {
                                  @RequestParam(value = "uid", required = false) Long uid) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
         return carDataService.queryAllCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
@@ -93,7 +93,7 @@ public class JsonAdminCarDataController extends BaseController {
                                            @RequestParam(value = "uid", required = false) Long uid) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
         return carDataService.queryPendingRentalCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
@@ -132,7 +132,7 @@ public class JsonAdminCarDataController extends BaseController {
                                     @RequestParam(value = "uid", required = false) Long uid) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
         return carDataService.queryLeasedCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
@@ -171,7 +171,7 @@ public class JsonAdminCarDataController extends BaseController {
                                      @RequestParam(value = "uid", required = false) Long uid) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
         return carDataService.queryOverdueCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
