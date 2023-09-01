@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.alibaba.fastjson.JSONObject;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -45,7 +44,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     @Slave
     @Override
     public Long dueTimeTotal(Integer tenantId, Long uid) {
-
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(uid);
@@ -53,7 +51,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         qryModel.setUseState(UseStateEnum.UN_USED.getCode());
 
         List<CarRentalPackageOrderPo> packageOrderPoList = carRentalPackageOrderMapper.list(qryModel);
-        log.info("dueTimeTotal, packageOrderPoList is {}", JSONObject.toJSONString(packageOrderPoList));
         if (CollectionUtils.isEmpty(packageOrderPoList)) {
             return null;
         }
@@ -77,7 +74,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
             }
             dueTimeTotal = dueTimeTotal + currDueTimeTotal;
         }
-        log.info("dueTimeTotal, dueTimeTotal is {}", dueTimeTotal);
 
         return dueTimeTotal == 0L ? null : dueTimeTotal;
     }
