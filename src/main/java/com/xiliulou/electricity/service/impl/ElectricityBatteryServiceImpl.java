@@ -541,6 +541,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
 
             String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), tenantId);
+            electricityBatteryVO.setOriginalModel(electricityBatteryVO.getModel());
             if(StringUtils.isNotEmpty(batteryShortType)){
                 electricityBatteryVO.setModel(batteryShortType);
             }

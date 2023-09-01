@@ -36,6 +36,10 @@ public class ElectricityBatteryVO {
      */
     private String model;
     /**
+     * 3.0之后，model需要转为短型号显示，则使用originalModel来代替原始型号信息
+     */
+    private String originalModel;
+    /**
      * 电池电量
      */
     private Double power;
