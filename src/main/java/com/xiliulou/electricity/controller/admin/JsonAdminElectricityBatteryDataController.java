@@ -62,7 +62,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                      @RequestParam(value = "uid", required = false) Long uid) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectAllBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -94,7 +94,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                             @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectInCabinetBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -127,7 +127,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                                 @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectPendingRentalBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -159,7 +159,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                          @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectLeasedBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -191,7 +191,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                         @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectStrayBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -224,7 +224,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                           @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectOverdueBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -256,7 +256,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                           @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.selectOverdueCarBatteryDataCount(sn, franchiseeId, electricityCabinetId, uid);
     }
@@ -291,7 +291,7 @@ public class JsonAdminElectricityBatteryDataController  extends BaseController {
                                           @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
         return electricityBatteryDataService.queryStockBatteryPageDataCount(sn, franchiseeId, electricityCabinetId);
     }
