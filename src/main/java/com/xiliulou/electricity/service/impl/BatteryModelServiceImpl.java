@@ -499,6 +499,20 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     }
 
     @Override
+    public String acquireOriginalModelByShortType(String shortType, Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            log.warn("get battery short type warn for acquire original Model! batteryModels is empty, tenantId = {}", tenantId);
+            return StringUtils.EMPTY;
+        }
+
+        return batteryModels.stream().collect(
+                        Collectors.toMap(BatteryModel::getBatteryVShort, BatteryModel::getBatteryType, (item1, item2) -> item2))
+                .getOrDefault(shortType, StringUtils.EMPTY);
+
+    }
+
+    @Override
     public String analysisBatteryTypeByBatteryName(String batteryName) {
         String type = "";
         
