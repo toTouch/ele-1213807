@@ -2314,7 +2314,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 原本套餐，非退租且已过期
                 if (StringUtils.isNotBlank(memberTermEntity.getRentalPackageOrderNo())) {
                     // 过期使用中
-                    if (memberTermEntity.getDueTime() <= currentTimeMillis) {
+                    if (memberTermEntity.getDueTime() <= currentTimeMillis || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
                         // 懒加载
                         log.info("handBuyRentalPackageOrderSuccess, member expired and in use. ");
                         // 根据用户ID查询第一条未使用的支付成功的订单信息
