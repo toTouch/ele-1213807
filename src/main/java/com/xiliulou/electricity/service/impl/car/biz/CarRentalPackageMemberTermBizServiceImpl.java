@@ -324,9 +324,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
         if (RenalPackageConfineEnum.NUMBER.getCode().equals(rentalPackageConfine) && ObjectUtils.isNotEmpty(residueReq)) {
             residueNew = residueReq;
-            if(residueNew == 0L) {
-                dueTimeTotalNew = dueTimeTotal - (dueTime -  dueTimeNew);
-            }
         }
 
         // 待更新数据
