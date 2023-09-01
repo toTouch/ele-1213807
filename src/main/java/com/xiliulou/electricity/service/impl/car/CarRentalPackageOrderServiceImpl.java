@@ -34,17 +34,16 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
-     * 支付成功订单的总计剩余时间，退租使用<br />
+     * 支付成功订单且未使用的总计剩余时间，退租使用<br />
      * 此方法使用慎重
      *
      * @param tenantId 租户ID
      * @param uid      用户UID
-     * @return 支付成功订单的总计剩余时间
+     * @return 支付成功且未使用订单的总计剩余时间
      */
     @Slave
     @Override
     public Long dueTimeTotal(Integer tenantId, Long uid) {
-
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(uid);

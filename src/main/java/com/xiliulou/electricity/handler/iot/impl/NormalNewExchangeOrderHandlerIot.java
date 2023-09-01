@@ -390,7 +390,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //判断套餐是否限次
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if(Objects.isNull(batteryMemberCard)){
-            log.error("EXCHANGE ORDER ERROR! batteryMemberCard is null!uid={},orderId={}", userBatteryMemberCard.getUid(), exchangeOrderRsp.getOrderId());
             return;
         }
 

@@ -204,7 +204,7 @@
 
     <select id="selectEleBoxAttrByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, status ,power
+        id, status ,power ,sn
         from t_electricity_cabinet_box
         where
         electricity_cabinet_id = #{eid}
