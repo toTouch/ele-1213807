@@ -44,7 +44,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     @Slave
     @Override
     public Long dueTimeTotal(Integer tenantId, Long uid) {
-
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(uid);
