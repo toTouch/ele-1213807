@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -362,7 +363,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return Triple.of(false, "ELECTRICITY.0066", "用户权限不足");
+            return Triple.of(false, null, Collections.emptyList());
         }
 
         return Triple.of(true, null, null);
