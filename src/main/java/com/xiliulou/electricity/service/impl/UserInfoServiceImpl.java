@@ -1411,17 +1411,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //是否缴纳租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
-
-            //是否缴纳车电一体押金
-            if(Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())){
-                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
-            }else{
-                userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
-            }
         } else {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
 
+
+        //是否缴纳车电一体押金
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
+        } else {
+            userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
+        }
 
 
         //是否购买租电池套餐
