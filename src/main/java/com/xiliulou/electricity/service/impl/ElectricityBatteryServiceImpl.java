@@ -499,12 +499,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @Slave
     public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
+        Integer tenantId=TenantContextHolder.getTenantId();
+        //如果按照电池型号搜索，需要进行转换,将短型号转换为数据库存放的原类型。
+        if(StringUtils.isNotEmpty(electricityBatteryQuery.getModel())){
+            String originalModel = batteryModelService.acquireOriginalModelByShortType(electricityBatteryQuery.getModel(), tenantId);
+            if(StringUtils.isNotEmpty(originalModel)){
+                electricityBatteryQuery.setModel(originalModel);
+            }
+        }
+
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
         if (CollectionUtils.isEmpty(electricityBatteryList)) {
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
-
-        Integer tenantId=TenantContextHolder.getTenantId();
 
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
@@ -534,6 +541,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
 
             String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), tenantId);
+            electricityBatteryVO.setOriginalModel(electricityBatteryVO.getModel());
             if(StringUtils.isNotEmpty(batteryShortType)){
                 electricityBatteryVO.setModel(batteryShortType);
             }
