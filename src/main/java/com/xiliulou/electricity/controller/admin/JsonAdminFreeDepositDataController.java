@@ -57,6 +57,10 @@ public class JsonAdminFreeDepositDataController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
         return R.ok(this.freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId()));
     }
 
