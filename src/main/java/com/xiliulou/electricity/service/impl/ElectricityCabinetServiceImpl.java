@@ -869,11 +869,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
             //可换电数量
             long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).count();
+            //满电电池数量
+            long fullyElectricityBattery = cabinetBoxList.stream().filter(this::isFullBattery).count();
 
             e.setElectricityBatteryTotal((int) haveBatteryNumber);
             e.setNoElectricityBattery((int) emptyCellNumber);
             e.setFullyElectricityBattery((int) exchangeableNumber);
-            e.setExchangeBattery((int) exchangeableNumber);
+            e.setExchangeBattery((int) fullyElectricityBattery);
 
 
             //电柜不在线也返回，可离线换电
@@ -2348,12 +2350,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
         return Objects.nonNull(electricityCabinetBox.getPower())
-                && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
+                && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(),"UNKNOW");
     }
 
     @Override
     public boolean isFullBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.nonNull(electricityCabinetBox.getPower()) && electricityCabinetBox.getPower() == 100d && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWith(electricityCabinetBox.getSn(),"UNKNOW");
+        return Objects.nonNull(electricityCabinetBox.getPower()) && electricityCabinetBox.getPower() == 100d && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(),"UNKNOW");
     }
 
     public Long getTime(Long time) {
