@@ -2897,7 +2897,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 if(Objects.isNull(batteryMemberCard)){
-                    log.error("ELE ENABLE BATTERY MEMBERCARD ERROR! not found batteryMemberCard,uid={},mid={}", item.getUid(),userBatteryMemberCard.getMemberCardId());
                     return;
                 }
 
