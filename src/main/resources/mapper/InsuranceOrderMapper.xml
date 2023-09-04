@@ -24,6 +24,9 @@
             <if test="query.isUse != null">
                 and tio.is_use = #{query.isUse}
             </if>
+            <if test="query.insuranceType != null">
+                and tio.insurance_type = #{query.insuranceType}
+            </if>
             <if test="query.type != null and query.type == 0">
                 and tio.insurance_type = 0
             </if>
@@ -106,6 +109,9 @@
             </if>
             <if test="query.status != null">
                 and tio.status = #{query.status}
+            </if>
+            <if test="query.insuranceType != null">
+                and tio.insurance_type = #{query.insuranceType}
             </if>
             <if test="query.type != null and query.type == 0">
                 and tio.insurance_type = 0
