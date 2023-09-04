@@ -250,6 +250,7 @@ public class ElectricityCabinetServerServiceImpl
             electricityCabinetServer.setProductKey(electricityCabinet.getProductKey());
             electricityCabinetServer.setDeviceName(electricityCabinet.getDeviceName());
             electricityCabinetServer.setTenantId(electricityCabinet.getTenantId());
+            electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_NORMAL);
             electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
             this.update(electricityCabinetServer);
             return;
@@ -259,6 +260,7 @@ public class ElectricityCabinetServerServiceImpl
         if (Objects.nonNull(electricityCabinetServer)) {
             electricityCabinetServer.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetServer.setTenantId(electricityCabinet.getTenantId());
+            electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_NORMAL);
             electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
             this.update(electricityCabinetServer);
             return;
@@ -288,5 +290,14 @@ public class ElectricityCabinetServerServiceImpl
     @Override
     public Integer deleteByEid(Integer eid) {
         return this.electricityCabinetServerMapper.deleteByEid(eid);
+    }
+
+    @Override
+    public Integer logicalDeleteByEid(Integer id) {
+        ElectricityCabinetServer electricityCabinetServer = new ElectricityCabinetServer();
+        electricityCabinetServer.setId(id.longValue());
+        electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_DEL);
+        electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
+        return this.electricityCabinetServerMapper.update(electricityCabinetServer);
     }
 }

@@ -77,4 +77,6 @@ public interface ElectricityCabinetServerService {
     ElectricityCabinetServer selectByEid(Integer id);
 
     Integer deleteByEid(Integer id);
+
+    Integer logicalDeleteByEid(Integer id);
 }

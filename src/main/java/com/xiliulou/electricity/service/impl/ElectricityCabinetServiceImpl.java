@@ -530,6 +530,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //删除格挡
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
+
+            electricityCabinetServerService.logicalDeleteByEid(id);
             return null;
         });
         return R.ok();
