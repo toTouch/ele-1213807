@@ -218,6 +218,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
+    @Autowired
+    UserAuthMessageService userAuthMessageService;
+
     /**
      * 分页查询
      *
@@ -768,7 +771,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public R verifyAuth(Long id, Integer authStatus) {
+    @Transactional(rollbackFor = Exception.class)
+    public R verifyAuth(Long id, Integer authStatus, String msg) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -794,6 +798,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         update(userInfo);
         //修改资料项
         eleUserAuthService.updateByUid(oldUserInfo.getUid(), authStatus);
+
+        if (Objects.equals(UserInfo.AUTH_STATUS_REVIEW_REJECTED, authStatus)) {
+            UserAuthMessage userAuthMessage = new UserAuthMessage();
+            userAuthMessage.setUid(userInfo.getUid());
+            userAuthMessage.setAuthStatus(userInfo.getAuthStatus());
+            userAuthMessage.setMsg(msg);
+            userAuthMessage.setTenantId(userInfo.getTenantId());
+            userAuthMessage.setCreateTime(System.currentTimeMillis());
+            userAuthMessage.setUpdateTime(System.currentTimeMillis());
+            userAuthMessageService.insert(userAuthMessage);
+        }
+
         return R.ok();
     }
 
@@ -865,6 +881,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<UserAuthInfoVo> result = userInfos.stream().map(e -> {
             UserAuthInfoVo userAuthInfoVo = new UserAuthInfoVo();
             BeanUtils.copyProperties(e, userAuthInfoVo);
+
+            if (Objects.equals(e.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_REJECTED)) {
+                UserAuthMessage userAuthMessage = userAuthMessageService.selectLatestByUid(e.getUid());
+                userAuthInfoVo.setMsg(Objects.isNull(userAuthMessage) ? "" : userAuthMessage.getMsg());
+            }
 
             List<EleUserAuth> list = (List<EleUserAuth>) eleUserAuthService.selectCurrentEleAuthEntriesList(e.getUid()).getData();
             if (!DataUtil.collectionIsUsable(list)) {

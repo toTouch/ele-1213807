@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.vo.UserAuthMessageVO;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -70,8 +71,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
     @Autowired
     RocketMqService rocketMqService;
+
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+
+    @Autowired
+    UserAuthMessageService userAuthMessageService;
 
     /**
      * 新增数据
@@ -275,6 +280,27 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(userInfo.getAuthStatus());
+    }
+
+    @Override
+    public R selectUserAuthStatus(Long uid) {
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found userInfo! uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserAuthMessageVO userAuthMessageVO = new UserAuthMessageVO();
+        userAuthMessageVO.setUid(userInfo.getUid());
+        userAuthMessageVO.setAuthStatus(userInfo.getAuthStatus());
+
+        if(Objects.equals(userInfo.getAuthStatus(),UserInfo.AUTH_STATUS_REVIEW_REJECTED)){
+            UserAuthMessage userAuthMessage = userAuthMessageService.selectLatestByUid(uid);
+            userAuthMessageVO.setMsg(Objects.isNull(userAuthMessage)?"":userAuthMessage.getMsg());
+        }
+
+        return R.ok(userAuthMessageVO);
     }
 
     @Override
