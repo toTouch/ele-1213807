@@ -36,10 +36,33 @@ import java.util.stream.Collectors;
 public class JsonAdminCarRentalPackageDepositRefundController extends BasicController {
 
     @Resource
-    private CarRenalPackageDepositBizService carRenalPackageDepositResource;
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
 
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+
+    /**
+     * 运营商端创建退押，特殊退押(2.0过度数据)
+     * @param optModel 操作实体类
+     * @return true(成功)、false(失败)
+     */
+    @PostMapping("/createSpecial")
+    public R<Boolean> createSpecial(@RequestBody CarRentalPackageDepositRefundOptModel optModel) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        optModel.setTenantId(tenantId);
+
+        return R.ok(carRenalPackageDepositBizService.refundDepositCreateSpecial(optModel));
+    }
 
     /**
      * 创建退押
@@ -61,7 +84,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
 
         optModel.setTenantId(tenantId);
 
-        return R.ok(carRenalPackageDepositResource.refundDepositCreate(optModel));
+        return R.ok(carRenalPackageDepositBizService.refundDepositCreate(optModel));
     }
 
     /**
@@ -81,7 +104,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRenalPackageDepositResource.approveRefundDepositOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), null));
+        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), null));
     }
 
     /**
@@ -101,7 +124,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRenalPackageDepositResource.approveRefundDepositOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(), optReq.getAmount()));
+        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(), optReq.getAmount()));
     }
 
     /**

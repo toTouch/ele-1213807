@@ -114,6 +114,11 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
             if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 depositPayVO.setRefundFlag(false);
             }
+
+            // 判定特殊退款状态
+            if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) && refundPoMap.get(depositPayEntity.getOrderNo()).getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+                depositPayVO.setRefundSpecialFlag(true);
+            }
             return depositPayVO;
         }).collect(Collectors.toList());
 
