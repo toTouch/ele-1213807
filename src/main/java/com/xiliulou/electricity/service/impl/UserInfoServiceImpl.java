@@ -705,14 +705,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);
-        ownMemberCardInfoVo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber().longValue());
-        ownMemberCardInfoVo.setMaxUseCount(Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) ? 9999L : userBatteryMemberCard.getRemainingNumber().longValue());
+//        ownMemberCardInfoVo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber().longValue());
+//        ownMemberCardInfoVo.setMaxUseCount(userBatteryMemberCard.getRemainingNumber().longValue());
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
 //        ownMemberCardInfoVo.setCardId(userBatteryMemberCard.getMemberCardId().intValue());
         ownMemberCardInfoVo.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
         ownMemberCardInfoVo.setValidDays(validDays);
         ownMemberCardInfoVo.setDisableMemberCardTime(userBatteryMemberCard.getDisableMemberCardTime());
 
+        if (Objects.nonNull(userBatteryMemberCard.getRemainingNumber())) {
+            ownMemberCardInfoVo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber().longValue());
+            ownMemberCardInfoVo.setMaxUseCount(userBatteryMemberCard.getRemainingNumber().longValue());
+        } else {
+            ownMemberCardInfoVo.setRemainingNumber(0L);
+            ownMemberCardInfoVo.setMaxUseCount(0L);
+        }
 
         return R.ok(ownMemberCardInfoVo);
     }

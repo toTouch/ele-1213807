@@ -15,6 +15,13 @@ import java.math.BigDecimal;
 public interface CarRenalPackageDepositBizService {
 
     /**
+     * 运营商端创建退押，特殊退押(2.0过度数据)
+     * @param optModel 租户ID
+     * @return true(成功)、false(失败)
+     */
+    boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel);
+
+    /**
      * 免押退押处理逻辑<br />
      * 用于定时任务
      * @param offset 偏移量

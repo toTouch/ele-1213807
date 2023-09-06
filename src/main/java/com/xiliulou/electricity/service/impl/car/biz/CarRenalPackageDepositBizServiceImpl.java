@@ -126,6 +126,65 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     /**
+     * 运营商端创建退押，特殊退押(2.0过度数据)
+     *
+     * @param optModel 租户ID
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getTenantId(), optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = optModel.getTenantId();
+        Long uid = optModel.getUid();
+        String depositPayOrderNo = optModel.getDepositPayOrderNo();
+        BigDecimal realAmount = optModel.getRealAmount();
+
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+
+        if (Objects.isNull(userInfo)) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. not found user. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. user is disable. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        }
+
+        // 检测押金缴纳订单数据
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState()) || 0L != depositPayEntity.getCreateUid()) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_deposit_pay not found or status or createUserId is error. uid is {}, depositPayOrderNo is {}", uid, depositPayOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+
+        // 退押检测
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+
+        // 默认线下
+        Integer payType = PayTypeEnum.OFF_LINE.getCode();
+
+        // 生成退押申请单
+        CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo,
+                SystemDefinitionEnum.BACKGROUND, false, payType, realAmount);
+
+        saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
+
+        return true;
+    }
+
+    /**
      * 免押退押处理逻辑<br />
      * 用于定时任务
      *
@@ -135,8 +194,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     @Override
     public void freeDepositRefundHandler(Integer offset, Integer size) {
         // 初始化定义
-        offset = ObjectUtils.isEmpty(offset) ? 0: offset;
-        size = ObjectUtils.isEmpty(size) ? 500: size;
+        offset = ObjectUtils.isEmpty(offset) ? 0 : offset;
+        size = ObjectUtils.isEmpty(size) ? 500 : size;
 
         boolean lookFlag = true;
 
@@ -207,6 +266,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 免押退押处理逻辑，事务处理
+     *
      * @param depositRefundEntity
      */
     @Transactional(rollbackFor = Exception.class)
@@ -379,8 +439,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 免押成功查询，成功之后的事务操作
-     * @param depositPayEntity 押金缴纳订单数据
-     * @param freeDepositOrder 免押记录数据
+     *
+     * @param depositPayEntity  押金缴纳订单数据
+     * @param freeDepositOrder  免押记录数据
      * @param queryOrderRspData 请求三方查询数据
      */
     @Transactional(rollbackFor = Exception.class)
@@ -439,8 +500,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * 创建免押订单，生成二维码<br />
      * 创建押金缴纳订单、生成免押记录
      *
-     * @param tenantId        租户ID
-     * @param uid             C端用户ID
+     * @param tenantId          租户ID
+     * @param uid               C端用户ID
      * @param freeDepositOptReq 免押数据申请
      */
     @Override
@@ -564,9 +625,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 免押申请数据落库事务处理
+     *
      * @param carRentalPackageDepositPay 车辆押金缴纳订单
-     * @param freeDepositOrder 免押记录
-     * @param memberTermEntity 新增的会员期限信息
+     * @param freeDepositOrder           免押记录
+     * @param memberTermEntity           新增的会员期限信息
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveFreeDepositTx(CarRentalPackageDepositPayPo carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPo memberTermEntity) {
@@ -585,11 +647,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 构建租车套餐会员期限信息
-     * @param tenantId 租户ID
-     * @param uid 用户ID
-     * @param packageEntity 租车套餐信息
+     *
+     * @param tenantId          租户ID
+     * @param uid               用户ID
+     * @param packageEntity     租车套餐信息
      * @param depositPayOrderNo 押金缴纳订单编码
-     * @param memberTermEntity DB层的会员期限数据
+     * @param memberTermEntity  DB层的会员期限数据
      * @return 将要新增或修改的租车会员期限信息
      */
     private CarRentalPackageMemberTermPo buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePo packageEntity, String depositPayOrderNo, CarRentalPackageMemberTermPo memberTermEntity) {
@@ -616,10 +679,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 生成免押记录订单
-     * @param tenantId 租户ID
-     * @param uid 用户ID
+     *
+     * @param tenantId                         租户ID
+     * @param uid                              用户ID
      * @param carRentalPackageDepositPayInsert 租车套餐押金订单
-     * @param freeDepositOptReq 免押申请数据
+     * @param freeDepositOptReq                免押申请数据
      * @return 免押记录订单
      */
     private FreeDepositOrder buildFreeDepositOrderEntity(Integer tenantId, Long uid, CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert, FreeDepositOptReq freeDepositOptReq) {
@@ -646,8 +710,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 生成押金缴纳订单
-     * @param tenantId 租户ID
-     * @param uid 用户ID
+     *
+     * @param tenantId         租户ID
+     * @param uid              用户ID
      * @param carRentalPackage 租车套餐信息
      * @return 租车套餐押金订单
      */
@@ -807,7 +872,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("CarRenalPackageDepositBizService.refundDepositCreate failed. user is disable. uid is {}", uid);
-            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
 
         // 查询会员期限信息
@@ -885,7 +950,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     }
 
                     PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(depositPayEntity.getTenantId());
-                    if(ObjectUtils.isEmpty(pxzConfig)) {
+                    if (ObjectUtils.isEmpty(pxzConfig)) {
                         log.error("refundDepositCreate failed. not found t_pxz_config. tenantId is {}", depositPayEntity.getTenantId());
                         throw new BizException("300000", "数据有误");
                     }
@@ -981,13 +1046,14 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 退押审批，TX事务处理
+     *
      * @param refundDepositOrderNo 退押申请订单号
      * @param approveFlag          审批状态
      * @param apploveDesc          审批意见
      * @param apploveUid           审批人
      * @param refundAmount         退款金额
-     * @param depositRefundEntity         退押申请单信息
-     * @param depositPayEntity         押金缴纳信息
+     * @param depositRefundEntity  退押申请单信息
+     * @param depositPayEntity     押金缴纳信息
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageDepositRefundPo depositRefundEntity,
@@ -1088,7 +1154,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     }
 
                     PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(depositPayEntity.getTenantId());
-                    if(ObjectUtils.isEmpty(pxzConfig)) {
+                    if (ObjectUtils.isEmpty(pxzConfig)) {
                         log.error("saveApproveRefundDepositOrderTx failed. not found t_pxz_config. tenantId is {}", depositPayEntity.getTenantId());
                         throw new BizException("300000", "数据有误");
                     }
@@ -1166,7 +1232,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     }
 
                     PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(depositPayEntity.getTenantId());
-                    if(ObjectUtils.isEmpty(pxzConfig)) {
+                    if (ObjectUtils.isEmpty(pxzConfig)) {
                         log.error("saveApproveRefundDepositOrderTx failed. not found t_pxz_config. tenantId is {}", depositPayEntity.getTenantId());
                         throw new BizException("300000", "数据有误");
                     }
@@ -1219,6 +1285,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 调用微信支付
+     *
      * @param refundOrder
      * @return
      * @throws WechatPayException
@@ -1248,8 +1315,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     /**
      * C端退押申请
      *
-     * @param tenantId 租户ID
-     * @param uid      用户ID
+     * @param tenantId          租户ID
+     * @param uid               用户ID
      * @param depositPayOrderNo 押金缴纳支付订单编码
      * @return
      */
@@ -1268,7 +1335,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("CarRenalPackageDepositBizService.refundDeposit failed. user is disable. uid is {}", uid);
-            throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
 
         // 查询会员期限信息
@@ -1318,10 +1385,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 退押申请事务处理
+     *
      * @param refundDepositInsertEntity 退押申请单数据
-     * @param memberTermEntity 会员期限实体数据
-     * @param optId 操作人ID
-     * @param delFlag 删除标识
+     * @param memberTermEntity          会员期限实体数据
+     * @param optId                     操作人ID
+     * @param delFlag                   删除标识
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveRefundDepositInfoTx(CarRentalPackageDepositRefundPo refundDepositInsertEntity, CarRentalPackageMemberTermPo memberTermEntity, Long optId, boolean delFlag) {
@@ -1356,12 +1424,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 构建退押申请单数据
-     * @param memberTermEntity 会员期限信息
+     *
+     * @param memberTermEntity  会员期限信息
      * @param depositPayOrderNo 押金缴纳订单编码
-     * @param systemDefinition 操作系统
-     * @param depositAuditFlag 退押审批标识
-     * @param depositAuditFlag 支付方式
-     * @param depositAuditFlag 实际退款金额(可为空，后端操作不能为空)
+     * @param systemDefinition  操作系统
+     * @param depositAuditFlag  退押审批标识
+     * @param depositAuditFlag  支付方式
+     * @param depositAuditFlag  实际退款金额(可为空，后端操作不能为空)
      * @return
      */
     private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo, SystemDefinitionEnum systemDefinition,
@@ -1420,8 +1489,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     /**
      * 退押检测
+     *
      * @param tenantId 租户ID
-     * @param uid 用户ID
+     * @param uid      用户ID
      */
     private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType, String depositPayOrderNo) {
 

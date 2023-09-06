@@ -99,7 +99,7 @@ public class UserBatteryMemberCard {
     public static final Integer DEL_NORMAL = 0;
 
     public static final Integer DEL_DEL = 1;
-    
+
     /**
      * 0--正常  1--停卡 2--停卡审核中 3-- 停卡被拒绝
      */
@@ -116,7 +116,7 @@ public class UserBatteryMemberCard {
     public static final Integer MEMBER_CARD_OWE = 1;
 
     public static final Long SEND_REMAINING_NUMBER = -1L;
-    
+
     public static final Long SEND_MEMBER_CARD_ID_ZERO = 0L;
 
 }
