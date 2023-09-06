@@ -769,7 +769,9 @@ public class JsonAdminUserInfoController extends BaseController {
                           @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                           @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                           @RequestParam(value = "sortType", required = false) Integer sortType,
-                          @RequestParam(value = "sortBy", required = false) String sortBy) {
+                          @RequestParam(value = "sortBy", required = false) String sortBy,
+                          @RequestParam(value = "name", required = false) String name,
+                          @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -811,6 +813,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .storeIds(storeIds)
                 .sortBy(sortBy)
                 .sortType(sortType)
+                .name(name)
+                .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
@@ -824,7 +828,9 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
             @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
+            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone) {
 
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -857,6 +863,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryRentStatus(batteryRentStatus)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
+                .name(name)
+                .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
