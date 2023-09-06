@@ -69,4 +69,9 @@ public class MaintenanceUserNotifyConfig {
      */
     public static Integer TYPE_HIGH_TEMPERATURE_ALARM = 32;
 
+    /**
+     * 退租申请
+     */
+    public static Integer TYPE_RENT_REFUND = 64;
+
 }

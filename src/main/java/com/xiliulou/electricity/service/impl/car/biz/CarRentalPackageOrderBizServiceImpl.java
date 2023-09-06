@@ -51,6 +51,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -189,6 +190,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Resource
     private CarRentalPackageService carRentalPackageService;
 
+    @Autowired
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
     /**
      * 根据用户UID查询总金额<br />
      * 订单支付成功总金额 - 退租订单成功总金额
@@ -1429,6 +1432,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // TX 事务管理
         saveRentRefundOrderInfoTx(rentRefundOrderEntity, memberTermUpdateEntity);
+
+        //发送审核通知
+        batteryMembercardRefundOrderService.sendAuditNotify(userInfo);
 
         return true;
     }
