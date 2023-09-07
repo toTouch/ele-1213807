@@ -39,4 +39,9 @@ public class UserMemberCarBatteryPackageVo implements Serializable {
      * @see MemberTermStatusEnum
      */
     private Integer status;
+
+    /**
+     * 租期单位 0：分钟，1：天
+     */
+    private Integer rentUnit;
 }
