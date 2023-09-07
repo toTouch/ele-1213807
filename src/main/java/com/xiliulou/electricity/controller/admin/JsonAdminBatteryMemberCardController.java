@@ -283,9 +283,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                                        @RequestParam("uid") long uid,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                        @RequestParam(value = "name", required = false) String name) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
 
         if (offset != 0) {
             return R.ok(Collections.emptyList());

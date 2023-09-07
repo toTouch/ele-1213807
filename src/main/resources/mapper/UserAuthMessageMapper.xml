@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserAuthMessageMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserAuthMessage" id="UserAuthMessageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="authStatus" column="auth_status" jdbcType="INTEGER"/>
+        <result property="msg" column="msg" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserAuthMessageMap">
+        select
+          id, uid, auth_status, msg, tenant_id, create_time, update_time
+        from t_user_auth_message
+        where id = #{id}
+    </select>
+
+    <select id="selectLatestByUid" resultMap="UserAuthMessageMap">
+        select  auth_status, msg  from t_user_auth_message
+        where uid = #{uid} order by id desc limit 1
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_user_auth_message
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="msg != null and msg != ''">
+                msg = #{msg},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_user_auth_message where id = #{id}
+    </delete>
+
+</mapper>

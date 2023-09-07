@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -155,9 +156,10 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
     @PostMapping("/admin/battery/membercard/refund/audit")
     @Log(title = "电池租金退款审核")
     public R batteryMembercardRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
+                                          @RequestParam("refundAmount") BigDecimal refundAmount,
                                           @RequestParam("status") Integer status,
                                           @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, status, request));
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, refundAmount, status, request));
     }
 
     /**
@@ -170,8 +172,8 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
 
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
-    public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, HttpServletRequest request) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, request));
+    public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, @RequestParam("refundAmount") BigDecimal refundAmount, HttpServletRequest request) {
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, refundAmount, request));
     }
 
 

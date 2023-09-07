@@ -52,6 +52,11 @@ public class MqNotifyCommon<T> {
     public static final Integer TYPE_HIGH_TEMPERATURE_ALARM=12;
 
     /**
+     * 退租审核
+     */
+    public static final Integer TYPE_RENT_REFUND_AUDIT=13;
+
+    /**
      * 实名认证审核通知
      */
     public static final Integer TYPE_AUTHENTICATION_AUDIT=9;
