@@ -4421,6 +4421,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
 
+            electricityCabinet.setAddress(item.getAddress());
+            electricityCabinet.setLatitude(item.getLatitude());
+            electricityCabinet.setLongitude(item.getLongitude());
+            electricityCabinet.setUpdateTime(System.currentTimeMillis());
             updateList.add(electricityCabinet);
         });
 
