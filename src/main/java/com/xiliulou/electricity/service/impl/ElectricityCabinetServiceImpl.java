@@ -25,6 +25,7 @@ import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -4394,6 +4395,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             });
         }
+
+        return Triple.of(true, null, null);
+    }
+
+    @Override
+    public void batchUpdate(List<ElectricityCabinet> list) {
+        list.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(item), i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
+        }));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> batchUpdateAddress(List<ElectricityCabinet> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Triple.of(false, null, "参数不合法");
+        }
+
+        List<ElectricityCabinet> updateList = new ArrayList<>(list.size());
+
+        list.forEach(item -> {
+            ElectricityCabinet electricityCabinet = this.queryByIdFromCache(item.getId());
+            if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
+
+            updateList.add(electricityCabinet);
+        });
+
+        this.batchUpdate(updateList);
 
         return Triple.of(true, null, null);
     }

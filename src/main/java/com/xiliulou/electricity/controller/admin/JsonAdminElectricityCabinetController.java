@@ -959,6 +959,15 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     }
 
     /**
+     * 批量修改柜机地址
+     */
+    @PostMapping(value = "/admin/electricityCabinet/batchUpdate")
+    public R batchUpdateAddress(@RequestBody @Validated List<ElectricityCabinet> list) {
+        return returnTripleResult(electricityCabinetService.batchUpdateAddress(list));
+    }
+
+
+    /**
      * 迁移柜机
      * 将工厂账号下柜机迁移到扫码租户下，并物理删除工厂租户下的柜机信息
      */
