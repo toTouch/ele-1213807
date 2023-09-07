@@ -12,6 +12,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -50,6 +51,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
+    private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     /**
      * 启用冻结套餐订单申请
@@ -294,6 +298,13 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
                 carRentalPackageOrderVo.setRentRebate(YesNoEnum.YES.getCode());
             } else {
                 carRentalPackageOrderVo.setRentRebate(YesNoEnum.NO.getCode());
+            }
+
+            //查询退款的订单信息,获取最新一条退款订单的状态信息, 以及退款拒绝的原因。
+            CarRentalPackageOrderRentRefundPo rentRefundPo = carRentalPackageOrderRentRefundService.selectLatestByPurchaseOrderNo(carRentalPackageOrder.getOrderNo());
+            if(Objects.nonNull(rentRefundPo)){
+                carRentalPackageOrderVo.setRentRefundStatus(rentRefundPo.getRefundState());
+                carRentalPackageOrderVo.setRejectReason(rentRefundPo.getRemark());
             }
 
             carRentalPackageVOList.add(carRentalPackageOrderVo);

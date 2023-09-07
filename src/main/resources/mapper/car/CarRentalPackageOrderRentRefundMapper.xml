@@ -223,4 +223,13 @@
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 
+    <!-- 根据购买订单号，查询最新的一条退款订单信息 -->
+    <select id="selectLatestByPurchaseOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `order_no` = #{purchaseOrderNo}
+        </where>
+        ORDER BY id DESC limit 1
+    </select>
+
 </mapper>

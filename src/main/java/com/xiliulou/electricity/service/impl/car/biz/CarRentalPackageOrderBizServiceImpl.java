@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
@@ -33,6 +34,7 @@ import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
@@ -51,6 +53,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -1693,6 +1696,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarAttr carAttr = null;
         Integer carRentalState = null;
         Integer lockType = null;
+        String rejectReasonForReturnVehicle = null;
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             // 5. 查询车辆相关信息
             carInfo = carService.queryByCarId(tenantId, Long.valueOf(electricityCar.getId()));
@@ -1702,6 +1706,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalOrderPo carRentalOrderPo = carRentalOrderService.selectLastByUidAndSnAndType(tenantId, uid, RentalTypeEnum.RETURN.getCode(), electricityCar.getSn());
             if (ObjectUtils.isNotEmpty(carRentalOrderPo)) {
                 carRentalState = carRentalOrderPo.getRentalState();
+
+                //车辆归还时被拒绝，获取拒绝的原因
+                if(CarRentalStateEnum.AUDIT_REJECT.getCode().equals(carRentalState)){
+                    rejectReasonForReturnVehicle = carRentalOrderPo.getRemark();
+                }
             }
             //车辆锁状态
             if (StringUtils.isNotBlank(electricityCar.getSn())) {
@@ -1734,6 +1743,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount, carModel,
                 carAttr, carRentalState, lockType);
+
+        // 9. 查询冻结订单信息
+        CarRentalPackageOrderFreezePo carRentalPackageOrderFreezePo = carRentalPackageOrderFreezeService.selectLatestFreezeOrder(rentalPackageOrderNo);
+        if(Objects.nonNull(carRentalPackageOrderFreezePo)
+                && RentalPackageOrderFreezeStatusEnum.AUDIT_REJECT.getCode().equals(carRentalPackageOrderFreezePo.getStatus())){
+            rentalPackageVO.setRejectReasonForFreeze(carRentalPackageOrderFreezePo.getRemark());
+        }
+
+        //设置还车拒绝原因
+        rentalPackageVO.setRejectReasonForReturnVehicle(rejectReasonForReturnVehicle);
 
         return R.ok(rentalPackageVO);
     }

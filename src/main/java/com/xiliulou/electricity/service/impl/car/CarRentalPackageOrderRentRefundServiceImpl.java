@@ -176,4 +176,14 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
 
         return entity.getId();
     }
+
+    /**
+     * 根据购买订单号，查询退租订单信息
+     * @param rentalPackageOrderNo 购买订单号
+     * @return
+     */
+    @Override
+    public CarRentalPackageOrderRentRefundPo selectLatestByPurchaseOrderNo(String rentalPackageOrderNo) {
+        return carRentalPackageOrderRentRefundMapper.selectLatestByPurchaseOrderNo(rentalPackageOrderNo);
+    }
 }

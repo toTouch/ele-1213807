@@ -81,6 +81,11 @@ public class UserBatteryMemberCardInfoVO {
 
     private Long storeId;
 
+    /**
+     * 冻结申请后，若被拒绝，显示的拒绝原因
+     */
+    private String rejectReason;
+
     public static final Integer NO = 0;
     public static final Integer YES = 1;
 

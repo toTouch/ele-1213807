@@ -75,4 +75,11 @@ public interface CarRentalPackageOrderRentRefundMapper {
      */
     int insert(CarRentalPackageOrderRentRefundPo entity);
 
+    /**
+     * 根据购买订单号，查询最新的一条退款订单信息
+     * @param purchaseOrderNo 购买订单号
+     * @return
+     */
+    CarRentalPackageOrderRentRefundPo selectLatestByPurchaseOrderNo(@Param("purchaseOrderNo") String purchaseOrderNo);
+
 }

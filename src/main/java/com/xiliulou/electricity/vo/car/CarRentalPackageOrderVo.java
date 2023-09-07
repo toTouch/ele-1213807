@@ -214,4 +214,19 @@ public class CarRentalPackageOrderVo implements Serializable {
      */
     private BigDecimal deposit;
 
+    /**
+     * 退租状态
+     */
+    private Integer rentRefundStatus;
+
+    /**
+     * 套餐冻结状态
+     */
+    private Integer freezeStatus;
+
+    /**
+     * 退租拒绝原因
+     */
+    private String rejectReason;
+
 }

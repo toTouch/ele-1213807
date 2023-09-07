@@ -874,6 +874,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setIsRefund(batteryMemberCard.getIsRefund());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
+            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
+            if(Objects.nonNull(batteryMembercardRefundOrder)){
+                vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
+                vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
+            }
+
             return vo;
         }).collect(Collectors.toList());
 
@@ -4244,6 +4250,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户电池型号
         userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
+
+        //查询当前用户是否存在最新的冻结订单信息
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+        if(Objects.nonNull(eleDisableMemberCardRecord)
+                && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())){
+            userBatteryMemberCardInfoVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
+        }
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
     }

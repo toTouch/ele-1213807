@@ -2,6 +2,41 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EleRefundOrderMapper">
 
+    <resultMap type="com.xiliulou.electricity.entity.EleRefundOrder" id="eleRefundOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="refundOrderNo" column="refund_order_no" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="payAmount" column="pay_amount" jdbcType="VARCHAR"/>
+        <result property="refundAmount" column="refund_amount" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="errMsg" column="err_msg" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="memberCardOweNumber" column="member_card_owe_number" jdbcType="INTEGER"/>
+        <result property="refundOrderType" column="refund_order_type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectEleRefundOrder">
+        select id,
+               refund_order_no,
+               order_id,
+               pay_amount,
+               refund_amount,
+               status,
+               err_msg,
+               tenant_id,
+               member_card_owe_number,
+               refund_order_type,
+               franchisee_id,
+               store_id,
+               create_time,
+               update_time
+        from t_ele_refund_order
+    </sql>
+
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
@@ -277,4 +312,11 @@
         left join t_car_deposit_order cdo on ero.order_id=cdo.order_id
         WHERE cdo.pay_type=2 and ero.status=3 and ero.refund_order_type=1 limit #{offset},#{size}
     </select>
+
+    <select id="selectLatestRefundDepositOrder" resultMap="eleRefundOrderMap">
+        <include refid="selectEleRefundOrder"/>
+        where order_id = #{paymentOrderNo}
+        ORDER BY id DESC limit 1
+    </select>
+
 </mapper>

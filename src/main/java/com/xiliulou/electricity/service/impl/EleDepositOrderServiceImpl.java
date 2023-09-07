@@ -718,6 +718,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
 
+                //是否退押
+                EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(userBatteryDeposit.getOrderId());
+                if(Objects.nonNull(eleRefundOrder)
+                        && EleRefundOrder.STATUS_REFUSE_REFUND.equals(eleRefundOrder.getStatus())){
+                    map.put("rejectReason", eleRefundOrder.getErrMsg());
+                }
+
                 map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
 
                 map.put("franchiseeName", franchisee.getName());
