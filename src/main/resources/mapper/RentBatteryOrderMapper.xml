@@ -138,6 +138,7 @@
                 case when trbo.type = 1 then trbo.cell_no else null end as old_cell_no,
                 case when trbo.type = 2 then trbo.electricity_battery_sn else null end as new_electricity_battery_sn,
                 case when trbo.type = 2 then trbo.cell_no else null end as new_cell_no,
+                trbo.electricity_cabinet_id,
                 trbo.create_time
             from t_rent_battery_order trbo
             left join t_user_info tui on tui.uid = trbo.uid
@@ -149,7 +150,7 @@
                 teco.old_cell_no ,
                 teco.new_electricity_battery_sn,
                 teco.new_cell_no,
-                electricity_cabinet_id,
+                teco.electricity_cabinet_id,
                 teco.create_time
             from t_electricity_cabinet_order teco
             left join t_user_info tui on tui.uid = teco.uid
