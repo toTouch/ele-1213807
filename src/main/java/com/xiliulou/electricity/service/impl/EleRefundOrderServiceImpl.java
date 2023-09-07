@@ -373,6 +373,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
+        }
+
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.error("REFUND ORDER ERROR!userBatteryDeposit is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
@@ -461,6 +465,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("FREE REFUND ORDER ERROR!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
         }
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
@@ -1682,6 +1690,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
