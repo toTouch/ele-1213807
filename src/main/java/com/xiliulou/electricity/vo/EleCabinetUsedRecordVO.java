@@ -65,9 +65,4 @@ public class EleCabinetUsedRecordVO {
      */
     private Long createTime;
 
-    /**
-     * 电柜ID
-     */
-    private Long eid;
-
 }

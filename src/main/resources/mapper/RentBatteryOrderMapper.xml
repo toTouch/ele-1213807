@@ -118,7 +118,6 @@
         <result property="returnCellNo" column="old_cell_no" jdbcType="INTEGER" />
         <result property="leaseBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR" />
         <result property="leaseCellNo" column="new_cell_no" jdbcType="INTEGER" />
-        <result property="eid" column= "electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
 

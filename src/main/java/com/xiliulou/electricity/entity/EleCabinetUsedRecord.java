@@ -42,6 +42,4 @@ public class EleCabinetUsedRecord {
 
     private Long createTime;
 
-    private Long eid;
-
 }
