@@ -256,7 +256,7 @@
     <select id="selectLatestFreezeOrder" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `rentalPackageOrderNo` = #{purchaseOrderNo}
+            `rental_package_order_no` = #{purchaseOrderNo}
         </where>
         ORDER BY id DESC limit 1
     </select>
