@@ -172,6 +172,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 退押检测
         checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
 
+        // 否则提前申请
+        CarRentalPackageDepositRefundPo carRentalPackageDepositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isNotEmpty(carRentalPackageDepositRefundPo) && RefundStateEnum.PENDING_APPROVAL.getCode().equals(carRentalPackageDepositRefundPo.getRefundState())) {
+            carRentalPackageDepositRefundService.delById(carRentalPackageDepositRefundPo.getId());
+        }
+
+
         // 默认线下
         Integer payType = PayTypeEnum.OFF_LINE.getCode();
 

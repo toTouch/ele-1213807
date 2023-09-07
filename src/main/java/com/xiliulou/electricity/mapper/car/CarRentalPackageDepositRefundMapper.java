@@ -16,6 +16,13 @@ import java.util.List;
 public interface CarRentalPackageDepositRefundMapper {
 
     /**
+     * 根据ID逻辑删除
+     * @param id
+     * @return
+     */
+    int delById(Long id);
+
+    /**
      * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
      * <pre>
      *     1-待审核
