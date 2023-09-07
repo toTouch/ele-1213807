@@ -1523,6 +1523,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         for(EleCabinetUsedRecord eleCabinetUsedRecord : eleCabinetUsedRecords){
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();
             BeanUtils.copyProperties(eleCabinetUsedRecord, eleCabinetUsedRecordVO);
+
+            UserInfo userInfo = userInfoService.queryByUidFromDb(eleCabinetUsedRecord.getUid());
+            if(Objects.nonNull(userInfo)){
+                eleCabinetUsedRecordVO.setUserName(userInfo.getName());
+                eleCabinetUsedRecordVO.setPhone(userInfo.getPhone());
+            }
             cabinetUsedRecordVOList.add(eleCabinetUsedRecordVO);
         }
 

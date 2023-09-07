@@ -19,6 +19,8 @@ public class EleCabinetUsedRecord {
 
     private Long id;
 
+    private Long uid;
+
     private String userName;
 
     private String phone;
@@ -39,5 +41,7 @@ public class EleCabinetUsedRecord {
     private Integer leaseCellNo;
 
     private Long createTime;
+
+    private Long eid;
 
 }

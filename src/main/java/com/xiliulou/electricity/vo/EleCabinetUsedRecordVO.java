@@ -16,6 +16,11 @@ public class EleCabinetUsedRecordVO {
     private Long id;
 
     /**
+     * 用户UID
+     */
+    private Long uid;
+
+    /**
      * 用户名
      */
     private String userName;
@@ -59,5 +64,10 @@ public class EleCabinetUsedRecordVO {
      * 创建时间
      */
     private Long createTime;
+
+    /**
+     * 电柜ID
+     */
+    private Long eid;
 
 }

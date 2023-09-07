@@ -296,7 +296,7 @@ public class JsonAdminRentBatteryOrderController {
     public R usedRecords(@RequestParam("size") Long size,
                          @RequestParam("offset") Long offset,
                          @RequestParam(value = "id", required = true) Long id,
-                         @RequestParam(value = "userName", required = false) String userName,
+                         @RequestParam(value = "uid", required = false) Long uid,
                          @RequestParam(value = "beginTime", required = false) Long beginTime,
                          @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -311,7 +311,7 @@ public class JsonAdminRentBatteryOrderController {
                 .offset(offset)
                 .size(size)
                 .id(id)
-                .userName(userName)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime).build();
         return R.ok(rentBatteryOrderService.findEleCabinetUsedRecords(eleCabinetUsedRecordQuery));
@@ -326,12 +326,12 @@ public class JsonAdminRentBatteryOrderController {
      */
     @GetMapping("/admin/rentBatteryOrder/usedRecordsTotalCount")
     public R usedRecordsTotalCount(@RequestParam(value = "id", required = true) Long id,
-                                   @RequestParam(value = "userName", required = false) String userName,
+                                   @RequestParam(value = "uid", required = false) Long uid,
                                    @RequestParam(value = "beginTime", required = false) Long beginTime,
                                    @RequestParam(value = "endTime", required = false) Long endTime) {
         EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
                 .id(id)
-                .userName(userName)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime).build();
         return R.ok(rentBatteryOrderService.findUsedRecordsTotalCount(eleCabinetUsedRecordQuery));
