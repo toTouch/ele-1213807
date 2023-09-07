@@ -287,7 +287,7 @@ public class JsonAdminRentBatteryOrderController {
      * 电柜使用记录，（租，换，退）电池订单列表信息查询
      * @param size
      * @param offset
-     * @param userName
+     * @param uid
      * @param beginTime
      * @param endTime
      * @return
@@ -319,7 +319,7 @@ public class JsonAdminRentBatteryOrderController {
 
     /**
      * 电柜使用记录，（租，换，退）电池订单列表总数
-     * @param userName
+     * @param uid
      * @param beginTime
      * @param endTime
      * @return

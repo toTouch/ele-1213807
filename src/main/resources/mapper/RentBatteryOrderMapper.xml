@@ -156,7 +156,7 @@
         <where>
 
             <if test="query.uid != null">
-                and temp.uid = #{uid}
+                and temp.uid = #{query.uid}
             </if>
 
             <if test="query.beginTime != null">
@@ -195,7 +195,7 @@
             where electricity_cabinet_id = #{query.id}) temp
         <where>
             <if test="query.uid != null">
-                and temp.uid = #{uid}
+                and temp.uid = #{query.uid}
             </if>
             <if test="query.beginTime != null">
                 and temp.create_time &gt;= #{query.beginTime}
