@@ -121,7 +121,8 @@
     </resultMap>
 
     <select id="selectEleCabinetUsedRecords" resultType="com.xiliulou.electricity.query.EleCabinetUsedRecordQuery" resultMap="EleCabinetUsedRecordMap">
-        select temp.name,
+        select temp.uid,
+               temp.name,
                temp.phone,
                temp.type,
                temp.order_id,
@@ -132,18 +133,18 @@
                temp.electricity_cabinet_id,
                temp.create_time
         from
-            (select name, phone, type, order_id,
-                case when type = 2 then electricity_battery_sn else null end as old_electricity_battery_sn,
-                case when type = 2 then cell_no else null end as old_cell_no,
-                case when type = 1 then electricity_battery_sn else null end as new_electricity_battery_sn,
-                case when type = 1 then cell_no else null end as new_cell_no,
-                electricity_cabinet_id,
-                create_time
-            from t_rent_battery_order
+            ( select  tui.uid, tui.name, tui.phone, trbo.type, trbo.order_id,
+                case when trbo.type = 1 then trbo.electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when trbo.type = 1 then trbo.cell_no else null end as old_cell_no,
+                case when trbo.type = 2 then trbo.electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when trbo.type = 2 then trbo.cell_no else null end as new_cell_no,
+                trbo.create_time
+            from t_rent_battery_order trbo
+            left join t_user_info tui on tui.uid = trbo.uid
             where electricity_cabinet_id = #{query.id}
             and type in (1,2)
             union all
-            select tu.name, tu.phone, 9 type, teco.order_id,
+            select tui.uid, tui.name, tui.phone, 9 type, teco.order_id,
                 teco.old_electricity_battery_sn ,
                 teco.old_cell_no ,
                 teco.new_electricity_battery_sn,
@@ -151,7 +152,7 @@
                 electricity_cabinet_id,
                 teco.create_time
             from t_electricity_cabinet_order teco
-            left join t_user tu on tu.uid = teco.uid
+            left join t_user_info tui on tui.uid = teco.uid
             where electricity_cabinet_id = #{query.id}) temp
         <where>
 
