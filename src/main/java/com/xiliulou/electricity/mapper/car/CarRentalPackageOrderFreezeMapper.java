@@ -120,7 +120,7 @@ public interface CarRentalPackageOrderFreezeMapper {
 
     /**
      * 查询最新的冻结订单信息
-     * @param orderNo
+     * @param purchaseOrderNo
      * @return
      */
     CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
