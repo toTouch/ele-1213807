@@ -124,6 +124,11 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
     // ++++++++++ 辅助业务数据 ++++++++++
 
     /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
      * 用户真实姓名
      */
     private String userRelName;

@@ -196,17 +196,13 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
     }
 
     @GetMapping("/queryRentalPackageData")
-    public R<RentalPackageRefundVO> queryRentalPackageData(@RequestParam(value = "packageOrderNo", required = true) String packageOrderNo,
-                                                           @RequestParam(value = "uid", required = true) Long uid) {
-        return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo, uid));
+    public R<RentalPackageRefundVO> queryRentalPackageData(@RequestParam(value = "packageOrderNo", required = true) String packageOrderNo) {
+        return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo));
     }
 
     @PostMapping("/confirmation")
     public R<Boolean> confirmation(@RequestBody CarRentalPackageRefundReq carRentalPackageRefundReq) {
-
-
-        return null;
+        return R.ok(carRentalPackageOrderBizService.refundConfirmation(carRentalPackageRefundReq));
     }
-
 
 }

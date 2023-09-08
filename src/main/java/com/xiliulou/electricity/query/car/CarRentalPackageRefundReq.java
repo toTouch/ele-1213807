@@ -17,4 +17,6 @@ public class CarRentalPackageRefundReq {
 
     private BigDecimal estimatedRefundAmount;
 
+    private Long uid;
+
 }

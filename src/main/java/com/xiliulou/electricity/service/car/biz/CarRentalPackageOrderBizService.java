@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.vo.car.CarRentRefundVo;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageRefundVO;
@@ -43,7 +44,14 @@ public interface CarRentalPackageOrderBizService {
      * @param orderNo
      * @return
      */
-    RentalPackageRefundVO queryRentalPackageRefundData(String orderNo, Long uid);
+    RentalPackageRefundVO queryRentalPackageRefundData(String orderNo);
+
+    /**
+     * 后台租车退款确认业务
+     * @param carRentalPackageRefundReq
+     * @return
+     */
+    Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq);
 
     /**
      * 后端给用户绑定套餐
