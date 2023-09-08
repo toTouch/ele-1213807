@@ -16,10 +16,11 @@ public interface CarRenalPackageDepositBizService {
 
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
-     * @param optModel 租户ID
+     * @param optModel 操作数据模型
+     * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel);
+    boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel, Long optUid);
 
     /**
      * 免押退押处理逻辑<br />
@@ -63,10 +64,11 @@ public interface CarRenalPackageDepositBizService {
 
     /**
      * 运营商端创建退押
-     * @param optModel 租户ID
+     * @param optModel 操作数据模型
+     * @param optUid 操作人UID
      * @return
      */
-    boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel);
+    boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel, Long optUid);
 
     /**
      * 审批退还押金申请单
