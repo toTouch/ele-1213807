@@ -128,12 +128,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
      *
-     * @param optModel 租户ID
+     * @param optModel 操作数据模型
+     * @param optUid 操作用户UID
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel) {
+    public boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel, Long optUid) {
         if (!ObjectUtils.allNotNull(optModel, optModel.getTenantId(), optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -184,7 +185,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo,
-                SystemDefinitionEnum.BACKGROUND, false, payType, realAmount);
+                SystemDefinitionEnum.BACKGROUND, false, payType, realAmount, optUid);
 
         saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
 
@@ -869,7 +870,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel) {
+    public boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel, Long optUid) {
         if (!ObjectUtils.allNotNull(optModel, optModel.getTenantId(), optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -912,7 +913,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo,
-                SystemDefinitionEnum.BACKGROUND, false, payType, realAmount);
+                SystemDefinitionEnum.BACKGROUND, false, payType, realAmount, optUid);
 
 
         // 待审核
@@ -1387,7 +1388,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.WX_APPLET,
-                depositAuditFlag, payType, null);
+                depositAuditFlag, payType, null, uid);
 
         // 待审核
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -1445,12 +1446,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param depositPayOrderNo 押金缴纳订单编码
      * @param systemDefinition  操作系统
      * @param depositAuditFlag  退押审批标识
-     * @param depositAuditFlag  支付方式
-     * @param depositAuditFlag  实际退款金额(可为空，后端操作不能为空)
+     * @param payType  支付方式
+     * @param refundAmount  实际退款金额(可为空，后端操作不能为空)
+     * @param optUid 操作用户UID
      * @return
      */
     private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo, SystemDefinitionEnum systemDefinition,
-                                                                                 boolean depositAuditFlag, Integer payType, BigDecimal refundAmount) {
+                                                                                 boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid) {
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
         refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
         refundDepositInsertEntity.setUid(memberTermEntity.getUid());
@@ -1468,7 +1470,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 设置退款状态
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
             refundDepositInsertEntity.setRealAmount(refundAmount);
-
+            refundDepositInsertEntity.setCreateUid(optUid);
             // 0元退
             if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
                 // 线上、线下，退款成功

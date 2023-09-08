@@ -61,7 +61,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
 
         optModel.setTenantId(tenantId);
 
-        return R.ok(carRenalPackageDepositBizService.refundDepositCreateSpecial(optModel));
+        return R.ok(carRenalPackageDepositBizService.refundDepositCreateSpecial(optModel, user.getUid()));
     }
 
     /**
@@ -84,7 +84,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
 
         optModel.setTenantId(tenantId);
 
-        return R.ok(carRenalPackageDepositBizService.refundDepositCreate(optModel));
+        return R.ok(carRenalPackageDepositBizService.refundDepositCreate(optModel, user.getUid()));
     }
 
     /**
