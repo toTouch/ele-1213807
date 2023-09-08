@@ -180,6 +180,11 @@ public class CarRentalPackageOrderVo implements Serializable {
     private String franchiseeName;
 
     /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
      * 用户真实姓名
      */
     private String userRelName;

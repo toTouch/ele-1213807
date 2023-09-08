@@ -379,6 +379,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
 
     private void verifyRefundRentCondition(Integer tenantId, Long uid, String packageOrderNo){
+        log.info("verify refund rent confirmation flow start, uid = {}, package order no = {}", uid, packageOrderNo);
+
         if (!ObjectUtils.allNotNull(tenantId, uid) || StringUtils.isBlank(packageOrderNo)) {
             throw new BizException("300054", "不合法的参数");
         }
@@ -455,6 +457,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
         }
+        log.info("verify refund rent confirmation flow end, uid = {}, package order no = {}", uid, packageOrderNo);
     }
 
     /**
