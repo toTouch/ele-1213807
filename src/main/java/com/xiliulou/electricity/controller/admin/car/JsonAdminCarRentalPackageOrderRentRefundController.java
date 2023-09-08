@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
+import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
@@ -64,15 +65,7 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder()
-                .orderNo(optReq.getOrderNo())
-                .approveFlag(Boolean.FALSE)
-                .reason(optReq.getReason())
-                .amount(optReq.getAmount())
-                .uid(user.getUid())
-                .build();
-
-        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(carRentRefundVo));
+        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
     }
 
     /**
@@ -207,5 +200,13 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
                                                            @RequestParam(value = "uid", required = true) Long uid) {
         return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo, uid));
     }
+
+    @PostMapping("/confirmation")
+    public R<Boolean> confirmation(@RequestBody CarRentalPackageRefundReq carRentalPackageRefundReq) {
+
+
+        return null;
+    }
+
 
 }
