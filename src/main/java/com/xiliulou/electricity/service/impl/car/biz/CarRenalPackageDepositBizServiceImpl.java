@@ -775,11 +775,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             if (RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
                 status = 2;
             }
-            //如果退押订单状态为审核拒绝状态，则设置状态信息及拒绝原因
-            if (RefundStateEnum.AUDIT_REJECT.getCode().equals(depositRefundEntity.getRefundState())){
-                status = RefundStateEnum.AUDIT_REJECT.getCode();
-                rejectReason = depositRefundEntity.getRemark();
-            }
+
         }
 
         // 押金缴纳信息
@@ -854,10 +850,17 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         depositPayVo.setPayType(depositPayEntity.getPayType());
         depositPayVo.setStoreId(depositPayEntity.getStoreId());
         depositPayVo.setCarModelId(rentalPackageEntity.getCarModelId());
+
+        //查询当前订单是否存在退押的状态
+        CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());
+        //如果存在退押的订单并且为拒绝状态，则设置状态信息及拒绝原因
+        if (Objects.nonNull(depositRefundEntity)
+                && RefundStateEnum.AUDIT_REJECT.getCode().equals(depositRefundEntity.getRefundState())){
+            status = RefundStateEnum.AUDIT_REJECT.getCode();
+            rejectReason = depositRefundEntity.getRemark();
+        }
         depositPayVo.setStatus(status);
         depositPayVo.setRejectReason(rejectReason);
-
-        //若当前订单存在退押的状态
 
         return depositPayVo;
     }
