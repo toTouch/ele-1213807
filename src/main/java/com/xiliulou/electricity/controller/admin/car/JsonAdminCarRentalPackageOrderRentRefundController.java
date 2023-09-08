@@ -13,17 +13,16 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundServi
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.car.CarRentRefundVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
+import com.xiliulou.electricity.vo.rental.RentalPackageRefundVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -65,7 +64,15 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
+        CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder()
+                .orderNo(optReq.getOrderNo())
+                .approveFlag(Boolean.FALSE)
+                .reason(optReq.getReason())
+                .amount(optReq.getAmount())
+                .uid(user.getUid())
+                .build();
+
+        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(carRentRefundVo));
     }
 
     /**
@@ -85,7 +92,14 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid()));
+        CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder()
+                .orderNo(optReq.getOrderNo())
+                .approveFlag(Boolean.TRUE)
+                .reason(optReq.getReason())
+                .amount(optReq.getAmount())
+                .uid(user.getUid())
+                .build();
+        return R.ok(carRentalPackageOrderBizService.approveRefundRentOrder(carRentRefundVo));
     }
 
     /**
@@ -186,6 +200,12 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
 
         // 调用服务
         return R.ok(carRentalPackageOrderRentRefundService.count(qryModel));
+    }
+
+    @GetMapping("/queryRentalPackageData")
+    public R<RentalPackageRefundVO> queryRentalPackageData(@RequestParam(value = "packageOrderNo", required = true) String packageOrderNo,
+                                                           @RequestParam(value = "uid", required = true) Long uid) {
+        return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo, uid));
     }
 
 }
