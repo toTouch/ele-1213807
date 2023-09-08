@@ -880,6 +880,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.setFullyElectricityBattery((int) fullyElectricityBattery);
             e.setExchangeBattery((int) exchangeableNumber);
 
+            Set<String> batteryTypes = cabinetBoxList.stream().filter(t -> StringUtils.isNotBlank(t.getSn()) && StringUtils.isNotBlank(t.getBatteryType()))
+                    .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.toSet()
+                    );
+            e.setBatteryTypes(batteryTypes);
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
