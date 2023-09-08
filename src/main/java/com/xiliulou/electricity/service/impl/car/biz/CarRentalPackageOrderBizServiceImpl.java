@@ -334,7 +334,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         Triple<BigDecimal, Long, Long> refundAmountPair = calculateRefundAmount(packageOrderEntity, tenantId, packageOrderEntity.getUid());
 
         rentalPackageRefundVO.setOrderNo(orderNo);
-        rentalPackageRefundVO.setRentPayment(refundAmountPair.getLeft());
+        rentalPackageRefundVO.setRentPayment(packageOrderEntity.getRentPayment());
+        rentalPackageRefundVO.setEstimatedRefundAmount(refundAmountPair.getLeft());
         rentalPackageRefundVO.setResidueTime(refundAmountPair.getMiddle());
         rentalPackageRefundVO.setResidueCount(refundAmountPair.getRight());
         rentalPackageRefundVO.setConfine(packageOrderEntity.getConfine());

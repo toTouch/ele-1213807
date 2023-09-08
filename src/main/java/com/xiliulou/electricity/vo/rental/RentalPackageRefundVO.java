@@ -28,6 +28,11 @@ public class RentalPackageRefundVO implements Serializable {
     private BigDecimal rentPayment;
 
     /**
+     * 预估可退金额
+     */
+    private BigDecimal estimatedRefundAmount;
+
+    /**
      * 套餐限制
      * <pre>
      *     0-不限制
