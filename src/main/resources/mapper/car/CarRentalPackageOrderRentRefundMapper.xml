@@ -164,6 +164,7 @@
         <set>
             `update_time` = #{updateTime}
             <if test=" refundState != null "> , `refund_state` = #{refundState} </if>
+            <if test=" refundAmount ！= null ">, `refund_amount` = #{refundAmount} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
@@ -227,7 +228,7 @@
     <select id="selectLatestByPurchaseOrderNo" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `order_no` = #{purchaseOrderNo}
+            `rental_package_order_no` = #{purchaseOrderNo}
         </where>
         ORDER BY id DESC limit 1
     </select>
