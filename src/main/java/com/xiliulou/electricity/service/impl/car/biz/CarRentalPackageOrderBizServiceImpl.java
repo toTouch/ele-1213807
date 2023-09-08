@@ -337,6 +337,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageRefundVO.setRentPayment(refundAmountPair.getLeft());
         rentalPackageRefundVO.setResidueTime(refundAmountPair.getMiddle());
         rentalPackageRefundVO.setResidueCount(refundAmountPair.getRight());
+        rentalPackageRefundVO.setConfine(packageOrderEntity.getConfine());
+        rentalPackageRefundVO.setTenancyUnit(packageOrderEntity.getTenancyUnit());
+
         return rentalPackageRefundVO;
     }
 
