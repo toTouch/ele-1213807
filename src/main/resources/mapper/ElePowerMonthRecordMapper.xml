@@ -160,7 +160,7 @@
 
     <select id="queryPartAttrList" resultMap="ElePowerMonthRecordMap">
         select
-        sn, e_name, store_name, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge,
+        sn, e_name, eid, store_name, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge,
         json_charge, date, create_time
         from t_ele_power_month_record
         <where>
