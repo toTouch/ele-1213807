@@ -876,7 +876,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             e.setElectricityBatteryTotal((int) haveBatteryNumber);
             e.setNoElectricityBattery((int) emptyCellNumber);
-            e.setFullyElectricityBattery((int) fullyElectricityBattery);
+            e.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
+            e.setFullyBatteryNumber((int) fullyElectricityBattery);
             e.setExchangeBattery((int) exchangeableNumber);
 
 
