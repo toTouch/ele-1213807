@@ -2,6 +2,7 @@ package com.xiliulou.electricity.query.car;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 
 /**
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @Data
 public class CarRentalPackageRefundReq {
 
+    @NotEmpty(message = "套餐订单不能为空")
     private String packageOrderNo;
 
     private BigDecimal estimatedRefundAmount;
