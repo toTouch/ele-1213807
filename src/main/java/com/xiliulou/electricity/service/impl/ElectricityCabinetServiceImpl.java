@@ -881,7 +881,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.setFullyBatteryNumber((int) fullyElectricityBattery);
             e.setExchangeBattery((int) exchangeableNumber);
 
-            Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(t -> StringUtils.isNotBlank(t.getSn()) && StringUtils.isNotBlank(t.getBatteryType()))
+            Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).filter(t -> StringUtils.isNotBlank(t.getSn()) && StringUtils.isNotBlank(t.getBatteryType()))
                     .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.groupingBy(a -> a, Collectors.counting()));
             e.setBatteryTypeMapes(batteryTypeMapes);
 
