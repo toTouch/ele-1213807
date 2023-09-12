@@ -158,9 +158,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // 查询会员期限信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_member_term not found or status is error. uid is {}", uid);
-            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        if (ObjectUtils.isEmpty(memberTermEntity)/* || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())*/) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_member_term not found. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
         }
 
         // 检测押金缴纳订单数据
