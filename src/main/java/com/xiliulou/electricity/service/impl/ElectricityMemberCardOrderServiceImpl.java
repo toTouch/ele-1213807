@@ -3604,7 +3604,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
         }
 
-        ElectricityMemberCardOrder electricityMemberCardOrder = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard);
+        ElectricityMemberCardOrder electricityMemberCardOrder = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, query);
 
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -3629,7 +3629,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo,BatteryMemberCard batteryMemberCard,UserBatteryMemberCard userBatteryMemberCard){
+    public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserBatteryDepositAndMembercardQuery query){
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid()))
                 .uid(userInfo.getUid())
@@ -3674,6 +3674,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userInfoUpdate.setUid(userInfo.getUid());
         userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userInfoUpdate.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+        userInfoUpdate.setStoreId(query.getStoreId());
         userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfoUpdate);
