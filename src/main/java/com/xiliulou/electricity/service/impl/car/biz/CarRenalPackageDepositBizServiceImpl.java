@@ -163,6 +163,28 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             throw new BizException("300000", "数据有误");
         }
 
+        // 检测是否存在滞纳金
+        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
+            log.info("CarRenalPackageDepositBizService.refundDepositCreateSpecial, There is a Late fee, please pay first. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
+        }
+
+        // 查询设备(车辆)
+        ElectricityCar userCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(userCar) && StringUtils.isNotBlank(userCar.getSn())) {
+            log.info("CarRenalPackageDepositBizService.refundDepositCreateSpecial, There are vehicles that have not been returned. uid is {}", uid);
+            throw new BizException("300041", "需先退还资产再退押金");
+        }
+
+        // 车电一体，查询设备(电池)
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
+            if (ObjectUtils.isNotEmpty(battery)) {
+                log.info("CarRenalPackageDepositBizService.refundDepositCreateSpecial, There are unreturned batteries. uid is {}", uid);
+                throw new BizException("300041", "需先退还资产再退押金");
+            }
+        }
+
         // 检测押金缴纳订单数据
         CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState()) || 0L != depositPayEntity.getCreateUid()) {
@@ -171,7 +193,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+       // checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
 
         // 否则提前申请
         CarRentalPackageDepositRefundPo carRentalPackageDepositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
