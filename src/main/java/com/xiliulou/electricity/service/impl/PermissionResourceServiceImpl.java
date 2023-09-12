@@ -357,4 +357,12 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		
 		return Pair.of(true, permissionResourceTrees);
 	}
+	@Override
+	public List<PermissionResource> queryByRoleIds(List<Long> rids,Integer type){
+		if (CollectionUtils.isEmpty(rids)) {
+			return Collections.emptyList();
+		}
+		List<PermissionResource> permissionResources = permissionResourceMapper.queryListByRids(rids,type);
+		return permissionResources;
+	}
 }
