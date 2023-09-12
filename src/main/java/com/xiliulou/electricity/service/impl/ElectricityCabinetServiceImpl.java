@@ -4132,7 +4132,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
 
-
             Double fullyCharged = item.getFullyCharged();
 
             List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(item.getId());
@@ -4145,8 +4144,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 long exchangeableNumber = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).count();
 
                 item.setNoElectricityBattery((int) emptyCellNumber);
-                item.setFullyElectricityBattery((int) fullBatteryNumber);
+                item.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
                 item.setExchangeBattery((int) exchangeableNumber);
+                item.setFullyBatteryNumber((int)fullBatteryNumber);
 
                 Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && StringUtils.isNotBlank(e.getBatteryType()))
                         .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.groupingBy(a -> a, Collectors.counting()));
