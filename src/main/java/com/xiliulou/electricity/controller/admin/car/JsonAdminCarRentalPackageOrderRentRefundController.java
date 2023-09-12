@@ -195,11 +195,21 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         return R.ok(carRentalPackageOrderRentRefundService.count(qryModel));
     }
 
+    /**
+     * 查询租金退款页面显示信息
+     * @param packageOrderNo 租车订单号
+     * @return
+     */
     @GetMapping("/queryRentalPackageData")
     public R<RentalPackageRefundVO> queryRentalPackageData(@RequestParam(value = "packageOrderNo", required = true) String packageOrderNo) {
         return R.ok(carRentalPackageOrderBizService.queryRentalPackageRefundData(packageOrderNo));
     }
 
+    /**
+     * 后台租金退款
+     * @param carRentalPackageRefundReq
+     * @return
+     */
     @PostMapping("/confirmation")
     public R<Boolean> confirmation(@RequestBody CarRentalPackageRefundReq carRentalPackageRefundReq) {
         return R.ok(carRentalPackageOrderBizService.refundConfirmation(carRentalPackageRefundReq));
