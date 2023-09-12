@@ -179,6 +179,12 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             carRentalPackageDepositRefundService.delById(carRentalPackageDepositRefundPo.getId());
         }
 
+        if (ObjectUtils.isNotEmpty(carRentalPackageDepositRefundPo) && (RefundStateEnum.REFUNDING.getCode().equals(carRentalPackageDepositRefundPo.getRefundState())
+                || RefundStateEnum.SUCCESS.getCode().equals(carRentalPackageDepositRefundPo.getRefundState()))) {
+            log.error("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_deposit_refund status is error. uid is {}, depositPayOrderNo is {}", uid, depositPayOrderNo);
+            throw new BizException("300000", "请勿重复操作此订单");
+        }
+
 
         // 默认线下
         Integer payType = PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()) ? PayTypeEnum.EXEMPT.getCode() : PayTypeEnum.OFF_LINE.getCode();
