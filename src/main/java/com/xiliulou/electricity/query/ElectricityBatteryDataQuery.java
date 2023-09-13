@@ -78,4 +78,6 @@ public class ElectricityBatteryDataQuery {
      * 当前时间
      */
     private Long currentTimeMillis;
+
+    private List<Long> franchiseeIds;
 }

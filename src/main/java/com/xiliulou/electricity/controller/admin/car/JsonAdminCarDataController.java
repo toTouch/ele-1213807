@@ -27,18 +27,7 @@ public class JsonAdminCarDataController extends BaseController {
 
     @Autowired
     private CarDataService carDataService;
-    private Triple<Boolean, String, Object> verifyUserPermission() {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
-        }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return Triple.of(false, null, Collections.emptyList());
-        }
-
-        return Triple.of(true, null, null);
-    }
     /**
      * 获取全部车辆的分页数据
      */
@@ -52,10 +41,7 @@ public class JsonAdminCarDataController extends BaseController {
                                  @RequestParam(value = "userName", required = false) String userName,
                                  @RequestParam(value = "phone", required = false) String phone,
                                  @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
-        }
+
         return carDataService.queryAllCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -71,10 +57,7 @@ public class JsonAdminCarDataController extends BaseController {
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
-        }
+
         return carDataService.queryAllCarDataCount(franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -91,10 +74,7 @@ public class JsonAdminCarDataController extends BaseController {
                                            @RequestParam(value = "userName", required = false) String userName,
                                            @RequestParam(value = "phone", required = false) String phone,
                                            @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
-        }
+
         return carDataService.queryPendingRentalCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -110,10 +90,7 @@ public class JsonAdminCarDataController extends BaseController {
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
-        }
+
         return carDataService.queryPendingRentalCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -130,10 +107,7 @@ public class JsonAdminCarDataController extends BaseController {
                                     @RequestParam(value = "userName", required = false) String userName,
                                     @RequestParam(value = "phone", required = false) String phone,
                                     @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
-        }
+
         return carDataService.queryLeasedCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -149,10 +123,7 @@ public class JsonAdminCarDataController extends BaseController {
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
-        }
+
         return carDataService.queryLeasedCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -169,10 +140,7 @@ public class JsonAdminCarDataController extends BaseController {
                                      @RequestParam(value = "userName", required = false) String userName,
                                      @RequestParam(value = "phone", required = false) String phone,
                                      @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
-        }
+
         return carDataService.queryOverdueCarDataPage(offset,size, franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 
@@ -188,10 +156,7 @@ public class JsonAdminCarDataController extends BaseController {
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid) {
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
-        }
+
         return carDataService.queryOverdueCarDataCount( franchiseeId,storeId, modelId, sn, userName, phone,uid);
     }
 }

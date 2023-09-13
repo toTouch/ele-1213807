@@ -92,6 +92,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .tenantId(tenantId)
                 .sn(sn)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityCabinetId)
                 .uid(uid)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
@@ -129,10 +130,28 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
     public R selectAllBatteryDataCount( String sn, Long franchiseeId, Integer electricityCabinetId, Long uid)  {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityCabinetId)
                 .uid(uid)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
@@ -179,6 +198,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .sn(sn)
                 .uid(uid)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityCabinetId)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
@@ -216,11 +236,29 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
 	@Slave
     public R selectInCabinetBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityCabinetId)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
@@ -267,6 +305,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
@@ -303,12 +342,30 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
 	@Slave
     public R selectPendingRentalBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
@@ -354,6 +411,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
         if(CollectionUtils.isEmpty(electricityBatteries)){
@@ -389,12 +447,30 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
 	@Slave
     public R selectLeasedBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
     }
@@ -439,6 +515,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
@@ -476,12 +553,30 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
 	@Slave
     public R selectStrayBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
@@ -528,6 +623,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
@@ -565,12 +661,30 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
 	@Slave
     public R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
@@ -616,6 +730,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
@@ -648,12 +763,30 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
     @Slave
     public R selectOverdueCarBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .uid(uid)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
@@ -766,7 +899,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         }
 
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.
-                queryStockBatteryList(buildStockBatteryDataQuery(sn,franchiseeId,electricityCabinetId), offset, size);
+                queryStockBatteryList(buildStockBatteryDataQuery(sn,franchiseeId,electricityCabinetId,franchiseeIds), offset, size);
 
         return  R.ok(buildEleBatteryDataVOList(electricityBatteries,tenant));
     }
@@ -781,15 +914,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Override
     @Slave
     public R queryStockBatteryPageDataCount(String sn, Long franchiseeId, Integer electricityCabinetId){
-        return R.ok(electricitybatterymapper.queryStockBatteryCount(buildStockBatteryDataQuery(sn, franchiseeId, electricityCabinetId)));
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(0);
+        }
+        return R.ok(electricitybatterymapper.queryStockBatteryCount(buildStockBatteryDataQuery(sn, franchiseeId, electricityCabinetId,franchiseeIds)));
     }
     // 组装库存电池的查询参数
-    private ElectricityBatteryDataQuery  buildStockBatteryDataQuery(String sn, Long franchiseeId, Integer electricityCabinetId){
+    private ElectricityBatteryDataQuery  buildStockBatteryDataQuery(String sn, Long franchiseeId, Integer electricityCabinetId,List<Long> franchiseeIds){
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).build();
