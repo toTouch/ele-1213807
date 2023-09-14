@@ -62,5 +62,7 @@ public class EnterpriseInfoQuery {
 
     private Set<Long> packageIds;
 
+    private Long packageId;
+
     private Integer packageType;
 }

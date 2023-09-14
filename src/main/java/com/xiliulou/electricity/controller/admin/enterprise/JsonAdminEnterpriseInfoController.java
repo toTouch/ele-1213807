@@ -38,7 +38,10 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
      */
     @GetMapping("/admin/enterpriseInfo/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                  @RequestParam(value = "status", required = false) Integer status,
+                  @RequestParam(value = "packageId", required = false) Long packageId,
                   @RequestParam(value = "uid", required = false) Long uid,
+                  @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                   @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
@@ -61,6 +64,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
         EnterpriseInfoQuery query = EnterpriseInfoQuery.builder()
                 .size(size)
                 .offset(offset)
+                .status(status)
+                .phone(phone)
+                .packageId(packageId)
                 .name(name)
                 .uid(uid)
                 .franchiseeId(franchiseeId)
@@ -75,6 +81,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
      */
     @GetMapping("/admin/enterpriseInfo/count")
     public R pageCount(@RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "packageId", required = false) Long packageId,
+                       @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "name", required = false) String name) {
 
@@ -88,6 +97,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
         }
 
         EnterpriseInfoQuery query = EnterpriseInfoQuery.builder()
+                .status(status)
+                .phone(phone)
+                .packageId(packageId)
                 .name(name)
                 .uid(uid)
                 .franchiseeId(franchiseeId)

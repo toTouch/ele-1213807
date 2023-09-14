@@ -36,6 +36,7 @@ public class JsonAdminEnterpriseCloudBeanRecordController extends BaseController
     @GetMapping("/admin/enterpriseCloudBeanRecord/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
                   @RequestParam(value = "uid", required = false) Long uid,
+                  @RequestParam(value = "type", required = false) Integer type,
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                   @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
         if (size < 0 || size > 50) {
@@ -60,6 +61,7 @@ public class JsonAdminEnterpriseCloudBeanRecordController extends BaseController
                 .offset(offset)
                 .enterpriseId(enterpriseId)
                 .uid(uid)
+                .type(type)
                 .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
@@ -72,6 +74,7 @@ public class JsonAdminEnterpriseCloudBeanRecordController extends BaseController
      */
     @GetMapping("/admin/enterpriseCloudBeanRecord/count")
     public R pageCount(@RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
 
@@ -87,6 +90,7 @@ public class JsonAdminEnterpriseCloudBeanRecordController extends BaseController
         EnterpriseCloudBeanRecordQuery query = EnterpriseCloudBeanRecordQuery.builder()
                 .enterpriseId(enterpriseId)
                 .uid(uid)
+                .type(type)
                 .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();

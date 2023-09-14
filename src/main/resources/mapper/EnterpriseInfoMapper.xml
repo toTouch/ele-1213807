@@ -5,6 +5,7 @@
     <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseInfo" id="EnterpriseInfoMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="businessId" column="business_id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="phone" column="phone" jdbcType="VARCHAR"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
@@ -20,48 +21,78 @@
     <!--查询单个-->
     <select id="queryById" resultMap="EnterpriseInfoMap">
         select
-          id, uid, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
+          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
         from t_enterprise_info
         where id = #{id}
     </select>
 
     <select id="selectByPage" resultMap="EnterpriseInfoMap">
         select
-          id, uid, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
-        from t_enterprise_info
+          tei.id,
+          tei.uid,
+          tei.business_id,
+          tei.name,
+          tei.phone,
+          tei.franchisee_id,
+          tei.status,
+          tei.recovery_mode,
+          tei.total_bean_amount,
+          tei.tenant_id,
+          tei.create_time,
+          tei.update_time,
+          tei.remark
+        from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         where
         <if test="name != null and name != ''">
-            and name = #{name}
+            and tei.name = #{name}
         </if>
         <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+            and tei.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tei.phone = #{phone}
+        </if>
+        <if test="packageId != null">
+            and tep.package_id = #{packageId}
+        </if>
+        <if test="status != null">
+            and tei.status = #{status}
         </if>
         <if test="uid != null">
-            and uid = #{uid}
+            and tei.uid = #{uid}
         </if>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and tei.tenant_id = #{tenantId}
         </if>
-        order by id desc
+        order by tei.id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">
         select
         count(1)
-        from t_enterprise_info
+        from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         where
         <if test="name != null and name != ''">
-            and name = #{name}
+            and tei.name = #{name}
         </if>
         <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+            and tei.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tei.phone = #{phone}
+        </if>
+        <if test="packageId != null">
+            and tep.package_id = #{packageId}
+        </if>
+        <if test="status != null">
+            and tei.status = #{status}
         </if>
         <if test="uid != null">
-            and uid = #{uid}
+            and tei.uid = #{uid}
         </if>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and tei.tenant_id = #{tenantId}
         </if>
     </select>
 

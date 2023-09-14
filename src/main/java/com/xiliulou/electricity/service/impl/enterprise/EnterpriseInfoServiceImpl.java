@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -130,8 +131,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery) {
-        //TODO
-
         if (CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
             return Triple.of(false, "", "参数不合法");
         }
@@ -168,20 +167,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfoUpdate);
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
         enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
-
-        //TODO
-
+        this.update(enterpriseInfoUpdate);
 
         return Triple.of(true, null, null);
     }
 
     @Override
     public Triple<Boolean, String, Object> delete(Long id) {
-        //TODO
-
-
         this.deleteById(id);
         return Triple.of(true, null, null);
     }
@@ -214,6 +209,31 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, null);
     }
 
+    @Override
+    public EnterpriseInfo selectByUid(Long uid) {
+        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getUid, uid));
+    }
+
+    @Override
+    public Boolean checkUserType() {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ENTERPRISE ERROR! not found user info,uid={} ", SecurityUtils.getUid());
+            return Boolean.FALSE;
+        }
+
+        EnterpriseInfo enterpriseInfo = this.selectByUid(userInfo.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
+            return Boolean.FALSE;
+        }
+
+        if (Objects.equals(EnterpriseInfo.STATUS_OPEN, enterpriseInfo.getStatus())) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
 
     private List<String> getMembercardNames(Long id) {
 

@@ -32,5 +32,9 @@ public class EnterpriseCloudBeanRecordQuery {
      * 租户ID
      */
     private Integer tenantId;
+    /**
+     * 操作类型 0:赠送,1:后台充值,2:后台扣除
+     */
+    private Integer type;
 
 }

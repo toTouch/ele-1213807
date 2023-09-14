@@ -51,4 +51,8 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery);
 
     Triple<Boolean, String, Object> recharge(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery);
+
+    Boolean checkUserType();
+
+    EnterpriseInfo selectByUid(Long uid);
 }
