@@ -42,29 +42,33 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 		if (!DataUtil.collectionIsUsable(roleIds)) {
 			return grantedAuthorities;
 		}
-
-		//直接从数据库查询类型为url的数据
-		List<PermissionResource> permissionResources = permissionResourceService.queryByRoleIds(roleIds, PermissionResource.TYPE_URL);
-		if (DataUtil.collectionIsUsable(permissionResources)) {
-			for (PermissionResource p : permissionResources) {
-				GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
-				grantedAuthorities.add(t);
+		if(type==6){
+			//直接从数据库查询类型为url的数据
+			List<PermissionResource> permissionResources = permissionResourceService.queryByRoleIds(roleIds, PermissionResource.TYPE_URL);
+			if (DataUtil.collectionIsUsable(permissionResources)) {
+				for (PermissionResource p : permissionResources) {
+					GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
+					grantedAuthorities.add(t);
+				}
+			}
+		}else{
+			for (Long roleId : roleIds) {
+				List<PermissionResource> permissionResources = permissionResourceService.queryPermissionsByRole(roleId);
+				if (DataUtil.collectionIsUsable(permissionResources)) {
+					for (PermissionResource p : permissionResources) {
+						//页面不需要校验
+						if (p.getType().equals(PermissionResource.TYPE_PAGE)) {
+							continue;
+						}
+						GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
+						grantedAuthorities.add(t);
+					}
+				}
 			}
 		}
 
-//		for (Long roleId : roleIds) {
-//			List<PermissionResource> permissionResources = permissionResourceService.queryPermissionsByRole(roleId);
-//			if (DataUtil.collectionIsUsable(permissionResources)) {
-//				for (PermissionResource p : permissionResources) {
-//					//页面不需要校验
-//					if (p.getType().equals(PermissionResource.TYPE_PAGE)) {
-//						continue;
-//					}
-//					GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
-//					grantedAuthorities.add(t);
-//				}
-//			}
-//		}
+
+
 
 		return grantedAuthorities;
 
