@@ -84,6 +84,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
+    @Slave
     public R queryAllCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -98,10 +99,35 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid)
+                .franchiseeIds(franchiseeIds).storeIds(storeIds).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
-            return R.ok(new ArrayList<CarDataResultVO>());
+            return R.ok(Collections.EMPTY_LIST);
         }
         ArrayList<CarDataResultVO>  resultList=new ArrayList<>();
         carDataVOS.stream().forEachOrdered(item->{
@@ -147,6 +173,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
+    @Slave
     public R queryAllCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -154,12 +181,37 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(0);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(0);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId)
+                .storeIds(storeIds).franchiseeIds(franchiseeIds).modelId(modelId).userName(userName).phone(phone).uid(uid).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }
 
     @Override
+    @Slave
     public R queryPendingRentalCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -174,10 +226,35 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId)
+                .franchiseeIds(franchiseeIds).storeIds(storeIds).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
-            return R.ok(new ArrayList<CarDataResultVO>());
+            return R.ok(Collections.EMPTY_LIST);
         }
         ArrayList<CarDataResultVO> resultList=new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
@@ -223,6 +300,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
+    @Slave
     public R queryPendingRentalCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -230,11 +308,37 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(0);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(0);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId)
+                .storeIds(storeIds).franchiseeIds(franchiseeIds).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_NOT_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
     }
 
     @Override
+    @Slave
     public R queryLeasedCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -249,10 +353,34 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
         if(CollectionUtils.isEmpty(carDataVOS)){
-            return R.ok(new ArrayList<CarDataResultVO>());
+            return R.ok(Collections.EMPTY_LIST);
         }
         ArrayList<CarDataResultVO>  resultList= new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
@@ -299,6 +427,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
+    @Slave
     public R queryLeasedCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
@@ -306,12 +435,38 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(0);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(0);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId)
+                .storeIds(storeIds).franchiseeIds(franchiseeIds).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }
 
     @Override
+    @Slave
     public R queryOverdueCarDataPage(Long offset, Long size, Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -326,11 +481,36 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId)
+                .storeIds(storeIds).franchiseeIds(franchiseeIds).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
         List<com.xiliulou.electricity.entity.car.CarDataVO> carDataVOS = electricityCarMapper.queryCarPageByCondition(build, offset, size);
 
         if(CollectionUtils.isEmpty(carDataVOS)){
-            return R.ok(new ArrayList<CarDataResultVO>());
+            return R.ok(Collections.EMPTY_LIST);
         }
         ArrayList<CarDataResultVO>  resultList=new ArrayList<>();
         carDataVOS.parallelStream().forEachOrdered(item->{
@@ -376,6 +556,7 @@ public class CarDataServiceImpl implements CarDataService {
     }
 
     @Override
+    @Slave
     public R queryOverdueCarDataCount(Long franchiseeId, Long storeId, Integer modelId, String sn, String userName, String phone,Long uid) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -384,7 +565,32 @@ public class CarDataServiceImpl implements CarDataService {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(0);
         }
-        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(0);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(0);
+            }
+        }
+
+        CarDataQuery build = CarDataQuery.builder().tenantId(tenantId).sn(sn).franchiseeId(franchiseeId).storeId(storeId)
+                .storeIds(storeIds).franchiseeIds(franchiseeIds).modelId(modelId).userName(userName).phone(phone).uid(uid).status(ElectricityCar.STATUS_IS_RENT).overdueTime(System.currentTimeMillis()).build();
         return R.ok(electricityCarMapper.queryCarDataCountByCondition(build));
 
     }

@@ -881,9 +881,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.setFullyBatteryNumber((int) fullyElectricityBattery);
             e.setExchangeBattery((int) exchangeableNumber);
 
-            Map<String, Long> batteryTypeMapes = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).filter(t -> StringUtils.isNotBlank(t.getSn()) && StringUtils.isNotBlank(t.getBatteryType()))
-                    .map(i -> i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_"))).collect(Collectors.groupingBy(a -> a, Collectors.counting()));
-            e.setBatteryTypeMapes(batteryTypeMapes);
+            assignBatteryTypes(cabinetBoxList,e);
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
@@ -895,6 +893,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance))
                 .collect(Collectors.toList()));
+    }
+
+    private void assignBatteryTypes(List<ElectricityCabinetBox> cabinetBoxList, ElectricityCabinetVO e) {
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return;
+        }
+
+        Map<String, Long> batteryTypeMapes = Maps.newHashMap();
+        List<ElectricityCabinetBox> cabinetBoxes = cabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && !StringUtils.startsWithIgnoreCase(item.getSn(), "UNKNOW")).peek(i -> i.setBatteryType(i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_")))).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(cabinetBoxes)) {
+            return;
+        }
+
+        Set<String> batterySet = cabinetBoxes.stream().map(ElectricityCabinetBox::getBatteryType).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(batterySet)) {
+            return;
+        }
+
+        batterySet.forEach(batteryType -> {
+            long count = cabinetBoxes.stream().filter(t -> Objects.equals(t.getBatteryType(), batteryType) && Objects.nonNull(t.getPower()) && Objects.nonNull(e.getFullyCharged()) && t.getPower() >= e.getFullyCharged()).count();
+            batteryTypeMapes.put(batteryType, count);
+        });
+
+        e.setBatteryTypeMapes(batteryTypeMapes);
     }
 
     @Override

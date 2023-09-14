@@ -583,6 +583,18 @@
         <if test="query.storeId != null ">
             and ec.store_id = #{query.storeId}
         </if>
+        <if test="query.storeIds != null ">
+            and ec.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.franchiseeIds != null ">
+            and ec.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by ec.create_time desc limit #{offset}, #{size}
     </select>
 
@@ -615,6 +627,18 @@
         </if>
         <if test="query.storeId != null ">
             and ec.store_id = #{query.storeId}
+        </if>
+        <if test="query.storeIds != null ">
+            and ec.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.franchiseeIds != null ">
+            and ec.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 
