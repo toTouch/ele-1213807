@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRecordQuery;
 
 import java.util.List;

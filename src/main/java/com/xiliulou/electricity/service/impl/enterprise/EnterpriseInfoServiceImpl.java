@@ -88,20 +88,20 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public List<EnterpriseInfoVO> selectByPage(EnterpriseInfoQuery query) {
-        List<EnterpriseInfo> list= this.enterpriseInfoMapper.selectByPage(query);
-        if(CollectionUtils.isEmpty(list)){
+        List<EnterpriseInfo> list = this.enterpriseInfoMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
 
-        return list.stream().map(item->{
+        return list.stream().map(item -> {
             EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
-            BeanUtils.copyProperties(item,enterpriseInfoVO);
+            BeanUtils.copyProperties(item, enterpriseInfoVO);
 
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            enterpriseInfoVO.setFranchiseeName(Objects.isNull(franchisee)?"":franchisee.getName());
+            enterpriseInfoVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            enterpriseInfoVO.setUsername(Objects.isNull(userInfo)?"":userInfo.getName());
+            enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
 
             return enterpriseInfoVO;
         }).collect(Collectors.toList());
@@ -119,20 +119,20 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
 
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
-        BeanUtils.copyProperties(enterpriseInfoQuery,enterpriseInfo);
+        BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
         this.enterpriseInfoMapper.insert(enterpriseInfo);
 
-        return Triple.of(true,null,null);
+        return Triple.of(true, null, null);
     }
 
     @Override
     public Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseInfoQuery.getId());
-        if(Objects.isNull(enterpriseInfo)){
-            return Triple.of(false,"","企业配置不存在");
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "", "企业配置不存在");
         }
 
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
@@ -142,8 +142,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         //TODO
 
 
-
-        return Triple.of(true,null,null);
+        return Triple.of(true, null, null);
     }
 
     @Override
@@ -151,22 +150,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         //TODO
 
 
-
         this.deleteById(id);
-        return Triple.of(true,null,null);
+        return Triple.of(true, null, null);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> recharge(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseCloudBeanRechargeQuery.getId());
-        if(Objects.isNull(enterpriseInfo)){
-            return Triple.of(false,"","企业配置不存在");
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "", "企业配置不存在");
         }
 
-        EnterpriseInfo enterpriseInfoUpdate =new EnterpriseInfo();
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
-        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount()+enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount() + enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
         enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(enterpriseInfoUpdate);
 
@@ -181,6 +179,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseCloudBeanRecord.setCreateTime(System.currentTimeMillis());
         enterpriseCloudBeanRecord.setUpdateTime(System.currentTimeMillis());
         enterpriseCloudBeanRecordService.insert(enterpriseCloudBeanRecord);
-        return Triple.of(true,null,null);
+        return Triple.of(true, null, null);
     }
 }

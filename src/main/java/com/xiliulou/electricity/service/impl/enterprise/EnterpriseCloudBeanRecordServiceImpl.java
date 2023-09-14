@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 import com.xiliulou.electricity.mapper.EnterpriseCloudBeanRecordMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRecordQuery;
@@ -100,15 +99,15 @@ public class EnterpriseCloudBeanRecordServiceImpl implements EnterpriseCloudBean
             return Collections.EMPTY_LIST;
         }
 
-        return list.stream().map(item->{
+        return list.stream().map(item -> {
             EnterpriseCloudBeanRecordVO enterpriseCloudBeanRecordVO = new EnterpriseCloudBeanRecordVO();
-            BeanUtils.copyProperties(item,enterpriseCloudBeanRecordVO);
+            BeanUtils.copyProperties(item, enterpriseCloudBeanRecordVO);
 
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            enterpriseCloudBeanRecordVO.setFranchiseeName(Objects.isNull(franchisee)?"":franchisee.getName());
+            enterpriseCloudBeanRecordVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
             User user = userService.queryByUidFromCache(item.getUid());
-            enterpriseCloudBeanRecordVO.setUsername(Objects.isNull(user)?"":user.getName());
+            enterpriseCloudBeanRecordVO.setUsername(Objects.isNull(user) ? "" : user.getName());
 
             return enterpriseCloudBeanRecordVO;
         }).collect(Collectors.toList());
