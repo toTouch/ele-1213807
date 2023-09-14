@@ -27,5 +27,5 @@ public interface PermissionResourceMapper  extends BaseMapper<PermissionResource
 
     Integer update(PermissionResource permissionResource);
 
-    List<PermissionResource> queryListByRids(@Param("p")List<Long> rids,@Param("type")Integer type);
+    List<PermissionResource> queryListByRids(@Param("list")List<Long> rids,@Param("type")Integer type);
 }
