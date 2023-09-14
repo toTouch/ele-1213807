@@ -54,7 +54,7 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
-        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo(), optReq.getReason())) {
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
