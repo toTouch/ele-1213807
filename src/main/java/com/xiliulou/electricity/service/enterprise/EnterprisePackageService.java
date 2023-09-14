@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 
+import java.util.List;
+
 /**
  * 企业关联套餐表(EnterprisePackage)表服务接口
  *
@@ -42,4 +44,7 @@ public interface EnterprisePackageService {
      */
     Boolean deleteById(Long id);
 
+    void batchInsert(List<EnterprisePackage> packageList);
+
+    List<Long> selectByEnterpriseId(Long id);
 }

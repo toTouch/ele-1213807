@@ -1,17 +1,22 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.google.common.collect.Lists;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.mapper.EnterpriseInfoMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
@@ -48,7 +53,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     private UserInfoService userInfoService;
 
     @Autowired
+    private EnterprisePackageService enterprisePackageService;
+
+    @Autowired
+    private BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
     private EnterpriseCloudBeanRecordService enterpriseCloudBeanRecordService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -103,6 +115,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
 
+            enterpriseInfoVO.setMemcardName(getMembercardNames(item.getId()));
+
             return enterpriseInfoVO;
         }).collect(Collectors.toList());
     }
@@ -114,16 +128,34 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery) {
         //TODO
 
+        if (CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
+            return Triple.of(false, "", "参数不合法");
+        }
 
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
         BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
+        enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
         this.enterpriseInfoMapper.insert(enterpriseInfo);
+
+        List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+            EnterprisePackage enterprisePackage = new EnterprisePackage();
+            enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+            enterprisePackage.setPackageId(item);
+            enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+            enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+            enterprisePackage.setCreateTime(System.currentTimeMillis());
+            enterprisePackage.setUpdateTime(System.currentTimeMillis());
+            return enterprisePackage;
+        }).collect(Collectors.toList());
+
+        enterprisePackageService.batchInsert(packageList);
 
         return Triple.of(true, null, null);
     }
@@ -180,5 +212,25 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseCloudBeanRecord.setUpdateTime(System.currentTimeMillis());
         enterpriseCloudBeanRecordService.insert(enterpriseCloudBeanRecord);
         return Triple.of(true, null, null);
+    }
+
+
+    private List<String> getMembercardNames(Long id) {
+
+        List<String> list = Lists.newArrayList();
+
+        List<Long> membercardIds = enterprisePackageService.selectByEnterpriseId(id);
+        if (CollectionUtils.isEmpty(membercardIds)) {
+            return list;
+        }
+
+        membercardIds.forEach(e -> {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(e);
+            if (Objects.nonNull(batteryMemberCard)) {
+                list.add(batteryMemberCard.getName());
+            }
+        });
+
+        return list;
     }
 }

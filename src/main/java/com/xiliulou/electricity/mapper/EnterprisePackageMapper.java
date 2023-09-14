@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * 企业关联套餐表(EnterprisePackage)表数据库访问层
  *
@@ -36,4 +38,7 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
      */
     int deleteById(Long id);
 
+    void batchInsert(List<EnterprisePackage> packageList);
+
+    List<Long> selectByEnterpriseId(Long id);
 }

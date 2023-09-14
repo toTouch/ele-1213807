@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.enterprise;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -59,4 +61,6 @@ public class EnterpriseInfoVO {
      * 备注
      */
     private String remark;
+
+    private List<String> memcardName;
 }

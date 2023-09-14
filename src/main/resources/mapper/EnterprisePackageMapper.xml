@@ -20,6 +20,12 @@
         where id = #{id}
     </select>
 
+    <select id="selectByEnterpriseId" resultType="Long">
+        select  package_id
+        from t_enterprise_package
+        where enterprise_id = #{id}
+    </select>
+
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_package
@@ -50,5 +56,12 @@
     <delete id="deleteById">
         delete from t_enterprise_package where id = #{id}
     </delete>
+
+    <insert id="batchInsert" >
+        insert into t_enterprise_package(enterprise_id, package_id, package_type, tenant_id, create_time, update_time)  values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.enterpriseId}, #{item.packageId}, #{item.packageType}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
 
 </mapper>

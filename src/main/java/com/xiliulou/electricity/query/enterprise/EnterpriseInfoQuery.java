@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -57,4 +59,8 @@ public class EnterpriseInfoQuery {
      * 备注
      */
     private String remark;
+
+    private Set<Long> packageIds;
+
+    private Integer packageType;
 }

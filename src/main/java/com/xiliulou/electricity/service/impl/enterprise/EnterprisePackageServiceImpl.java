@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.mapper.EnterprisePackageMapper;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
@@ -10,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 企业关联套餐表(EnterprisePackage)表服务实现类
@@ -68,5 +72,19 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.enterprisePackageMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public void batchInsert(List<EnterprisePackage> packageList) {
+        if(CollectionUtils.isEmpty(packageList)){
+            return;
+        }
+
+        this.enterprisePackageMapper.batchInsert(packageList);
+    }
+
+    @Override
+    public List<Long> selectByEnterpriseId(Long id) {
+        return this.enterprisePackageMapper.selectByEnterpriseId(id);
     }
 }

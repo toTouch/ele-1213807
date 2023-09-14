@@ -51,4 +51,9 @@ public class EnterprisePackage {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    //套餐类型(1-换电套餐, 2-租车套餐, 3-车电一体套餐)
+    public static final Integer PACKAGE_TYPE_BATTERY = 1;
+    public static final Integer PACKAGE_TYPE_CAR = 2;
+    public static final Integer PACKAGE_TYPE_BATTERY_CAR = 3;
+
 }

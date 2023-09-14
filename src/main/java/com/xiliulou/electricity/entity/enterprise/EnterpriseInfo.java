@@ -69,4 +69,8 @@ public class EnterpriseInfo {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    //残值回收方式 0:以实际退电日期回收云豆,1:以实际未消耗天数回收云豆
+    public static final Integer RECOVERY_MODE_RETURN = 0;
+    public static final Integer RECOVERY_MODE_REALY = 1;
+
 }
