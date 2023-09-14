@@ -6,16 +6,12 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.security.authentication.authorization.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -30,8 +26,7 @@ public class JsonAdminBankCardController {
 	private BankCardService bankCardService;
 	@Autowired
 	RedisService redisService;
-	@Autowired
-	AuthorizationService authorizationService;
+
 
 	/**
 	 * 后台查询银行卡列表
@@ -94,14 +89,4 @@ public class JsonAdminBankCardController {
 		return bankCardService.unBindByWeb(id,tenantId);
 	}
 
-	/**
-	 *
-	 */
-	@GetMapping("/admin/bankcard/abTest")
-	public R abTest(@RequestParam("uid") Long uid,@RequestParam("userType") int userType){
-		long beginTime = System.currentTimeMillis();
-		Collection<? extends GrantedAuthority> authorities = authorizationService.acquireAllAuthorities(uid, userType);
-		long endTime=System.currentTimeMillis();
-		return R.ok(endTime-beginTime);
-	}
 }
