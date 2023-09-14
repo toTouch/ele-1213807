@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EnterpriseInfoMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseInfo" id="EnterpriseInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="recoveryMode" column="recovery_mode" jdbcType="INTEGER"/>
+        <result property="totalBeanAmount" column="total_bean_amount" jdbcType="NUMERIC"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EnterpriseInfoMap">
+        select
+          id, uid, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
+        from t_enterprise_info
+        where id = #{id}
+    </select>
+
+    <select id="selectByPage" resultMap="EnterpriseInfoMap">
+        select
+          id, uid, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
+        from t_enterprise_info
+        where
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_enterprise_info
+        where
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_enterprise_info
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="recoveryMode != null">
+                recovery_mode = #{recoveryMode},
+            </if>
+            <if test="totalBeanAmount != null">
+                total_bean_amount = #{totalBeanAmount},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_enterprise_info where id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EnterpriseCloudBeanRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord" id="EnterpriseCloudBeanRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="beanAmount" column="bean_amount" jdbcType="NUMERIC"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EnterpriseCloudBeanRecordMap">
+        select
+          id, enterprise_id, type, bean_amount, franchisee_id, tenant_id, create_time, update_time, remark
+        from t_enterprise_cloud_bean_record
+        where id = #{id}
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_enterprise_cloud_bean_record
+        <set>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="beanAmount != null">
+                bean_amount = #{beanAmount},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_enterprise_cloud_bean_record where id = #{id}
+    </delete>
+
+</mapper>
