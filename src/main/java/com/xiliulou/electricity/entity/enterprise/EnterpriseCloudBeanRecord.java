@@ -24,6 +24,10 @@ public class EnterpriseCloudBeanRecord {
      */
     private Long id;
     /**
+     * 用户id
+     */
+    private Long uid;
+    /**
      * 企业id
      */
     private Long enterpriseId;

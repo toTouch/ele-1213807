@@ -18,6 +18,19 @@ public class EnterpriseCloudBeanRecordQuery {
     private Long size;
     private Long offset;
 
+    /**
+     * 企业用户id
+     */
+    private Long uid;
 
+    private Long enterpriseId;
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    /**
+     * 租户ID
+     */
+    private Integer tenantId;
 
 }

@@ -13,6 +13,7 @@ public class EnterpriseCloudBeanRecordVO {
      * 主键ID
      */
     private Long id;
+    private String username;
     /**
      * 企业id
      */
@@ -29,6 +30,7 @@ public class EnterpriseCloudBeanRecordVO {
      * 加盟商id
      */
     private Long franchiseeId;
+    private String franchiseeName;
     /**
      * 租户ID
      */

@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRecordQuery;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanRecordVO;
+
+import java.util.List;
 
 /**
  * 企业云豆操作记录表(EnterpriseCloudBeanRecord)表服务接口
@@ -42,4 +46,9 @@ public interface EnterpriseCloudBeanRecordService {
      */
     Boolean deleteById(Long id);
 
+    Integer insert(EnterpriseCloudBeanRecord enterpriseCloudBeanRecord);
+
+    List<EnterpriseCloudBeanRecordVO> selectByPage(EnterpriseCloudBeanRecordQuery query);
+
+    Integer selectByPageCount(EnterpriseCloudBeanRecordQuery query);
 }

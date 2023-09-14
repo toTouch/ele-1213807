@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -48,4 +49,6 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery);
 
     Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery);
+
+    Triple<Boolean, String, Object> recharge(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery);
 }

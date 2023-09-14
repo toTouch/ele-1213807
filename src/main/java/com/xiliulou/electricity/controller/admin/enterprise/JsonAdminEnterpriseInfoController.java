@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -147,11 +148,21 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
         return returnTripleResult(enterpriseInfoService.delete(id));
     }
 
+    /**
+     * 云豆充值
+     */
+    @PutMapping("/admin/enterpriseInfo/recharge")
+    public R recharge(@RequestBody @Validated EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
 
-
-
-
-
+        return returnTripleResult(enterpriseInfoService.recharge(enterpriseCloudBeanRechargeQuery));
+    }
 
 }

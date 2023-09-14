@@ -3,13 +3,17 @@ package com.xiliulou.electricity.service.impl.enterprise;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.EnterpriseInfoMapper;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -42,6 +46,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private EnterpriseCloudBeanRecordService enterpriseCloudBeanRecordService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -146,6 +153,34 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
 
         this.deleteById(id);
+        return Triple.of(true,null,null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> recharge(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseCloudBeanRechargeQuery.getId());
+        if(Objects.isNull(enterpriseInfo)){
+            return Triple.of(false,"","企业配置不存在");
+        }
+
+        EnterpriseInfo enterpriseInfoUpdate =new EnterpriseInfo();
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount()+enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
+
+        EnterpriseCloudBeanRecord enterpriseCloudBeanRecord = new EnterpriseCloudBeanRecord();
+        enterpriseCloudBeanRecord.setUid(SecurityUtils.getUid());
+        enterpriseCloudBeanRecord.setEnterpriseId(enterpriseInfo.getId());
+        enterpriseCloudBeanRecord.setType(enterpriseCloudBeanRechargeQuery.getType());
+        enterpriseCloudBeanRecord.setBeanAmount(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        enterpriseCloudBeanRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        enterpriseCloudBeanRecord.setTenantId(TenantContextHolder.getTenantId());
+        enterpriseCloudBeanRecord.setRemark(enterpriseCloudBeanRechargeQuery.getRemark());
+        enterpriseCloudBeanRecord.setCreateTime(System.currentTimeMillis());
+        enterpriseCloudBeanRecord.setUpdateTime(System.currentTimeMillis());
+        enterpriseCloudBeanRecordService.insert(enterpriseCloudBeanRecord);
         return Triple.of(true,null,null);
     }
 }

@@ -3,6 +3,9 @@ package com.xiliulou.electricity.mapper;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRecordQuery;
+
+import java.util.List;
 
 /**
  * 企业云豆操作记录表(EnterpriseCloudBeanRecord)表数据库访问层
@@ -36,4 +39,7 @@ public interface EnterpriseCloudBeanRecordMapper extends BaseMapper<EnterpriseCl
      */
     int deleteById(Long id);
 
+    List<EnterpriseCloudBeanRecord> selectByPage(EnterpriseCloudBeanRecordQuery query);
+
+    Integer selectByPageCount(EnterpriseCloudBeanRecordQuery query);
 }
