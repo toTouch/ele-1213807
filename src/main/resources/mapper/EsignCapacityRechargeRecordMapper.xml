@@ -38,7 +38,8 @@
     </select>
 
     <!--新增数据-->
-    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.EsignCapacityRechargeRecord" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.EsignCapacityRechargeRecord"
+            useGeneratedKeys="true" keyProperty="id">
         insert into t_esign_capacity_recharge_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
             esign_capacity,
