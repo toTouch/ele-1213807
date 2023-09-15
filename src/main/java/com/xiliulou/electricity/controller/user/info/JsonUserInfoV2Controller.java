@@ -2,15 +2,19 @@ package com.xiliulou.electricity.controller.user.info;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -41,6 +45,13 @@ public class JsonUserInfoV2Controller extends BasicController {
 
     @Autowired
     private UserBatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private BatteryMemberCardService memberCardService;
+
+    @Autowired
+
+    private CarRentalPackageOrderService carRentalPackageOrderService;
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
@@ -91,12 +102,15 @@ public class JsonUserInfoV2Controller extends BasicController {
         // 单电
         if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
             UserBatteryMemberCard batteryMemberCard = batteryMemberCardService.selectByUidFromCache(uid);
-            if (ObjectUtils.isNotEmpty(batteryMemberCard) && ObjectUtils.isNotEmpty(batteryMemberCard.getMemberCardId()) && batteryMemberCard.getMemberCardId() != 0L) {
+                if (ObjectUtils.isNotEmpty(batteryMemberCard) && ObjectUtils.isNotEmpty(batteryMemberCard.getMemberCardId()) && batteryMemberCard.getMemberCardId() != 0L) {
                 Long orderExpireTime = batteryMemberCard.getOrderExpireTime();
                 UserMemberBatteryPackageVo batteryPackage = new UserMemberBatteryPackageVo();
                 batteryPackage.setDueTime(orderExpireTime);
                 batteryPackage.setDueTimeTotal(batteryMemberCard.getMemberCardExpireTime());
                 batteryPackage.setMemberCardStatus(batteryMemberCard.getMemberCardStatus());
+
+                BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(batteryMemberCard.getMemberCardId());
+                batteryPackage.setRentUnit(Objects.isNull(batteryMemberCard1) ? null : batteryMemberCard1.getRentUnit());
                 userMemberPackageVo.setBatteryPackage(batteryPackage);
             }
         }
@@ -121,6 +135,10 @@ public class JsonUserInfoV2Controller extends BasicController {
                     carBatteryPackage.setDueTime(dueTime);
                     carBatteryPackage.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
                     carBatteryPackage.setStatus(memberTermEntity.getStatus());
+
+                    CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
+                    carBatteryPackage.setRentUnit(carRentalPackageOrderPo.getTenancyUnit());
+
                     userMemberPackageVo.setCarBatteryPackage(carBatteryPackage);
                 }
             }

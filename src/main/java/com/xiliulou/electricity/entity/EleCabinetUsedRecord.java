@@ -19,6 +19,8 @@ public class EleCabinetUsedRecord {
 
     private Long id;
 
+    private Long uid;
+
     private String userName;
 
     private String phone;

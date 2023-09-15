@@ -16,6 +16,11 @@ public class EleCabinetUsedRecordVO {
     private Long id;
 
     /**
+     * 用户UID
+     */
+    private Long uid;
+
+    /**
      * 用户名
      */
     private String userName;

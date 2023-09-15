@@ -32,6 +32,8 @@ public class EleCabinetUsedRecordQuery {
      */
     private String userName;
 
+    private Long uid;
+
     private Long createTime;
 
     private Long beginTime;

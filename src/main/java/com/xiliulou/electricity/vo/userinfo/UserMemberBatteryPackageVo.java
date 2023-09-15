@@ -28,4 +28,9 @@ public class UserMemberBatteryPackageVo implements Serializable {
      * 套餐状态
      */
     private Integer memberCardStatus;
+
+    /**
+     * 租期单位 0：分钟，1：天
+     */
+    private Integer rentUnit;
 }

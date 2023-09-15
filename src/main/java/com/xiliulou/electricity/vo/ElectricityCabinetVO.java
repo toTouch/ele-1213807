@@ -108,6 +108,7 @@ public class ElectricityCabinetVO {
      * 满电仓
      */
     private Integer fullyElectricityBattery;
+    private Integer fullyBatteryNumber;
     /**
      * 空仓
      */
