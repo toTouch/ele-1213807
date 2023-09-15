@@ -1329,6 +1329,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
+        sendDisableMemberCardMessage(userInfo);
         return R.ok();
     }
 
