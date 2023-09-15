@@ -52,5 +52,5 @@ public interface StoreMapper extends BaseMapper<Store> {
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
     
     List<SearchVo> storeSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("franchiseeId") Long franchiseeId, @Param("name") String name,
-            @Param("tenantId") Integer tenantId);
+            @Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds,@Param("franchiseeIds") List<Long> franchiseeIds);
 }

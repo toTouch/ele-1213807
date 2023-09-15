@@ -510,8 +510,28 @@ public class JsonAdminStoreController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-        return storeService.storeSearch(size, offset, franchiseeId, name, TenantContextHolder.getTenantId());
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        return storeService.storeSearch(size, offset, franchiseeId, name, TenantContextHolder.getTenantId(),storeIds,franchiseeIds);
     }
 
 }

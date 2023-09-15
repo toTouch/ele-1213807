@@ -384,6 +384,12 @@
         <if test="storeId != null">
             and store_id = #{storeId}
         </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by id
         limit #{offset}, #{size}
     </select>
