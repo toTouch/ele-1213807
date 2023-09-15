@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -32,6 +33,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
 
     /**
@@ -297,24 +301,14 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             return userFrontDetectionVO;
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        BatteryMemberCard electricityMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
 
         if (Objects.isNull(electricityMemberCard)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_NOT_EXIST);
             return userFrontDetectionVO;
         }
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.IS_NEW_USER_ACTIVITY_CARD);
-            return userFrontDetectionVO;
-        }
 
-        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_OVER_DUE);
-            return userFrontDetectionVO;
-        }
-
-        if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+        if (!Objects.equals(electricityMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT)) {
             if (userBatteryMemberCard.getRemainingNumber() < 0) {
                 //用户需购买相同套餐，补齐所欠换电次数
                 userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_NEGATIVE_NUMBER);
