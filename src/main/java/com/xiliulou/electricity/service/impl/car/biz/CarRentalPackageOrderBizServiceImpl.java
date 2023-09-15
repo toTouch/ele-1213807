@@ -391,9 +391,23 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 生成租金退款审核订单
         CarRentalPackageOrderRentRefundPo rentRefundOrderEntity = buildRentRefundOrder(packageOrderEntity, carRentalPackageRefundReq.getEstimatedRefundAmount(), carRentalPackageRefundReq.getUid(), refundAmountPair.getMiddle(), refundAmountPair.getRight(), optUid);
 
+        //无需审核，将退款状态修改为退款中
+        //rentRefundOrderEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+
+        // TX 事务管理
+        //saveRentRefundOrderInfoTx(rentRefundOrderEntity, memberTermUpdateEntity);
+
+        Long refundOrderId = carRentalPackageOrderRentRefundService.insert(rentRefundOrderEntity);
+
+        CarRentalPackageOrderRentRefundPo carRentalPackageOrderRentRefundPo = carRentalPackageOrderRentRefundService.selectById(refundOrderId);
+
+        if(Objects.isNull(carRentalPackageOrderRentRefundPo)){
+            throw new BizException("300060", "退租订单创建失败");
+        }
+
         //开始确认审核操作
         CarRentRefundVo carRentRefundVo = CarRentRefundVo.builder()
-                .orderNo(carRentalPackageRefundReq.getPackageOrderNo())
+                .orderNo(carRentalPackageOrderRentRefundPo.getOrderNo())
                 .approveFlag(Boolean.TRUE)
                 .amount(carRentalPackageRefundReq.getEstimatedRefundAmount())
                 .uid(optUid)
@@ -415,9 +429,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     public void saveApproveRefundRentOrder(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity){
         log.info("save approve refund order flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(), carRentRefundVo.getUid());
 
-        rentRefundEntity.setAuditTime(System.currentTimeMillis());
-        rentRefundEntity.setRemark(carRentRefundVo.getReason());
-        rentRefundEntity.setUpdateUid(carRentRefundVo.getUid());
+        CarRentalPackageOrderRentRefundPo updateRentRefundEntity = new CarRentalPackageOrderRentRefundPo();
+        updateRentRefundEntity.setOrderNo(rentRefundEntity.getOrderNo());
+        updateRentRefundEntity.setAuditTime(System.currentTimeMillis());
+        updateRentRefundEntity.setRemark(carRentRefundVo.getReason());
+        updateRentRefundEntity.setUpdateUid(carRentRefundVo.getUid());
 
         // 购买订单时的支付方式
         Integer payType = packageOrderEntity.getPayType();
@@ -427,10 +443,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 非 0 元退租
         if (BigDecimal.ZERO.compareTo(carRentRefundVo.getAmount()) < 0) {
             // 默认状态，审核通过
-            rentRefundEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
+            updateRentRefundEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
             if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
                 // 线下，直接设置为退款成功
-                rentRefundEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                updateRentRefundEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
                 WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
@@ -460,7 +476,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
 
                     // 赋值退款单状态及审核时间
-                    rentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                    updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
 
                 } catch (WechatPayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
@@ -469,14 +485,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         } else {
             // 0 元退租
-            rentRefundEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+            updateRentRefundEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
 
             WechatJsapiRefundOrderCallBackResource callBackResource = new WechatJsapiRefundOrderCallBackResource();
             callBackResource.setRefundStatus("SUCCESS");
             callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
             wxRefundPayService.process(callBackResource);
         }
-        carRentalPackageOrderRentRefundService.insert(rentRefundEntity);
+        carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
 
         log.info("save approve refund order flow end, order No = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getUid());
 
