@@ -430,6 +430,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         log.info("save approve refund order flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(), carRentRefundVo.getUid());
 
         CarRentalPackageOrderRentRefundPo updateRentRefundEntity = new CarRentalPackageOrderRentRefundPo();
+        updateRentRefundEntity.setOrderNo(rentRefundEntity.getOrderNo());
         updateRentRefundEntity.setAuditTime(System.currentTimeMillis());
         updateRentRefundEntity.setRemark(carRentRefundVo.getReason());
         updateRentRefundEntity.setUpdateUid(carRentRefundVo.getUid());
