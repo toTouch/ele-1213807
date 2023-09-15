@@ -302,7 +302,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             //查询退款的订单信息,获取最新一条退款订单的状态信息, 以及退款拒绝的原因。
             CarRentalPackageOrderRentRefundPo rentRefundPo = carRentalPackageOrderRentRefundService.selectLatestByPurchaseOrderNo(carRentalPackageOrder.getOrderNo());
+            log.info("find the latest rent refund order, purchase order number = {}", carRentalPackageOrder.getOrderNo());
             if(Objects.nonNull(rentRefundPo)){
+                log.info("found the latest rent refund order, refund order number = {}, refund status = {}", rentRefundPo.getOrderNo(), rentRefundPo.getRefundState());
                 carRentalPackageOrderVo.setRentRefundStatus(rentRefundPo.getRefundState());
                 carRentalPackageOrderVo.setRejectReason(rentRefundPo.getRemark());
             }
