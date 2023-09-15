@@ -445,4 +445,9 @@ public interface CacheConstant {
     String CACHE_CHARGE_POWER_CONFIG_NONE ="charge_p_conf_none:";
     String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
     String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
+
+    /**
+     * 企业配置缓存
+     */
+    String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
 }

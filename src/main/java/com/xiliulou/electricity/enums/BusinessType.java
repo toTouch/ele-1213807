@@ -60,7 +60,9 @@ public enum BusinessType {
     //分帐订单
     DIVIDE_ACCOUNT(60),
     //提现订单
-    WITHDRAW(61);
+    WITHDRAW(61),
+
+    CLOUD_BEAN(62);
 
     private final Integer business;
 

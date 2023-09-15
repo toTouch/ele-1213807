@@ -38,7 +38,7 @@ public interface EnterpriseInfoService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Integer deleteById(Long id);
 
     List<EnterpriseInfoVO> selectByPage(EnterpriseInfoQuery query);
 
@@ -55,4 +55,6 @@ public interface EnterpriseInfoService {
     Boolean checkUserType();
 
     EnterpriseInfo selectByUid(Long uid);
+
+    EnterpriseInfo queryByIdFromCache(Long enterpriseId);
 }
