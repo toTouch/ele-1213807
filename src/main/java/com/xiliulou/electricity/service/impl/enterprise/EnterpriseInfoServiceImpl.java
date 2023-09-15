@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -9,7 +10,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -20,7 +20,6 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +37,8 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -180,6 +181,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
         BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
+        enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
         enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
@@ -243,7 +245,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseCloudBeanOrder.setUid(enterpriseInfo.getUid());
         enterpriseCloudBeanOrder.setOperateUid(SecurityUtils.getUid());
         enterpriseCloudBeanOrder.setPayAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : BigDecimal.valueOf(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
-        enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN,enterpriseInfo.getUid()));
+        enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
         enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
         enterpriseCloudBeanOrder.setPayType(EnterpriseCloudBeanOrder.OFFLINE_PAYMENT);
         enterpriseCloudBeanOrder.setType(enterpriseCloudBeanRechargeQuery.getType());
