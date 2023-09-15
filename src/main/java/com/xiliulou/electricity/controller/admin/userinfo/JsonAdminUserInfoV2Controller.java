@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PayTypeEnum;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.reqparam.qry.userinfo.UserInfoQryReq;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -23,10 +25,12 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -57,6 +61,9 @@ public class JsonAdminUserInfoV2Controller {
 
     @Resource
     private UserInfoService userInfoService;
+
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 编辑会员当前套餐信息
@@ -288,11 +295,34 @@ public class JsonAdminUserInfoV2Controller {
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .tenantId(tenantId)
                 .keywords(userInfoQryReq.getKeywords())
                 .offset(Long.valueOf(userInfoQryReq.getOffset()))
                 .size(Long.valueOf(userInfoQryReq.getSize()))
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .build();
 
         List<UserInfo> userInfos = userInfoService.page(userInfoQuery);

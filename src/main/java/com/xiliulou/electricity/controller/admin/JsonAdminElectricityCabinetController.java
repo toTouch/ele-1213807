@@ -777,9 +777,30 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         if (offset < 0) {
             offset = 0;
         }
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
-                .name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).build();
+                .name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).storeId(storeId).build();
 
         return R.ok(electricityCabinetService.eleCabinetSearch(cabinetQuery));
     }
