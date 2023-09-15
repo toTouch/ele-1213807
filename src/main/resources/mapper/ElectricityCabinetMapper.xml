@@ -41,6 +41,18 @@
                 #{id}
             </foreach>
         </if>
+        <if test=" query.franchiseeIdList != null and query.franchiseeIdList.size > 0 ">
+            AND `franchisee_id` IN
+            <foreach collection="query.franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test=" query.storeIdList != null and query.storeIdList.size > 0 ">
+            AND `store_id` IN
+            <foreach collection="query.storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>

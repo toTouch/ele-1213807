@@ -1,12 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 
-import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.FranchiseeAccountQuery;
+import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +37,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminFranchiseeController extends BaseController {
+public class JsonAdminFranchiseeController extends BasicController {
     /**
      * 服务对象
      */
@@ -59,11 +61,19 @@ public class JsonAdminFranchiseeController extends BaseController {
             offset = 0L;
         }
 
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
                 .offset(offset)
                 .size(size)
                 .name(name)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .ids(permissionTriple.getLeft())
+                .build();
 
         return R.ok(franchiseeService.search(franchiseeQuery));
     }

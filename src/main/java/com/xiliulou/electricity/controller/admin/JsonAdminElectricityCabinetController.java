@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
@@ -11,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -28,6 +28,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
@@ -44,7 +45,7 @@ import java.util.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminElectricityCabinetController extends BaseController {
+public class JsonAdminElectricityCabinetController extends BasicController {
 
     /**
      * 服务对象
@@ -129,6 +130,12 @@ public class JsonAdminElectricityCabinetController extends BaseController {
             offset = 0L;
         }
 
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -161,7 +168,10 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .endTime(endTime)
                 .eleIdList(eleIdList)
                 .id(id)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
@@ -177,6 +187,12 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
                         @RequestParam(value = "modelId", required = false) Integer modelId) {
+
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -208,7 +224,10 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .eleIdList(eleIdList)
                 .modelId(modelId)
                 .sn(sn)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
     }
