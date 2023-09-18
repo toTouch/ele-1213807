@@ -2272,10 +2272,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 订单支付状态不匹配
-        if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), buyCarRentalPackageOrderEntity.getPayState())) {
+        if (!(PayStateEnum.UNPAID.getCode().equals(buyCarRentalPackageOrderEntity.getPayState()) || PayStateEnum.CANCEL.getCode().equals(buyCarRentalPackageOrderEntity.getPayState()))) {
             log.error("handBuyRentalPackageOrderSuccess failed, car_rental_package_order processed, order_no is {}", buyOrderNo);
             return Pair.of(false, "租车套餐购买订单已处理");
         }
+       /*
+
+        if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), buyCarRentalPackageOrderEntity.getPayState())) {
+            log.error("handBuyRentalPackageOrderSuccess failed, car_rental_package_order processed, order_no is {}", buyOrderNo);
+            return Pair.of(false, "租车套餐购买订单已处理");
+        }*/
 
         // 2. 处理租车套餐押金缴纳订单
         String depositPayOrderNo = buyCarRentalPackageOrderEntity.getDepositPayOrderNo();
