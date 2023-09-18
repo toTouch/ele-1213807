@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser" id="EnterpriseChannelUserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="invitationWay" column="invitation_way" jdbcType="INTEGER"/>
+        <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
+        <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EnterpriseChannelUserMap">
+        select
+          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
+        from t_enterprise_channel_user
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EnterpriseChannelUserMap">
+        select
+          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
+        from t_enterprise_channel_user
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EnterpriseChannelUserMap">
+        select
+          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
+        from t_enterprise_channel_user
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="invitationWay != null">
+                and invitation_way = #{invitationWay}
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="renewalStatus != null">
+                and renewal_status = #{renewalStatus}
+            </if>
+            <if test="inviterId != null">
+                and inviter_id = #{inviterId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_channel_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            invitation_way,
+            enterprise_id,
+            franchisee_id,
+            tenant_id,
+            renewal_status,
+            create_time,
+            update_time,
+            remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{invitationWay},
+            #{enterpriseId},
+            #{franchiseeId},
+            #{tenantId},
+            #{renewalStatus},
+            #{createTime},
+            #{updateTime},
+            #{remark}
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_enterprise_channel_user
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="invitationWay != null">
+                invitation_way = #{invitationWay},
+            </if>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+            <if test="inviterId != null">
+                inviter_id = #{inviterId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_enterprise_channel_user where id = #{id}
+    </delete>
+
+</mapper>

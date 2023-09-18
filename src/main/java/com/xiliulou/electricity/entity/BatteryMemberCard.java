@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -101,7 +102,8 @@ public class BatteryMemberCard {
      */
     private String remark;
     /**
-     * 套餐业务类型：0，换电套餐；1，车电一体套餐
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * @see BatteryMemberCardBusinessTypeEnum
      */
     private Integer businessType;
 
