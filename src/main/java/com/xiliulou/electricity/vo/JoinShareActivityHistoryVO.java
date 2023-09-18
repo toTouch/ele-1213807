@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +38,32 @@ public class JoinShareActivityHistoryVO {
      * 参与人姓名
      */
     private String joinName;
+
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
+
+    /**
+     * 邀请人UID
+     */
+    private Long inviterUid;
+
+    /**
+     * 邀请人姓名
+     */
+    private String inviterName;
+
+    /**
+     * 邀请人电话
+     */
+    private String inviterPhone;
+
+    /**
+     * 活动名称
+     */
+    private String activityName;
     
     /**
      * 参与开始时间

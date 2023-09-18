@@ -43,7 +43,6 @@
         from t_face_recognize_user_record frur
         left join t_user_info tui on tui.uid=frur.uid
         where frur.del_flag=0
-
         <if test="tenantId != null">
             and frur.tenant_id = #{tenantId}
         </if>
@@ -53,6 +52,9 @@
         <if test="phone != null and phone != ''">
             and tui.phone = #{phone}
         </if>
+        <if test="uid != null">
+            and tui.uid = #{uid}
+        </if>
         <if test="userName != null and userName != '' ">
             and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
         </if>
@@ -61,6 +63,18 @@
         </if>
         <if test="endTime != null">
             and frur.create_time &lt;= #{endTime}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null and storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
         order by frur.create_time desc
         limit #{offset}, #{size}
@@ -81,6 +95,9 @@
         <if test="phone != null and phone != ''">
             and tui.phone = #{phone}
         </if>
+        <if test="uid != null">
+            and tui.uid = #{uid}
+        </if>
         <if test="userName != null and userName != '' ">
             and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
         </if>
@@ -89,6 +106,18 @@
         </if>
         <if test="endTime != null">
             and frur.create_time &lt;= #{endTime}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null and storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 

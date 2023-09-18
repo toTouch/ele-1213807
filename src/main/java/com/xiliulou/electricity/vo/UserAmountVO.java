@@ -21,6 +21,8 @@ public class UserAmountVO {
 
     private Long uid;
 
+    private String name;
+
     private Long createTime;
 
     private Long updateTime;

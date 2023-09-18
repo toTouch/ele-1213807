@@ -78,6 +78,10 @@ public class ElectricityCabinetBoxVO {
      */
     private String batteryType;
     /**
+     * 仓门电池短类型
+     */
+    private String batteryShortType;
+    /**
      * 电池电压
      */
     private Double batteryV;

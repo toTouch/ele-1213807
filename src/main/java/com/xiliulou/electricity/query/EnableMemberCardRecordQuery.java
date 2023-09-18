@@ -37,6 +37,7 @@ public class EnableMemberCardRecordQuery {
     private Integer tenantId;
 
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 
     private Long uid;
 

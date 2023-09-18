@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -85,6 +86,27 @@ public class ShareActivityAddAndUpdateQuery {
      * 可发放优惠券的套餐
      */
     private List<Long> membercardIds;
+
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
+
+    /**
+     * 换电套餐IDs
+     */
+    private List<Long> batteryPackages;
+
+    /**
+     * 租车套餐IDs
+     */
+    private List<Long> carRentalPackages;
+
+    /**
+     * 车电一体套餐IDs
+     */
+    private List<Long> carWithBatteryPackages;
 
 }
 

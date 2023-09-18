@@ -129,4 +129,74 @@
         from t_user_channel
         where uid = #{uid}
     </select>
+
+    <select id="queryActivityList" resultMap="UserChannelMap">
+        select
+            u.id,
+            u.uid,
+            u.operate_uid,
+            u.create_time,
+            u.update_time,
+            u.tenant_id
+        from t_user_channel u
+        left join t_user_info ui on u.uid = ui.uid
+        <where>
+            u.tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and ui.name like concat('%',#{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and ui.phone = #{phone}
+            </if>
+            <if test="uid != null">
+                and ui.uid = #{uid}
+            </if>
+            <if test="franchiseeIds != null">
+                and ui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and ui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="queryActivityCount" resultType="long">
+        select
+            count(*)
+        from t_user_channel u
+        left join t_user_info ui on u.uid = ui.uid
+        <where>
+            u.tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and ui.name like concat('%',#{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and ui.phone = #{phone}
+            </if>
+            <if test="uid != null">
+                and ui.uid = #{uid}
+            </if>
+            <if test="franchiseeIds != null">
+                and ui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null">
+                and ui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
 </mapper>

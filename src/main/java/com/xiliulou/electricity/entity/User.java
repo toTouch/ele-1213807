@@ -144,8 +144,11 @@ public class User {
 
 
 	//用户来源，1：扫码，2：邀请，3：其它
+	@Deprecated
 	public static final Integer SOURCE_TYPE_SCAN=1;
+	@Deprecated
 	public static final Integer SOURCE_TYPE_INVITE=2;
+	@Deprecated
 	public static final Integer SOURCE_TYPE_ONLINE=3;
 
 

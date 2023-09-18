@@ -3,12 +3,14 @@ package com.xiliulou.electricity.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 优惠券表(TCoupon)实体类
@@ -97,4 +99,28 @@ public class UserCouponVO {
     private String userName;
 
     private Integer superposition;
+
+    private String description;
+
+    /**
+     * 是否指定套餐使用 1-指定套餐, 2-不指定套餐,适用于所有套餐
+     * @see SpecificPackagesEnum
+     */
+    private Integer specificPackages;
+
+    /**
+     * 换电套餐列表
+     */
+    private List<BatteryMemberCardVO> batteryPackages;
+
+    /**
+     * 租车套餐列表
+     */
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    /**
+     * 车电一体套餐列表
+     */
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
+
 }

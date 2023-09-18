@@ -40,6 +40,10 @@ public class ShareActivityOperateRecord {
      */
     private String memberCard;
     /**
+     * 3.0 新增套餐信息
+     */
+    private String packageInfo;
+    /**
      * 租户id
      */
     private Integer tenantId;

@@ -13,10 +13,12 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -52,7 +54,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
@@ -74,7 +76,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
@@ -104,7 +106,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
@@ -123,7 +125,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
@@ -153,7 +155,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
@@ -172,7 +174,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).name(name)
@@ -203,7 +205,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
@@ -223,7 +225,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).storeId(storeId)
@@ -255,7 +257,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
@@ -275,7 +277,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate)
@@ -306,7 +308,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(Collections.emptyList());
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
@@ -325,7 +327,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
         if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
+            return R.ok(0);
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
@@ -362,7 +364,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return Triple.of(false, "ELECTRICITY.0066", "用户权限不足");
+            return Triple.of(false, null, Collections.emptyList());
         }
 
         return Triple.of(true, null, null);

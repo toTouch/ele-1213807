@@ -1,0 +1,50 @@
+package com.xiliulou.electricity.enums;
+
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 租车套餐适用类型枚举<br>
+ * 实际代表哪类用户能用
+ * <pre>
+ *     1 - 全部用户
+ *     2 - 新用户
+ *     3 - 老用户
+ * </pre>
+ *
+ * @author xiaohui.song
+ **/
+@Getter
+@AllArgsConstructor
+public enum ApplicableTypeEnum implements BasicEnum<Integer, String> {
+
+    ALL(0, "全部"),
+    NEW(1, "新租套餐"),
+    OLD(2, "续租套餐"),
+    ;
+
+    private final Integer code;
+
+    private final String desc;
+
+    /**
+     * 新用户适用套餐
+     * @return
+     */
+    public static List<Integer> newUserApplicable() {
+        return Arrays.asList(ApplicableTypeEnum.ALL.getCode(), ApplicableTypeEnum.NEW.getCode());
+    }
+
+    /**
+     * 老用户适用套餐
+     * @return
+     */
+    public static List<Integer> oldUserApplicable() {
+        return Arrays.asList(ApplicableTypeEnum.ALL.getCode(), ApplicableTypeEnum.OLD.getCode());
+    }
+
+}

@@ -83,6 +83,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
 
 
@@ -385,12 +388,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //判断套餐是否限次
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
-        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
             return;
         }
 
-        if (Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || !Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
             return;
         }
 

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -60,6 +61,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                        @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -80,10 +82,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
 
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<Long> franchiseeIds = null;
@@ -105,6 +104,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .phone(phone)
+                .uid(uid)
                 .payType(payType)
                 .refundOrderType(refundOrderType)
                 .name(name).build();
@@ -120,6 +120,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
         //用户区分
@@ -131,10 +132,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
 
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
+            return R.ok(NumberConstant.ZERO);
         }
 
         List<Long> franchiseeIds = null;
@@ -155,7 +153,8 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(phone).build();
+                .phone(phone)
+                .uid(uid).build();
 
         return eleRefundOrderService.queryCount(eleRefundQuery);
     }

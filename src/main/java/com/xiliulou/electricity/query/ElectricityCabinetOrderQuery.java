@@ -52,5 +52,7 @@ public class ElectricityCabinetOrderQuery {
     private Integer oldCellNo;
     
     //private Long uid;
+    private List<Long> franchiseeIds;
 
+    private List<Long> storeIds;
 }

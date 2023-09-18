@@ -2,10 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
-import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -20,8 +19,23 @@ import java.util.Map;
  */
 public interface ElectricityCarModelService {
 
+    /**
+     * 根据主键ID进行更新
+     * @param carModel
+     * @return
+     */
+    boolean updateById(ElectricityCarModel carModel);
 
-      /**
+    /**
+     * 根据门店ID集，获取指定数量的数据，已租数量降序
+     * @param size 取值范围
+     * @param storeIdList 门店ID集
+     * @return 车辆型号集
+     */
+    List<ElectricityCarModelVO> selectByStoreIdListLimit(Integer size, List<Long> storeIdList);
+
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -66,4 +80,6 @@ public interface ElectricityCarModelService {
     List<Long> selectByStoreIds(List<Long> storeIds);
 
     List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId);
+
+    List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
 }

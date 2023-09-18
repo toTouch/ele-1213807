@@ -26,12 +26,13 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 加盟商id
      */
+    @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
 
     /**
      * 城市Id
      */
-    @NotNull(message = "城市不能为空!")
+//    @NotNull(message = "城市不能为空!")
     private Integer cid;
 
     /**
@@ -82,7 +83,6 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 保险说明
      */
-    @NotEmpty(message = "保险说明不能为空!")
     private String instruction;
 
     /**
@@ -91,5 +91,18 @@ public class FranchiseeInsuranceAddAndUpdate {
     private String batteryType;
 
     private List<String> batteryTypeList;
+
+    /**
+     * 门店
+     */
+    private Long storeId;
+    /**
+     * 车辆型号
+     */
+    private Long carModelId;
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 
 }

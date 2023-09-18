@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
@@ -36,7 +37,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleDepositOrderController {
+public class JsonAdminEleDepositOrderController extends BaseController {
     /**
      * 服务对象
      */
@@ -57,6 +58,7 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -74,11 +76,9 @@ public class JsonAdminEleDepositOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //隔离门店租车数据
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -100,6 +100,7 @@ public class JsonAdminEleDepositOrderController {
                 .size(size)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
@@ -119,6 +120,7 @@ public class JsonAdminEleDepositOrderController {
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
@@ -130,7 +132,6 @@ public class JsonAdminEleDepositOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -153,6 +154,7 @@ public class JsonAdminEleDepositOrderController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
@@ -259,6 +261,18 @@ public class JsonAdminEleDepositOrderController {
         return eleDepositOrderService.adminPayRentCarDeposit(rentCarDepositAdd);
 
     }
+
+    /**
+     * 查询用户押金是否可退，以及保险信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping(value = "/admin/eleDepositOrder/queryDepositDetail/{orderId}")
+    public R queryDepositAndInsuranceDetail(@PathVariable("orderId") String orderId) {
+
+        return returnTripleResult(eleDepositOrderService.queryDepositAndInsuranceDetail(orderId));
+    }
+
 
 
 }

@@ -8,13 +8,13 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
-import com.xiliulou.electricity.constant.ConsumerConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.dto.BatteryPowerNotifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.TemplateConfigService;
@@ -35,7 +35,8 @@ import java.util.Objects;
  */
 @Component
 @Slf4j
-@RocketMQMessageListener(topic = MqConstant.TOPIC_BATTERY_POWER, consumerGroup = ConsumerConstant.BATTERY_CONSUMER)
+@RocketMQMessageListener(topic = MqProducerConstant.TOPIC_BATTERY_POWER, consumerGroup = MqConsumerConstant.BATTERY_CONSUMER,
+        consumeThreadMax = 2)
 public class BatteryLowerPowerConsumeListener implements RocketMQListener<String> {
     XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("LOWER_POWER_CONSUMER_POOL", 4, "lower_power_thread");
     @Autowired
@@ -79,7 +80,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
         }
 
         Long uid = electricityBattery.getUid();
-        if(Objects.isNull(uid)) {
+        if (Objects.isNull(uid)) {
             return;
         }
 

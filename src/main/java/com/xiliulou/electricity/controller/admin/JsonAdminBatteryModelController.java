@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -43,6 +45,15 @@ public class JsonAdminBatteryModelController extends BaseController {
             offset = 0L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
         BatteryModelQuery query = BatteryModelQuery.builder()
                 .size(size)
                 .offset(offset)
@@ -59,6 +70,15 @@ public class JsonAdminBatteryModelController extends BaseController {
     @GetMapping("/admin/battery/model/count")
     public R pageCount(@RequestParam(value = "batteryType", required = false) String batteryType) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+
         BatteryModelQuery query = BatteryModelQuery.builder()
                 .batteryType(batteryType)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -73,6 +93,11 @@ public class JsonAdminBatteryModelController extends BaseController {
     @GetMapping("/admin/battery/model/all")
     public R selectBatteryTypeAll() {
         return R.ok(batteryModelService.selectBatteryTypeAll());
+    }
+
+    @GetMapping("/admin/simple/battery/model/all")
+    public R selectBatteryVAll() {
+        return R.ok(batteryModelService.selectBatteryVAll());
     }
 
     /**

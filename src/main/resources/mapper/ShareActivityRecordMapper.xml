@@ -9,7 +9,7 @@
         tsar.id as id, tsar.activity_id as activityId, tsar.count as count,
 		tsar.create_time as createTime, tsar.update_time as updateTime,
 		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
-		tui.phone as phone,tui.name as name,tsa.name as activityName
+		tui.phone as phone,tui.name as name,tsa.name as activityName,tsar.uid as uid
 		from t_share_activity_record as tsar
 		left join t_user_info as tui on tui.uid=tsar.uid
 		left join t_share_activity as tsa on tsar.activity_id=tsa.id
@@ -20,6 +20,9 @@
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
 			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
+			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
             </if>
@@ -29,6 +32,18 @@
             <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 		order by tsar.update_time desc
 		<if test="offset != null and size != null">
@@ -47,6 +62,9 @@
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
 			</if>
+			<if test="uid != null">
+				and tui.uid = #{uid}
+			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
             </if>
@@ -56,6 +74,18 @@
             <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 	</select>
 

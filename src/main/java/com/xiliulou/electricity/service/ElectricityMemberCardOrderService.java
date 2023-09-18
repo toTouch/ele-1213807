@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -16,12 +17,19 @@ import java.util.Set;
 
 public interface ElectricityMemberCardOrderService {
 
+    /**
+     * 根据用户ID查询对应状态的记录
+     * @param tenantId
+     * @param uid
+     * @param status
+     * @return
+     */
+    Integer selectCountByUid(Integer tenantId, Long uid, Integer status);
 
     R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
-    @Deprecated
-    R queryUserList(Long offset, Long size, Long startTime, Long endTime);
-    
+    Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
+
     List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
     
     Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery);
@@ -29,10 +37,6 @@ public interface ElectricityMemberCardOrderService {
     BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId);
 
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
-
-    @Deprecated
-    R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
-
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
@@ -46,13 +50,15 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline);
+    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline ,String applyReason);
 
     R enableMemberCardForLimitTime();
 
     R enableOrDisableMemberCardIsLimitTime();
 
-    R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid);
+    R adminDisableMemberCard(Long uid, Integer days);
+
+    R adminEnableMemberCard(Long uid);
 
     R cleanBatteryServiceFee(Long uid);
 
@@ -63,8 +69,6 @@ public interface ElectricityMemberCardOrderService {
     R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
     R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
-
-    R payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
 
     Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard);
 
@@ -84,17 +88,14 @@ public interface ElectricityMemberCardOrderService {
 
     void batteryMemberCardExpireReminder();
 
-    @Deprecated
-    void carMemberCardExpireReminder();
-
     void systemEnableMemberCardTask();
-
-    void expireReminderHandler();
 
     BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery);
 
+    @Deprecated
     BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord, ServiceFeeUserInfo serviceFeeUserInfo);
 
+    @Deprecated
     BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays);
 
     int insert(ElectricityMemberCardOrder electricityMemberCardOrder);
@@ -121,7 +122,7 @@ public interface ElectricityMemberCardOrderService {
     
     R disableMemberCardForRollback();
 
-    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
+//    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
 
     Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds);
 
@@ -130,4 +131,26 @@ public interface ElectricityMemberCardOrderService {
     List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet);
 
     Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds);
+
+    Integer checkOrderByMembercardId(Long membercardId);
+
+    void handlerBatteryMembercardPaymentNotify(BatteryMemberCard batteryMemberCard,ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo);
+
+    Integer updateStatusByOrderNo(ElectricityMemberCardOrder oldMemberCardOrder);
+
+    Integer batchUpdateStatusByOrderNo(List<String> orderIds,Integer useStatus);
+
+    Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query);
+
+    Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query);
+
+    Triple<Boolean, String, Object> renewalUserBatteryMemberCard(UserBatteryMembercardQuery query);
+
+    Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid);
+
+    Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo();
+
+    List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
+
+    void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 }

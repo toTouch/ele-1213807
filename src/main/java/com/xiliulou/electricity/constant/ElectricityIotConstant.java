@@ -1,20 +1,17 @@
 package com.xiliulou.electricity.constant;
 
+import com.google.api.client.util.Sets;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 
-/**
- * @author: lxc
- * @Date: 2020/12/28 13:34
- * @Description:
- */
 public class ElectricityIotConstant {
     /**
      * 命令映射处理的handler
      */
     private static final Map<String, String> COMMAND_HANDLER_MAPS = Maps.newHashMap();
+    private static final Set<String> SEND_COMMAND_SETS = Sets.newHashSet();
 
     public static final String ICID_COMMAND_IOT_HANDLER = "icIdCommandIotHandler";
     public static final String NORMAL_API_EXCHANGE_HANDLER = "normalApiExchangeHandler";
@@ -28,10 +25,6 @@ public class ElectricityIotConstant {
      * 电池变化
      */
     public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
-    /**
-     * 邮箱上报告警
-     */
-    public static final String NORMAL_ELE_EMAIL_WARN_MSG_HANDLER = "normalEleEmailWarnMsgHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
@@ -41,11 +34,9 @@ public class ElectricityIotConstant {
     public static final String NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER = "normalOffLineEleExchangeHandler";
     public static final String NORMAL_OTHER_CONFIG_HANDLER = "normalOtherConfigHandler";
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
-    public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
-    public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
     public static final String NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER = "highTemperatureAlarmHandler";
 
     /**
@@ -66,8 +57,15 @@ public class ElectricityIotConstant {
 
     public static final String NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER = "normalOtherSettingParamTemplateHandler";
 
+    /**
+     * 电池满仓提醒
+     */
+    public static final String FULL_BATTERY_WARNING_HANDLER = "fullBatteryWarningHandler";
+
 
     public static final String NORMAL_ELE_CHARGE_POWER_HANDLER = "normalEleChargePowerHandler";
+
+    public static final String NEW_HARDWARE_WARN_MSG_HANDLER = "hardwareWarnMsgHandler";
 
 
     public static String acquireChargeHandlerName(String command) {
@@ -75,87 +73,7 @@ public class ElectricityIotConstant {
     }
 
     public static boolean isLegalCommand(String command) {
-        return Objects.equals(command, CUPBOARD_COMMAND_RESET_PASSWORD)
-                || Objects.equals(command, ELE_COMMAND_ORDER_OPEN_OLD_DOOR)
-                || Objects.equals(command, ELE_COMMAND_ORDER_OPEN_NEW_DOOR)
-                || Objects.equals(command, ELE_COMMAND_RENT_OPEN_DOOR)
-                || Objects.equals(command, ELE_COMMAND_RETURN_OPEN_DOOR)
-                || Objects.equals(command, ELE_COMMAND_CELL_OPEN_DOOR)
-                || Objects.equals(command, SELF_OPEN_CELL)
-                || Objects.equals(command, ELE_COMMAND_CORE_OPEN_DOOR)
-                || Objects.equals(command, ELE_COMMAND_CELL_ALL_OPEN_DOOR)
-                || Objects.equals(command, ELE_COMMAND_CELL_OPEN_LIGHT)
-                || Objects.equals(command, ELE_COMMAND_CELL_CLOSE_LIGHT)
-                || Objects.equals(command, ELE_COMMAND_CORE_OPEN_LIGHT)
-                || Objects.equals(command, ELE_COMMAND_CORE_CLOSE_LIGHT)
-                || Objects.equals(command, ELE_COMMAND_CELL_OPEN_HEAT)
-                || Objects.equals(command, ELE_COMMAND_CELL_CLOSE_HEAT)
-                || Objects.equals(command, ELE_COMMAND_CELL_OPEN_FAN)
-                || Objects.equals(command, ELE_COMMAND_CELL_CLOSE_FAN)
-                || Objects.equals(command, ELE_COMMAND_CORE_OPEN_FAN)
-                || Objects.equals(command, ELE_COMMAND_CORE_CLOSE_FAN)
-                || Objects.equals(command, ELE_COMMAND_CELL_CHARGE_OPEN)
-                || Objects.equals(command, ELE_COMMAND_CELL_CHARGE_CLOSE)
-                || Objects.equals(command, ELE_COMMAND_CELL_SET_VOLTAGE)
-                || Objects.equals(command, ELE_COMMAND_CELL_SET_CURRENT)
-                || Objects.equals(command, ELE_COMMAND_CELL_UPDATE)
-                || Objects.equals(command, ELE_COMMAND_OPERATE)
-                || Objects.equals(command, ELE_COMMAND_ORDER_OLD_DOOR_OPEN)
-                || Objects.equals(command, ELE_COMMAND_ORDER_OLD_DOOR_CHECK)
-                || Objects.equals(command, ELE_COMMAND_ORDER_NEW_DOOR_OPEN)
-                || Objects.equals(command, ELE_COMMAND_ORDER_NEW_DOOR_CHECK)
-                || Objects.equals(command, ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
-                || Objects.equals(command, ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)
-                || Objects.equals(command, ELE_COMMAND_RENT_ORDER_RSP)
-                || Objects.equals(command, ELE_COMMAND_RETURN_ORDER_RSP)
-                || Objects.equals(command, ELE_COMMAND_SELF_OPEN_CELL_RSP)
-                || Objects.equals(command, ELE_COMMAND_CELL_REPORT_INFO)
-                || Objects.equals(command, ELE_COMMAND_BATTERY_REPORT_INFO)
-                || Objects.equals(command, EXCHANGE_CABINET)
-                || Objects.equals(command, ELE_COMMAND_CELL_CONFIG)
-                || Objects.equals(command, ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION)
-                || Objects.equals(command, ELE_COMMAND_POWER_CONSUMPTION)
-                || Objects.equals(command, ELE_COMMAND_POWER_CONSUMPTION_RSP)
-                || Objects.equals(command, ELE_COMMAND_CUPBOARD_REQUEST_LOG)
-                || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG)
-                || Objects.equals(command, ELE_COMMAND_BATTERY_SYNC_INFO)
-                || Objects.equals(command, ELE_COMMAND_CUPBOARD_RESTART)
-                || Objects.equals(command, ELE_COMMAND_WARN_MSG_RSP)
-                || Objects.equals(command, ELE_COMMAND_UNLOCK_CABINET)
-                || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG_READ)
-                || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG_RSP)
-                || Objects.equals(command, ELE_COMMAND_START_OPEN_CHECK_CELL)
-                || Objects.equals(command, API_RENT_ORDER)
-                || Objects.equals(command, API_RENT_ORDER_RSP)
-                || Objects.equals(command, API_RETURN_ORDER)
-                || Objects.equals(command, API_RETURN_ORDER_RSP)
-                || Objects.equals(command, API_EXCHANGE_ORDER)
-                || Objects.equals(command, API_EXCHANGE_ORDER_RSP)
-                || Objects.equals(command, API_ORDER_OPER_HISTORY)
-                || Objects.equals(command, GET_CARD_NUM_ICCID)
-                || Objects.equals(command, ELE_COMMAND_ICCID_GET_RSP)
-                || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_RSP)
-                || Objects.equals(command, OFFLINE_EXCHANGE_ORDER_ACK_RSP)
-                || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS)
-                || Objects.equals(command, EXCHANGE_ORDER_MANAGE_SUCCESS)
-                || Objects.equals(command, ELE_OTHER_SETTING)
-                || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
-                || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
-                || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
-                || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, TAKE_BATTERY_MODE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
-                || Objects.equals(command, OTA_OPERATE)
-                || Objects.equals(command, OTA_OPERATE_RSP)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
-                || Objects.equals(command, RESTART_APP)
-                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
-                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
-                || Objects.equals(command, ELE_BATTERY_MULTI_PARAMS_READ)
-                || Objects.equals(command, OTHER_SETTING_PARAM_TEMPLATE)
-                || Objects.equals(command, CALC_ELE_POWER_REPORT_ACK);
+        return SEND_COMMAND_SETS.contains(command);
 
     }
 
@@ -267,7 +185,6 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";
 
     //上报异常
-    public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
 
     //解锁换电柜
     public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
@@ -360,18 +277,7 @@ public class ElectricityIotConstant {
 
     public static final String OTA_OPERATE_RSP = "ota_operate_rsp";
 
-    /**
-     * sim上报
-     */
-    public static final String SIM_TRAFFIC_STATISTICS = "iccid_traffic_statistics";
-    public static final String SIM_TRAFFIC_STATISTICS_RSP = "sim_card_statistics_rsp";
-
     public static final String RESTART_APP = "restart_app";
-    /**
-     * 邮箱上报告警
-     */
-    public static final String ELE_EMAIL_WARN_MSG = "email_warn_msg";
-
     /**
      * 重新开启App循环检测
      */
@@ -419,8 +325,102 @@ public class ElectricityIotConstant {
      */
     public static final String CALC_ELE_POWER_REPORT_ACK = "calculate_consumption_rsp_ack";
 
+    /**
+     * 满仓提醒
+     */
+    public static final String FULL_BATTERY_WARNING = "full_battery_warning";
+
+
+    /**
+     * 新硬件上报
+     */
+    public static final String NEW_HARDWARE_WARN_MSG = "hardware_warn_msg";
+    public static final String NEW_HARDWARE_WARN_MSG_ACK = "hardware_warn_msg_ack";
+
 
     static {
+
+        SEND_COMMAND_SETS.add(CUPBOARD_COMMAND_RESET_PASSWORD);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_OPEN_OLD_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_OPEN_NEW_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_RENT_OPEN_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_RETURN_OPEN_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_OPEN_DOOR);
+        SEND_COMMAND_SETS.add(SELF_OPEN_CELL);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CORE_OPEN_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_ALL_OPEN_DOOR);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_OPEN_LIGHT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CLOSE_LIGHT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CORE_OPEN_LIGHT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CORE_CLOSE_LIGHT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_OPEN_HEAT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CLOSE_HEAT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_OPEN_FAN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CLOSE_FAN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CORE_OPEN_FAN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CORE_CLOSE_FAN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CHARGE_OPEN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CHARGE_CLOSE);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_SET_VOLTAGE);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_SET_CURRENT);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_UPDATE);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_OPERATE);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_OLD_DOOR_OPEN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_OLD_DOOR_CHECK);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_NEW_DOOR_OPEN);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ORDER_NEW_DOOR_CHECK);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_RENT_ORDER_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_RETURN_ORDER_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_SELF_OPEN_CELL_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_REPORT_INFO);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_BATTERY_REPORT_INFO);
+        SEND_COMMAND_SETS.add(EXCHANGE_CABINET);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CELL_CONFIG);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_POWER_CONSUMPTION);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_POWER_CONSUMPTION_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CUPBOARD_REQUEST_LOG);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_OTHER_CONFIG);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_BATTERY_SYNC_INFO);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_CUPBOARD_RESTART);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_UNLOCK_CABINET);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_OTHER_CONFIG_READ);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_OTHER_CONFIG_RSP);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_START_OPEN_CHECK_CELL);
+        SEND_COMMAND_SETS.add(API_RENT_ORDER);
+        SEND_COMMAND_SETS.add(API_RENT_ORDER_RSP);
+        SEND_COMMAND_SETS.add(API_RETURN_ORDER);
+        SEND_COMMAND_SETS.add(API_RETURN_ORDER_RSP);
+        SEND_COMMAND_SETS.add(API_EXCHANGE_ORDER);
+        SEND_COMMAND_SETS.add(API_EXCHANGE_ORDER_RSP);
+        SEND_COMMAND_SETS.add(API_ORDER_OPER_HISTORY);
+        SEND_COMMAND_SETS.add(GET_CARD_NUM_ICCID);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_ICCID_GET_RSP);
+        SEND_COMMAND_SETS.add(OFFLINE_ELE_EXCHANGE_ORDER_RSP);
+        SEND_COMMAND_SETS.add(OFFLINE_EXCHANGE_ORDER_ACK_RSP);
+        SEND_COMMAND_SETS.add(OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS);
+        SEND_COMMAND_SETS.add(EXCHANGE_ORDER_MANAGE_SUCCESS);
+        SEND_COMMAND_SETS.add(ELE_OTHER_SETTING);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_NEW_EXCHANGE_ORDER);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP);
+        SEND_COMMAND_SETS.add(NEW_HARDWARE_WARN_MSG_ACK);
+        SEND_COMMAND_SETS.add(CALC_ELE_POWER_REPORT_ACK);
+        SEND_COMMAND_SETS.add(OTHER_SETTING_PARAM_TEMPLATE);
+        SEND_COMMAND_SETS.add(ELE_BATTERY_MULTI_PARAMS_READ);
+        SEND_COMMAND_SETS.add(ELE_BATTERY_MULTI_PARAM_SETTING);
+        SEND_COMMAND_SETS.add(ELE_COMMAND_WARN_MSG_NOTIFY);
+        SEND_COMMAND_SETS.add(RESTART_APP);
+        SEND_COMMAND_SETS.add(OTA_OPERATE_RSP);
+        SEND_COMMAND_SETS.add(OTA_OPERATE);
+        SEND_COMMAND_SETS.add(CUPBOARD_OPERATING_RECORD);
+        SEND_COMMAND_SETS.add(TAKE_BATTERY_MODE);
+        SEND_COMMAND_SETS.add(ELE_CELL_CLOSE_CHARGE);
+        SEND_COMMAND_SETS.add(CUPBOARD_RESUME_CYCLE);
+        SEND_COMMAND_SETS.add(ELE_CELL_OPEN_CHARGE);
+
+
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, NORMAL_ELE_OPERATE_HANDLER);
@@ -449,7 +449,6 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, NORMAL_POWER_CONSUMPTION_HANDLER);
-        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_RSP, NORMAL_WARN_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, NORMAL_OTHER_CONFIG_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_OTHER_SETTING, NORMAL_OTHER_CONFIG_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_OTHER_CONFIG_RSP_V2, NORMAL_OTHER_CONFIG_HANDLER);
@@ -515,15 +514,6 @@ public class ElectricityIotConstant {
          * 物理记录操作回调
          */
         COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER);
-        /**
-         * 流量上报
-         */
-        COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
-        COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS_RSP, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
-        /**
-         * 柜机上报告警发邮件
-         */
-        COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
 
         /**
          * ota升级
@@ -552,5 +542,16 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT, NORMAL_ELE_CHARGE_POWER_HANDLER);
         COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT_ACK, NORMAL_ELE_CHARGE_POWER_HANDLER);
 
+        /**
+         * 满仓提醒
+         */
+        COMMAND_HANDLER_MAPS.put(FULL_BATTERY_WARNING, FULL_BATTERY_WARNING_HANDLER);
+
+        /**
+         * 新警告故障通知
+         */
+
+        COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG, NEW_HARDWARE_WARN_MSG_HANDLER);
+        COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG_ACK, NEW_HARDWARE_WARN_MSG_HANDLER);
     }
 }

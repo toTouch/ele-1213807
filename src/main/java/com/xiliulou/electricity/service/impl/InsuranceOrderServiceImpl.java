@@ -6,14 +6,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
-import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
-import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -23,6 +22,8 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,28 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
+    /**
+     * 根据来源订单编码、类型查询保险订单信息
+     *
+     * @param sourceOrderNo 来源订单编码
+     * @param insuranceType 类型：0-电、1-车、2-车电
+     * @return 保险订单
+     */
+    @Slave
+    @Override
+    public InsuranceOrder selectBySourceOrderNoAndType(String sourceOrderNo, Integer insuranceType) {
+        if (!ObjectUtils.allNotNull(sourceOrderNo, insuranceType)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        LambdaQueryWrapper<InsuranceOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(InsuranceOrder::getSourceOrderNo, sourceOrderNo).eq(InsuranceOrder::getInsuranceType, insuranceType);
+        return insuranceOrderMapper.selectOne(queryWrapper);
+    }
+
     @Slave
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
@@ -95,17 +118,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Override
     public R createOrder(InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
@@ -118,31 +138,26 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
-        //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("CREATE INSURANCE_ORDER ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("CREATE INSURANCE_ORDER ERROR! user not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -156,9 +171,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("100310", "已购买保险");
         }
 
-        //查询保险
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrderAdd.getInsuranceId());
-
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceOrderAdd.getInsuranceId());
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100305", "未找到保险!");
@@ -173,13 +186,20 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("100305", "未找到保险");
         }
 
+        if (Objects.nonNull(insuranceUserInfo)) {
+            FranchiseeInsurance userBindFranchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
+            if (Objects.nonNull(userBindFranchiseeInsurance) && !Objects.equals(userBindFranchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getSimpleBatteryType())) {
+                return R.fail("100310", "保险类型不一致");
+            }
+        }
+
         //生成保险订单
         String orderId = generateOrderId(user.getUid());
 
         InsuranceOrder insuranceOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(orderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchisee.getId())
@@ -280,20 +300,19 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-//            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
 
         // TODO: 2023/1/6  HPBUG
-        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+/*        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBattery)) {
             log.error("queryInsurance  ERROR! not pay deposit,uid={}", user.getUid());
             //返回成功为了兼容未更新的小程序
             return R.ok();
-        }
+        }*/
+        String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
 
-
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(), tenantId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeIdAndSimpleBatteryType(userInfo.getFranchiseeId(), batteryType, tenantId));
     }
 
     @Override
@@ -320,10 +339,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         String batteryType = null;
+        String batteryV = null;
         if (Objects.nonNull(model)) {
             batteryType = batteryModelService.acquireBatteryShort(model,tenantId);
+            if(StringUtils.isNotBlank(batteryType)){
+                batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+            }
         }
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType, tenantId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryV, tenantId));
 
     }
 
@@ -332,6 +355,26 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         insuranceOrderMapper.insert(insuranceOrder);
     }
 
+    @Override
+    public Integer update(InsuranceOrder insuranceOrder) {
+        return insuranceOrderMapper.updateById(insuranceOrder);
+    }
+
+    @Override
+    public Integer updateUseStatusByOrderId(String insuranceOrderId, Integer useStatus) {
+        if(StringUtils.isBlank(insuranceOrderId)){
+            return NumberConstant.ZERO;
+        }
+        return insuranceOrderMapper.updateUseStatusByOrderId(insuranceOrderId,useStatus);
+    }
+
+    @Override
+    public Integer updateUseStatusForRefund(String insuranceOrderId, Integer useStatus) {
+        if(StringUtils.isBlank(insuranceOrderId)){
+            return NumberConstant.ZERO;
+        }
+        return insuranceOrderMapper.updateUseStatusForRefund(insuranceOrderId,useStatus);
+    }
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid +
@@ -345,7 +388,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         //查询保险
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceId);
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceId);
 
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR!not found member_card by id={},uid={}", insuranceId, userInfo.getUid());
@@ -367,7 +410,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         InsuranceOrder insuranceOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
                 .orderId(insuranceOrderId)
                 .cid(franchiseeInsurance.getCid())
                 .franchiseeId(franchiseeInsurance.getFranchiseeId())
@@ -378,6 +421,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .phone(userInfo.getPhone())
                 .status(InsuranceOrder.STATUS_INIT)
                 .tenantId(userInfo.getTenantId())
+                .storeId(userInfo.getStoreId())
                 .uid(userInfo.getUid())
                 .userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays())

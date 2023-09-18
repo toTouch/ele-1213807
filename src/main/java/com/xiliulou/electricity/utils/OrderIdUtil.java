@@ -2,7 +2,9 @@ package com.xiliulou.electricity.utils;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.electricity.enums.BusinessType;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 订单id工具类
@@ -23,9 +25,14 @@ public class OrderIdUtil {
      *
      * @return
      */
+//    public static String generateBusinessOrderId(BusinessType businessType, Long uid) {
+//        return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + uid
+//                + RandomUtil.randomInt(10, 99);
+//    }
+
     public static String generateBusinessOrderId(BusinessType businessType, Long uid) {
-        return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + uid
-                + RandomUtil.randomInt(10, 99);
+        return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + String.format("%08d", uid)
+                + RandomUtil.randomInt(1000, 9999);
     }
 //
 //    public static void main(String[] args) {

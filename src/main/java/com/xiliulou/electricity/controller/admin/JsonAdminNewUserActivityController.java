@@ -1,13 +1,19 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +70,15 @@ public class JsonAdminNewUserActivityController {
 			offset = 0L;
 		}
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+			return R.ok(CollectionUtils.EMPTY_COLLECTION);
+		}
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -85,9 +100,17 @@ public class JsonAdminNewUserActivityController {
 	public R queryCount(@RequestParam(value = "name", required = false) String name,
 						@RequestParam(value = "status", required = false) Integer status) {
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+			return R.ok(NumberConstant.ZERO);
+		}
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
 
 		NewUserActivityQuery newUserActivityQuery = NewUserActivityQuery.builder()
 				.name(name)

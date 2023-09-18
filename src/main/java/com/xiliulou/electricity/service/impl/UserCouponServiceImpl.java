@@ -2,30 +2,44 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.SpecificPackagesEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.MDC;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,6 +52,9 @@ import java.util.Objects;
 @Service("userCouponService")
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
+
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 4, "send_coupon_to_user_thread");
+
     @Resource
     private UserCouponMapper userCouponMapper;
     @Autowired
@@ -66,6 +83,81 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
+    @Autowired
+    private CouponActivityPackageService couponActivityPackageService;
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    /**
+     * 根据ID集查询用户优惠券信息
+     *
+     * @param idList 主键ID集
+     * @return 用户优惠券集
+     */
+    @Slave
+    @Override
+    public List<UserCoupon> listByIds(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+
+        return userCouponMapper.selectBatchIds(idList);
+
+    }
+
+    /**
+     * 根据来源订单编码作废掉未使用的优惠券
+     *
+     * @param sourceOrderId     订单编码
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean cancelBySourceOrderIdAndUnUse(String sourceOrderId) {
+        if (!ObjectUtils.allNotNull(sourceOrderId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        int num = userCouponMapper.cancelBySourceOrderIdAndUnUse(sourceOrderId, System.currentTimeMillis());
+
+        return num >= 0;
+    }
+
+    /**
+     * 根据订单编码更新优惠券状态
+     *
+     * @param orderId     订单编码
+     * @param status      状态
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean updateStatusByOrderId(String orderId, Integer status) {
+        if (!ObjectUtils.allNotNull(orderId, status)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        int num = userCouponMapper.updateStatusByOrderId(orderId, status, System.currentTimeMillis());
+
+        return num >= 0;
+    }
+
+    /**
+     * 查询用户名下有效的优惠券
+     *
+     * @param uid      用户ID
+     * @param ids      主键ID
+     * @param deadline 到期时间
+     * @return
+     */
+    @Override
+    public List<UserCoupon> selectEffectiveByUid(Long uid, List<Long> ids, Long deadline) {
+        if (!ObjectUtils.allNotNull(uid, ids, deadline)) {
+            return null;
+        }
+        return userCouponMapper.selectEffectiveByUid(uid, ids, deadline);
+    }
 
     @Override
     public R queryList(UserCouponQuery userCouponQuery) {
@@ -244,6 +336,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
     }
 
+    @Deprecated
     @Override
     public R queryMyCoupon(List<Integer> statusList, List<Integer> typeList) {
         //用户信息
@@ -285,6 +378,92 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         return R.ok(userCouponVOList);
 
+    }
+
+    @Override
+    public R queryMyCoupons(List<Integer> statusList, List<Integer> typeList) {
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //2.判断用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable!uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ELECTRICITY  ERROR! not auth! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+
+        //查看用户优惠券
+        UserCouponQuery userCouponQuery = new UserCouponQuery();
+        userCouponQuery.setStatusList(statusList);
+        userCouponQuery.setUid(uid);
+        userCouponQuery.setTypeList(typeList);
+        List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
+
+        //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
+        for(UserCouponVO userCouponVO : userCouponVOList){
+            if(Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition())
+                    && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(userCouponVO.getSpecificPackages())){
+                Long couponId = userCouponVO.getCouponId().longValue();
+                userCouponVO.setBatteryPackages(getBatteryPackages(couponId));
+                userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                userCouponVO.setCarWithBatteryPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+            }
+        }
+
+        return  R.ok(userCouponVOList);
+    }
+
+    private List<BatteryMemberCardVO> getBatteryPackages(Long couponId){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponActivityPackage.getPackageId());
+            if(Objects.nonNull(batteryMemberCard) && CommonConstant.DEL_N.equals(batteryMemberCard.getDelFlag())){
+                BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+                memberCardVOList.add(batteryMemberCardVO);
+            }
+        }
+
+        return memberCardVOList;
+    }
+
+    private List<BatteryMemberCardVO> getCarBatteryPackages(Long couponId, Integer packageType){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            if(Objects.nonNull(carRentalPackagePO) && CommonConstant.DEL_N.equals(carRentalPackagePO.getDelFlag())){
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+                memberCardVOList.add(batteryMemberCardVO);
+            }
+        }
+
+        return memberCardVOList;
     }
 
     /*
@@ -505,5 +684,79 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public Integer updateUserCouponStatus(UserCoupon userCoupon) {
         return userCouponMapper.updateUserCouponStatus(userCoupon);
+    }
+
+    @Override
+    public UserCoupon selectBySourceOrderId(String orderId) {
+        return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getSourceOrderId,orderId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void sendCouponToUser(UserCouponDTO userCouponDTO) {
+        MDC.put(CommonConstant.TRACE_ID, userCouponDTO.getTraceId());
+        String lockValue = userCouponDTO.getSourceOrderNo() + "_" + userCouponDTO.getCouponId() + "_" + userCouponDTO.getUid();
+        if (!redisService
+                .setNx(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue, lockValue, 10 * 1000L, false)) {
+            log.error("Handle activity for real name auth error, operations frequently, uid = {}", userCouponDTO.getUid());
+        }
+
+        try{
+            log.info("send coupon to user start for purchase package, source order number = {}, coupon id = {}, uid = {}",userCouponDTO.getSourceOrderNo(), userCouponDTO.getCouponId(), userCouponDTO.getUid());
+            //Integer tenantId = TenantContextHolder.getTenantId();
+            Long uid = userCouponDTO.getUid();
+            Long couponId = userCouponDTO.getCouponId();
+
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            if(Objects.isNull(userInfo)){
+                log.error("send coupon failed! not found user,uid = {}",uid);
+                return;
+            }
+
+            Coupon coupon = couponService.queryByIdFromDB(couponId.intValue());
+            if (Objects.isNull(coupon)) {
+                log.error("query coupon issue! not found coupon ! couponId = {} ", couponId);
+                return;
+            }
+
+            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                    .name(coupon.getName())
+                    .source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE)
+                    .couponId(coupon.getId())
+                    .discountType(coupon.getDiscountType())
+                    .status(UserCoupon.STATUS_UNUSED)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(coupon.getTenantId())
+                    .uid(uid)
+                    .phone(userInfo.getPhone())
+                    .sourceOrderId(userCouponDTO.getSourceOrderNo());
+
+            //优惠券过期时间
+            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+            couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+
+            UserCoupon userCoupon = couponBuild.build();
+            userCouponMapper.insert(userCoupon);
+
+            log.info("send coupon to user end for purchase package, source order number = {}, coupon id = {}, uid = {}",userCouponDTO.getSourceOrderNo(), userCouponDTO.getCouponId(), userCouponDTO.getUid());
+
+        }catch (Exception e){
+            log.error("Send coupon to user for purchase package error, uid = {}, coupon id = {}, source order number = {}", userCouponDTO.getUid(), userCouponDTO.getCouponId(), userCouponDTO.getSourceOrderNo(), e);
+            throw new BizException("200000", e.getMessage());
+        }finally {
+            redisService.delete(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue);
+            MDC.clear();
+        }
+
+    }
+
+    @Override
+    public void asyncSendCoupon(UserCouponDTO userCouponDTO) {
+
+        executorService.execute(() -> {
+            //购买套餐后发送优惠券给用户
+            sendCouponToUser(userCouponDTO);
+        });
     }
 }

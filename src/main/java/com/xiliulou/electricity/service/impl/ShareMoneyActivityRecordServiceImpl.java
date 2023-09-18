@@ -6,13 +6,11 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ShareMoneyActivityRecordVO;
@@ -58,6 +56,8 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	@Autowired
 	UserService userService;
 
+	@Autowired
+	JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -118,6 +118,8 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		if (!result) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
+
+		log.info("Generate share picture for share money activity start, activity id = {}, page = {}", activityId, page);
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -209,6 +211,13 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	public R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
 
 		List<ShareMoneyActivityRecordVO> shareMoneyActivityRecordVOList= shareMoneyActivityRecordMapper.queryList(shareMoneyActivityRecordQuery);
+
+		//需要查询参与邀请返现活动的总记录数，无论是否成功参与。
+		for(ShareMoneyActivityRecordVO shareMoneyActivityRecordVO : shareMoneyActivityRecordVOList){
+			List<JoinShareMoneyActivityRecord>  joinShareMoneyActivityRecords = joinShareMoneyActivityRecordService.queryByUidAndActivityId(shareMoneyActivityRecordVO.getUid(), shareMoneyActivityRecordVO.getActivityId().longValue());
+			shareMoneyActivityRecordVO.setTotalCount(joinShareMoneyActivityRecords.size());
+		}
+
 		return R.ok(shareMoneyActivityRecordVOList);
 	}
 

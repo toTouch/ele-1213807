@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -20,6 +22,8 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Integer status;
 
+    private Long joinUid;
+
     private String userName;
 
     private String phone;
@@ -28,9 +32,17 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Long activityId;
 
+    private String activityName;
+
     private Long beginTime;
 
     private Long endTime;
 
     private Long recordId;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
+
+    private Integer payCount;
 }

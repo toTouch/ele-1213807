@@ -76,6 +76,9 @@ public class RentBatteryOrder {
     //租户id
     private Integer tenantId;
 
+    private Long storeId;
+
+    private Long franchiseeId;
     /**
      * 备注
      */

@@ -77,6 +77,11 @@ public class InsuranceUserInfo {
 
     private Long updateTime;
 
+    /**
+     * 保险类型
+     */
+    private Integer type;
+
 
     //禁用状态
     public static final Integer STATUS_UN_USABLE = 1;

@@ -112,6 +112,9 @@ public class EleOperateQueueHandler {
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
 
 
@@ -414,7 +417,7 @@ public class EleOperateQueueHandler {
                 Triple<Boolean, String, Object> tripleResult;
                 if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                     tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet,
-                            electricityCabinetOrder.getOldCellNo().toString(), userBattery.getBatteryType(),
+                            electricityCabinetOrder.getOldCellNo().toString(), null,
                             userInfo.getFranchiseeId(), electricityCabinetOrder.getSource());
                 } else {
                     tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet,
@@ -658,13 +661,6 @@ public class EleOperateQueueHandler {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
-        UserBattery userBattery = new UserBattery();
-        userBattery.setUid(userInfo.getUid());
-        userBattery.setInitBatterySn(rentBatteryOrder.getElectricityBatterySn());
-        userBattery.setUpdateTime(System.currentTimeMillis());
-        userBattery.setCreateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBattery);
-
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
@@ -718,31 +714,11 @@ public class EleOperateQueueHandler {
             return;
         }
 
-        //        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-        //        if (Objects.isNull(oldFranchiseeUserInfo)) {
-        //            return;
-        //        }
-        //
-        //        //用户解绑电池
-        //        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        //        franchiseeUserInfo.setUserInfoId(userInfo.getId());
-        ////        franchiseeUserInfo.setNowElectricityBatterySn(null);
-        //        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        //        franchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
-        //        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-        //        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
-
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
-
-        UserBattery userBattery = new UserBattery();
-        userBattery.setUid(userInfo.getUid());
-        userBattery.setNowBatterySn(null);
-        userBattery.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBattery);
 
         //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
@@ -803,12 +779,13 @@ public class EleOperateQueueHandler {
         }
 
         //判断套餐是否限次
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(Objects.isNull(userBatteryMemberCard.getMemberCardId()) ? 0 : userBatteryMemberCard.getMemberCardId().intValue());
-        if(Objects.isNull(electricityMemberCard) || !Objects.equals(ElectricityMemberCard.LIMITED_COUNT_TYPE , electricityMemberCard.getLimitCount())){
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("EXCHANGE ORDER ERROR! batteryMemberCard is null!uid={},orderId={}", rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());
             return;
         }
 
-        if (Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || !Objects.equals(userBatteryMemberCard.getRemainingNumber().longValue(), UserBatteryMemberCard.MEMBER_CARD_ZERO_REMAINING)) {
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
             return;
         }
 

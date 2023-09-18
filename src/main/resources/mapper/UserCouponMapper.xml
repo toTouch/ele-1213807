@@ -2,6 +2,39 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserCouponMapper">
 
+    <!-- 根据来源订单编码作废掉未使用的优惠券 -->
+    <update id="cancelBySourceOrderIdAndUnUse">
+        UPDATE `t_user_coupon`
+        <set>
+            `status` = 6, `update_time` = #{optTime}
+        </set>
+        <where>
+            `source_order_id` = #{sourceOrderId} AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据订单编码更新优惠券状态 -->
+    <update id="updateStatusByOrderId">
+        UPDATE `t_user_coupon`
+        <set>
+            `status` = #{status}, `update_time` = #{optTime}
+            <if test=" status == '1'.toString() "> , `order_id` = '' </if>
+        </set>
+        <where>
+            `order_id` = #{orderId} AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 查询用户名下有效的优惠券 -->
+    <select id="selectEffectiveByUid" resultType="com.xiliulou.electricity.entity.UserCoupon">
+        SELECT * FROM `t_user_coupon`
+        <where>
+            `uid` = #{uid} AND `deadline` <![CDATA[ > ]]> #{deadline} AND `status` = 1 AND `id` IN
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
@@ -9,7 +42,7 @@
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
-        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
+        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
@@ -38,6 +71,9 @@
             <if test="query.status != null">
                 and tuc.status = #{query.status}
             </if>
+            <if test="query.superposition != null">
+                and tc.superposition = #{query.superposition}
+            </if>
             <if test="query.discountType != null">
                 and tuc.discount_type = #{query.discountType}
             </if>
@@ -56,6 +92,18 @@
             <if test="query.tenantId != null ">
                 and tuc.tenant_id = #{query.tenantId}
             </if>
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         ORDER BY tuc.update_time DESC
         <if test="query.offset != null and query.size != null">
@@ -67,6 +115,7 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon as tuc left join t_user_info tui on tuc.uid=tui.uid
+        left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
@@ -95,6 +144,9 @@
             <if test="query.status != null">
                 and tuc.status = #{query.status}
             </if>
+            <if test="query.superposition != null">
+                and tc.superposition = #{query.superposition}
+            </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and tuc.status in
                 <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
@@ -109,6 +161,18 @@
             </if>
             <if test="query.tenantId != null ">
                 and tuc.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

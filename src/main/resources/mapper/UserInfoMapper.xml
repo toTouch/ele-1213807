@@ -2,6 +2,40 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserInfoMapper">
 
+    <!-- 表名 -->
+    <sql id="table_name"> `t_user_info` </sql>
+
+    <!-- 表中所有字段 -->
+    <sql id="all_field">
+        `id`, `uid`, `phone`, `user_name`, `name`, `id_number`, `auth_status`, `usable_status`, `service_status`, `del_flag`, `create_time`, `update_time`, `tenant_id`, `battery_rent_status`,
+        `battery_deposit_status`, `franchisee_id`, `car_rent_status`, `car_deposit_status`, `car_battery_deposit_status`, `pay_count`, `auth_type`, `store_id`
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="where_field">
+        <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
+        <if test=" keywords != null and keywords != '' "> AND (`name` LIKE CONCAT('%', #{keywords}, '%') OR `phone` LIKE CONCAT('%', #{keywords}, '%')) </if>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="page" resultType="com.xiliulou.electricity.entity.UserInfo">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
 
     <select id="isFranchiseeBindUser" resultType="Integer">
         SELECT 1 FROM t_user_info WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
@@ -22,6 +56,9 @@
         </if>
         <if test="query.phone != null and query.phone != ''">
             and tui.phone = #{query.phone}
+        </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
         </if>
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
@@ -47,6 +84,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -64,14 +107,12 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_info tui
         left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
@@ -128,6 +169,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}
         </if>
@@ -156,15 +203,13 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.member_card_status as member_card_status,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_battery_member_card ubmc
         left join t_user_info tui on ubmc.uid=tui.uid
@@ -221,6 +266,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}
         </if>
@@ -243,15 +294,13 @@
         tui.battery_rent_status,
         tui.franchisee_id,
         tui.battery_deposit_status,
+        tui.pay_count,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
-        ubmc.member_card_id as card_id,
+        ubmc.member_card_id as member_card_id,
         ubmc.member_card_status as member_card_status,
         ubmc.card_pay_count as cardPayCount,
-        teb.power,
-        teb.business_status as businessStatus,
-        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_car_member_card ucmc
         left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid
@@ -379,6 +428,12 @@
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -537,6 +592,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}
         </if>
@@ -675,6 +736,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
             </if>
@@ -699,6 +763,12 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="carBatteryDepositStatus != null">
+                `car_battery_deposit_status` = #{carBatteryDepositStatus},
+            </if>
+            <if test="payCount != null">
+                `pay_count` = #{payCount},
+            </if>
         </set>
         where uid = #{uid}
     </update>
@@ -718,9 +788,9 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-            <!--            <if test="serviceStatus != null">
-                            service_status = #{serviceStatus},
-                        </if>-->
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
@@ -751,6 +821,12 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="carBatteryDepositStatus != null">
+                `car_battery_deposit_status` = #{carBatteryDepositStatus},
+            </if>
+            <if test="payCount != null">
+                `pay_count` = #{payCount},
+            </if>
         </set>
         where uid = #{uid} and tenant_id=#{tenantId}
     </update>
@@ -759,7 +835,7 @@
       select
           uid, phone, user_name, name, id_number, auth_status, usable_status,
           service_status, del_flag, create_time, update_time, tenant_id, battery_rent_status,
-          battery_deposit_status,franchisee_id, car_rent_status, car_deposit_status
+          battery_deposit_status,franchisee_id, car_rent_status, car_deposit_status, `car_battery_deposit_status`, `pay_count`
       from t_user_info
       where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
   </select>
@@ -777,5 +853,329 @@
         </if>
         order by id
         limit #{offset}, #{size}
+    </select>
+    <sql id="QUERY_USER_INFO_DATA">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.sn AS batterySn, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+    </sql>
+    <sql id="QUERY_USER_INFO_DATA_COUNT">
+        select  count(*)
+        from    t_user_info ui
+    </sql>
+
+    <select id="queryAllUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        <include refid="QUERY_USER_INFO_DATA"></include>
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryAllUserInfoDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_USER_INFO_DATA_COUNT"></include>
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEffectiveUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+        ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from    t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and ubmc.member_card_expire_time > UNIX_TIMESTAMP()
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEffectiveUserInfoDataCount" resultType="java.lang.Integer">
+        <include refid="QUERY_USER_INFO_DATA_COUNT"></include>
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and ubmc.member_card_expire_time > UNIX_TIMESTAMP()
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryRentUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+        ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="queryRentUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId}
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryOverdueUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime,eb.sn AS batterySn
+        from t_user_info ui
+                 left join t_user_active_info uai on ui.uid = uai.uid
+                 left join t_electricity_battery eb on eb.uid = eb.uid
+                 left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and UNIX_TIMESTAMP() > ubmc.member_card_expire_time
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryOverdueUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and UNIX_TIMESTAMP() > ubmc.member_card_expire_time
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+        limit #{query.offset}, #{query.size}
+
+    </select>
+    <select id="querySilentUserInfoDataByParam" resultType="com.xiliulou.electricity.entity.UserInfoDataEntity">
+        select  ui.uid,ui.user_name AS userName,ui.phone as phone, ubmc.sn AS batterySn, ubmc.card_pay_count AS payCount,
+                ubmc.member_card_expire_time AS expireTime,uai.active_time AS activeTime
+        from t_user_info ui
+                 left join t_user_active_info uai on ui.uid = uai.uid
+                 left join t_electricity_battery eb on eb.uid = eb.uid
+                 left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and  uai.active_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <select id="querySilentUserInfoDataCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on eb.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        where ui.del_flag = 0 and ui.tenant_id = #{query.tenantId} and  uai.active_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+        <if test="query.query.batterySn != null and query.query.batterySn != '' ">
+            and eb.sn = #{query.batterySn}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and ui.phone = #{query.phone}
+        </if>
+        <if test="query.userName != null and query.userName !=''">
+            and ui.user_name like concat('%',#{userName, jdbcType=VARCHAR},'%')
+        </if>
+
+    </select>
+
+    <select id="queryEleList" resultType="com.xiliulou.electricity.vo.userinfo.UserEleInfoVO">
+        SELECT
+            tui.NAME,
+            tui.phone,
+            ubmc.card_pay_count AS cardPayCount,
+            tui.id AS user_info_id,
+            teb.sn,
+            tui.battery_rent_status,
+            tui.battery_deposit_status,
+            ubmc.member_card_id,
+            ubmc.member_card_status,
+            ubmc.member_card_expire_time,
+            tiui.is_use,
+            tiui.insurance_expire_time,
+            tui.uid,
+            tui.create_time AS userCertificationTime,
+            tui.franchisee_id,
+            tui.tenant_id,
+            ubmc.remaining_number ,
+            tui.usable_status
+        FROM
+            t_user_info tui
+            LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
+            AND ubmc.del_flag = 0
+            LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
+            AND teb.del_flag = 0
+            LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
+            AND tiui.del_flag = 0 AND tiui.type = 0
+        WHERE
+            tui.del_flag = 0
+            AND tui.auth_status = 2
+            AND tui.tenant_id =#{query.tenantId}
+            <if test="query.memberCardExpireTimeBegin !=null">
+                and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+            </if>
+            <if test="query.memberCardExpireTimeEnd !=null">
+                and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+            </if>
+            <if test="query.batteryRentStatus !=null">
+                and tui.battery_rent_status =#{query.batteryRentStatus}
+            </if>
+            <if test="query.memberCardExpireType == 4">
+                and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+            </if>
+            <if test="query.uid != null ">
+                and tui.uid = #{query.uid}
+            </if>
+            <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null and query.storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and tui.name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != '' ">
+                and tui.phone =#{query.phone}
+            </if>
+            <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
+                order by tui.create_time desc
+            </if>
+
+            <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
+                order by tui.create_time
+            </if>
+            <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
+                order by  CASE
+                WHEN ubmc.member_card_expire_time IS NULL THEN 2
+                WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
+                WHEN ubmc.member_card_expire_time > 0 THEN 0
+                END ,ubmc.member_card_expire_time desc
+            </if>
+
+            <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
+                order by  CASE
+                WHEN ubmc.member_card_expire_time IS NULL THEN 2
+                WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
+                WHEN ubmc.member_card_expire_time > 0 THEN 0
+                END ,ubmc.member_card_expire_time
+            </if>
+
+            limit  #{query.offset}, #{query.size}
+    </select>
+    <select id="queryEleListCount" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        t_user_info tui
+        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
+        AND ubmc.del_flag = 0
+        LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
+        AND teb.del_flag = 0
+        LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
+        AND tiui.del_flag = 0 AND tiui.type = 0
+        WHERE
+        tui.del_flag = 0
+        AND tui.auth_status = 2
+        AND tui.tenant_id =#{query.tenantId}
+        <if test="query.memberCardExpireTimeBegin !=null">
+            and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+        </if>
+        <if test="query.memberCardExpireTimeEnd !=null">
+            and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and tui.name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and tui.phone =#{query.phone}
+        </if>
     </select>
 </mapper>

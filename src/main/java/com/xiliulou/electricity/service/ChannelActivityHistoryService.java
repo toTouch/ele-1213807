@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -76,5 +77,10 @@ public interface ChannelActivityHistoryService {
     
     R scanIntoActivity(String code);
     
-    void queryExportExcel(String phone, Long beginTime, Long endTime, HttpServletResponse response);
+    void queryExportExcel(String phone, Long uid, Long beginTime, Long endTime, HttpServletResponse response);
+
+    Triple<Boolean, String, Object> queryActivityHistoryList(ChannelActivityHistoryQuery channelActivityHistoryQuery);
+
+    Triple<Boolean, String, Object> queryActivityHistoryCount(ChannelActivityHistoryQuery channelActivityHistoryQuery);
+
 }

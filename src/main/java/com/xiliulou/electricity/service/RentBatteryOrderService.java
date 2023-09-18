@@ -3,13 +3,12 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryQuery;
-import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.EleCabinetUsedRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务接口
@@ -53,7 +52,11 @@ public interface RentBatteryOrderService {
 
     Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery);
 
-    R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
     RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId);
+
+    List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
+
+    Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
+
 }

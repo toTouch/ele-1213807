@@ -2,10 +2,8 @@ package com.xiliulou.electricity.service;
 
 
 import com.xiliulou.electricity.entity.CommonPayOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -15,6 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface ElectricityTradeOrderService {
+
+    /**
+     * 租车套餐购买回调
+     * @param callBackResource
+     */
+    Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource);
 
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder,
@@ -53,4 +57,5 @@ public interface ElectricityTradeOrderService {
     List<ElectricityTradeOrder> selectTradeOrderByParentOrderId(Long parentOrderId);
 
     Integer updateElectricityTradeOrderById(ElectricityTradeOrder electricityTradeOrder);
+
 }

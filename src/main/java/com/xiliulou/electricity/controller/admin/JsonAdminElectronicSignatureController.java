@@ -56,6 +56,7 @@ public class JsonAdminElectronicSignatureController extends BaseController {
                                  @RequestParam("offset") Long offset,
                                  @RequestParam(value = "name", required = false) String name,
                                  @RequestParam(value = "phone", required = false) String phone,
+                                 @RequestParam(value = "uid", required = false) Long uid,
                                  @RequestParam(value = "signFinishStatus", required = false) Integer signFinishStatus){
         if (size < 0 || size > 50) {
             size = 10L;
@@ -71,6 +72,7 @@ public class JsonAdminElectronicSignatureController extends BaseController {
                 .offset(offset)
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .signFinishStatus(signFinishStatus).build();
         return R.ok(eleUserEsignRecordService.queryUserEsignRecords(eleUserEsignRecordQuery));
     }
@@ -78,12 +80,14 @@ public class JsonAdminElectronicSignatureController extends BaseController {
     @GetMapping(value = "/admin/esign/userRecordsCount")
     public R getEsignUserRecordsCount(@RequestParam(value = "name", required = false) String name,
                                       @RequestParam(value = "phone", required = false) String phone,
+                                      @RequestParam(value = "uid", required = false) Long uid,
                                       @RequestParam(value = "signFinishStatus", required = false) Integer signFinishStatus){
 
         EleUserEsignRecordQuery eleUserEsignRecordQuery = EleUserEsignRecordQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId().longValue())
                 .name(name)
                 .phone(phone)
+                .uid(uid)
                 .signFinishStatus(signFinishStatus).build();
         return R.ok(eleUserEsignRecordService.queryCount(eleUserEsignRecordQuery));
     }

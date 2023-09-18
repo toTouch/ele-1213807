@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -45,4 +47,9 @@ public class PictureQuery {
     private Integer delFlag;
 
     private Integer tenantId;
+
+    /**
+     * 业务ID集
+     */
+    private List<Long>  businessIdList;
 }

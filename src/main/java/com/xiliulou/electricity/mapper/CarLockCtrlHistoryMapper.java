@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
+import com.xiliulou.electricity.query.CarLockCtrlHistoryQuery;
 import com.xiliulou.electricity.vo.CarLockCtrlHistoryVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -65,10 +66,7 @@ public interface CarLockCtrlHistoryMapper extends BaseMapper<CarLockCtrlHistory>
      */
     int deleteById(Long id);
     
-    List<CarLockCtrlHistoryVo> queryList(@Param("offset") Long offset, @Param("size") Long size,
-            @Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn,
-            @Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+    List<CarLockCtrlHistoryVo> queryList(CarLockCtrlHistoryQuery query);
     
-    Integer queryCount(@Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn,
-            @Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+    Integer queryCount(CarLockCtrlHistoryQuery query);
 }

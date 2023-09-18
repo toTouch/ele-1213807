@@ -63,7 +63,7 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
 
     Integer minCountForOffLineEle(Long id);
 
-    Integer plusCount(Long id);
+    Integer plusCount(Long uid);
 
     int updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
 
@@ -78,4 +78,14 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     List<FailureMemberCardVo > queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
     
     int unbindMembercardInfoByUid(UserBatteryMemberCard userBatteryMemberCard);
+
+    Integer checkUserByMembercardId(@Param("membercardId") Long membercardId);
+
+    Integer deductionExpireTime(@Param("uid") Long uid, @Param("time") Long time, @Param("updateTime") Long updateTime);
+
+    List<UserBatteryMemberCard> selectByList(@Param("offset") int offset, @Param("size") int size);
+
+    List<UserBatteryMemberCard> selectUseableList(@Param("offset") int offset, @Param("size") int size);
+
+    List<UserBatteryMemberCard> selectUseableListByTenantIds(@Param("offset") int offset, @Param("size") int size, @Param("tenantIds") List<Integer> tenantIds);
 }

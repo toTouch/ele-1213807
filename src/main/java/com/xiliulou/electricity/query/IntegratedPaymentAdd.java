@@ -39,7 +39,7 @@ public class IntegratedPaymentAdd {
      * 月卡id
 	 */
 	@NotNull(message = "套餐Id不能为空!")
-	private Integer memberCardId;
+	private Long memberCardId;
 
     /**
      * 优惠券id

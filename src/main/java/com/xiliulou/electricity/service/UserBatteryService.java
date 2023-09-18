@@ -10,6 +10,7 @@ import java.util.List;
  * @author zzlong
  * @since 2022-12-06 13:39:24
  */
+@Deprecated
 public interface UserBatteryService {
     
     /**

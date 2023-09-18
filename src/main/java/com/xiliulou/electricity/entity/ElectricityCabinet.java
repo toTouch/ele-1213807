@@ -105,6 +105,8 @@ public class ElectricityCabinet {
     //门店id
     private Long storeId;
 
+    private Long franchiseeId;
+
     /**
      * 换电方式 1：有屏，2：无屏，3：单片机
      */

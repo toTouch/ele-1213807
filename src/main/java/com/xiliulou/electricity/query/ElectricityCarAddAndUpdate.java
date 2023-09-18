@@ -38,7 +38,7 @@ public class ElectricityCarAddAndUpdate {
      * 门店Id
      */
     @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
-    private Integer storeId;
+    private Long storeId;
 
     /**
      * 创建时间

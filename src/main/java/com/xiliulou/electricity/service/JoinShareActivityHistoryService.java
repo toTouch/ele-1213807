@@ -4,8 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务接口
@@ -55,4 +57,12 @@ public interface JoinShareActivityHistoryService {
     R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
     
     void queryExportExcel(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery, HttpServletResponse response);
+
+    R queryParticipants(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+    R queryParticipantsCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+    List<JoinShareActivityHistory> queryUserJoinedActivity(Long joinUid, Integer tenantId);
+
+    Pair<Boolean, String> checkTheActivityFromSameInviter(Long joinUid, Long inviterUid, Long activityId);
 }

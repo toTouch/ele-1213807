@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -24,6 +26,8 @@ public class FaceRecognizeUserRecordQuery {
     private String userName;
 
     private String phone;
+
+    private Long uid;
     /**
      * 状态
      */
@@ -32,4 +36,8 @@ public class FaceRecognizeUserRecordQuery {
     private Long startTime;
 
     private Long endTime;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

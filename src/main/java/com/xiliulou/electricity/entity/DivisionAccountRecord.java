@@ -88,9 +88,33 @@ public class DivisionAccountRecord {
 
     private Long updateTime;
 
+    private Long franchiseeId;
+
+    private Long storeId;
+
+    /**
+     * 分账类型 (0-购买, 1-退租)
+     */
+    private Integer type;
+
+    /**
+     * 分账状态 (0-冻结, 1-正常, 2-失效)
+     *
+     */
+    private Integer divisionAccountStatus;
+
+    public static final Integer TYPE_PURCHASE = 0;
+
+    public static final Integer TYPE_REFUND = 1;
+
+    public static final Integer DA_STATUS_FREEZE = 0;
+
+    public static final Integer DA_STATUS_NORMAL = 1;
+
+    public static final Integer DA_STATUS_INVALIDITY = 2;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
-
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

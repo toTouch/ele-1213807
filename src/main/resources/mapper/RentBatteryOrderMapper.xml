@@ -20,6 +20,9 @@
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
             </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
             <if test="query.status != null and query.status != ''">
                 and status = #{query.status}
             </if>
@@ -35,9 +38,15 @@
             <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+            <if test="query.franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -60,6 +69,9 @@
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
             </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
             <if test="query.status != null  and query.status != ''">
                 and status = #{query.status}
             </if>
@@ -75,9 +87,15 @@
             <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+            <if test="query.franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -89,5 +107,104 @@
         select id,uid,electricity_battery_sn from t_rent_battery_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
 
+    <resultMap type="com.xiliulou.electricity.entity.EleCabinetUsedRecord" id="EleCabinetUsedRecordMap">
+        <result property="id" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="userName" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="returnBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
+        <result property="returnCellNo" column="old_cell_no" jdbcType="INTEGER" />
+        <result property="leaseBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR" />
+        <result property="leaseCellNo" column="new_cell_no" jdbcType="INTEGER" />
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="selectEleCabinetUsedRecords" resultType="com.xiliulou.electricity.query.EleCabinetUsedRecordQuery" resultMap="EleCabinetUsedRecordMap">
+        select temp.uid,
+               temp.type,
+               temp.order_id,
+               temp.old_electricity_battery_sn,
+               temp.old_cell_no,
+               temp.new_electricity_battery_sn,
+               temp.new_cell_no,
+               temp.electricity_cabinet_id,
+               temp.create_time
+        from
+            ( select  uid, type, order_id,
+                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as old_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as new_cell_no,
+                electricity_cabinet_id,
+                create_time
+            from t_rent_battery_order
+            where electricity_cabinet_id = #{query.id}
+            and type in (1,2)
+            union all
+            select uid, 9 type, order_id,
+                old_electricity_battery_sn ,
+                old_cell_no ,
+                new_electricity_battery_sn,
+                new_cell_no,
+                electricity_cabinet_id,
+                create_time
+            from t_electricity_cabinet_order
+            where electricity_cabinet_id = #{query.id}) temp
+        <where>
+
+            <if test="query.uid != null">
+                and temp.uid = #{query.uid}
+            </if>
+
+            <if test="query.beginTime != null">
+                and temp.create_time &gt;= #{query.beginTime}
+            </if>
+
+            <if test="query.endTime != null">
+                and temp.create_time &lt;= #{query.endTime}
+            </if>
+
+        </where>
+        order by temp.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
+        select count(1)
+        from
+            (select uid, type, order_id,
+                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as old_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as new_cell_no,
+                create_time
+            from t_rent_battery_order
+            where electricity_cabinet_id = #{query.id}
+            and type in (1,2)
+            union all
+            select uid, 9 type, teco.order_id,
+                teco.old_electricity_battery_sn,
+                teco.old_cell_no,
+                teco.new_electricity_battery_sn,
+                teco.new_cell_no,
+                teco.create_time
+            from t_electricity_cabinet_order teco
+            where electricity_cabinet_id = #{query.id}) temp
+        <where>
+            <if test="query.uid != null">
+                and temp.uid = #{query.uid}
+            </if>
+            <if test="query.beginTime != null">
+                and temp.create_time &gt;= #{query.beginTime}
+            </if>
+
+            <if test="query.endTime != null">
+                and temp.create_time &lt;= #{query.endTime}
+            </if>
+
+        </where>
+    </select>
 
 </mapper>

@@ -31,4 +31,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery);
 
     Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery);
+
+    User queryByUserName(@Param("username") String username);
 }

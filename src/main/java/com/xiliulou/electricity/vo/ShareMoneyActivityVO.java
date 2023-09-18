@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.ActivityEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 活动表(Activity)实体类
@@ -79,9 +81,26 @@ public class ShareMoneyActivityVO {
      */
     private BigDecimal totalMoney;
 
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
 
+    /**
+     * 邀请活动关联的换电套餐列表
+     */
+    private List<BatteryMemberCardVO> batteryPackages;
 
+    /**
+     * 邀请活动关联的租车套餐列表
+     */
+    private List<BatteryMemberCardVO> carRentalPackages;
 
+    /**
+     * 邀请活动关联的车电一体套餐列表
+     */
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
 
 
 }

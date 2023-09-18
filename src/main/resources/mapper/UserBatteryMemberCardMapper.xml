@@ -73,15 +73,15 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery_member_card(uid, member_card_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time,  del_flag, create_time, update_time,tenant_id,card_pay_count)
-        values (#{uid}, #{memberCardId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime},  #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
+        insert into t_user_battery_member_card(uid, member_card_id,order_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time,  del_flag, create_time, update_time,tenant_id,card_pay_count)
+        values (#{uid}, #{memberCardId},#{orderId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime},  #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery_member_card(uid, member_card_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,tenant_id,card_pay_count)
-        values (#{uid}, #{memberCardId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
+        insert into t_user_battery_member_card(uid, member_card_id,order_id, member_card_expire_time, order_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,tenant_id,card_pay_count)
+        values (#{uid}, #{memberCardId}, #{orderId}, #{memberCardExpireTime}, #{orderExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
         on duplicate key
-        update member_card_id=#{memberCardId}, member_card_expire_time=#{memberCardExpireTime}, remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime},  del_flag=#{delFlag}, update_time=#{updateTime},tenant_id=#{tenantId},card_pay_count=#{cardPayCount}
+        update member_card_id=#{memberCardId}, order_id=#{orderId}, member_card_expire_time=#{memberCardExpireTime}, order_expire_time=#{orderExpireTime} ,remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime},  del_flag=#{delFlag}, update_time=#{updateTime},tenant_id=#{tenantId},card_pay_count=#{cardPayCount}
     </insert>
 
     <!--通过主键修改数据-->
@@ -94,8 +94,20 @@
             <if test="memberCardId != null">
                 member_card_id = #{memberCardId},
             </if>
+            <if test="orderId != null and ''!=orderId">
+                order_id = #{orderId},
+            </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="orderExpireTime != null">
+                order_expire_time = #{orderExpireTime},
+            </if>
+            <if test="orderEffectiveTime != null">
+                order_effective_time = #{orderEffectiveTime},
+            </if>
+            <if test="orderRemainingNumber != null">
+                order_remaining_number = #{orderRemainingNumber},
             </if>
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
@@ -121,20 +133,26 @@
         </set>
         where uid = #{uid}
     </update>
+
+    <update id="deductionExpireTime">
+        update t_user_battery_member_card set member_card_expire_time = member_card_expire_time-#{time},update_time = #{updateTime}  where uid = #{uid}
+    </update>
     
     <update id="unbindMembercardInfoByUid">
         update t_user_battery_member_card
         set
             member_card_id = #{memberCardId},
+            order_id = #{orderId},
             member_card_expire_time = #{memberCardExpireTime},
+            order_expire_time = #{orderExpireTime},
+            order_effective_time = #{orderEffectiveTime},
+            order_remaining_number = #{orderRemainingNumber},
             remaining_number = #{remainingNumber},
             member_card_status = #{memberCardStatus},
             disable_member_card_time = #{disableMemberCardTime},
             update_time = #{updateTime}
         where uid = #{uid} and del_flag =0
     </update>
-    
-    
 
     <!--通过主键删除-->
     <delete id="deleteByUid">
@@ -142,7 +160,7 @@
     </delete>
 
     <update id="minCount">
-        update t_user_battery_member_card set remaining_number=remaining_number-1 where id=#{id} and remaining_number>0 and del_flag=0
+        update t_user_battery_member_card set remaining_number=remaining_number-1,order_remaining_number=order_remaining_number-1 where id=#{id} and remaining_number>0 and del_flag=0
     </update>
 
     <update id="minCountForOffLineEle">
@@ -150,7 +168,7 @@
     </update>
 
     <update id="plusCount">
-        update t_user_battery_member_card set remaining_number=remaining_number+1 where id=#{id} and del_flag=0
+        update t_user_battery_member_card set remaining_number=remaining_number+1 where uid=#{uid} and del_flag=0
     </update>
 
     <update id="updateByUidForDisableCard">
@@ -164,6 +182,9 @@
             </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="orderExpireTime != null">
+                order_expire_time = #{orderExpireTime},
             </if>
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
@@ -217,6 +238,58 @@
         t_user_battery_deposit tud on tubmc.uid=tud.uid
         left join t_user_info tui on tubmc.uid=tui.uid
         where tubmc.member_card_expire_time &lt;= #{nowTime} or tubmc.remaining_number &lt;= 0
+        limit #{offset},#{size}
+    </select>
+
+
+    <select id="checkUserByMembercardId" resultType="Integer">
+        select 1 from t_user_battery_member_card where del_flag=0 and member_card_id=#{membercardId} LIMIT 1
+    </select>
+
+    <select id="selectByList" resultMap="UserBatteryMemberCardMap">
+        <include refid="selectUserBatteryMemberCard"/>
+        where uid = #{uid}
+        limit #{offset},#{size}
+    </select>
+
+    <select id="selectUseableList" resultMap="UserBatteryMemberCardMap">
+        select
+        ubmc.uid,
+        ubmc.order_id,
+        ubmc.member_card_id,
+        ubmc.member_card_expire_time,
+        ubmc.order_expire_time,
+        ubmc.remaining_number,
+        ubmc.member_card_status,
+        ubmc.disable_member_card_time,
+        ubmc.card_pay_count
+        from t_user_battery_member_card ubmc
+        left join t_user_info tui on tui.uid=ubmc.uid
+        where tui.battery_deposit_status=1 and tui.del_flag=0 and ubmc.member_card_status=0
+        limit #{offset},#{size}
+    </select>
+
+
+    <select id="selectUseableListByTenantIds" resultMap="UserBatteryMemberCardMap">
+        select
+        ubmc.uid,
+        ubmc.order_id,
+        ubmc.member_card_id,
+        ubmc.member_card_expire_time,
+        ubmc.order_expire_time,
+        ubmc.remaining_number,
+        ubmc.member_card_status,
+        ubmc.disable_member_card_time,
+        ubmc.card_pay_count
+        from t_user_battery_member_card ubmc
+        left join t_user_info tui on tui.uid=ubmc.uid
+        where tui.battery_deposit_status=1 and tui.del_flag=0 and ubmc.member_card_status=0
+        <if test="tenantIds != null">
+            and tui.tenant_id in
+            <foreach collection="tenantIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         limit #{offset},#{size}
     </select>
 

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: lxc
  * @Date: 2021/4/15 16:02
@@ -19,6 +21,7 @@ public class ShareActivityRecordQuery {
     private Long offset;
     private String phone;
     private String name;
+    private Long uid;
 
     private Integer tenantId;
     
@@ -26,4 +29,7 @@ public class ShareActivityRecordQuery {
     
     private Long endTime;
 
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -26,8 +29,12 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;
 
+    @Autowired
+    private UserDataScopeService userDataScopeService;
+
     @GetMapping("/admin/invitationActivityUser/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                  @RequestParam(value = "uid", required = false) Long uid,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "userName", required = false) String userName) {
         if (size < 0 || size > 50) {
@@ -38,18 +45,75 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
             offset = 0L;
         }
 
-        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder().size(size).offset(offset).userName(userName)
-                .tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder()
+                .size(size)
+                .offset(offset)
+                .userName(userName)
+                .uid(uid)
+                .tenantId(TenantContextHolder.getTenantId())
+                .phone(phone)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .build();
 
         return R.ok(invitationActivityUserService.selectByPage(query));
     }
 
     @GetMapping("/admin/invitationActivityUser/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
+                   @RequestParam(value = "uid", required = false) Long uid,
                    @RequestParam(value = "userName", required = false) String userName) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         InvitationActivityUserQuery query = InvitationActivityUserQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId()).userName(userName).phone(phone).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .userName(userName)
+                .phone(phone)
+                .uid(uid)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .build();
 
         return R.ok(invitationActivityUserService.selectByPageCount(query));
     }

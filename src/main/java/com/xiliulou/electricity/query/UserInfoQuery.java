@@ -33,6 +33,7 @@ public class UserInfoQuery {
     private Long batteryId;
     private Long franchiseeId;
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;
@@ -54,6 +55,11 @@ public class UserInfoQuery {
      * 排序方式
      */
     private Integer sortType;
+
+    /**
+     * 排序：升序 ASC， 降序 DESC
+     */
+    private String sortBy;
     
     /**
      * 套餐购买次数
@@ -67,6 +73,16 @@ public class UserInfoQuery {
     private Long userCreateBeginTime;
     
     private Long userCreateEndTime;
+
+    /**
+     * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     */
+    private Integer payCount;
+
+    /**
+     * 关键字查询，手机号/真实名字模糊匹配
+     */
+    private String keywords;
 
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     public static final Integer SORT_TYPE_AUTH_TIME = 1;

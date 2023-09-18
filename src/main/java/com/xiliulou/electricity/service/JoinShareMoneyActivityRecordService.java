@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 
+import java.util.List;
+
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务接口
  *
@@ -27,4 +29,6 @@ public interface JoinShareMoneyActivityRecordService {
 	void handelJoinShareMoneyActivityExpired();
 
 	void updateByActivityId(JoinShareMoneyActivityRecord joinShareMoneyActivityRecord);
+
+    List<JoinShareMoneyActivityRecord> queryByUidAndActivityId(Long uid, Long activityId);
 }

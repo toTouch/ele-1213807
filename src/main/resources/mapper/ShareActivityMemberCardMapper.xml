@@ -6,6 +6,7 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
         <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
+        <result property="packageType" column="package_type" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -14,16 +15,24 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ShareActivityMemberCardMap">
         select
-          id, activity_id, member_card_id, create_time, update_time, tenant_id
+          id, activity_id, member_card_id, package_type, create_time, update_time, tenant_id
         from t_share_activity_member_card
         where id = #{id}
     </select>
 
     <select id="selectByActivityId" resultMap="ShareActivityMemberCardMap">
         select
-          activity_id, member_card_id
+          activity_id, member_card_id, package_type
         from t_share_activity_member_card
         where activity_id = #{activityId}
+    </select>
+
+    <select id="selectByActivityIdAndPackageType" resultMap="ShareActivityMemberCardMap">
+        select
+        activity_id, member_card_id, package_type
+        from t_share_activity_member_card
+        where activity_id = #{activityId}
+        and package_type = #{packageType}
     </select>
 
     <select id="selectMemberCardIdsByActivityId" resultType="long">
@@ -74,10 +83,10 @@
     </insert>
 
     <insert id="batchInsert">
-        insert into t_share_activity_member_card(activity_id, member_card_id, create_time, update_time, tenant_id)
+        insert into t_share_activity_member_card(activity_id, member_card_id, package_type, create_time, update_time, tenant_id)
         values
         <foreach item="item" index="index" collection="list" separator=",">
-            (#{item.activityId}, #{item.memberCardId}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+            (#{item.activityId}, #{item.memberCardId}, #{item.packageType}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
         </foreach>
     </insert>
 

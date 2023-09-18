@@ -6,7 +6,6 @@ import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,12 +28,7 @@ public class JsonUserUserInfoController extends BaseController {
     @Autowired
     UserService userService;
 
-    //查看用户状态
-    @GetMapping(value = "/user/userInfo/queryUserInfo")
-    @Deprecated
-    public R queryUserInfo() {
-        return userInfoService.queryUserInfo();
-    }
+    //TODO  这三个接口都要优化
 
     /**
      * 小程序首页获取用户详情
@@ -60,4 +54,6 @@ public class JsonUserUserInfoController extends BaseController {
         userService.loginCallBack(query);
         return R.ok();
     }
+
+
 }

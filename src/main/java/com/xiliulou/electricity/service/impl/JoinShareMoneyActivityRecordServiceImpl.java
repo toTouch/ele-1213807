@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
@@ -9,11 +10,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,6 +45,8 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	UserService userService;
 	@Autowired
 	UserBatteryMemberCardService userBatteryMemberCardService;
+	@Autowired
+	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	/**
 	 * 修改数据
@@ -95,57 +101,27 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return R.ok();
 		}
 
-	/*	//2、别人点击链接登录
-
-		//2.1 判断此人是否首次购买月卡
-		Boolean result = checkUserIsCard(userInfo);
-
-		//已购买月卡,则直接返回首页
-		if (result) {
-			return R.fail("ELECTRICITY.00107", "您已购买过月卡");
-		}*/
-
-		//未购买月卡则添加用户参与记录
-		//2.2 判断此人是否参与过活动
-		JoinShareMoneyActivityRecord oldJoinShareMoneyActivityRecord = joinShareMoneyActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>()
-				.eq(JoinShareMoneyActivityRecord::getJoinUid, user.getUid()).eq(JoinShareMoneyActivityRecord::getTenantId, tenantId)
-				.eq(JoinShareMoneyActivityRecord::getActivityId, activityId)
-				.in(JoinShareMoneyActivityRecord::getStatus, JoinShareMoneyActivityRecord.STATUS_INIT));
-
-		if (Objects.nonNull(oldJoinShareMoneyActivityRecord)) {
-			if (Objects.equals(oldJoinShareMoneyActivityRecord.getUid(), uid)) {
+		//检查是否重复扫描同一邀请人的二维码
+		Pair<Boolean, String> sameInviterResult = joinShareMoneyActivityHistoryService.checkJoinedActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
+		if(sameInviterResult.getLeft()){
+			if(sameInviterResult.getRight().isEmpty()){
 				return R.ok();
+			}else{
+				return R.fail("110208", sameInviterResult.getRight());
 			}
-			//切换邀请用户
-			oldJoinShareMoneyActivityRecord.setUid(uid);
-			//过期时间可配置
-			oldJoinShareMoneyActivityRecord.setStartTime(System.currentTimeMillis());
-			oldJoinShareMoneyActivityRecord.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
-			oldJoinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-			joinShareMoneyActivityRecordMapper.updateById(oldJoinShareMoneyActivityRecord);
+		}
+		log.info("start join share money activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
 
-			//修改被替换掉的历史记录状态
-			JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(oldJoinShareMoneyActivityRecord.getId(), user.getUid());
-			if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-				oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_REPLACE);
-				oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-				joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-			}
-
-			//新增邀请历史记录
-			JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
-			joinShareMoneyActivityHistory.setRecordId(oldJoinShareMoneyActivityHistory.getId());
-			joinShareMoneyActivityHistory.setUid(uid);
-			joinShareMoneyActivityHistory.setJoinUid(user.getUid());
-			joinShareMoneyActivityHistory.setCreateTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setStartTime(System.currentTimeMillis());
-			joinShareMoneyActivityHistory.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
-			joinShareMoneyActivityHistory.setTenantId(tenantId);
-			joinShareMoneyActivityHistory.setActivityId(oldJoinShareMoneyActivityRecord.getActivityId());
-			joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
-			joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
-			return R.ok();
+		//3.0版本修改为邀请返券和邀请返现活动只能参加一个，且只是针对新用户参加
+		//查询当前用户是否参与了邀请返现活动
+		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+		if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+			return R.fail("110207", "已参加过邀请返现活动");
+		}
+		//检查是否有参与邀请返券的活动
+		List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
+		if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
+			return R.fail("110206", "已参加过邀请返券活动");
 		}
 
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
@@ -203,6 +179,15 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	@Override
 	public void updateByActivityId(JoinShareMoneyActivityRecord joinShareMoneyActivityRecord) {
 		joinShareMoneyActivityRecordMapper.updateByActivityId(joinShareMoneyActivityRecord);
+	}
+
+	@Slave
+	@Override
+	public List<JoinShareMoneyActivityRecord> queryByUidAndActivityId(Long uid, Long activityId) {
+		List<JoinShareMoneyActivityRecord> joinShareMoneyActivityRecords = joinShareMoneyActivityRecordMapper.selectList(new LambdaQueryWrapper<JoinShareMoneyActivityRecord>().eq(JoinShareMoneyActivityRecord::getUid, uid)
+				.eq(JoinShareMoneyActivityRecord::getActivityId, activityId));
+
+		return joinShareMoneyActivityRecords;
 	}
 
 	private Boolean checkUserIsCard(UserInfo userInfo) {

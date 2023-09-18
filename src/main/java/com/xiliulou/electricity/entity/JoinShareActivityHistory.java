@@ -50,6 +50,7 @@ public class JoinShareActivityHistory {
     private Long expiredTime;
     /**
     * 参与状态 1--已参与，2--邀请成功，3--已过期，4--被替换  5--已下架
+     * 3.0 后 4 为已失效
     */
     private Integer status;
     /**

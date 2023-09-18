@@ -51,5 +51,5 @@ public interface ShareActivityService {
 
     Triple<Boolean, String, Object> shareActivityDetail(Integer id);
 
-    Triple<Boolean, String, Object> updateShareActivity(ShareActivityQuery shareActivityQuery);
+    Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
 }

@@ -69,6 +69,8 @@ public interface ShareActivityMemberCardMapper extends BaseMapper<ShareActivityM
 
     List<ShareActivityMemberCard> selectByActivityId(@Param("activityId") Integer activityId);
 
+    List<ShareActivityMemberCard> selectByActivityIdAndPackageType(@Param("activityId") Integer activityId, @Param("packageType") Integer packageType);
+
     Integer deleteByActivityId(@Param("activityId") Integer id);
 
     List<Long> selectMemberCardIdsByActivityId(@Param("activityId") Integer id);

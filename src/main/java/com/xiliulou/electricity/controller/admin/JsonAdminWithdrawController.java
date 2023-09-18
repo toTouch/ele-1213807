@@ -5,18 +5,23 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,6 +44,9 @@ public class JsonAdminWithdrawController extends BaseController {
 
     @Autowired
     WechatConfig wechatConfig;
+
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     @PostMapping(value = "/admin/handleWithdraw")
 	@Log(title = "提现审核")
@@ -68,6 +76,27 @@ public class JsonAdminWithdrawController extends BaseController {
             offset = 0L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         List<Integer> statusList = new ArrayList<>();
         if (Objects.equals(status, -1)) {
             statusList.add(WithdrawRecord.CHECK_PASS);
@@ -88,6 +117,8 @@ public class JsonAdminWithdrawController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .type(type)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return withdrawRecordService.queryList(withdrawRecordQuery);
@@ -102,6 +133,26 @@ public class JsonAdminWithdrawController extends BaseController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "type", required = false) Integer type) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         List<Integer> statusList = new ArrayList<>();
         if (Objects.equals(status, -1)) {
@@ -121,6 +172,8 @@ public class JsonAdminWithdrawController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .type(type)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return withdrawRecordService.queryCount(withdrawRecordQuery);

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 import lombok.Data;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -107,6 +108,7 @@ public class ElectricityCabinetVO {
      * 满电仓
      */
     private Integer fullyElectricityBattery;
+    private Integer fullyBatteryNumber;
     /**
      * 空仓
      */
@@ -116,6 +118,11 @@ public class ElectricityCabinetVO {
      * 在仓
      */
     private Integer batteryInElectricity;
+
+    /**
+     * 可换电
+     */
+    private Integer exchangeBattery;
 
 
     private Double distance;
@@ -177,6 +184,11 @@ public class ElectricityCabinetVO {
     private String pictureUrl;
 
     private Integer exchangeType;
+
+    /**
+     * 柜机中电池型号统计
+     */
+    private Map<String, Long> batteryTypeMapes;
 
     //全天
     public static final String ALL_DAY = "-1";

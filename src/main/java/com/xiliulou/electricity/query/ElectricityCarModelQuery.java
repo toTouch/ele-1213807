@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -13,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author: eclair
@@ -49,7 +48,7 @@ public class ElectricityCarModelQuery {
     /**
      * 租赁方式
      */
-    @NotBlank(message = "租赁方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    //@NotBlank(message = "租赁方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String rentType;
 
     /**
@@ -59,7 +58,7 @@ public class ElectricityCarModelQuery {
     /**
      * 租车押金
      */
-    @NotNull(message = "租车押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    //@NotNull(message = "租车押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal carDeposit;
 
     /**
@@ -71,6 +70,11 @@ public class ElectricityCarModelQuery {
      * 其它参数
      */
     private String otherProperties;
+
+    /**
+     * 已租数量
+     */
+    private Integer rentedQuantity;
 
 
     private Integer delFlag;
@@ -93,4 +97,9 @@ public class ElectricityCarModelQuery {
     private Long uid;
     //租户id
     private Integer tenantId;
+
+    /**
+     * 车辆型号主键ID集
+     */
+    private Set<Integer> ids;
 }

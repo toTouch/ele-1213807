@@ -82,7 +82,7 @@ public class UserInfo {
 
     /**
      * 车电一体押金状态
-     *
+     * @see com.xiliulou.electricity.enums.YesNoEnum
      */
     private Integer carBatteryDepositStatus;
 
