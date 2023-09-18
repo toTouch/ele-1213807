@@ -292,7 +292,7 @@
             </foreach>
         </if>
         <if test="storeIds != null">
-            and store_id in
+            and id in
             <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
