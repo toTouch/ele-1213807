@@ -201,7 +201,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         qryModel.setCarModelId(carModelIdExit);
         qryModel.setStatus(UpDownEnum.UP.getCode());
         qryModel.setConfine(confineExit);
-        qryModel.setFreeDeposit(freeDepositExit);
+        //qryModel.setFreeDeposit(freeDepositExit);
         if (ObjectUtils.isNotEmpty(depositExit)) {
             qryModel.setDeposit(depositExit);
         }

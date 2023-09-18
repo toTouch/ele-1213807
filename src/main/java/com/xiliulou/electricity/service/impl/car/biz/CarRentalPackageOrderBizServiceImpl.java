@@ -544,6 +544,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
 
+        //是否存在正常的退款订单
+        CarRentalPackageOrderRentRefundPo rentRefundEntity = carRentalPackageOrderRentRefundService.selectLatestByPurchaseOrderNo(packageOrderNo);
+        if (ObjectUtils.isNotEmpty(rentRefundEntity) && !RefundStateEnum.getRefundStateList().contains(rentRefundEntity.getRefundState())) {
+            throw new BizException("300061", "租金退款中，请稍后再试");
+        }
+
+        // 检测是否存在滞纳金
+        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
+            log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There is a Late fee, please pay first. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
+        }
+
         if (ObjectUtils.notEqual(PayStateEnum.SUCCESS.getCode(), packageOrderEntity.getPayState())) {
             throw new BizException("300014", "订单支付异常");
         }
