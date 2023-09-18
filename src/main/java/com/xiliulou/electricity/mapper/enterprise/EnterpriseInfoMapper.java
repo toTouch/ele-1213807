@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.mapper;
+package com.xiliulou.electricity.mapper.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 

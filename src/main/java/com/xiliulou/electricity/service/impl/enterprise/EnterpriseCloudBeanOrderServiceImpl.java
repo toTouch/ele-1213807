@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service.impl;
+package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -6,9 +6,9 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.mapper.EnterpriseCloudBeanOrderMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
-import com.xiliulou.electricity.service.EnterpriseCloudBeanOrderService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;

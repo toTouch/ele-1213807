@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service;
+package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;

@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
-import com.xiliulou.electricity.mapper.EnterprisePackageMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterprisePackageMapper;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import org.springframework.stereotype.Service;
 
