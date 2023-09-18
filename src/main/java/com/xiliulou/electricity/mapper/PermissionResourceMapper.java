@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.PermissionResource;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -25,4 +26,6 @@ public interface PermissionResourceMapper  extends BaseMapper<PermissionResource
     Integer insertOne(PermissionResource permissionResource);
 
     Integer update(PermissionResource permissionResource);
+
+    List<PermissionResource> queryListByRids(@Param("list")List<Long> rids,@Param("type")Integer type);
 }
