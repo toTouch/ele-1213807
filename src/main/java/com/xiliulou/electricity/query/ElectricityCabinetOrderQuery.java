@@ -35,6 +35,8 @@ public class ElectricityCabinetOrderQuery {
 
     private Long uid;
 
+    private Long eid;
+
     private Long beginTime;
     private Long endTime;
 
