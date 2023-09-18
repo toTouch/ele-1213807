@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -279,7 +278,7 @@ public class ElectricityTradeOrderServiceImpl extends
         String ip = request.getRemoteAddr();
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
         electricityTradeOrder.setOrderNo(commonOrder.getOrderId());
-        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
+        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()) + commonOrder.getUid());
         electricityTradeOrder.setClientId(ip);
         electricityTradeOrder.setCreateTime(System.currentTimeMillis());
         electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
