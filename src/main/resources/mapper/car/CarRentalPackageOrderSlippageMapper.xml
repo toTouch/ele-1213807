@@ -81,6 +81,7 @@
                 #{payState}
             </foreach>
         </if>
+        <if test=" payTimeBegin != null and payTimeEnd != null "> AND `pay_time` BETWEEN #{payTimeBegin} AND #{payTimeEnd} </if>
     </sql>
 
     <!-- 条件新增字段 -->

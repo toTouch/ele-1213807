@@ -69,4 +69,14 @@ public class CarRentalPackageOrderSlippageQryReq implements Serializable {
      * 创建时间截止
      */
     private Long createTimeEnd;
+
+    /**
+     * 支付时间开始
+     */
+    private Long payTimeBegin;
+
+    /**
+     * 支付时间截止
+     */
+    private Long payTimeEnd;
 }
