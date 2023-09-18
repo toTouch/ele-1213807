@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.CloudBeanUseRecord;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -40,4 +41,6 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     int deleteById(Long id);
 
     double selectCloudBeanByUidAndType(@Param("uid") Long uid, @Param("type") Integer type);
+
+    List<CloudBeanUseRecord> selectByUserPage(CloudBeanUseRecordQuery query);
 }
