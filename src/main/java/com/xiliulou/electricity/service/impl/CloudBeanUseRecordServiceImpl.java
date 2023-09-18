@@ -5,7 +5,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.mapper.CloudBeanUseRecordMapper;
+import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CloudBeanUseRecordService;
