@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * 企业用户信息表(EnterpriseInfo)实体类
  *
@@ -50,7 +52,7 @@ public class EnterpriseInfo {
     /**
      * 企业云豆总数
      */
-    private Double totalBeanAmount;
+    private BigDecimal totalBeanAmount;
     /**
      * 租户ID
      */

@@ -42,4 +42,6 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
     List<EnterpriseInfo> selectByPage(EnterpriseInfoQuery query);
 
     Integer selectByPageCount(EnterpriseInfoQuery query);
+
+    EnterpriseInfo selectByUid(Long uid);
 }

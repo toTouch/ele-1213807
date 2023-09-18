@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * @author zzlong
@@ -24,7 +25,7 @@ public class EnterpriseCloudBeanRechargeQuery {
      * 企业云豆总数
      */
     @NotNull(message = "企业云豆总数不能为空")
-    private Double totalBeanAmount;
+    private BigDecimal totalBeanAmount;
     /**
      * 备注
      */

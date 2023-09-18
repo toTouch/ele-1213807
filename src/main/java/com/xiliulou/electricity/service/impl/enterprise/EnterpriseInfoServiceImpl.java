@@ -1,12 +1,13 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import cn.hutool.core.util.RandomUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
@@ -16,10 +17,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EnterpriseInfoMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.EnterpriseCloudBeanOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -27,6 +25,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
+import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -74,6 +73,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private CloudBeanUseRecordService cloudBeanUseRecordService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -236,20 +237,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
-        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount() + enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
         enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(enterpriseInfoUpdate);
 
+        //云豆订单
         EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
         enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
         enterpriseCloudBeanOrder.setUid(enterpriseInfo.getUid());
         enterpriseCloudBeanOrder.setOperateUid(SecurityUtils.getUid());
-        enterpriseCloudBeanOrder.setPayAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : BigDecimal.valueOf(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
+        enterpriseCloudBeanOrder.setPayAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
         enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
         enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
         enterpriseCloudBeanOrder.setPayType(EnterpriseCloudBeanOrder.OFFLINE_PAYMENT);
         enterpriseCloudBeanOrder.setType(enterpriseCloudBeanRechargeQuery.getType());
-        enterpriseCloudBeanOrder.setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : BigDecimal.valueOf(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
+        enterpriseCloudBeanOrder.setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
         enterpriseCloudBeanOrder.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         enterpriseCloudBeanOrder.setTenantId(enterpriseInfo.getTenantId());
         enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
@@ -257,12 +259,50 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseCloudBeanOrder.setRemark(enterpriseCloudBeanRechargeQuery.getRemark());
         enterpriseCloudBeanOrderService.insert(enterpriseCloudBeanOrder);
 
+        //云豆记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(enterpriseInfo.getUid());
+        cloudBeanUseRecord.setType(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount().compareTo(BigDecimal.valueOf(0)) > 0 ? CloudBeanUseRecord.TYPE_ADMIN_RECHARGE : CloudBeanUseRecord.TYPE_ADMIN_DEDUCT);
+        cloudBeanUseRecord.setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfoUpdate.getTotalBeanAmount());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(enterpriseCloudBeanOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+
         return Triple.of(true, null, null);
     }
 
     @Override
     public EnterpriseInfo selectByUid(Long uid) {
-        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getUid, uid));
+        return this.enterpriseInfoMapper.selectByUid(uid);
+    }
+
+    @Override
+    public UserCloudBeanDetailVO cloudBeanDetail() {
+        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            return null;
+        }
+
+        UserCloudBeanDetailVO userCloudBeanDetailVO = new UserCloudBeanDetailVO();
+        userCloudBeanDetailVO.setTotalCloudBean(enterpriseInfo.getTotalBeanAmount());
+
+        //已分配云豆数
+        Double distributableCloudBean = cloudBeanUseRecordService.selectCloudBeanByUidAndType(SecurityUtils.getUid(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
+        userCloudBeanDetailVO.setDistributableCloudBean(Objects.isNull(distributableCloudBean) ? NumberConstant.ZERO_D : distributableCloudBean);
+
+        //已回收云豆数
+        Double recoveredCloudBean = cloudBeanUseRecordService.selectCloudBeanByUidAndType(SecurityUtils.getUid(), CloudBeanUseRecord.TYPE_RECYCLE);
+        userCloudBeanDetailVO.setRecoveredCloudBean(Objects.isNull(recoveredCloudBean) ? NumberConstant.ZERO_D : recoveredCloudBean);
+
+        //可回收云豆数  TODO
+
+        return userCloudBeanDetailVO;
     }
 
     @Override

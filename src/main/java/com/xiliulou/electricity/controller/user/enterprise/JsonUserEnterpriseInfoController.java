@@ -32,5 +32,13 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return R.ok(enterpriseInfoService.checkUserType());
     }
 
+    /**
+     * 获取用户云豆详情
+     */
+    @GetMapping("/user/cloudBean/detail")
+    public R cloudBeanDetail() {
+        return R.ok(enterpriseInfoService.cloudBeanDetail());
+    }
+
 
 }

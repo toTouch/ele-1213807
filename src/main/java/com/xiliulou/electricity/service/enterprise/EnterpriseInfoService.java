@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
+import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -57,4 +58,6 @@ public interface EnterpriseInfoService {
     EnterpriseInfo selectByUid(Long uid);
 
     EnterpriseInfo queryByIdFromCache(Long enterpriseId);
+
+    UserCloudBeanDetailVO cloudBeanDetail();
 }
