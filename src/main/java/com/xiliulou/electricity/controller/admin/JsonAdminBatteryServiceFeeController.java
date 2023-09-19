@@ -118,7 +118,9 @@ public class JsonAdminBatteryServiceFeeController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "status", required = false) Integer status,
-                       @RequestParam(value = "source", required = false) Integer source) {
+                       @RequestParam(value = "source", required = false) Integer source,
+                       @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
+                       @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -161,7 +163,10 @@ public class JsonAdminBatteryServiceFeeController {
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .source(source)
-                .phone(phone).build();
+                .phone(phone)
+                .payTimeBegin(payTimeBegin)
+                .payTimeEnd(payTimeEnd)
+                .build();
 
         return eleBatteryServiceFeeOrderService.queryList(batteryServiceFeeQuery);
     }
@@ -178,7 +183,9 @@ public class JsonAdminBatteryServiceFeeController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "source", required = false) Integer source) {
+                        @RequestParam(value = "source", required = false) Integer source,
+                        @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
+                        @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -213,7 +220,10 @@ public class JsonAdminBatteryServiceFeeController {
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
                 .source(source)
-                .phone(phone).build();
+                .phone(phone)
+                .payTimeBegin(payTimeBegin)
+                .payTimeEnd(payTimeEnd)
+                .build();
 
         return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);
 
