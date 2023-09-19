@@ -2406,15 +2406,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public void unBindUserFranchiseeId(Long uid) {
+
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if(Objects.isNull(userInfo)){
+            return;
+        }
+
         //租车押金
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userCarDeposit)) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return;
         }
 
         //租电池押金
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userBatteryDeposit)) {
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return;
         }
 
