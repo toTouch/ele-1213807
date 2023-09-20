@@ -17,7 +17,11 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
@@ -36,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -175,6 +180,68 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
 
     @Override
+    public Triple<Boolean, String, Object> rechargeForUser(UserCloudBeanRechargeQuery query, HttpServletRequest request) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("CLOUD BEAN RECHARGE ERROR! not found user,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        try {
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.warn("CLOUD BEAN RECHARGE ERROR! user is unUsable,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
+
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("CLOUD BEAN RECHARGE ERROR! user not auth,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+
+            EnterpriseInfo enterpriseInfo = this.selectByUid(userInfo.getUid());
+            if (Objects.isNull(enterpriseInfo)) {
+                log.error("CLOUD BEAN RECHARGE ERROR!not found enterpriseInfo,uid={}", userInfo.getUid());
+                return Triple.of(false, "", "企业配置信息不存在");
+            }
+
+            if (query.getTotalBeanAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+                log.error("CLOUD BEAN RECHARGE ERROR!illegal totalBeanAmount,uid={},totalBeanAmount={}", userInfo.getUid(), query.getTotalBeanAmount());
+                return Triple.of(false, "", "支付金额不合法");
+            }
+
+
+            //生成充值订单
+            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
+            enterpriseCloudBeanOrder.setEnterpriseId(0L);
+            enterpriseCloudBeanOrder.setUid(userInfo.getUid());
+            enterpriseCloudBeanOrder.setOperateUid(userInfo.getUid());
+            enterpriseCloudBeanOrder.setPayAmount(query.getTotalBeanAmount());
+            enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
+            enterpriseCloudBeanOrder.setStatus(0);
+            enterpriseCloudBeanOrder.setPayType(0);
+            enterpriseCloudBeanOrder.setType(0);
+            enterpriseCloudBeanOrder.setRemark("");
+            enterpriseCloudBeanOrder.setBeanAmount(query.getTotalBeanAmount());
+            enterpriseCloudBeanOrder.setFranchiseeId(userInfo.getFranchiseeId());
+            enterpriseCloudBeanOrder.setTenantId(userInfo.getTenantId());
+            enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
+            enterpriseCloudBeanOrder.setUpdateTime(System.currentTimeMillis());
+
+
+        } catch (Exception e) {
+            log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", userInfo.getUid(), e);
+        } finally {
+            redisService.delete(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid());
+        }
+
+        return Triple.of(false, "", "充值失败");
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery) {
         if (CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
@@ -182,7 +249,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
 
         EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
-        if(Objects.nonNull(enterpriseInfoOld)){
+        if (Objects.nonNull(enterpriseInfoOld)) {
             return Triple.of(false, "", "用户已存在");
         }
 
@@ -235,7 +302,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> recharge(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
+    public Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseCloudBeanRechargeQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "", "企业配置不存在");

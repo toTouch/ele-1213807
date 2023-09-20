@@ -173,7 +173,7 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
             return R.ok();
         }
 
-        return returnTripleResult(enterpriseInfoService.recharge(enterpriseCloudBeanRechargeQuery));
+        return returnTripleResult(enterpriseInfoService.rechargeForAdmin(enterpriseCloudBeanRechargeQuery));
     }
 
 }
