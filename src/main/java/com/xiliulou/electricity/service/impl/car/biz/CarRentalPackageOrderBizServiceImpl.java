@@ -26,7 +26,6 @@ import com.xiliulou.electricity.service.car.biz.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
@@ -2502,7 +2501,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
         if (ObjectUtils.isNotEmpty(electricityCar)) {
             ElectricityConfig electricityConfig = electricityConfigService
-                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+                    .queryFromCacheByTenantId(tenantId);
             if (Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
                 Boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
@@ -2519,7 +2518,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistory.setCarSn(electricityCar.getSn());
                 carLockCtrlHistory.setCreateTime(currentTimeMillis);
                 carLockCtrlHistory.setUpdateTime(currentTimeMillis);
-                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                carLockCtrlHistory.setTenantId(tenantId);
                 carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
 
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
