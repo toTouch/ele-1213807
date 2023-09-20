@@ -164,6 +164,7 @@
         <set>
             `update_time` = #{updateTime}
             <if test=" refundState != null "> , `refund_state` = #{refundState} </if>
+            <if test=" refundAmount != null ">, `refund_amount` = #{refundAmount} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
@@ -222,5 +223,14 @@
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
+
+    <!-- 根据购买订单号，查询最新的一条退款订单信息 -->
+    <select id="selectLatestByPurchaseOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `rental_package_order_no` = #{purchaseOrderNo}
+        </where>
+        ORDER BY id DESC limit 1
+    </select>
 
 </mapper>

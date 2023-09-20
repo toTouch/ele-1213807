@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,6 +36,8 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     @Autowired
     private EleCabinetDataAnalyseService eleCabinetDataAnalyseService;
 
+    @Autowired
+    private UserTypeFactory userTypeFactory;
     /**
      * 全部柜机列表
      */
@@ -52,14 +57,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             offset = 0;
         }
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
                 .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -74,13 +95,29 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                           @RequestParam(value = "storeId", required = false) Long storeId) {
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -104,14 +141,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             offset = 0;
         }
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
                 .onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS).sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -123,13 +176,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                               @RequestParam(value = "storeId", required = false) Long storeId) {
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
+
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
-                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -153,14 +223,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             offset = 0;
         }
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
                 .usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS).sn(sn).address(address)
-                .name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).build();
+                .name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -172,14 +258,31 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                               @RequestParam(value = "storeId", required = false) Long storeId) {
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).name(name)
                 .usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
-                .tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).build();
+                .tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -202,15 +305,31 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         if (offset < 0) {
             offset = 0;
         }
-
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
                 .storeId(storeId).usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address)
-                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectLockPage(cabinetQuery));
     }
@@ -222,15 +341,32 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                            @RequestParam(value = "storeId", required = false) Long storeId) {
-
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
+
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).storeId(storeId)
                 .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address)
-                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectLockPageCount(cabinetQuery));
     }
@@ -255,14 +391,31 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             offset = 0;
         }
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
                 .address(address).lowChargeRate(lowChargeRate)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
@@ -275,13 +428,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                                @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                @RequestParam(value = "storeId", required = false) Long storeId) {
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
+
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }
@@ -306,13 +476,29 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             offset = 0;
         }
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(Collections.emptyList());
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
-                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
@@ -325,13 +511,30 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                 @RequestParam(value = "storeId", required = false) Long storeId) {
 
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return R.ok(0);
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
+
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }

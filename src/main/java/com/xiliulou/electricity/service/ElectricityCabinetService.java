@@ -235,5 +235,7 @@ public interface ElectricityCabinetService {
 
     void exportExcel(ElectricityCabinetQuery query, HttpServletResponse response);
 
+    Triple<Boolean, String, Object> batchUpdateAddress(List<ElectricityCabinet> list);
 
+    void batchUpdate(List<ElectricityCabinet> list);
 }

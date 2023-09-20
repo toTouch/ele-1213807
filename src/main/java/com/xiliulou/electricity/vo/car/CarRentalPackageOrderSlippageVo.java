@@ -125,6 +125,11 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
     private String franchiseeName;
 
     /**
+     * 用户UID
+     */
+    private Long uid;
+
+    /**
      * 用户真实姓名
      */
     private String userRelName;

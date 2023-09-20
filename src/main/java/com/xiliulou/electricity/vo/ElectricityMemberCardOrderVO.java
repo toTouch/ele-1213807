@@ -56,4 +56,14 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private String simpleBatteryType;
 
     private Integer isRefund;
+
+    /**
+     * 退租状态
+     */
+    private Integer rentRefundStatus;
+
+    /**
+     * 退租拒绝原因
+     */
+    private String rejectReason;
 }

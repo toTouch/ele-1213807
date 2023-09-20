@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 车辆数据查询条件
@@ -57,4 +58,11 @@ public class CarDataQuery implements Serializable {
     private Long overdueTime;
 
     private Long uid;
+
+    /**
+     * 加盟商Id
+     */
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

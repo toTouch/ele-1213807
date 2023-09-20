@@ -72,5 +72,11 @@ public interface CarRentalPackageOrderRentRefundService {
      */
     Long insert(CarRentalPackageOrderRentRefundPo entity);
 
+    /**
+     * 根据购买订单号，查询最新的一条退款订单信息
+     * @param rentalPackageOrderNo 购买订单号
+     * @return
+     */
+    CarRentalPackageOrderRentRefundPo selectLatestByPurchaseOrderNo(String rentalPackageOrderNo);
 
 }

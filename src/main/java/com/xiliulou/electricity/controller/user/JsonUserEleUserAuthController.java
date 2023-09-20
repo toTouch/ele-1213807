@@ -104,6 +104,22 @@ public class JsonUserEleUserAuthController {
 	}
 
 	/**
+	 * 获取当前用户的具体审核状态及审核原因
+	 *
+	 * @param
+	 * @return
+	 */
+	@GetMapping(value = "/user/authStatusInfo")
+	public R selectUserAuthStatus() {
+		Long uid = SecurityUtils.getUid();
+		if (Objects.isNull(uid)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		return eleUserAuthService.selectUserAuthStatus(uid);
+	}
+
+	/**
 	 * 获取当前的用户资料项
 	 *
 	 * @param

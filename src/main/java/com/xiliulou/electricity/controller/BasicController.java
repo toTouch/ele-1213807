@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  * @author xiaohui.song
  **/
 @Slf4j
-public class BasicController {
+public class BasicController extends BaseController {
 
 
     @Resource
@@ -478,7 +479,7 @@ public class BasicController {
                 log.info("BasicController.checkPermission. Franchisee data rights are empty.");
                 return Triple.of(null, null, false);
             }
-            franchiseeIdList = franchiseeIds.stream().map(franchiseeId -> franchiseeId.intValue()).collect(Collectors.toList());
+            franchiseeIdList = franchiseeIds.stream().map(Long::intValue).collect(Collectors.toList());
         }
 
         // 门店数据权
@@ -490,7 +491,7 @@ public class BasicController {
                 log.info("BasicController.checkPermission. Store data rights are empty.");
                 return Triple.of(null, null, false);
             }
-            storeIdList = storeIds.stream().map(storeId -> storeId.intValue()).collect(Collectors.toList());
+            storeIdList = storeIds.stream().map(Long::intValue).collect(Collectors.toList());
         }
 
         return Triple.of(franchiseeIdList, storeIdList, true);

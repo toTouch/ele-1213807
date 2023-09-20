@@ -729,8 +729,8 @@ public class StoreServiceImpl implements StoreService {
     }
     
     @Override
-    public R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId) {
-        List<SearchVo> voList = storeMapper.storeSearch(size, offset, franchiseeId, name , tenantId);
+    public R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId,List<Long> storeIds,List<Long> franchiseeIds) {
+        List<SearchVo> voList = storeMapper.storeSearch(size, offset, franchiseeId, name , tenantId,storeIds,franchiseeIds);
         return R.ok(voList);
     }
     

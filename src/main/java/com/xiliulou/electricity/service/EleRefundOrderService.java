@@ -115,4 +115,6 @@ public interface EleRefundOrderService {
             BigDecimal refundAmount);
 
     List<EleRefundOrder> selectByOrderId(String orderId);
+
+    EleRefundOrder selectLatestRefundDepositOrder(String paymentOrderNo);
 }

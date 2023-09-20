@@ -15,6 +15,18 @@
     <sql id="where_field">
         <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
         <if test=" keywords != null and keywords != '' "> AND (`name` LIKE CONCAT('%', #{keywords}, '%') OR `phone` LIKE CONCAT('%', #{keywords}, '%')) </if>
+        <if test=" franchiseeIds != null">
+            and  franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test=" storeIds != null">
+            and  store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
     </sql>
 
     <!-- 分页查询 -->

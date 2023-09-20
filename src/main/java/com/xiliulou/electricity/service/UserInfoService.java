@@ -89,7 +89,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R getRentCarMemberCardInfo(Long uid);
 
-    R verifyAuth(Long id, Integer authStatus);
+    R verifyAuth(Long id, Integer authStatus,String msg);
 
     R updateAuth(UserInfo userInfo);
 

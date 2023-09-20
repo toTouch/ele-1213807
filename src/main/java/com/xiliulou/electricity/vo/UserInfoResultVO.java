@@ -42,6 +42,12 @@ public class UserInfoResultVO {
 
     private UserCarDetail UserCarDetail;
 
+    /**
+     * 获取用户状态（离线换电）
+     */
+    private UserFrontDetectionVO userFrontDetection;
+
+
     public static final Integer YES = 0;
     public static final Integer NO = 1;
 
