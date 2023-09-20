@@ -498,6 +498,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetServerService
                     .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
 
+            //云端下发命令修改换电标准
+            if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
+                this.updateFullyChargedByCloud(electricityCabinet);
+            }
+
             return null;
         });
         return R.ok();
