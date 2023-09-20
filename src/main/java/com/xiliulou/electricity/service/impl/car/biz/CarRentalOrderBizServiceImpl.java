@@ -664,7 +664,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("bindingCar, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
-            throw new BizException("300000", "数据有误");
+            throw new BizException("300060", "用户暂无可用套餐，请先购买套餐");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
