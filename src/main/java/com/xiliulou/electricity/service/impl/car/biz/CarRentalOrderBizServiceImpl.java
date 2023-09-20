@@ -331,7 +331,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         carRentalOrderPoInsert.setType(type);
         carRentalOrderPoInsert.setCarModelId(electricityCar.getModelId());
         carRentalOrderPoInsert.setCarSn(electricityCar.getSn());
-        carRentalOrderPoInsert.setPayType(type);
+        carRentalOrderPoInsert.setPayType(PayTypeEnum.ON_LINE.getCode());
         carRentalOrderPoInsert.setRentalState(CarRentalStateEnum.AUDIT_ING.getCode());
         carRentalOrderPoInsert.setTenantId(userInfo.getTenantId());
         carRentalOrderPoInsert.setFranchiseeId(userInfo.getFranchiseeId().intValue());
@@ -516,7 +516,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 生成租赁订单
-        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, rentalPackageOrderNo, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode());
+        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, rentalPackageOrderNo, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode(), PayTypeEnum.ON_LINE.getCode());
 
         // 生成用户租赁状态
         UserInfo userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RENTAL.getCode());
@@ -620,7 +620,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 生成租赁还车订单
-        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, memberTermEntity.getRentalPackageOrderNo(), electricityCar, optUid, RentalTypeEnum.RETURN.getCode());
+        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, memberTermEntity.getRentalPackageOrderNo(), electricityCar, optUid, RentalTypeEnum.RETURN.getCode(), PayTypeEnum.OFF_LINE.getCode());
 
         // 生成用户租赁状态
         UserInfo userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RETURN.getCode());
@@ -811,7 +811,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
 
         // 生成租赁订单
-        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, rentalPackageOrderNo, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode());
+        CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, rentalPackageOrderNo, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode(), PayTypeEnum.OFF_LINE.getCode());
 
         // 生成用户租赁状态
         UserInfo userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RENTAL.getCode());
@@ -1026,9 +1026,10 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @param electricityCar 车辆信息
      * @param optId 操作用户UID
      * @param rentalType 订单类型
+     * @param payType 交易方式
      * @return 租赁订单信息
      */
-    private CarRentalOrderPo buildCarRentalOrder(CarRentalPackagePo rentalPackageEntity, Long uid, String rentalPackageOrderNo, ElectricityCar electricityCar, Long optId, Integer rentalType) {
+    private CarRentalOrderPo buildCarRentalOrder(CarRentalPackagePo rentalPackageEntity, Long uid, String rentalPackageOrderNo, ElectricityCar electricityCar, Long optId, Integer rentalType, Integer payType) {
         CarRentalOrderPo carRentalOrdeEntity = new CarRentalOrderPo();
         carRentalOrdeEntity.setUid(uid);
         carRentalOrdeEntity.setType(rentalType);
@@ -1041,7 +1042,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         carRentalOrdeEntity.setRentalPackageOrderNo(rentalPackageOrderNo);
         carRentalOrdeEntity.setCarModelId(rentalPackageEntity.getCarModelId());
         carRentalOrdeEntity.setCarSn(electricityCar.getSn());
-        carRentalOrdeEntity.setPayType(PayTypeEnum.OFF_LINE.getCode());
+        carRentalOrdeEntity.setPayType(payType);
         carRentalOrdeEntity.setRentalState(CarRentalStateEnum.SUCCESS.getCode());
         carRentalOrdeEntity.setTenantId(rentalPackageEntity.getTenantId());
         carRentalOrdeEntity.setFranchiseeId(rentalPackageEntity.getFranchiseeId());
