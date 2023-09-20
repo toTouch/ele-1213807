@@ -1806,15 +1806,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (carRentalPackageOrderService.isExitUnUseAndRefund(tenantId, uid, now)) {
                 throw new BizException("300017", "存在未使用的订单");
             }
-            // 查询设备信息，存在设备，不允许退租
-            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
-            if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
-                throw new BizException("300040", "需先退还资产再退租金");
-            }
-            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
-                ElectricityBattery battery = batteryService.queryByUid(uid);
-                if (ObjectUtils.isNotEmpty(battery)) {
-                    throw new BizException("300040", "需先退还资产再退租金");
+            // 是否存在未使用的订单
+            CarRentalPackageOrderPo unUsePackageOrder = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(tenantId, uid);
+            if (ObjectUtils.isEmpty(unUsePackageOrder)) {
+                // 查询设备信息，存在设备，不允许退租
+                ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+                if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
+                    throw new BizException("300018", "存在未归还的车辆");
+                }
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
+                    ElectricityBattery battery = batteryService.queryByUid(uid);
+                    if (ObjectUtils.isNotEmpty(battery)) {
+                        throw new BizException("300019", "存在未归还的电池");
+                    }
                 }
             }
             memberTermUpdateEntity = buildRentRefundRentalPackageMemberTerm(tenantId, uid, optUid);
