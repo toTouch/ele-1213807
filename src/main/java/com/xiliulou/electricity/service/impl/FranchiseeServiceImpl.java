@@ -111,6 +111,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
     @Slave
     @Override
     public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
@@ -282,7 +285,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //查询加盟商是否绑定的有套餐
-        Integer checkMemberCardResult = electricityMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
+        Integer checkMemberCardResult = batteryMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
+//        Integer checkMemberCardResult = electricityMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
         if (!Objects.isNull(checkMemberCardResult)) {
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}", id);
             return R.fail(id, "100101", "删除失败，该加盟商已绑定套餐！");

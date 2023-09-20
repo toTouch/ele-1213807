@@ -3643,7 +3643,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
-                .storeId(userInfo.getStoreId())
+                .storeId(query.getStoreId())
                 .mid(batteryMemberCard.getId())
                 .modelType(0).build();
         depositOrderService.insert(eleDepositOrder);
@@ -3668,7 +3668,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .sendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null)
                 .useStatus(ElectricityMemberCardOrder.USE_STATUS_USING)
                 .source(ElectricityMemberCardOrder.SOURCE_NOT_SCAN)
-                .storeId(userInfo.getStoreId()).build();
+                .storeId(query.getStoreId()).build();
         this.baseMapper.insert(electricityMemberCardOrder);
 
         UserInfo userInfoUpdate = new UserInfo();
