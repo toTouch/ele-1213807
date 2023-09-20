@@ -309,6 +309,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Slave
     @Override
+    public Integer isMemberCardBindFranchinsee(Long id, Integer tenantId) {
+        return this.batteryMemberCardMapper.isMemberCardBindFranchinsee(id,tenantId);
+    }
+
+    @Slave
+    @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
 
