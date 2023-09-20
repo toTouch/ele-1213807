@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -63,11 +65,31 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     BatteryMemberCardService batteryMemberCardService;
     @Autowired
     private CarRentalPackageService carRentalPackageService;
-
+    @Autowired
+    UserDataScopeService userDataScopeService;
     @Slave
     @Override
     public List<SearchVo> configSearch(Long size, Long offset, String name, Integer tenantId) {
-        List<SearchVo> searchVos = divisionAccountConfigMapper.configSearch(size, offset, name, tenantId);
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return Collections.emptyList();
+        }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return Collections.emptyList();
+            }
+        }
+        List<SearchVo> searchVos = divisionAccountConfigMapper.configSearch(size, offset, name, tenantId,storeIds,franchiseeIds);
         if (CollectionUtils.isEmpty(searchVos)) {
             return Collections.emptyList();
         }
