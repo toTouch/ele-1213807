@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity.enterprise;
 
 
+import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +31,7 @@ public class EnterpriseChannelUser {
     private Long uid;
     /**
      * 邀请方式 0:面对面添加,1:手机号添加
+     * @see InvitationWayEnum
      */
     private Integer invitationWay;
     /**
@@ -44,7 +47,8 @@ public class EnterpriseChannelUser {
      */
     private Long tenantId;
     /**
-     * 自主续费状态 0:不接自主续费,1:自助续费
+     * 自主续费状态 0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
      */
     private Integer renewalStatus;
     /**

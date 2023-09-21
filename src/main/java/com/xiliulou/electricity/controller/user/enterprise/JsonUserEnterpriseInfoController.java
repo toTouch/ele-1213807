@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -21,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class JsonUserEnterpriseInfoController extends BaseController {
 
-    @Autowired
+    @Resource
     private EnterpriseInfoService enterpriseInfoService;
 
     /**
      * 获取用户是否属于企业渠道
      */
-    @GetMapping("/user/EnterpriseInfo/check")
+    @GetMapping("/user/enterpriseInfo/check")
     public R enterpriseInfoCheck() {
         return R.ok(enterpriseInfoService.checkUserType());
     }
@@ -38,6 +40,12 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     @GetMapping("/user/cloudBean/detail")
     public R cloudBeanDetail() {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
+    }
+
+    @GetMapping("/user/enterpriseInfo/detail")
+    public R queryEnterpriseInfo(@RequestParam(value = "uid", required = true) Long uid){
+
+        return R.ok(enterpriseInfoService.selectByUid(uid));
     }
 
 

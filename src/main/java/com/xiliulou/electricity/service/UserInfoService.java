@@ -113,6 +113,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     UserInfo queryUserInfoByPhone(String phone, Integer tenantId);
 
+    UserInfo  queryUserByPhoneAndFranchisee(String phone, Integer franchiseeId, Integer tenantId);
+
     Integer queryAuthenticationUserCount(Integer tenantId);
 
     List<HomePageUserByWeekDayVo>  queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime);

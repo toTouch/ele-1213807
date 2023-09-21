@@ -10,33 +10,33 @@
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
-        <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
+    <!-- 基础字段 -->
+    <sql id="selectEnterpriseChannelUser">
+        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark from t_enterprise_channel_user
+    </sql>
+
     <!--查询单个-->
     <select id="queryById" resultMap="EnterpriseChannelUserMap">
-        select
-          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
-        from t_enterprise_channel_user
+        <include refid="selectEnterpriseChannelUser"/>
+
         where id = #{id}
     </select>
 
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EnterpriseChannelUserMap">
-        select
-          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
-        from t_enterprise_channel_user
+        <include refid="selectEnterpriseChannelUser"/>
+
         limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="EnterpriseChannelUserMap">
-        select
-          id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark
-        from t_enterprise_channel_user
+        <include refid="selectEnterpriseChannelUser"/>
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -59,9 +59,7 @@
             <if test="renewalStatus != null">
                 and renewal_status = #{renewalStatus}
             </if>
-            <if test="inviterId != null">
-                and inviter_id = #{inviterId}
-            </if>
+
             <if test="createTime != null">
                 and create_time = #{createTime}
             </if>
@@ -123,9 +121,7 @@
             <if test="renewalStatus != null">
                 renewal_status = #{renewalStatus},
             </if>
-            <if test="inviterId != null">
-                inviter_id = #{inviterId},
-            </if>
+
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
@@ -143,5 +139,50 @@
     <delete id="deleteById">
         delete from t_enterprise_channel_user where id = #{id}
     </delete>
+
+    <!--查询未关联到企业的记录-->
+    <select id="selectUnusedChannelUser" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        where  enterprise_id = #{enterpriseId}
+        and franchisee_id = #{franchiseeId}
+        and tenant_id = #{tenantId}
+        and uid is null
+        limit 1
+    </select>
+
+    <!--查询已关联至企业的用户-->
+    <select id="selectUsedChannelUser" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
+
+    <!--根据ID 和 UID查询已关联至企业的用户-->
+    <select id="selectChannelUserByIdAndUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
+
 
 </mapper>

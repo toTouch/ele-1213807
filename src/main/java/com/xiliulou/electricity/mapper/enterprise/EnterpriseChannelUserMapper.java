@@ -65,4 +65,30 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
      */
     int deleteById(Long id);
 
+    /**
+     * 查询未关联到企业渠道用户的记录(已生成邀请二维码，但是还没有用户扫码加入)
+     * @param enterpriseId
+     * @param franchiseeId
+     * @param tenantId
+     * @return
+     */
+    EnterpriseChannelUser selectUnusedChannelUser(@Param("enterpriseId") Long enterpriseId, @Param("franchiseeId") Long franchiseeId, @Param("tenantIds") Long tenantId);
+
+    /**
+     * 查询已关联到企业的用户
+     * @param uid
+     * @param franchiseeId
+     * @param tenantId
+     * @return
+     */
+    EnterpriseChannelUser selectUsedChannelUser(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId,  @Param("tenantId") Long tenantId);
+
+    /**
+     * 根据ID和UID查询已加入企业的用户
+     * @param id
+     * @param uid
+     * @return
+     */
+    EnterpriseChannelUser selectChannelUserByIdAndUid(@Param("id")Long id, @Param("uid") Long uid);
+
 }
