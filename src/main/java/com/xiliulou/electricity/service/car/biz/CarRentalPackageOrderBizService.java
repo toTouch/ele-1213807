@@ -3,7 +3,10 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
+import com.xiliulou.electricity.vo.car.CarRentRefundVo;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
+import com.xiliulou.electricity.vo.rental.RentalPackageRefundVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,6 +40,20 @@ public interface CarRentalPackageOrderBizService {
     RefundRentOrderHintVo refundRentOrderHint(Integer tenantId, Long uid, String packageOrderNo);
 
     /**
+     * 查询针对当前套餐发起退款时的信息
+     * @param orderNo
+     * @return
+     */
+    RentalPackageRefundVO queryRentalPackageRefundData(String orderNo);
+
+    /**
+     * 后台租车退款确认业务
+     * @param carRentalPackageRefundReq
+     * @return
+     */
+    Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq);
+
+    /**
      * 后端给用户绑定套餐
      * @param buyOptModel 购买套餐数据模型
      * @return true(成功)、false(失败)
@@ -62,6 +79,13 @@ public interface CarRentalPackageOrderBizService {
      * @return
      */
     Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+
+    /**
+     * 审批退租申请单, 支持页面提交可退款金额
+     * @param carRentRefundVo
+     * @return
+     */
+    Boolean approveRefundRentOrder(CarRentRefundVo carRentRefundVo);
 
     /**
      * 启用用户冻结订单<br />

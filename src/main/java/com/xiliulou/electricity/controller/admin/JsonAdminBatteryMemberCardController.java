@@ -61,8 +61,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+        /*if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -72,14 +75,14 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-        }
+        }*/
 
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .size(size)
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
+                //.franchiseeIds(franchiseeIds)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .status(status)
                 .rentType(rentType)

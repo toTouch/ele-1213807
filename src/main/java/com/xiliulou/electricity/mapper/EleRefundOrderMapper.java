@@ -47,4 +47,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(@Param("offset") Integer offset, @Param("size") Integer size);
 
     List<EleRefundOrder> selectCarFreeDepositRefundingOrder(@Param("offset") Integer offset, @Param("size") Integer size);
+
+    EleRefundOrder selectLatestRefundDepositOrder(@Param("paymentOrderNo") String paymentOrderNo);
 }

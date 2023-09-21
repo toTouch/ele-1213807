@@ -120,4 +120,11 @@ public interface CarRentalPackageOrderFreezeService {
      */
     Long insert(CarRentalPackageOrderFreezePo entity);
 
+    /**
+     * 根据购买订单号，查询最新的冻结订单信息
+     * @param purchaseOrderNo 购买订单编号
+     * @return
+     */
+    CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
+
 }

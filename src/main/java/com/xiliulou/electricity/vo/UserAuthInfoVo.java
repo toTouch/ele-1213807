@@ -36,6 +36,12 @@ public class UserAuthInfoVo {
 	private String idNumber;
 	//审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
 	private Integer authStatus;
+
+	/**
+	 * 审核拒绝原因
+	 */
+	private String msg;
+
 	/**
 	 * 身份证认证正面
 	 */

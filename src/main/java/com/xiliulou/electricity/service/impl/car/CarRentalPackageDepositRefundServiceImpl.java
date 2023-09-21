@@ -31,6 +31,20 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     private CarRentalPackageDepositRefundMapper carRentalPackageDepositRefundMapper;
 
     /**
+     * 根据主键ID逻辑删除
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean delById(Long id) {
+        if (ObjectUtils.isEmpty(id)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageDepositRefundMapper.delById(id) >= 0;
+    }
+
+    /**
      * 根据押金缴纳订单编码，查询复合状态的退押订单<br >
      * <pre>
      *     1-待审核

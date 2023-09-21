@@ -180,6 +180,11 @@ public class CarRentalPackageOrderVo implements Serializable {
     private String franchiseeName;
 
     /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
      * 用户真实姓名
      */
     private String userRelName;
@@ -213,5 +218,20 @@ public class CarRentalPackageOrderVo implements Serializable {
      * 押金金额(元)
      */
     private BigDecimal deposit;
+
+    /**
+     * 退租状态
+     */
+    private Integer rentRefundStatus;
+
+    /**
+     * 套餐冻结状态
+     */
+    private Integer freezeStatus;
+
+    /**
+     * 退租拒绝原因
+     */
+    private String rejectReason;
 
 }

@@ -874,6 +874,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setIsRefund(batteryMemberCard.getIsRefund());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
+            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
+            if(Objects.nonNull(batteryMembercardRefundOrder)){
+                vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
+                vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
+            }
+
             return vo;
         }).collect(Collectors.toList());
 
@@ -1323,6 +1329,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
+        sendDisableMemberCardMessage(userInfo);
         return R.ok();
     }
 
@@ -3598,7 +3605,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
         }
 
-        ElectricityMemberCardOrder electricityMemberCardOrder = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard);
+        ElectricityMemberCardOrder electricityMemberCardOrder = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, query);
 
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -3623,7 +3630,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo,BatteryMemberCard batteryMemberCard,UserBatteryMemberCard userBatteryMemberCard){
+    public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserBatteryDepositAndMembercardQuery query){
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid()))
                 .uid(userInfo.getUid())
@@ -3636,7 +3643,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
-                .storeId(userInfo.getStoreId())
+                .storeId(query.getStoreId())
                 .mid(batteryMemberCard.getId())
                 .modelType(0).build();
         depositOrderService.insert(eleDepositOrder);
@@ -3661,13 +3668,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .sendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null)
                 .useStatus(ElectricityMemberCardOrder.USE_STATUS_USING)
                 .source(ElectricityMemberCardOrder.SOURCE_NOT_SCAN)
-                .storeId(userInfo.getStoreId()).build();
+                .storeId(query.getStoreId()).build();
         this.baseMapper.insert(electricityMemberCardOrder);
 
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setUid(userInfo.getUid());
         userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userInfoUpdate.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+        userInfoUpdate.setStoreId(query.getStoreId());
         userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfoUpdate);
@@ -4357,6 +4365,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户电池型号
         userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
+
+        //查询当前用户是否存在最新的冻结订单信息
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+        if(Objects.nonNull(eleDisableMemberCardRecord)
+                && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())){
+            userBatteryMemberCardInfoVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
+        }
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
     }

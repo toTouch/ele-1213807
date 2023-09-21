@@ -152,33 +152,6 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         }
 
 
- /*        //2.每次获取limit个邮箱 发送通知
-       int i = 0;
-        while (true) {
-            List<TenantNotifyMailVO> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
-            if (CollectionUtils.isEmpty(tenantNotifyMailList)) {
-                break;
-            }
-
-            List<EmailRecipient> mailList = tenantNotifyMailList.stream().map(item -> {
-                EmailRecipient emailRecipient = new EmailRecipient();
-                emailRecipient.setEmail(item.getMail());
-                emailRecipient.setName(item.getTenantName());
-                return emailRecipient;
-            }).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(mailList)) {
-                log.error("ELE ERROR!mailList is empty");
-                return;
-            }
-
-            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
-                    .to(mailList)
-                    .subject(SUBJECT_PREFIX + versionNotification.getVersion())
-                    .text(versionNotification.getContent()).build();
-
-            mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
-        }*/
-
         //2.获取所有通知邮箱   根据租户ID分组 发送通知
         List<TenantNotifyMailDTO> tenantNotifyMailDTOList = tenantNotifyMailService.selectAllTenantNotifyMail();
         if (CollectionUtils.isEmpty(tenantNotifyMailDTOList)) {

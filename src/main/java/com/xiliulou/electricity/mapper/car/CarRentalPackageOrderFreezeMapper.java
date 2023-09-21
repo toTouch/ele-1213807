@@ -118,4 +118,11 @@ public interface CarRentalPackageOrderFreezeMapper {
      */
     int insert(CarRentalPackageOrderFreezePo entity);
 
+    /**
+     * 查询最新的冻结订单信息
+     * @param purchaseOrderNo
+     * @return
+     */
+    CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
+
 }

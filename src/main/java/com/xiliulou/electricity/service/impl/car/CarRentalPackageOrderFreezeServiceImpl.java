@@ -314,4 +314,9 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
 
         return entity.getId();
     }
+
+    @Override
+    public CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo) {
+        return carRentalPackageOrderFreezeMapper.selectLatestFreezeOrder(purchaseOrderNo);
+    }
 }

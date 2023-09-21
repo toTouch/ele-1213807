@@ -5,7 +5,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.InsuranceOrderVO">
         select tf.name as franchiseeName, tio.insurance_name as insuranceName,tio.insurance_type as
-        insuranceType,tio.user_name as userName,tio.order_id as orderId
+        insuranceType,tio.uid, tio.user_name as userName,tio.order_id as orderId
         ,tui.id_number as idCard,tio.phone as phone,tio.cid as cid,tio.pay_amount as insuranceAmount,tio.create_time as
         createTime,tio.valid_days as validDays,tio.status,tio.pay_type as payType
         ,tio.forehead,tio.update_time,tio.is_use, tio.`source_order_no`

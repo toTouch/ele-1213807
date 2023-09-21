@@ -253,4 +253,12 @@
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
 
+    <select id="selectLatestFreezeOrder" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `rental_package_order_no` = #{purchaseOrderNo}
+        </where>
+        ORDER BY id DESC limit 1
+    </select>
+
 </mapper>

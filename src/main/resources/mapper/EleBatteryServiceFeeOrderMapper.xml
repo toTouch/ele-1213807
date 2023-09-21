@@ -84,7 +84,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
-        te.status,te.source,te.phone,te.name ,te.status,
+        te.status,te.source,te.phone,te.name ,te.uid, te.status,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id

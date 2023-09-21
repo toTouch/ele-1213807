@@ -12,6 +12,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -50,6 +51,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
+    private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     /**
      * 启用冻结套餐订单申请
@@ -239,6 +243,15 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             carRentalPackageOrderVo.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getName());
             carRentalPackageOrderVo.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getBatteryVoltage());
             carRentalPackageOrderVo.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePo()).getCarModelId(), ""));
+
+            //查询退款的订单信息,获取最新一条退款订单的状态信息, 以及退款拒绝的原因。
+            CarRentalPackageOrderRentRefundPo rentRefundPo = carRentalPackageOrderRentRefundService.selectLatestByPurchaseOrderNo(carRentalPackageOrder.getOrderNo());
+            log.info("find the latest rent refund order, purchase order number = {}", carRentalPackageOrder.getOrderNo());
+            if(Objects.nonNull(rentRefundPo)){
+                log.info("found the latest rent refund order, refund order number = {}, refund status = {}", rentRefundPo.getOrderNo(), rentRefundPo.getRefundState());
+                carRentalPackageOrderVo.setRentRefundStatus(rentRefundPo.getRefundState());
+                carRentalPackageOrderVo.setRejectReason(rentRefundPo.getRemark());
+            }
 
             // 对使用中的订单，进行二次处理
             if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())

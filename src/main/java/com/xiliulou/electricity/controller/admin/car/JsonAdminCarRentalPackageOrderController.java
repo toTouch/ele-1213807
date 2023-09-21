@@ -7,10 +7,12 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
@@ -42,6 +44,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
+
+    @Resource
+    private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     /**
      * 条件查询列表
@@ -131,6 +136,15 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState())
                     && ObjectUtils.isNotEmpty(memberTerm.getDueTime()) && memberTerm.getDueTime() <= System.currentTimeMillis()) {
                 carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
+            }
+
+            //查询退款的订单信息,获取最新一条退款订单的状态信息, 以及退款拒绝的原因。
+            CarRentalPackageOrderRentRefundPo rentRefundPo = carRentalPackageOrderRentRefundService.selectLatestByPurchaseOrderNo(carRentalPackageOrder.getOrderNo());
+            log.info("find the latest rent refund order from saas, purchase order number = {}", carRentalPackageOrder.getOrderNo());
+            if(Objects.nonNull(rentRefundPo)){
+                log.info("found the latest rent refund order from saas, refund order number = {}, refund status = {}", rentRefundPo.getOrderNo(), rentRefundPo.getRefundState());
+                carRentalPackageOrderVO.setRentRefundStatus(rentRefundPo.getRefundState());
+                carRentalPackageOrderVO.setRejectReason(rentRefundPo.getRemark());
             }
 
             return carRentalPackageOrderVO;

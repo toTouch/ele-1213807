@@ -7,6 +7,7 @@
         select
         dmcr.member_card_name,
         dmcr.status,
+        dmcr.uid,
         dmcr.user_name,
         dmcr.phone,
         dmcr.create_time,

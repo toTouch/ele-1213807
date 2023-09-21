@@ -314,8 +314,8 @@ public class JsonAdminUserInfoController extends BaseController {
     //后台审核实名认证
     @PostMapping(value = "/admin/userInfo/verifyAuth")
     @Log(title = "实名认证审核")
-    public R verifyAuth(@RequestParam("id") Long id, @RequestParam("authStatus") Integer authStatus) {
-        R result= userInfoService.verifyAuth(id, authStatus);
+    public R verifyAuth(@RequestParam("id") Long id, @RequestParam("authStatus") Integer authStatus, @RequestParam(value = "msg", required = false) String msg) {
+        R result= userInfoService.verifyAuth(id, authStatus, msg);
 
         //人工审核成功后，触发活动处理流程
         UserInfo userInfo = userInfoService.queryByIdFromDB(id);

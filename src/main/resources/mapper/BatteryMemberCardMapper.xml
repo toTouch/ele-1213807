@@ -187,6 +187,10 @@
         </if>
     </select>
 
+    <select id="isMemberCardBindFranchinsee" resultType="Integer">
+        SELECT 1 FROM t_battery_member_card WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
+    </select>
+
     <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
         select
         bmc.id,

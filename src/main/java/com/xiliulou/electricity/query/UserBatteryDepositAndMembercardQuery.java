@@ -29,4 +29,6 @@ public class UserBatteryDepositAndMembercardQuery {
      */
     private Long useCount;
 
+    private Long storeId;
+
 }

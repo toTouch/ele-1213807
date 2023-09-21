@@ -25,6 +25,7 @@ import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -880,6 +881,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.setFullyBatteryNumber((int) fullyElectricityBattery);
             e.setExchangeBattery((int) exchangeableNumber);
 
+            assignBatteryTypes(cabinetBoxList,e);
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
@@ -891,6 +893,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance))
                 .collect(Collectors.toList()));
+    }
+
+    private void assignBatteryTypes(List<ElectricityCabinetBox> cabinetBoxList, ElectricityCabinetVO e) {
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return;
+        }
+
+        Map<String, Long> batteryTypeMapes = Maps.newHashMap();
+        List<ElectricityCabinetBox> cabinetBoxes = cabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && !StringUtils.startsWithIgnoreCase(item.getSn(), "UNKNOW")).peek(i -> i.setBatteryType(i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).substring(0, i.getBatteryType().substring(i.getBatteryType().indexOf("_") + 1).indexOf("_")))).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(cabinetBoxes)) {
+            return;
+        }
+
+        Set<String> batterySet = cabinetBoxes.stream().map(ElectricityCabinetBox::getBatteryType).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(batterySet)) {
+            return;
+        }
+
+        batterySet.forEach(batteryType -> {
+            long count = cabinetBoxes.stream().filter(t -> Objects.equals(t.getBatteryType(), batteryType) && Objects.nonNull(t.getPower()) && Objects.nonNull(e.getFullyCharged()) && t.getPower() >= e.getFullyCharged()).count();
+            batteryTypeMapes.put(batteryType, count);
+        });
+
+        e.setBatteryTypeMapes(batteryTypeMapes);
     }
 
     @Override
@@ -1582,6 +1608,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            return R.fail("100004", "柜机不在线");
         }
 
         //不合法的命令
@@ -4395,6 +4427,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             });
         }
+
+        return Triple.of(true, null, null);
+    }
+
+    @Override
+    public void batchUpdate(List<ElectricityCabinet> list) {
+        list.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(item), i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
+        }));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> batchUpdateAddress(List<ElectricityCabinet> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Triple.of(false, null, "参数不合法");
+        }
+
+        List<ElectricityCabinet> updateList = new ArrayList<>(list.size());
+
+        list.forEach(item -> {
+            ElectricityCabinet electricityCabinet = this.queryByIdFromCache(item.getId());
+            if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
+
+            electricityCabinet.setAddress(item.getAddress());
+            electricityCabinet.setLatitude(item.getLatitude());
+            electricityCabinet.setLongitude(item.getLongitude());
+            electricityCabinet.setUpdateTime(System.currentTimeMillis());
+            updateList.add(electricityCabinet);
+        });
+
+        this.batchUpdate(updateList);
 
         return Triple.of(true, null, null);
     }

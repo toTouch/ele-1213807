@@ -28,6 +28,8 @@ public class InsuranceOrderVO {
 
     private Integer insuranceType;
 
+    private Long uid;
+
     private String userName;
 
     private String idCard;

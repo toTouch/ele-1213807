@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo.rental;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
@@ -65,6 +66,14 @@ public class RentalPackageVO implements Serializable {
      */
     private Integer status;
 
+    /**
+     * 冻结拒绝原因
+     */
+    private String rejectReasonForFreeze;
 
+    /**
+     * 还车拒绝原因
+     */
+    private String rejectReasonForReturnVehicle;
 
 }

@@ -51,7 +51,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
-        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo()) || StringUtils.isBlank(optReq.getReason())) {
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 

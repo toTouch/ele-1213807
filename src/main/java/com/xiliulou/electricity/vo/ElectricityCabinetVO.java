@@ -190,6 +190,7 @@ public class ElectricityCabinetVO {
      */
     private Map<String, Long> batteryTypeMapes;
 
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

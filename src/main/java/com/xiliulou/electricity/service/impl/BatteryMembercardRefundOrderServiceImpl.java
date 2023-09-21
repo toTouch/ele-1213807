@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -15,6 +17,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -22,6 +25,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderDetailVO;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
@@ -34,14 +38,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -112,6 +114,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+
+    @Autowired
+    RocketMqService rocketMqService;
 
     @Override
     public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException {
@@ -385,6 +393,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_AUDIT);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
+
+            //发送退租审核通知
+            sendAuditNotify(userInfo);
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY + user.getUid());
         }
@@ -393,7 +404,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
 
     @Override
-    public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request) {
 
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -492,7 +503,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100284", "未归还电池");
         }
 
-        BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
+//        BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), userInfo.getUid());
             return Triple.of(false, "100294", "退租金额不合法");
@@ -518,15 +529,15 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         this.insert(batteryMembercardRefundOrderInsert);
 
         if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo, null);
+            return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo, refundAmount, null);
         } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, null, request);
+            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, refundAmount, null, request);
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, Integer status, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
                 .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                 .in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND, BatteryMembercardRefundOrder.STATUS_FAIL, BatteryMembercardRefundOrder.STATUS_AUDIT));
@@ -574,6 +585,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(true, "", null);
         }
 
+        if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), userInfo.getUid());
+            return Triple.of(false, "100294", "退租金额不合法");
+        }
+
         //套餐是否过期
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
@@ -593,18 +609,19 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(true, "", null);
         }
 
-        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrder.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo, msg);
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo, refundAmount, msg);
         } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, msg, request);
+            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, refundAmount, msg, request);
         }
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, String msg, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal refundAmount, String msg, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
         batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
         batteryMembercardRefundOrderUpdate.setMsg(msg);
+        batteryMembercardRefundOrderUpdate.setRefundAmount(refundAmount);
         batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -612,6 +629,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
 
         try {
+            batteryMembercardRefundOrder.setRefundAmount(refundAmount);
             this.handleRefundOrder(batteryMembercardRefundOrder, request);
 
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
@@ -635,7 +653,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo,String msg) {
+    public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo, BigDecimal refundAmount, String msg) {
         if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {
             //使用中
             List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userBatteryMemberCard.getUid());
@@ -688,6 +706,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
         batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_SUCCESS);
+        batteryMembercardRefundOrderUpdate.setRefundAmount(refundAmount);
         batteryMembercardRefundOrderUpdate.setMsg(msg);
         batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(batteryMembercardRefundOrderUpdate);
@@ -737,6 +756,40 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         userCouponUpdate.setStatus(UserCoupon.STATUS_IS_INVALID);
         userCouponUpdate.setUpdateTime(System.currentTimeMillis());
         userCouponService.update(userCouponUpdate);
+    }
+
+    @Override
+    public void sendAuditNotify(UserInfo userInfo) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.warn("ELE RENT REFUND WARN! not found maintenanceUserNotifyConfig,tenantId={}", userInfo.getTenantId());
+            return;
+        }
+
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_RENT_REFUND) != MaintenanceUserNotifyConfig.TYPE_RENT_REFUND) {
+            return;
+        }
+
+        List<String> phones = JsonUtil.fromJsonArray(notifyConfig.getPhones(), String.class);
+        if (CollectionUtils.isEmpty(phones)) {
+            log.warn("ELE RENT REFUND WARN! phones is empty,tenantId={}", userInfo.getTenantId());
+            return;
+        }
+
+        phones.parallelStream().forEach(item -> {
+            RentRefundAuditMessageNotify abnormalMessageNotify = new RentRefundAuditMessageNotify();
+            abnormalMessageNotify.setUserName(userInfo.getName());
+            abnormalMessageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
+            abnormalMessageNotify.setApplyTime(DateUtil.format(new Date(), DatePattern.NORM_DATETIME_FORMAT));
+
+            MqNotifyCommon<RentRefundAuditMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
+            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
+            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_RENT_REFUND_AUDIT);
+            abnormalMessageNotifyCommon.setPhone(item);
+            abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
+
+            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(abnormalMessageNotifyCommon), "", "", 0);
+        });
     }
 
     @Override

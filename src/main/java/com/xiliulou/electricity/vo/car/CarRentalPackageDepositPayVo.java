@@ -125,4 +125,14 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      */
     private boolean refundFlag = true;
 
+    /**
+     * 退押拒绝原因
+     */
+    private String rejectReason;
+
+    /**
+     * 特殊可退标识（2.0迁移数据过度）
+     */
+    private boolean refundSpecialFlag = false;
+
 }

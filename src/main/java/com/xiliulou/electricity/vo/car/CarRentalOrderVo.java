@@ -60,6 +60,11 @@ public class CarRentalOrderVo implements Serializable {
     // ++++++++++ 辅助业务数据 ++++++++++
 
     /**
+     * 用户UID
+     */
+    private Long uid;
+
+    /**
      * 用户真实姓名
      */
     private String userRelName;

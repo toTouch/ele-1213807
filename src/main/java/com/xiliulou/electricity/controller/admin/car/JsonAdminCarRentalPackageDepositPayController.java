@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -20,10 +21,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -113,6 +111,24 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
             // 判定退款状态
             if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 depositPayVO.setRefundFlag(false);
+            }
+
+            // 判定特殊退款状态
+            // 2.0 迁移数据，需要展示
+            List<Integer> refundStateCodeList = new ArrayList<>();
+            refundStateCodeList.add(RefundStateEnum.REFUNDING.getCode());
+            refundStateCodeList.add(RefundStateEnum.SUCCESS.getCode());
+            if (depositPayEntity.getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState()) && (!refundPoMap.containsKey(depositPayEntity.getOrderNo())
+                    || !refundStateCodeList.contains(refundPoMap.get(depositPayEntity.getOrderNo()).getRefundState()))) {
+                depositPayVO.setRefundSpecialFlag(true);
+            }
+
+           /* if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) && refundPoMap.get(depositPayEntity.getOrderNo()).getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+                depositPayVO.setRefundSpecialFlag(true);
+            }*/
+
+            if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) && refundPoMap.get(depositPayEntity.getOrderNo()).getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+                depositPayVO.setRefundSpecialFlag(true);
             }
             return depositPayVO;
         }).collect(Collectors.toList());
