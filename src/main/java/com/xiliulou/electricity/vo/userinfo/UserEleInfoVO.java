@@ -24,6 +24,10 @@ public class UserEleInfoVO {
      * 手机号
      */
     private String phone;
+    /**
+     * 邀请人
+     */
+    private String inviterUserName;
 
     /**
      * 套餐购买次数
