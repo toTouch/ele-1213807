@@ -5,38 +5,42 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.web.R;
 import com.xiliulou.core.utils.TimeUtils;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
 @Slf4j
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
+
+    @Resource
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     @Autowired
     RedisService redisService;
@@ -109,6 +113,35 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
             log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
         }
+
+        // 11 或 12
+        if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.ORDER_CANCEL) || Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, order_cancel or order_exception_cancel, requestId is {}, orderId is {}, uidis {}",
+                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
+
+            // 通过订单的 UID 获取用户信息
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
+
+            //回退单电套餐次数
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, refund user battery member card number.");
+                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                    }
+                }
+            }
+
+            //回退车电一体套餐次数
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, refund user car_battery member number.");
+                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            }
+
+        }
+
 
         if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
             //确认订单结束
