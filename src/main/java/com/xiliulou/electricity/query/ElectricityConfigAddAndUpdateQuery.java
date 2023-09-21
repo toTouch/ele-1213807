@@ -126,6 +126,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否允许退电 0--是  1--否
      */
     private Integer allowReturnEle;
+
+    /**
+     *  有资产时是否允许冻结 0--是 1--否
+     */
+    private Integer allowFreezeWithAssets;
 }
 
 
