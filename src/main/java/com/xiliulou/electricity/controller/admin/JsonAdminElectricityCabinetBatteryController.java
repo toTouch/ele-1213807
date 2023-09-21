@@ -398,17 +398,23 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @return
      */
     @PostMapping("/admin/battery/excel/v2")
-    @Transactional(rollbackFor = Exception.class)
-    public R uploadV2(@RequestParam("file") MultipartFile file,  @RequestParam("franchiseeId") Long franchiseeId) throws Exception {
+    public R uploadV2(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId)  {
         try {
-            EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
+            return uploadV2WithTransaction(file, franchiseeId);
+        } catch (CustomBusinessException e) {
+            return R.failMsg(e.getMessage());
         } catch (Exception e) {
-            throw new Exception("111111111");
+            log.error("IMPORT BATTERY ERROR! ", e);
+            return R.failMsg("导入失败");
         }
-        return R.ok();
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public R uploadV2WithTransaction(MultipartFile file, Long franchiseeId) throws IOException {
+        EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
+                new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
+        return R.ok();
+    }
     /**
      * 电池总览
      *
