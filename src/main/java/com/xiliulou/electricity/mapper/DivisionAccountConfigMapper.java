@@ -79,5 +79,5 @@ public interface DivisionAccountConfigMapper extends BaseMapper<DivisionAccountC
 
     DivisionAccountConfig selectDivisionAccountConfigByName(@Param("name") String name, @Param("tenantId") Integer tenantId);
 
-    List<SearchVo> configSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId);
+    List<SearchVo> configSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds,@Param("franchiseeIds") List<Long> franchiseeIds);
 }
