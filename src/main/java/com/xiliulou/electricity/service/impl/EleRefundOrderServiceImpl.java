@@ -1031,6 +1031,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
+        if (refundCount > 0) {
+            return Triple.of(false,"100018", "押金退款审核中");
+        }
+
         List<EleRefundOrder> refundOrders = eleRefundOrderMapper.selectList(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userBatteryDeposit.getOrderId())
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
