@@ -52,7 +52,7 @@ public class CarRentalPackageDepositPayVo implements Serializable {
     private Integer type;
 
     /**
-     * 押金
+     * 实缴押金
      */
     private BigDecimal deposit;
 
@@ -87,6 +87,11 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * 创建时间，时间戳
      */
     private Long createTime;
+
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

@@ -27,6 +27,7 @@
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
         <result property="sourceOrderNo" column="source_order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageDeposit" column="rental_package_deposit" jdbcType="DECIMAL" />
     </resultMap>
 
     <!-- 表名 -->
@@ -40,7 +41,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`,
-        `pay_type`, `pay_state`, `remark`, `source_order_no`
+        `pay_type`, `pay_state`, `remark`, `source_order_no`, `rental_package_deposit`
     </sql>
 
     <!-- 全部字段 -->
@@ -100,6 +101,7 @@
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> `source_order_no`, </if>
+            <if test=" rentalPackageDeposit != null and rentalPackageDeposit != '' "> `rental_package_deposit`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -126,6 +128,7 @@
             <if test=" payState != null "> #{payState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> #{sourceOrderNo}, </if>
+            <if test=" rentalPackageDeposit != null and rentalPackageDeposit != '' "> #{rentalPackageDeposit}, </if>
         </trim>
     </sql>
 

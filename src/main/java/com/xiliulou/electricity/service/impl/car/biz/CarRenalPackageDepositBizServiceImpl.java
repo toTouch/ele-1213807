@@ -819,6 +819,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageDepositPay.setFranchiseeId(carRentalPackage.getFranchiseeId());
         carRentalPackageDepositPay.setStoreId(carRentalPackage.getStoreId());
         carRentalPackageDepositPay.setCreateUid(uid);
+        carRentalPackageDepositPay.setRentalPackageDeposit(carRentalPackage.getDeposit());
         return carRentalPackageDepositPay;
     }
 
