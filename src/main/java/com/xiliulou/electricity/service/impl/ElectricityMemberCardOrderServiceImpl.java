@@ -4194,12 +4194,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
+
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
         serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+        if (Objects.nonNull(serviceFeeUserInfo)) {
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+        } else {
+            serviceFeeUserInfoUpdate.setFranchiseeId(memberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoUpdate.setCreateTime(System.currentTimeMillis());
+            serviceFeeUserInfoUpdate.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+            serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+            serviceFeeUserInfoService.insert(serviceFeeUserInfoUpdate);
+        }
 
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setUid(userInfo.getUid());
