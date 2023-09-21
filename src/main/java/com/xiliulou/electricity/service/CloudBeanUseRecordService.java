@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.CloudBeanUseRecord;
+import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 云豆使用记录表(CloudBeanUseRecord)表服务接口
@@ -39,4 +42,8 @@ public interface CloudBeanUseRecordService {
     Boolean deleteById(Long id);
 
     Double selectCloudBeanByUidAndType(Long uid, Integer type);
+
+    List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query);
+
+    CloudBeanUseRecordVO cloudBeanUseStatisticsByUid(CloudBeanUseRecordQuery query);
 }

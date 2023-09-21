@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.CloudBeanUseRecordMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper">
 
     <resultMap type="com.xiliulou.electricity.entity.CloudBeanUseRecord" id="CloudBeanUseRecordMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
@@ -9,6 +9,7 @@
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="beanAmount" column="bean_amount" jdbcType="NUMERIC"/>
         <result property="remainingBeanAmount" column="remaining_bean_amount" jdbcType="NUMERIC"/>
+        <result property="packageId" column="package_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="ref" column="ref" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -19,7 +20,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="CloudBeanUseRecordMap">
         select
-          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, franchisee_id, ref, tenant_id, create_time, update_time
+          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         where id = #{id}
     </select>
@@ -28,6 +29,28 @@
         select sum(bean_amount)
         from t_cloud_bean_use_record
         where uid = #{uid} and type=#{type}
+    </select>
+
+
+    <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where
+        <if test="startTime != null">
+            and create_time &gt;=  #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{startTime}
+        </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id desc
+        limit #{offset}, #{size}
     </select>
 
     <!--通过主键修改数据-->

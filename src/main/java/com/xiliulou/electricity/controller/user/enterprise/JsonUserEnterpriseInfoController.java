@@ -2,17 +2,15 @@ package com.xiliulou.electricity.controller.user.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * @author zzlong
@@ -42,11 +40,24 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
 
+
+    /**
+     * 根据UID查询企业详情
+     * @param uid
+     * @return
+     */
     @GetMapping("/user/enterpriseInfo/detail")
     public R queryEnterpriseInfo(@RequestParam(value = "uid", required = true) Long uid){
 
         return R.ok(enterpriseInfoService.selectByUid(uid));
     }
 
+    /**
+     * 云豆充值
+     */
+    @PutMapping("/user/enterpriseInfo/recharge")
+    public R recharge(@RequestBody @Validated UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request) {
+        return returnTripleResult(enterpriseInfoService.rechargeForUser(userCloudBeanRechargeQuery, request));
+    }
 
 }

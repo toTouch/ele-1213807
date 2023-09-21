@@ -1,26 +1,17 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo.enterprise;
 
-
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
- * 云豆使用记录表(CloudBeanUseRecord)实体类
- *
- * @author Eclair
- * @since 2023-09-18 10:35:12
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-09-18-15:55
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_cloud_bean_use_record")
-public class CloudBeanUseRecord {
+public class CloudBeanUseRecordVO {
+
     /**
      * 主键ID
      */
@@ -33,6 +24,10 @@ public class CloudBeanUseRecord {
      * 用户id
      */
     private Long uid;
+
+    private String username;
+
+    private String phone;
     /**
      * 类型 0套餐代付，1套餐回收，2云豆充值，3赠送，4后台充值，5后台扣除
      */
@@ -49,6 +44,8 @@ public class CloudBeanUseRecord {
      * 套餐id
      */
     private Long packageId;
+
+    private String batteryMemberCard;
     /**
      * 加盟商id
      */
@@ -68,12 +65,12 @@ public class CloudBeanUseRecord {
      */
     private Long updateTime;
 
-    //类型 0套餐代付，1套餐回收，2云豆充值，3赠送，4后台充值，5后台扣除
-    public static final Integer TYPE_PAY_MEMBERCARD = 0;
-    public static final Integer TYPE_RECYCLE = 1;
-    public static final Integer TYPE_USER_RECHARGE = 2;
-    public static final Integer TYPE_PRESENT = 3;
-    public static final Integer TYPE_ADMIN_RECHARGE = 4;
-    public static final Integer TYPE_ADMIN_DEDUCT = 5;
-
+    /**
+     * 支出
+     */
+    private BigDecimal expend;
+    /**
+     * 收入
+     */
+    private BigDecimal income;
 }
