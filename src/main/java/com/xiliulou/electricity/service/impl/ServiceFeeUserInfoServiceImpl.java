@@ -237,6 +237,8 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if(Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())){
             eleBatteryServiceFeeVO.setUserBatteryServiceFee(acquireUserBatteryServiceFeeResult.getRight());
+        }else{
+            return null;
         }
 
         return eleBatteryServiceFeeVO;
