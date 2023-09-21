@@ -510,6 +510,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
                 item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user insurance info error for car rental.", e);

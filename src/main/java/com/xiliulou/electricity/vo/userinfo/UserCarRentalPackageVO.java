@@ -24,6 +24,10 @@ public class UserCarRentalPackageVO {
      */
     private String phone;
     /**
+     * 邀请人
+     */
+    private String inviterUserName;
+    /**
      * 用户可用状态 0--启用，1--禁用
      */
     private Integer usableStatus;
@@ -103,7 +107,6 @@ public class UserCarRentalPackageVO {
      * 用户认证时间
      */
     private Long userAuthTime;
-
 
 
 }
