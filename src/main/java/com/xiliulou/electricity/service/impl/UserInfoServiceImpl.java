@@ -160,19 +160,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
-    
+
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
-    
+
     @Autowired
     RentCarOrderService rentCarOrderService;
-    
+
     @Autowired
     CarDepositOrderService carDepositOrderService;
-    
+
     @Autowired
     JoinShareActivityHistoryService joinShareActivityHistoryService;
-    
+
     @Autowired
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
@@ -419,21 +419,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-    
+
         //用户邀请人
         CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.forEach(item -> {
                 if (Objects.isNull(item.getUid())) {
                     return;
                 }
-    
+
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance, queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
@@ -510,6 +510,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
                 item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user insurance info error for car rental.", e);
@@ -592,7 +593,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         redisService.saveWithHash(CacheConstant.CACHE_USER_INFO + uid, userInfo);
         return userInfo;
     }
-    
+
     @Override
     public UserInfo queryByUidFromDb(Long uid) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
@@ -603,7 +604,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer homeOne(Long first, Long now, Integer tenantId) {
         return userInfoMapper.homeOne(first, now, tenantId);
     }
-    
+
     //    @Override
     //    public UserInfo queryByUidFromDb(Long uid) {
     //        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
@@ -1273,17 +1274,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R queryUserAllConsumption(Long id) {
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(id);
-    
+
         BigDecimal sum = userTurnoverVo.getBatteryServiceFee();
         sum = sum.add(userTurnoverVo.getCarMemberCardTurnover());
         sum = sum.add(userTurnoverVo.getMemberCardTurnover());
-    
+
         return R.ok(new UserInfoSumTurnoverVo(sum));
     }
-    
+
     private UserTurnoverVo queryUserConsumptionPay(Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        
+
         UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
         //用户电池总套餐消费额
         CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
@@ -1297,7 +1298,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
         });
-        
+
         //用户租车总套餐消费额
         CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
@@ -1306,7 +1307,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
         });
-        
+
         //用户电池服务费消费额
         CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
@@ -1315,7 +1316,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-        
+
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryMemberCardPayAmount, queryCarMemberCardPayAmount, queryBatteryServiceFeePayAmount);
@@ -1324,7 +1325,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-        
+
         return userTurnoverVo;
     }
 
@@ -1799,7 +1800,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
         return userInfoMapper.isFranchiseeBindUser(id, tenantId);
     }
-    
+
     @Override
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
@@ -1816,7 +1817,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         DetailsUserInfoVo vo = new DetailsUserInfoVo();
         BeanUtils.copyProperties(userInfo, vo);
         vo.setUserCertificationTime(userInfo.getCreateTime());
@@ -1836,17 +1837,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return R.ok(vo);
     }
-    
+
     @Override
     public R queryDetailsBatteryInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         DetailsBatteryInfoVo vo = new DetailsBatteryInfoVo();
         vo.setUid(userInfo.getUid());
-        
+
         //用户电池押金
         CompletableFuture<Void> queryUserBatteryDeposit = CompletableFuture.runAsync(() -> {
             queryUserBatteryDeposit(vo, userInfo);
@@ -1854,7 +1855,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS BATTERY INFO ERROR! query user battery deposit error!", e);
             return null;
         });
-        
+
         //用户会员信息
         CompletableFuture<Void> queryUserBatteryMemberCard = CompletableFuture.runAsync(() -> {
             queryUserBatteryMemberCard(vo, userInfo);
@@ -1862,7 +1863,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS BATTERY INFO ERROR! query user battery member card error!", e);
             return null;
         });
-        
+
         //用户电池信息
         CompletableFuture<Void> queryUserBattery = CompletableFuture.runAsync(() -> {
             queryUserBattery(vo, userInfo);
@@ -1878,20 +1879,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-        
+
         return R.ok(vo);
     }
-    
+
     @Override
     public R queryDetailsCarInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         DetailsCarInfoVo vo = new DetailsCarInfoVo();
         vo.setUid(userInfo.getUid());
-    
+
         //用户车辆信息
         CompletableFuture<Void> queryUserCar = CompletableFuture.runAsync(() -> {
             queryUserCar(vo, userInfo);
@@ -1899,7 +1900,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS CAR INFO ERROR! query user car error!", e);
             return null;
         });
-    
+
         //用户车辆押金信息
         CompletableFuture<Void> queryUserCarDeposit = CompletableFuture.runAsync(() -> {
             queryUserCarDeposit(vo, userInfo);
@@ -1907,7 +1908,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS CAR INFO ERROR! query user car deposit error!", e);
             return null;
         });
-    
+
         //用户车辆套餐信息
         CompletableFuture<Void> queryUserCarMemberCard = CompletableFuture.runAsync(() -> {
             queryUserCarMemberCard(vo, userInfo);
@@ -1915,7 +1916,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS CAR INFO ERROR! query user car member card error!", e);
             return null;
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserCar, queryUserCarDeposit, queryUserCarMemberCard);
         try {
@@ -1923,10 +1924,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-    
+
         return R.ok(vo);
     }
-    
+
     @Override
     public R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1934,47 +1935,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEB BIND CAR ERROR ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         //查找用户
         UserInfo userInfo = queryByUidFromCache(userInfoCarAddAndUpdate.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("WEB BIND CAR ERROR ERROR! not found user error uid={}", userInfoCarAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        
+
         if (!Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
             return R.ok();
         }
-        
+
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("WEB BIND CAR ERROR ERROR! user not auth! uid={} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-        
+
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("WEB BIND CAR ERROR ERROR! not pay deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        
+
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             log.error("WEB BIND CAR ERROR ERROR! user haven't userCar uid={}", userInfo.getUid());
             return R.failMsg("未找到用户信息!");
         }
-        
+
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("WEB BIND CAR ERROR ERROR! user haven't userCarDeposit uid={}", userInfo.getUid());
             return R.failMsg("未找到用户信息!");
         }
-        
+
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarMemberCard)) {
             log.warn("WEB BIND CAR WARN! user haven't carMemberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-        
+
         ElectricityCarModel userCarModel = electricityCarModelService
                 .queryByIdFromCache(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
         if (Objects.isNull(userCarModel) || !Objects
@@ -1982,7 +1983,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEB BIND CAR ERROR ERROR! not found userCarModel! uid={}", userInfo.getUid());
             return R.fail("100258", "未找到车辆型号");
         }
-        
+
         ElectricityCar electricityCar = electricityCarService
                 .selectBySn(userInfoCarAddAndUpdate.getCarSn(), TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityCar)) {
@@ -1990,30 +1991,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     userInfoCarAddAndUpdate.getCarSn());
             return R.fail("100259", "未找到车辆");
         }
-        
+
         if (Objects.nonNull(electricityCar.getUid()) && !Objects.equals(electricityCar.getUid(), userInfo.getUid())) {
             log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
             return R.fail("100231", "该车辆已经绑定用户");
         }
-    
+
         if (!Objects.equals(electricityCar.getModelId().longValue(), userCar.getCarModel())) {
             log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
             return R.fail("100260", "绑定车辆型号与用户车辆型号不一致");
         }
-        
+
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = updateByUid(updateUserInfo);
-        
+
         UserCar updateUserCar = new UserCar();
         updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCar.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
-        
+
         ElectricityCar userBindElectricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         if (Objects.nonNull(userBindElectricityCar)) {
             ElectricityCar updateElectricityCar = new ElectricityCar();
@@ -2026,7 +2027,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             updateElectricityCar.setUpdateTime(System.currentTimeMillis());
             electricityCarService.carUnBindUser(updateElectricityCar);
         }
-        
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             //生成租车记录
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
@@ -2047,7 +2048,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentCarOrder.setCreateTime(System.currentTimeMillis());
             rentCarOrder.setUpdateTime(System.currentTimeMillis());
             rentCarOrderService.insert(rentCarOrder);
-    
+
             //修改车辆
             ElectricityCar updateElectricityCar = new ElectricityCar();
             updateElectricityCar.setId(electricityCar.getId());
@@ -2058,7 +2059,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             updateElectricityCar.setUserName(userInfo.getName());
             updateElectricityCar.setUpdateTime(System.currentTimeMillis());
             electricityCarService.update(updateElectricityCar);
-    
+
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(
@@ -2097,10 +2098,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             return null;
         });
-        
+
         return R.ok();
     }
-    
+
     @Override
     public R webUnBindCar(Long uid) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -2108,29 +2109,29 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEB BIND CAR ERROR ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         //查找用户
         UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("WEB BIND CAR ERROR ERROR! not found user error uid={}", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        
+
         if (!Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
             return R.ok();
         }
-        
+
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("WEB BIND CAR ERROR ERROR! user not auth! uid={} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-        
+
         if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
             log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
         }
-        
+
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         if (Objects.isNull(electricityCar)) {
             log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
@@ -2160,20 +2161,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateElectricityCar.setPhone(null);
         updateElectricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCarService.carUnBindUser(updateElectricityCar);
-    
+
         UserCar updateUserCar = new UserCar();
         updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.unBindingCarByUid(updateUserCar);
-    
+
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         updateByUid(updateUserInfo);
-    
+
         //        生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
@@ -2209,38 +2210,38 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         return R.ok();
     }
-    
+
     @Override
     public R userInfoSearch(Long size, Long offset, String name) {
         List<UserInfoSearchVo> qeury = userInfoMapper
                 .userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
         return R.ok(qeury);
     }
-    
+
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             return;
         }
-    
+
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarMemberCard)) {
             return;
         }
-    
+
         CarMemberCardOrder carMemberCardOrder = this.carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
         if (Objects.isNull(carMemberCardOrder)) {
             return;
         }
-        
+
         vo.setMemberCardType(carMemberCardOrder.getMemberCardType());
         vo.setCardName(carMemberCardOrder.getCardName());
         vo.setValidDays(carMemberCardOrder.getValidDays());
         vo.setMemberCardCreateTime(carMemberCardOrder.getCreateTime());
-        
-    
+
+
         vo.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
-        
+
         //计算剩余天数
         long carDays = 0;
         long memberCardExpireTime = Objects.isNull(vo.getMemberCardExpireTime()) ? 0L : vo.getMemberCardExpireTime();
@@ -2251,64 +2252,64 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         vo.setCarDays(carDays);
     }
-    
+
     private void queryUserCarDeposit(DetailsCarInfoVo vo, UserInfo userInfo) {
         vo.setCarDepositStatus(userInfo.getCarDepositStatus());
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             return;
         }
-    
+
         CarDepositOrder carDepositOrder = carDepositOrderService
                 .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
         if (Objects.nonNull(carDepositOrder)) {
             vo.setPayDepositTime(carDepositOrder.getCreateTime());
-        
+
             Store store = storeService.queryByIdFromCache(carDepositOrder.getStoreId());
             if (Objects.nonNull(store)) {
                 vo.setStoreId(store.getId());
                 vo.setStoreName(store.getName());
             }
         }
-        
+
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userCarDeposit)) {
             vo.setCarDeposit(userCarDeposit.getCarDeposit());
         }
-        
+
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.nonNull(franchisee)) {
             vo.setFranschiseeId(franchisee.getId());
             vo.setFranschiseeName(franchisee.getName());
         }
-        
+
     }
-    
+
     private void queryUserCar(DetailsCarInfoVo vo, UserInfo userInfo) {
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             return;
         }
-    
+
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             return;
         }
-        
+
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         if (Objects.nonNull(electricityCar)) {
             vo.setCarSn(electricityCar.getSn());
         }
-    
+
         vo.setCarModelId(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
-    
+
         ElectricityCarModel electricityCarModel = electricityCarModelService
                 .queryByIdFromCache(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
         if (Objects.isNull(electricityCarModel)) {
             return;
         }
-    
+
         vo.setCarModelName(electricityCarModel.getName());
     }
-    
+
     private void queryUserBattery(DetailsBatteryInfoVo vo, UserInfo userInfo) {
 
         List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -2320,12 +2321,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(electricityBattery)) {
             return;
         }
-        
+
         vo.setBatterySn(electricityBattery.getSn());
         vo.setBatteryModel(electricityBattery.getModel());
         vo.setPower(electricityBattery.getPower());
     }
-    
+
     private void queryUserBatteryMemberCard(DetailsBatteryInfoVo vo, UserInfo userInfo) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
                 .selectByUidFromCache(userInfo.getUid());
@@ -2373,7 +2374,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setCardDays(carDays);
 */
     }
-    
+
     private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {
         vo.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
 
@@ -2386,7 +2387,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(eleDepositOrder)) {
             vo.setPayDepositTime(eleDepositOrder.getCreateTime());
-            
+
             Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
             if (Objects.nonNull(store)) {
                 vo.setStoreId(store.getId());
@@ -2400,10 +2401,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setFranschiseeId(franchisee.getId());
             vo.setFranschiseeName(franchisee.getName());
         }
-        
+
 
     }
-    
+
     @Override
     public void unBindUserFranchiseeId(Long uid) {
 
@@ -2470,11 +2471,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
             excelVo.setInviterUserName(
                     queryFinalInviterUserName(userBatteryInfoVO.getUid(), userBatteryInfoVO.getTenantId()));
-            
+
             if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(),NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
             }
-    
+
             userInfoExcelVOS.add(excelVo);
         }
 
@@ -2599,7 +2600,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
             return finalJoinShareActivityHistoryVo.getUserName();
         }
-        
+
         FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService
                 .queryFinalHistoryByJoinUid(uid, tenantId);
         if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
@@ -2657,8 +2658,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setLimitCount(batteryMemberCard.getLimitCount());
                     item.setUseCount(batteryMemberCard.getUseCount());
                 }
-
-
+                // 邀请人
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery other info error!", e);
