@@ -399,12 +399,14 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v2")
     @Transactional(rollbackFor = Exception.class)
-    public R uploadV2(@RequestParam("file") MultipartFile file,  @RequestParam("franchiseeId") Long franchiseeId) {
+    public R uploadV2(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId) throws Exception {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
                     new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (CustomBusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new Exception("导入失败");
         }
         return R.ok();
     }
