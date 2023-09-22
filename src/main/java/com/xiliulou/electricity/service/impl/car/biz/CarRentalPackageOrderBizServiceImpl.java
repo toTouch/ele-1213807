@@ -1598,7 +1598,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_ALLOW_FREEZE_WITH_ASSETS, electricityConfig.getAllowFreezeWithAssets())
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets())
                 && checkUserHasAssets(uid, tenantId, packageOrderEntity.getRentalPackageType())) {
             throw new BizException("ELECTRICITY.100272", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
