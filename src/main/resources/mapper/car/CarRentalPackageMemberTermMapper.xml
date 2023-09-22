@@ -27,6 +27,7 @@
         <result property="deposit" column="deposit" jdbcType="DECIMAL" />
         <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
         <result property="payCount" column="pay_count" jdbcType="VARCHAR" />
+        <result property="rentalPackageDeposit" column="rental_package_deposit" jdbcType="DECIMAL" />
     </resultMap>
 
     <!-- 表名 -->
@@ -39,7 +40,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `rental_package_confine`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `pay_count`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `rental_package_confine`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `deposit`, `deposit_pay_order_no`, `pay_count`, `rental_package_deposit`
     </sql>
 
     <!-- 全部字段 -->
@@ -77,6 +78,7 @@
             <if test=" deposit != null "> `deposit`, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
             <if test=" payCount != null "> `pay_count`, </if>
+            <if test=" rentalPackageDeposit != null "> `rental_package_deposit`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -103,6 +105,7 @@
             <if test=" deposit != null "> #{deposit}, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
             <if test=" payCount != null "> #{payCount}, </if>
+            <if test=" rentalPackageDeposit != null "> #{rentalPackageDeposit}, </if>
         </trim>
     </sql>
 
@@ -190,6 +193,7 @@
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> , `deposit_pay_order_no` = #{depositPayOrderNo} </if>
             <if test=" payCount != null "> , `pay_count` = #{payCount} </if>
+            <if test=" rentalPackageDeposit != null "> , `rental_package_deposit` = #{rentalPackageDeposit} </if>
         </set>
         <where>
             `id` = #{id}

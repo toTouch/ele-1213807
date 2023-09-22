@@ -172,6 +172,11 @@ public class CarRentalPackageOrderVo implements Serializable {
      */
     private Long createTime;
 
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
+
     // ++++++++++ 辅助业务数据 ++++++++++
 
     /**

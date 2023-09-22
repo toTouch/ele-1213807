@@ -599,6 +599,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         Integer tenantId = buyOptModel.getTenantId();
         Long uid = buyOptModel.getUid();
         Long buyRentalPackageId = buyOptModel.getRentalPackageId();
+        BigDecimal payDeposit = buyOptModel.getDeposit();
 
         // 获取加锁 KEY
         String bindingUidLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
@@ -635,7 +636,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             // 初始化押金金额
-            BigDecimal deposit = null;
+            BigDecimal rentalPackageDeposit = null;
             Integer userTenantId = userInfo.getTenantId();
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
@@ -662,8 +663,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
                     }
                     // 从会员期限中获取押金金额
-                    log.info("bindingPackage deposit from memberTerm");
-                    deposit = memberTermEntity.getDeposit();
+                    log.info("bindingPackage rentalPackageDeposit from memberTerm");
+                    rentalPackageDeposit = memberTermEntity.getRentalPackageDeposit();
                 }
             }
             // 6. 获取套餐信息
@@ -730,16 +731,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300005", "套餐不匹配");
             }
 
-            if (ObjectUtils.isEmpty(deposit)) {
-                log.info("BuyRentalPackageOrder deposit from rentalPackage.");
-                deposit = buyPackageEntity.getDeposit();
+            if (ObjectUtils.isEmpty(rentalPackageDeposit)) {
+                log.info("BuyRentalPackageOrder rentalPackageDeposit from rentalPackage.");
+                rentalPackageDeposit = buyPackageEntity.getDeposit();
             }
 
             // 7.4 类型一致、归属一致，比对：型号（车或者车、电） + 押金
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
                 if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-                    if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
-                        log.error("bindingPackage failed. Package deposit mismatch. ");
+                    if (buyPackageEntity.getDeposit().compareTo(rentalPackageDeposit) != 0) {
+                        log.error("bindingPackage failed. Package rentalPackageDeposit mismatch. ");
                         throw new BizException("300005", "套餐不匹配");
                     }
                     // 比对型号
@@ -802,12 +803,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId());
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, payDeposit, YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 depositPayOrderNo = depositPayVo.getOrderNo();
-                log.info("BuyRentalPackageOrder deposit paid. depositPayOrderNo is {}", depositPayOrderNo);
-                deposit = BigDecimal.ZERO;
+                log.info("BuyRentalPackageOrder rentalPackageDeposit paid. depositPayOrderNo is {}", depositPayOrderNo);
+                rentalPackageDeposit = BigDecimal.ZERO;
             }
 
             // 3）支付金额处理
@@ -815,7 +816,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             BigDecimal rentPaymentAmount = buyPackageEntity.getRent();
             log.info("BuyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
             // 实际支付总金额（租金 + 押金 + 保险）
-            BigDecimal paymentAmount = rentPaymentAmount.add(deposit);
+            BigDecimal paymentAmount = rentPaymentAmount.add(rentalPackageDeposit);
             log.info("BuyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 4）生成租车套餐订单，准备 insert
@@ -831,14 +832,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 5）租车套餐会员期限处理
             if (ObjectUtils.isEmpty(memberTermEntity)) {
                 // 生成租车套餐会员期限表信息，准备 Insert
-                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
+                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
                 carRentalPackageMemberTermService.insert(memberTermInsertEntity);
             } else {
                 if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
                     // 先删除
                     carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
                     // 生成租车套餐会员期限表信息，准备 Insert
-                    CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
+                    CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
                     carRentalPackageMemberTermService.insert(memberTermInsertEntity);
                 }
             }
@@ -2362,7 +2363,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             // 初始化押金金额
-            BigDecimal deposit = null;
+            BigDecimal rentalPackageDeposit = null;
             Integer userTenantId = userInfo.getTenantId();
             Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
             Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
@@ -2388,8 +2389,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         return R.fail("300057", "您有正在审核中/已冻结流程，不支持该操作");
                     }
                     // 从会员期限中获取押金金额
-                    log.info("buyRentalPackageOrder deposit from memberTerm");
-                    deposit = memberTermEntity.getDeposit();
+                    log.info("buyRentalPackageOrder rentalPackageDeposit from memberTerm");
+                    rentalPackageDeposit = memberTermEntity.getRentalPackageDeposit();
                 }
             }
 
@@ -2457,16 +2458,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300005", "套餐不匹配");
             }
 
-            if (ObjectUtils.isEmpty(deposit)) {
-                log.info("buyRentalPackageOrder deposit from rentalPackage.");
-                deposit = buyPackageEntity.getDeposit();
+            if (ObjectUtils.isEmpty(rentalPackageDeposit)) {
+                log.info("buyRentalPackageOrder rentalPackageDeposit from rentalPackage.");
+                rentalPackageDeposit = buyPackageEntity.getDeposit();
             }
 
             // 7.4 类型一致、归属一致，比对：型号（车或者车、电） + 押金
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
                 if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-                    if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
-                        log.error("buyRentalPackageOrder failed. Package deposit mismatch. ");
+                    if (buyPackageEntity.getDeposit().compareTo(rentalPackageDeposit) != 0) {
+                        log.error("buyRentalPackageOrder failed. Package rentalPackageDeposit mismatch. ");
                         return R.fail("300005", "套餐不匹配");
                     }
                     // 比对型号
@@ -2573,13 +2574,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayVo) || PayStateEnum.UNPAID.getCode().equals(depositPayVo.getPayState())) {
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId());
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, null, YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType(), payType, buyPackageEntity.getId(), buyPackageEntity.getDeposit());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             } else {
                 // 存在押金信息
                 depositPayOrderNo = depositPayVo.getOrderNo();
-                log.info("buyRentalPackageOrder deposit paid. depositPayOrderNo is {}", depositPayOrderNo);
-                deposit = BigDecimal.ZERO;
+                log.info("buyRentalPackageOrder rentalPackageDeposit paid. depositPayOrderNo is {}", depositPayOrderNo);
+                rentalPackageDeposit = BigDecimal.ZERO;
             }
 
             // 2）保险处理
@@ -2595,7 +2596,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
             log.info("buyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
             // 实际支付总金额（租金 + 押金 + 保险）
-            BigDecimal paymentAmount = rentPaymentAmount.add(deposit).add(insuranceAmount);
+            BigDecimal paymentAmount = rentPaymentAmount.add(rentalPackageDeposit).add(insuranceAmount);
             log.info("buyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 4）生成租车套餐订单，准备 insert
@@ -2617,14 +2618,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 5）租车套餐会员期限处理
             if (ObjectUtils.isEmpty(memberTermEntity)) {
                 // 生成租车套餐会员期限表信息，准备 Insert
-                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
+                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, null);
                 carRentalPackageMemberTermService.insert(memberTermInsertEntity);
             } else {
                 if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
                     // 先删除
                     carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
                     // 生成租车套餐会员期限表信息，准备 Insert
-                    CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
+                    CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, null);
                     carRentalPackageMemberTermService.insert(memberTermInsertEntity);
                 }
             }
@@ -3063,9 +3064,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param uid 用户ID
      * @param packageEntity 租车套餐信息
      * @param carRentalPackageOrderEntity 租车套餐订单信息
+     * @param deposit 实缴押金
      * @return 将要新增的租车会员期限信息
      */
-    private CarRentalPackageMemberTermPo buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePo packageEntity, CarRentalPackageOrderPo carRentalPackageOrderEntity) {
+    private CarRentalPackageMemberTermPo buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePo packageEntity, CarRentalPackageOrderPo carRentalPackageOrderEntity, BigDecimal deposit) {
         CarRentalPackageMemberTermPo carRentalPackageMemberTermEntity = new CarRentalPackageMemberTermPo();
         carRentalPackageMemberTermEntity.setUid(uid);
         carRentalPackageMemberTermEntity.setRentalPackageOrderNo(carRentalPackageOrderEntity.getOrderNo());
@@ -3074,7 +3076,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setRentalPackageConfine(packageEntity.getConfine());
         carRentalPackageMemberTermEntity.setResidue(packageEntity.getConfineNum());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
-        carRentalPackageMemberTermEntity.setDeposit(carRentalPackageOrderEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setDeposit(ObjectUtils.isNotEmpty(deposit) ? deposit : carRentalPackageOrderEntity.getDeposit());
         carRentalPackageMemberTermEntity.setDepositPayOrderNo(carRentalPackageOrderEntity.getDepositPayOrderNo());
         carRentalPackageMemberTermEntity.setTenantId(tenantId);
         carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
@@ -3097,6 +3099,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         carRentalPackageMemberTermEntity.setDueTime(dueTime);
         carRentalPackageMemberTermEntity.setDueTimeTotal(dueTime);
+        carRentalPackageMemberTermEntity.setRentalPackageDeposit(carRentalPackageOrderEntity.getDeposit());
 
         return carRentalPackageMemberTermEntity;
     }
@@ -3150,17 +3153,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * 构建押金订单信息
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @param deposit 押金
+     * @param deposit 实缴押金
      * @param freeDeposit 免押
      * @param franchiseeId 加盟商ID
      * @param storeId 门店ID
      * @param rentalPackageType 套餐类型
      * @param payType 交易方式
      * @param rentalPackageId 套餐ID
+     * @param rentalPackageDeposit 套餐押金
      * @return 待新增的押金缴纳订单
      */
     private CarRentalPackageDepositPayPo buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer freeDeposit,
-                                                                         Integer franchiseeId, Integer storeId, Integer rentalPackageType, Integer payType, Long rentalPackageId) {
+                                                                         Integer franchiseeId, Integer storeId, Integer rentalPackageType, Integer payType, Long rentalPackageId, BigDecimal rentalPackageDeposit) {
         CarRentalPackageDepositPayPo carRentalPackageDepositPayEntity = new CarRentalPackageDepositPayPo();
         carRentalPackageDepositPayEntity.setUid(uid);
         carRentalPackageDepositPayEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, uid));
@@ -3168,7 +3172,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageDepositPayEntity.setRentalPackageType(rentalPackageType);
         carRentalPackageDepositPayEntity.setType(DepositTypeEnum.NORMAL.getCode());
         carRentalPackageDepositPayEntity.setChangeAmount(BigDecimal.ZERO);
-        carRentalPackageDepositPayEntity.setDeposit(deposit);
+        carRentalPackageDepositPayEntity.setDeposit(ObjectUtils.isEmpty(deposit) ? rentalPackageDeposit : deposit);
         carRentalPackageDepositPayEntity.setFreeDeposit(freeDeposit);
         carRentalPackageDepositPayEntity.setPayType(payType);
         carRentalPackageDepositPayEntity.setPayState(PayStateEnum.UNPAID.getCode());
@@ -3180,6 +3184,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageDepositPayEntity.setCreateTime(System.currentTimeMillis());
         carRentalPackageDepositPayEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageDepositPayEntity.setDelFlag(DelFlagEnum.OK.getCode());
+        carRentalPackageDepositPayEntity.setRentalPackageDeposit(rentalPackageDeposit);
 
         return carRentalPackageDepositPayEntity;
     }

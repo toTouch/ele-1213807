@@ -4,6 +4,7 @@ import com.xiliulou.electricity.enums.PayTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -60,5 +61,10 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
      * @see PayTypeEnum
      */
     private Integer payType;
+
+    /**
+     * 实缴押金金额(元)
+     */
+    private BigDecimal deposit;
 
 }
