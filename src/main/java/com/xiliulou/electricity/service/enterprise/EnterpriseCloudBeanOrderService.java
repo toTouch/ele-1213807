@@ -43,4 +43,6 @@ public interface EnterpriseCloudBeanOrderService {
     Integer selectByPageCount(EnterpriseCloudBeanOrderQuery query);
 
     Integer insert(EnterpriseCloudBeanOrder enterpriseCloudBeanOrder);
+
+    EnterpriseCloudBeanOrder selectByOrderId(String orderNo);
 }

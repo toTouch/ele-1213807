@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -124,5 +125,10 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     @Override
     public Integer selectByPageCount(EnterpriseCloudBeanOrderQuery query) {
         return this.enterpriseCloudBeanOrderMapper.selectByPageCount(query);
+    }
+
+    @Override
+    public EnterpriseCloudBeanOrder selectByOrderId(String orderNo) {
+        return this.enterpriseCloudBeanOrderMapper.selectOne(new LambdaQueryWrapper<EnterpriseCloudBeanOrder>().eq(EnterpriseCloudBeanOrder::getOrderId,orderNo));
     }
 }
