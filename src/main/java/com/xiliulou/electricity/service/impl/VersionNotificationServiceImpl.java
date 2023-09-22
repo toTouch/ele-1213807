@@ -142,7 +142,6 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void handleVersionNotificationSendEmail() {
         //1.获取最新未发送邮件通知的版本升级记录
         VersionNotification versionNotification = this.selectNotSendMailOne();
