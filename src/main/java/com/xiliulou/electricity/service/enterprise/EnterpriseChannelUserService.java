@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -40,4 +41,6 @@ public interface EnterpriseChannelUserService {
     public Triple<Boolean, String, Object> updateUserAfterQRScan(EnterpriseChannelUserQuery query);
 
     public Triple<Boolean, String, Object> checkUserExist(Long id, Long uid);
+
+    public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid);
 }

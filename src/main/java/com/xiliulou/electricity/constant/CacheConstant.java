@@ -363,6 +363,11 @@ public interface CacheConstant {
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
 
+    /**
+     * 企业渠道用户购买套餐缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY = "enterprise_user_purchase_package_lock_key:";
+
     String ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY = "user_cloud_bean_recharge_lock_key:";
 
     /**
