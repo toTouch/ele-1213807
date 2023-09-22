@@ -198,6 +198,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Autowired
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
+
+    public static final Integer ELE = 0;
+    public static final Integer CAR = 1;
+    public static final Integer CAR_AND_ELE = 2;
+
     /**
      * 根据用户UID查询总金额<br />
      * 订单支付成功总金额 - 退租订单成功总金额
@@ -1588,7 +1594,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if(!UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
-            throw new BizException("300015", "订单状态异常");
+            throw new BizException("300060", "订单状态异常");
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_ALLOW_FREEZE_WITH_ASSETS, electricityConfig.getAllowFreezeWithAssets())
+                && checkUserHasAssets(uid, tenantId, packageOrderEntity.getRentalPackageType())) {
+            throw new BizException("ELECTRICITY.100272", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
 
         Long useBeginTime = packageOrderEntity.getUseBeginTime();
@@ -1733,6 +1745,29 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return slippageEntity;
     }
 
+    /**
+     * 校验当前用户是否有对应类型的资产
+     * @param uid
+     * @param tenantId
+     * @param assetType
+     * @return
+     */
+    private boolean checkUserHasAssets(Long uid,Integer tenantId,Integer assetType){
+        if (CarRentalPackageOrderBizServiceImpl.CAR.equals(assetType)) {
+            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isNotEmpty(electricityCar)) {
+                return true;
+            }
+        } else if (CarRentalPackageOrderBizServiceImpl.ELE.equals(assetType)) {
+            ElectricityBattery battery = batteryService.queryByUid(uid);
+            if (Objects.nonNull(battery)) {
+                return true;
+            }
+        } else if (CarRentalPackageOrderBizServiceImpl.CAR_AND_ELE.equals(assetType)) {
+            return checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.CAR) || checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.ELE);
+        }
+        return false;
+    }
 
     /**
      * 根据用户ID及订单编码，退租购买的订单
