@@ -183,7 +183,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
                 // 车电一体押金，同步删除电池那边的数据
                 if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
                     log.info("saveDepositRefundInfoTx, delete from battery member info. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
-                    userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                    userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                     userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                 }
             }

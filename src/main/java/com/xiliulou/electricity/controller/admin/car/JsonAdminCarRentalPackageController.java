@@ -22,7 +22,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -77,11 +76,20 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             qryReq = new CarRentalPackageQryReq();
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+
         // 数据权校验
-        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+/*        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
             return R.ok(Collections.emptyList());
-        }
+        }*/
 
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -90,8 +98,8 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
-        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
-        qryModel.setStoreIdList(permissionTriple.getMiddle());
+/*        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());*/
 
         // 调用服务
         List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);

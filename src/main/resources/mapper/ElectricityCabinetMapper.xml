@@ -606,6 +606,12 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and tec.id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         GROUP BY
         ecb.electricity_cabinet_id
         having del_flag=0
@@ -614,12 +620,6 @@
         </if>
         <if test="fullChargeRate != null">
             and sum( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
-        </if>
-        <if test="eleIdList!=null and eleIdList!=''">
-            and tec.id in
-            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
         </if>
         limit #{offset}, #{size}
     </select>

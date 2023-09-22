@@ -69,4 +69,18 @@
 		</foreach>
 
 	</select>
+
+	<select id="queryListByRids" resultType="com.xiliulou.electricity.entity.PermissionResource">
+		select
+		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag, permission
+		from t_permission_resource  t where exists (select p_id  from t_role_permission trp
+		where trp.p_id=t.id and trp.role_id in
+		<foreach collection="list" item="p" separator="," open="(" close=")">
+			#{p}
+		</foreach>
+		)
+		<if test="type == 2 ">
+			and t.type = #{type} and uri !="/"
+		</if>
+	</select>
 </mapper>

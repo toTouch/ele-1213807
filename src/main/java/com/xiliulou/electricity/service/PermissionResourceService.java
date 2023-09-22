@@ -64,4 +64,12 @@ public interface PermissionResourceService {
 	List<PermissionResource> queryPermissionsByRole(Long rid);
     
     Pair<Boolean, Object> getPermissionTempleteList();
+
+	/**
+	 * 通过角色Id和权限类型查询权限
+	 *
+	 * @param rids 角色id type 权限类型
+	 * @return 实例对象
+	 */
+	List<PermissionResource> queryByRoleIds(List<Long> rids,Integer type);
 }
