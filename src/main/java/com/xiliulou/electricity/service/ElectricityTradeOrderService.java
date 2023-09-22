@@ -46,6 +46,12 @@ public interface ElectricityTradeOrderService {
     //保险回调
     Pair<Boolean, Object> notifyInsuranceOrder(WechatJsapiOrderCallBackResource callBackResource);
 
+    /**
+     * 云豆充值回调
+     * @param callBackResource
+     * @return
+     */
+    Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource);
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
 

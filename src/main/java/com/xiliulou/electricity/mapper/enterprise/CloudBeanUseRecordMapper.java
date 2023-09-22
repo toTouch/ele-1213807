@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
-import com.xiliulou.electricity.entity.CloudBeanUseRecord;
+import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 
 import java.util.List;
 

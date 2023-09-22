@@ -6,10 +6,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.CloudBeanUseRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
@@ -18,10 +16,7 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CloudBeanUseRecordService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
@@ -31,6 +26,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -78,6 +74,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private ElectricityTradeOrderService electricityTradeOrderService;
+
+    @Autowired
+    private UserOauthBindService userOauthBindService;
+
+    @Autowired
+    private ElectricityPayParamsService electricityPayParamsService;
 
     @Autowired
     private CloudBeanUseRecordService cloudBeanUseRecordService;
@@ -213,25 +218,47 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "", "支付金额不合法");
             }
 
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
+            if (Objects.isNull(electricityPayParams)) {
+                log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", userInfo.getUid());
+                return Triple.of(false, "", "未配置支付参数!");
+            }
+
+            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), TenantContextHolder.getTenantId());
+            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+                log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", userInfo.getUid());
+                return Triple.of(false, "", "未找到用户的第三方授权信息!");
+            }
 
             //生成充值订单
             EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
-            enterpriseCloudBeanOrder.setEnterpriseId(0L);
+            enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
             enterpriseCloudBeanOrder.setUid(userInfo.getUid());
             enterpriseCloudBeanOrder.setOperateUid(userInfo.getUid());
             enterpriseCloudBeanOrder.setPayAmount(query.getTotalBeanAmount());
             enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
-            enterpriseCloudBeanOrder.setStatus(0);
-            enterpriseCloudBeanOrder.setPayType(0);
-            enterpriseCloudBeanOrder.setType(0);
+            enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_INIT);
+            enterpriseCloudBeanOrder.setPayType(EnterpriseCloudBeanOrder.ONLINE_PAYMENT);
+            enterpriseCloudBeanOrder.setType(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE);
             enterpriseCloudBeanOrder.setRemark("");
             enterpriseCloudBeanOrder.setBeanAmount(query.getTotalBeanAmount());
             enterpriseCloudBeanOrder.setFranchiseeId(userInfo.getFranchiseeId());
             enterpriseCloudBeanOrder.setTenantId(userInfo.getTenantId());
             enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
             enterpriseCloudBeanOrder.setUpdateTime(System.currentTimeMillis());
+            enterpriseCloudBeanOrderService.insert(enterpriseCloudBeanOrder);
 
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(enterpriseCloudBeanOrder.getOrderId())
+                    .uid(userInfo.getUid())
+                    .payAmount(query.getTotalBeanAmount())
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_CLOUD_BEAN_RECHARGE)
+                    .attach(ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)
+                    .description("云豆充值")
+                    .tenantId(TenantContextHolder.getTenantId()).build();
 
+            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return Triple.of(true, null, resultDTO);
         } catch (Exception e) {
             log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", userInfo.getUid(), e);
         } finally {

@@ -62,6 +62,9 @@ public class ElectricityTradeOrder {
     //保险支付
     public static final Integer ORDER_TYPE_INSURANCE = 6;
 
+    //云豆充值
+    public static final Integer ORDER_TYPE_CLOUD_BEAN_RECHARGE = 7;
+
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 
@@ -79,6 +82,9 @@ public class ElectricityTradeOrder {
 
     //保险附加信息
     public static final String ATTACH_INSURANCE = "insurance";
+
+    //云豆充值
+    public static final String ATTACH_CLOUD_BEAN_RECHARGE = "cloudBeanRecharge";
 
 
 }

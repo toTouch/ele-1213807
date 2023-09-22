@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.entity.enterprise;
 
 
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -54,6 +54,9 @@ public class CloudBeanUseRecord {
      */
     private Long franchiseeId;
 
+    /**
+     * 充值订单号/代付订单号
+     */
     private String ref;
     /**
      * 租户ID
