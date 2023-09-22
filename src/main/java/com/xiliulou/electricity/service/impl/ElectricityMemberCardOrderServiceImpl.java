@@ -826,7 +826,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 log.error("BATTERY MEMBER ORDER ERROR! wechat v3 order error,uid={}", user.getUid(), e);
             }
         } finally {
-            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid());
+//            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid());
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "下单失败");
