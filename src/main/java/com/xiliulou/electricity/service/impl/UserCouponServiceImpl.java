@@ -322,7 +322,6 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void handelUserCouponExpired() {
         //分页只修改200条
         List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(System.currentTimeMillis(), 0, 200);

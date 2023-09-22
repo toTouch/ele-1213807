@@ -627,7 +627,6 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
      * 更新超过七天的分账记录状态为冻结的记录，将分账状态更新为正常
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateDivisionAccountStatusForFreezeOrder() {
         Long exceedTime = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L;
         List<DivisionAccountRecord> divisionAccountRecords = divisionAccountRecordMapper.selectDAFreezeStatusRecordsByTime(exceedTime);
