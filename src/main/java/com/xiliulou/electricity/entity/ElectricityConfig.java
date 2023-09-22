@@ -142,7 +142,7 @@ public class ElectricityConfig {
     private Integer allowReturnEle;
 
     /**
-     * 有资产时是否允许冻结 0--是 1--否
+     * 冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
 
@@ -245,7 +245,7 @@ public class ElectricityConfig {
 
 
     /**
-     * 冻结套餐退还资产开关 0--是 1--否
+     * 冻结套餐强制资产开关 0--是 1--否
      */
     public static Integer ALLOW_FREEZE_ASSETS = 0;
     public static Integer NOT_ALLOW_FREEZE_ASSETS = 1;

@@ -1594,13 +1594,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if(!UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
-            throw new BizException("300060", "订单状态异常");
+            throw new BizException("300015", "订单状态异常");
         }
 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets())
                 && checkUserHasAssets(uid, tenantId, packageOrderEntity.getRentalPackageType())) {
-            throw new BizException("ELECTRICITY.100272", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
+            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
 
         Long useBeginTime = packageOrderEntity.getUseBeginTime();
@@ -1752,7 +1752,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param assetType
      * @return
      */
-    private boolean checkUserHasAssets(Long uid,Integer tenantId,Integer assetType){
+    @Override
+    public boolean checkUserHasAssets(Long uid,Integer tenantId,Integer assetType){
         if (CarRentalPackageOrderBizServiceImpl.CAR.equals(assetType)) {
             ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
             if (ObjectUtils.isNotEmpty(electricityCar)) {

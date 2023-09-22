@@ -128,7 +128,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer allowReturnEle;
 
     /**
-     *  有资产时是否允许冻结 0--是 1--否
+     *  冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
 }
