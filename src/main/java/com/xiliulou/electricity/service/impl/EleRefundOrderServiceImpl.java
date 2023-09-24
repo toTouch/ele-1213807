@@ -1046,7 +1046,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100031", "不能重复退押金");
         }
-
+/*
         //如果车电一起免押，检查用户是否归还车辆
         EleDepositOrder carDepositOrder = null;
         UserCarDeposit userCarDeposit = null;
@@ -1076,7 +1076,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
         }
-    
+    */
         //获取订单代扣信息计算返还金额
         BigDecimal refundAmount = eleDepositOrder.getPayAmount();
         FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
