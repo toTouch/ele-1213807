@@ -220,6 +220,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -634,9 +637,11 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             if (Objects.nonNull(electricityMemberCardOrder.getRefId()) && Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
-                userInfoUpdate.setStoreId(electricityMemberCardOrder.getRefId());
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrder.getRefId().intValue());
+                if(Objects.nonNull(electricityCabinet)){
+                    userInfoUpdate.setStoreId(electricityCabinet.getStoreId());
+                }
             }
-
             userInfoService.updateByUid(userInfoUpdate);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -839,9 +844,6 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setUid(userInfo.getUid());
             userInfoUpdate.setPayCount(userInfo.getPayCount()+1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            if (Objects.nonNull(electricityMemberCardOrder.getRefId()) && Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
-                userInfoUpdate.setStoreId(electricityMemberCardOrder.getRefId());
-            }
             userInfoService.updateByUid(userInfoUpdate);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
