@@ -126,6 +126,18 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
         if(StringUtils.isNotBlank(userBatteryType.getBatteryType())){
             String batteryType = this.selectOneByUid(userBatteryType.getUid());
             if (StringUtils.isNotBlank(batteryType)) {
