@@ -19,6 +19,8 @@ public enum BusinessType {
     BATTERY_DEPOSIT(15),
     //电池退押审核订单
     BATTERY_DEPOSIT_REFUND(16),
+    //企业渠道换电套餐订单
+    ENTERPRISE_BATTERY_PACKAGE(17),
 
 
     //租车套餐订单

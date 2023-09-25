@@ -25,7 +25,7 @@ public class EnterprisePackageOrderQuery {
 
     private Integer tenantId;
 
-
-
+    //优惠券
+    private Integer userCouponId;
 
 }

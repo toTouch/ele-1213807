@@ -65,6 +65,9 @@ public class ElectricityTradeOrder {
     //云豆充值
     public static final Integer ORDER_TYPE_CLOUD_BEAN_RECHARGE = 7;
 
+    //企业渠道套餐购买
+    public static final Integer ORDER_TYPE_PURCHASE_ENTERPRISE_PACKAGE = 8;
+
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 
@@ -85,6 +88,8 @@ public class ElectricityTradeOrder {
 
     //云豆充值
     public static final String ATTACH_CLOUD_BEAN_RECHARGE = "cloudBeanRecharge";
+
+    public static final String ATTACH_PURCHASE_ENTERPRISE_PACKAGE = "purchaseEnterprisePackage";
 
 
 }

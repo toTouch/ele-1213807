@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -103,6 +104,12 @@ public class ElectricityMemberCardOrder {
      * 套餐赠送的优惠券id
      */
     private Long sendCouponId;
+
+    /**
+     * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     * @see PackageOrderTypeEnum
+     */
+    private Integer orderType;
 
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;

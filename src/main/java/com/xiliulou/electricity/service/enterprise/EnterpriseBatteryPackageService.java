@@ -5,6 +5,8 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author BaoYu
  * @date 2023-09-15 13:53
@@ -34,7 +36,7 @@ public interface EnterpriseBatteryPackageService {
      * @param query
      * @return
      */
-    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query);
+    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
 
 
 
