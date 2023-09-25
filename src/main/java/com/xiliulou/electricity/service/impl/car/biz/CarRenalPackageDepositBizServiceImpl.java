@@ -931,6 +931,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         depositPayVo.setPayType(depositPayEntity.getPayType());
         depositPayVo.setStoreId(depositPayEntity.getStoreId());
         depositPayVo.setCarModelId(rentalPackageEntity.getCarModelId());
+        depositPayVo.setRentalPackageDeposit(depositPayEntity.getRentalPackageDeposit());
 
         //查询当前订单是否存在退押的状态
         CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());

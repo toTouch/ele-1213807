@@ -100,7 +100,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
 
         Boolean oldUserFlag = false;
-        BigDecimal deposit = null;
+        BigDecimal rentalPackageDeposit = null;
         List<String> batteryModelTypeList = new ArrayList<>();
         Integer confine = null;
 
@@ -174,7 +174,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 }
 
-                deposit = memberTermEntity.getDeposit();
+                rentalPackageDeposit = memberTermEntity.getRentalPackageDeposit();
                 rentalPackageType = memberTermEntity.getRentalPackageType();
                 confine = memberTermEntity.getRentalPackageConfine();
             }
@@ -197,7 +197,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setFranchiseeId(franchiseeId);
         qryModel.setStoreId(storeId);
         qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
-        qryModel.setDeposit(deposit);
+        qryModel.setDeposit(rentalPackageDeposit);
         qryModel.setType(rentalPackageType);
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
@@ -401,7 +401,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
-        List<Long> couponIds = couponIdList.stream().map(s -> Long.valueOf(s)).collect(Collectors.toList());
+        List<Long> couponIds = couponIdList.stream().map(Long::valueOf).collect(Collectors.toList());
 
         // 查询优惠券信息
         CouponQuery couponQuery = CouponQuery.builder().ids(couponIds).build();
