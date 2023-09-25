@@ -109,6 +109,15 @@
         </trim>
     </sql>
 
+    <!-- 根据用户UID查询最后一条数据 -->
+    <select id="selectLastByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+        ORDER BY `id` DESC LIMIT 1
+    </select>
+
     <!-- 分页查询过期的会员套餐信息 -->
     <select id="pageExpire" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

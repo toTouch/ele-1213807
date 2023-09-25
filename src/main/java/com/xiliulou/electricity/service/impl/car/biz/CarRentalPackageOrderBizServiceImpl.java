@@ -3087,7 +3087,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setCreateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageMemberTermEntity.setDelFlag(DelFlagEnum.OK.getCode());
-        carRentalPackageMemberTermEntity.setPayCount(1);
         // 计算到期时间
         Integer tenancy = packageEntity.getTenancy();
         Integer tenancyUnit = packageEntity.getTenancyUnit();
@@ -3101,6 +3100,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setDueTime(dueTime);
         carRentalPackageMemberTermEntity.setDueTimeTotal(dueTime);
         carRentalPackageMemberTermEntity.setRentalPackageDeposit(carRentalPackageOrderEntity.getDeposit());
+
+        carRentalPackageMemberTermEntity.setPayCount(carRentalPackageMemberTermService.selectPayCountByUid(tenantId, uid) + 1);
 
         return carRentalPackageMemberTermEntity;
     }
