@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
@@ -404,6 +405,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         } catch (CustomBusinessException e) {
             return R.failMsg(e.getMessage());
         } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof CustomBusinessException) {
+                CustomBusinessException customException = (CustomBusinessException) cause;
+                return R.failMsg(customException.getMessage());
+            }
             log.error("IMPORT BATTERY ERROR! ", e);
             return R.failMsg("导入失败");
         }
