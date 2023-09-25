@@ -22,12 +22,12 @@ public class JsonAdminUserBatteryTypeController extends BaseController {
     private UserBatteryTypeService userBatteryTypeService;
 
 
-    @GetMapping("/admin/userBatteryType/{uid}")
+    @GetMapping("/admin/battery/userBatteryType/{uid}")
     public R select(@PathVariable("uid") Long uid) {
         return returnTripleResult(userBatteryTypeService.selectUserBatteryTypeByUid(uid));
     }
 
-    @PutMapping("/admin/userBatteryType")
+    @PutMapping("/admin/battery/userBatteryType")
     public R update(@RequestBody @Validated UserBatteryType userBatteryType) {
         return returnTripleResult(userBatteryTypeService.modifyUserBatteryType(userBatteryType));
     }
