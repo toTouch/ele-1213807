@@ -2611,8 +2611,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (usableBatteryCellNos.size() == 1) {
                     return Triple.of(true, null, usableBatteryCellNos.get(0));
                 }
-
-                return Triple.of(true, null, usableBatteryCellNos.get(0));
             }
 
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
@@ -2683,8 +2681,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (usableBatteryCellNos.size() == 1) {
                     return Triple.of(true, null, usableBatteryCellNos.get(0));
                 }
-
-                return Triple.of(true, null, usableBatteryCellNos.get(0));
             }
 
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
