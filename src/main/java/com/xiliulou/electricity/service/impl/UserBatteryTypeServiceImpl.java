@@ -6,9 +6,12 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,9 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
 
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
+
+    @Autowired
+    private UserInfoService userInfoService;
 
     @Override
     public UserBatteryType queryByIdFromDB(Long id) {
@@ -101,6 +107,48 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         }
 
         return batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectUserBatteryTypeByUid(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        return Triple.of(true, "", this.selectOneByUid(uid));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> modifyUserBatteryType(UserBatteryType userBatteryType) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(userBatteryType.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if(StringUtils.isNotBlank(userBatteryType.getBatteryType())){
+            String batteryType = this.selectOneByUid(userBatteryType.getUid());
+            if (StringUtils.isNotBlank(batteryType)) {
+                UserBatteryType userBatteryTypeUpdate = new UserBatteryType();
+                userBatteryTypeUpdate.setUid(userBatteryType.getUid());
+                userBatteryTypeUpdate.setBatteryType(userBatteryType.getBatteryType());
+                userBatteryTypeUpdate.setUpdateTime(System.currentTimeMillis());
+                this.userBatteryTypeMapper.updateByUid(userBatteryTypeUpdate);
+            } else {
+                UserBatteryType userBatteryTypeInsert = new UserBatteryType();
+                userBatteryTypeInsert.setUid(userBatteryType.getUid());
+                userBatteryTypeInsert.setBatteryType(userBatteryType.getBatteryType());
+                userBatteryTypeInsert.setTenantId(TenantContextHolder.getTenantId());
+                userBatteryTypeInsert.setDelFlag(UserBatteryType.DEL_NORMAL);
+                userBatteryTypeInsert.setCreateTime(System.currentTimeMillis());
+                userBatteryTypeInsert.setUpdateTime(System.currentTimeMillis());
+                this.userBatteryTypeMapper.insert(userBatteryTypeInsert);
+            }
+        }else{
+            this.userBatteryTypeMapper.deleteByUid(userBatteryType.getUid());
+        }
+
+        return Triple.of(true, null, null);
     }
 
     @Override

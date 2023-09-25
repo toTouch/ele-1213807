@@ -46,4 +46,6 @@ public interface UserBatteryTypeMapper extends BaseMapper<UserBatteryType> {
     List<String> selectByUid(Long uid);
 
     String selectOneByUid(Long uid);
+
+    int updateByUid(UserBatteryType userBatteryType);
 }

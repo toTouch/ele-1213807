@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -41,4 +42,8 @@ public interface UserBatteryTypeService {
     void synchronizedUserBatteryType(Long uid, Integer tenantId, List<String> batteryTypes);
 
     String selectOneByUid(Long uid);
+
+    Triple<Boolean, String, Object> selectUserBatteryTypeByUid(Long uid);
+
+    Triple<Boolean, String, Object> modifyUserBatteryType(UserBatteryType userBatteryType);
 }

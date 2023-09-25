@@ -66,6 +66,11 @@
         where id = #{id}
     </update>
 
+    <update id="updateByUid">
+        update t_user_battery_type set battery_type = #{batteryType},update_time = #{updateTime}
+        where uid = #{uid}
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_user_battery_type where id = #{id}
