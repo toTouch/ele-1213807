@@ -1284,8 +1284,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
-            commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+            if (Objects.nonNull(electricityBattery)) {
+                commandData.put("multiBatteryModelName", electricityBattery.getModel());
+            } else {
+                String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
+                commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+            }
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -1427,8 +1431,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
-            commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+            if (Objects.nonNull(electricityBattery)) {
+                commandData.put("multiBatteryModelName", electricityBattery.getModel());
+            } else {
+                String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
+                commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+            }
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
