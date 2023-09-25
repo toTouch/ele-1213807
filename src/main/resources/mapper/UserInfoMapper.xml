@@ -1124,7 +1124,7 @@
                 WHEN ubmc.member_card_expire_time IS NULL THEN 2
                 WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
                 WHEN ubmc.member_card_expire_time > 0 THEN 0
-                END ,ubmc.member_card_expire_time ,id desc
+                END ,ubmc.member_card_expire_time ,tui.id desc
             </if>
 
             <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
@@ -1132,7 +1132,7 @@
                 WHEN ubmc.member_card_expire_time IS NULL THEN 2
                 WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
                 WHEN ubmc.member_card_expire_time > 0 THEN 0
-                END ,ubmc.member_card_expire_time,id
+                END ,ubmc.member_card_expire_time,tui.id
             </if>
 
             limit  #{query.offset}, #{query.size}
