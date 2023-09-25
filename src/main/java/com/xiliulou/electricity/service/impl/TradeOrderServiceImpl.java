@@ -331,7 +331,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
             }
         } finally {
-            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
+//            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "租电押金支付失败");
@@ -498,7 +498,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
             }
         } finally {
-            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
+//            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "租电套餐支付失败");

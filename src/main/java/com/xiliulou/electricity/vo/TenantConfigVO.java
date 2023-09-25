@@ -82,4 +82,9 @@ public class TenantConfigVO {
      * 是否开启车辆控制 0--是 0--否
      */
     private Integer isOpenCarControl;
+
+    /**
+     * 是否开启电子签名 0--是 1--否
+     */
+    private Integer isEnableEsign;
 }

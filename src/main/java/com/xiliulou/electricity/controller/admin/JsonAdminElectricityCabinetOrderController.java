@@ -50,6 +50,7 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "status", required = false) String status,
+                       @RequestParam(value = "eid", required = false) Long eid,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "source", required = false) Integer source,
@@ -93,6 +94,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
+                .eid(eid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
@@ -111,6 +113,7 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "orderId", required = false) String orderId,
                             @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "status", required = false) String status,
+                            @RequestParam(value = "eid", required = false) Long eid,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime,
                             @RequestParam(value = "source", required = false) Integer source,
@@ -143,6 +146,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
+                .eid(eid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
@@ -158,6 +162,7 @@ public class JsonAdminElectricityCabinetOrderController {
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) String status,
+                        @RequestParam(value = "eid", required = false) Long eid,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "source", required = false) Integer source,
@@ -193,6 +198,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
+                .eid(eid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
@@ -208,6 +214,7 @@ public class JsonAdminElectricityCabinetOrderController {
     public R querySuperCount(@RequestParam(value = "orderId", required = false) String orderId,
                              @RequestParam(value = "phone", required = false) String phone,
                              @RequestParam(value = "status", required = false) String status,
+                             @RequestParam(value = "eid", required = false) Long eid,
                              @RequestParam(value = "beginTime", required = false) Long beginTime,
                              @RequestParam(value = "endTime", required = false) Long endTime,
                              @RequestParam(value = "source", required = false) Integer source,
@@ -230,6 +237,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
+                .eid(eid)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)

@@ -382,7 +382,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 车电一体押金，同步删除电池那边的数据
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositRefundEntity.getRentalPackageType())) {
             log.info("saveFreeDepositRefundHandlerTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
-            userBatteryTypeService.deleteById(depositRefundEntity.getUid());
+            userBatteryTypeService.deleteByUid(depositRefundEntity.getUid());
             userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
         }
     }
@@ -1197,7 +1197,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     // 车电一体押金，同步删除电池那边的数据
                     if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
                         log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
-                        userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                        userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                 }
@@ -1314,7 +1314,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     // 车电一体押金，同步删除电池那边的数据
                     if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
                         log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
-                        userBatteryTypeService.deleteById(depositPayEntity.getUid());
+                        userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                 }
@@ -1515,7 +1515,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             // 车电一体押金，同步删除电池那边的数据
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
                 log.info("saveRefundDepositInfoTx, delete from battery member info. depositPayOrderNo is {}", memberTermEntity.getDepositPayOrderNo());
-                userBatteryTypeService.deleteById(memberTermEntity.getUid());
+                userBatteryTypeService.deleteByUid(memberTermEntity.getUid());
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
 

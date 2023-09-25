@@ -292,7 +292,7 @@ public class ElectricityTradeOrderServiceImpl extends
         String ip = request.getRemoteAddr();
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
         electricityTradeOrder.setOrderNo(commonOrder.getOrderId());
-        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
+        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()) + commonOrder.getUid());
         electricityTradeOrder.setClientId(ip);
         electricityTradeOrder.setCreateTime(System.currentTimeMillis());
         electricityTradeOrder.setUpdateTime(System.currentTimeMillis());

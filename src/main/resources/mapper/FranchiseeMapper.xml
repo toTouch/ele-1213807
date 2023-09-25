@@ -21,6 +21,12 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        <if test=" ids != null and ids.size > 0 ">
+            AND `id` IN
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by id
         limit #{offset}, #{size}
     </select>

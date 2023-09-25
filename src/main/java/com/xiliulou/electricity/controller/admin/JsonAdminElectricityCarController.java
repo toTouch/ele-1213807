@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -157,13 +158,16 @@ public class JsonAdminElectricityCarController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(NumberConstant.ZERO);
+            }
         }
 
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+                return R.ok(NumberConstant.ZERO);
             }
         }
 
