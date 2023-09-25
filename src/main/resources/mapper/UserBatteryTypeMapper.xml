@@ -27,6 +27,12 @@
         where uid = #{uid}
     </select>
 
+    <select id="selectOneByUid" resultType="string">
+        select  battery_type
+        from t_user_battery_type
+        where uid = #{uid} order by id limit 1
+    </select>
+
     <insert id="batchInsert">
         insert into t_user_battery_type(uid, battery_type, del_flag, create_time, update_time, tenant_id) values
         <foreach item="item" index="index" collection="list" separator=",">

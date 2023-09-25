@@ -44,4 +44,6 @@ public interface UserBatteryTypeMapper extends BaseMapper<UserBatteryType> {
     Integer deleteByUid(Long uid);
 
     List<String> selectByUid(Long uid);
+
+    String selectOneByUid(Long uid);
 }

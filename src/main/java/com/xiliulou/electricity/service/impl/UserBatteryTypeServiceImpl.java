@@ -74,6 +74,11 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     }
 
     @Override
+    public String selectOneByUid(Long uid) {
+        return this.userBatteryTypeMapper.selectOneByUid(uid);
+    }
+
+    @Override
     public String selectUserMaxBatteryType(Long uid) {
         List<String> batteryTypes = this.selectByUid(uid);
         if (CollectionUtils.isEmpty(batteryTypes)) {

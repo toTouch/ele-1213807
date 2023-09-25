@@ -39,4 +39,6 @@ public interface UserBatteryTypeService {
     void updateUserBatteryType(ElectricityMemberCardOrder electricityMemberCardOrder,UserInfo userInfo);
 
     void synchronizedUserBatteryType(Long uid, Integer tenantId, List<String> batteryTypes);
+
+    String selectOneByUid(Long uid);
 }

@@ -2571,77 +2571,136 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid) {
 
-        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
-        if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
-            return Triple.of(false, "100216", "换电柜暂无满电电池");
-        }
-
-        List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
-
-        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
-        if (CollectionUtils.isEmpty(electricityBatteries)) {
-            return Triple.of(false, "100225", "电池不存在");
-        }
-
-        //把本柜机加盟商的绑定电池信息拿出来
-        electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
-        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
-            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
-        }
-
-        //获取全部可用电池id
-        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-
-        //把加盟商绑定的电池过滤出来
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-
-        //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            if(Objects.nonNull(electricityBattery)){
-                //用户当前绑定电池的型号
-                String userCurrentBatteryType = electricityBattery.getModel();
-
-                List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-                if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
-                    return Triple.of(true, null, userBindBatteryCellNos.get(0));
-                }
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (Objects.nonNull(tenantId) && Objects.equals(1044, tenantId)) {
+            List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
+            if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
+
+            List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+
+            List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
+            if (CollectionUtils.isEmpty(electricityBatteries)) {
+                return Triple.of(false, "100225", "电池不存在");
+            }
+
+            //把本柜机加盟商的绑定电池信息拿出来
+            electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
+            if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+                return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+            }
+
+            //获取全部可用电池id
+            List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+
+            //把加盟商绑定的电池过滤出来
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
 
             //获取用户绑定的型号
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
-            if (CollectionUtils.isEmpty(userBatteryTypes)) {
-                log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
-                return Triple.of(false, "100352", "未找到用户电池型号");
-            }
+            if (!CollectionUtils.isEmpty(userBatteryTypes)) {
+                usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                    return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
+                }
 
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType())&& userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(usableBatteryCellNos)){
-                return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
-            }
+                //电量最大的
+                Double maxPower = usableBatteryCellNos.get(0).getPower();
+                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+                if (usableBatteryCellNos.size() == 1) {
+                    return Triple.of(true, null, usableBatteryCellNos.get(0));
+                }
 
-            //电量最大的
-            Double maxPower = usableBatteryCellNos.get(0).getPower();
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-            if (usableBatteryCellNos.size() == 1) {
                 return Triple.of(true, null, usableBatteryCellNos.get(0));
             }
 
-            return Triple.of(true, null, usableBatteryCellNos.get(0));
-        }
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                return Triple.of(false, "", "换电柜暂无满电电池");
+            }
 
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
-            return Triple.of(false, "", "换电柜暂无满电电池");
-        }
+            //如果存在多个电量相同的格挡，取充电器电压最大
+            Double maxPower = usableBatteryCellNos.get(0).getPower();
+            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
+            if (Objects.isNull(usableCabinetBox)) {
+                return Triple.of(false, "", "换电柜暂无满电电池");
+            }
 
-        //如果存在多个电量相同的格挡，取充电器电压最大
-        Double maxPower = usableBatteryCellNos.get(0).getPower();
-        ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
-        if (Objects.isNull(usableCabinetBox)) {
-            return Triple.of(false, "", "换电柜暂无满电电池");
-        }
+            return Triple.of(true, null, usableCabinetBox);
+        } else {
+            List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
+            if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                return Triple.of(false, "100216", "换电柜暂无满电电池");
+            }
 
-        return Triple.of(true, null,usableCabinetBox);
+            List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+
+            List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
+            if (CollectionUtils.isEmpty(electricityBatteries)) {
+                return Triple.of(false, "100225", "电池不存在");
+            }
+
+            //把本柜机加盟商的绑定电池信息拿出来
+            electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
+            if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+                return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+            }
+
+            //获取全部可用电池id
+            List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+
+            //把加盟商绑定的电池过滤出来
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
+
+            //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                if (Objects.nonNull(electricityBattery)) {
+                    //用户当前绑定电池的型号
+                    String userCurrentBatteryType = electricityBattery.getModel();
+
+                    List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
+                        return Triple.of(true, null, userBindBatteryCellNos.get(0));
+                    }
+                }
+
+                //获取用户绑定的型号
+                List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                    log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                    return Triple.of(false, "100352", "未找到用户电池型号");
+                }
+
+                usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                    return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
+                }
+
+                //电量最大的
+                Double maxPower = usableBatteryCellNos.get(0).getPower();
+                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+                if (usableBatteryCellNos.size() == 1) {
+                    return Triple.of(true, null, usableBatteryCellNos.get(0));
+                }
+
+                return Triple.of(true, null, usableBatteryCellNos.get(0));
+            }
+
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                return Triple.of(false, "", "换电柜暂无满电电池");
+            }
+
+            //如果存在多个电量相同的格挡，取充电器电压最大
+            Double maxPower = usableBatteryCellNos.get(0).getPower();
+            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
+            if (Objects.isNull(usableCabinetBox)) {
+                return Triple.of(false, "", "换电柜暂无满电电池");
+            }
+
+            return Triple.of(true, null, usableCabinetBox);
+        }
     }
 
     /**
