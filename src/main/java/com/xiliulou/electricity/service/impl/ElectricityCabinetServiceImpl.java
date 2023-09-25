@@ -2572,7 +2572,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        if (Objects.nonNull(tenantId) && Objects.equals(1044, tenantId)) {
+        if (Objects.nonNull(tenantId) && Objects.nonNull(eleCommonConfig.getSpecialTenantId()) && Objects.equals(eleCommonConfig.getSpecialTenantId(), tenantId)) {
             List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
