@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
@@ -207,7 +208,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 }
 
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-                if (Objects.isNull(batteryMemberCard)) {
+                if (Objects.isNull(batteryMemberCard) || Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode())) {
                     log.warn("BATTERY SERVICE FEE ORDER WARN! memberCard is not exit,uid={},memberCardId={}", item.getUid(), item.getMemberCardId());
                     return;
                 }

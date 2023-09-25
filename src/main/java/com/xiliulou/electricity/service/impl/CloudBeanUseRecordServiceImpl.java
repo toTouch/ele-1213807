@@ -5,14 +5,19 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +47,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
 
     @Autowired
     private BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private EnterpriseChannelUserService enterpriseChannelUserService;
+
+    @Autowired
+    private EnterpriseInfoService enterpriseInfoService;
+
 
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -119,5 +131,49 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         cloudBeanUseRecordVO.setExpend(expend);
 
         return cloudBeanUseRecordVO;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> recycleDepositMembercard(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("RECYCLE CLOUDBEAN ERROR! not found userInfo,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("RECYCLE CLOUDBEAN ERROR! user is unUsable,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("RECYCLE CLOUDBEAN ERROR! user not auth,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.warn("RECYCLE CLOUDBEAN ERROR! not pay deposit,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //获取当前用户所属企业
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+        if(Objects.isNull(enterpriseInfo)){
+            log.warn("RECYCLE CLOUDBEAN ERROR! not found enterpriseInfo,enterpriseUid={}", SecurityUtils.getUid());
+            return Triple.of(false, "", "未缴纳押金");
+        }
+
+        Triple<Boolean, String, Object> checkUserExist = enterpriseChannelUserService.checkUserExist(enterpriseInfo.getId(), uid);
+        if(Boolean.TRUE.equals(!checkUserExist.getLeft())){
+            log.warn("RECYCLE CLOUDBEAN ERROR! not found enterpriseInfo,enterpriseUid={}", SecurityUtils.getUid());
+            return Triple.of(false, "", "用户不合法");
+        }
+
+        //回收押金
+
+
+        //回收套餐
+
+
     }
 }

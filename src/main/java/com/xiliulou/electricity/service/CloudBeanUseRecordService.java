@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -45,4 +46,6 @@ public interface CloudBeanUseRecordService {
     List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query);
 
     CloudBeanUseRecordVO cloudBeanUseStatisticsByUid(CloudBeanUseRecordQuery query);
+
+    Triple<Boolean, String, Object> recycleDepositMembercard(Long uid);
 }

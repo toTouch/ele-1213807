@@ -55,7 +55,7 @@ public class CloudBeanUseRecord {
     private Long franchiseeId;
 
     /**
-     * 充值订单号/代付订单号
+     * 充值订单号/代付订单号/退电订单号
      */
     private String ref;
     /**
