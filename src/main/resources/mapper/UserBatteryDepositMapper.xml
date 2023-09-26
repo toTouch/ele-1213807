@@ -61,10 +61,11 @@
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time, apply_deposit_time, deposit_type )
-        values (#{uid}, #{did}, #{orderId}, #{delFlag},#{batteryDeposit}, #{createTime}, #{updateTime},#{applyDepositTime},#{depositType})
+        insert into t_user_battery_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time, apply_deposit_time, deposit_type,deposit_modify_flag,before_modify_deposit )
+        values (#{uid}, #{did}, #{orderId}, #{delFlag},#{batteryDeposit}, #{createTime}, #{updateTime},#{applyDepositTime},#{depositType},#{depositModifyFlag},#{beforeModifyDeposit})
         on duplicate key
-        update did=#{did}, order_id=#{orderId}, del_flag=#{delFlag},battery_deposit=#{batteryDeposit}, update_time=#{updateTime}, apply_deposit_time=#{applyDepositTime}, deposit_type=#{depositType}
+        update did=#{did}, order_id=#{orderId}, del_flag=#{delFlag},battery_deposit=#{batteryDeposit}, update_time=#{updateTime}, apply_deposit_time=#{applyDepositTime}, deposit_type=#{depositType},
+        deposit_modify_flag=#{depositModifyFlag}, before_modify_deposit=#{beforeModifyDeposit}
     </insert>
 
     <!--通过主键修改数据-->

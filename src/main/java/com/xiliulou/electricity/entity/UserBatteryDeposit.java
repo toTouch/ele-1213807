@@ -70,6 +70,10 @@ public class UserBatteryDeposit {
      * 缴纳押金的时间
      */
     private Long applyDepositTime;
+
+    private Integer depositModifyFlag;
+
+    private BigDecimal beforeModifyDeposit;
     
     public static final Integer DEL_NORMAL = 0;
     
@@ -85,5 +89,6 @@ public class UserBatteryDeposit {
      */
     public static final Integer DEPOSIT_TYPE_FREE = 1;
     
-    
+    public static final Integer DEPOSIT_MODIFY_NO=0;
+    public static final Integer DEPOSIT_MODIFY_YES=1;
 }

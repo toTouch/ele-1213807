@@ -40,6 +40,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
@@ -3573,6 +3574,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query) {
+        //参数不可为空
+        if (Objects.isNull(query) && Objects.isNull(query.getBatteryDeposit()) && BigDecimalUtil.smallerThanZero(query.getBatteryDeposit())) {
+            return Triple.of(false,"ELECTRICITY.0007", "不合法的参数");
+        }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
@@ -3630,12 +3636,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserBatteryDepositAndMembercardQuery query){
+        BigDecimal deposit = query.getBatteryDeposit();
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid()))
                 .uid(userInfo.getUid())
                 .phone(userInfo.getPhone())
                 .name(userInfo.getName())
-                .payAmount(batteryMemberCard.getDeposit())
+                .payAmount(deposit)
                 .status(EleDepositOrder.STATUS_SUCCESS)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -3694,6 +3701,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+        if (!Objects.equals(batteryMemberCard.getDeposit(), deposit)) {
+            userBatteryDeposit.setDepositModifyFlag(UserBatteryDeposit.DEPOSIT_MODIFY_YES);
+            userBatteryDeposit.setBeforeModifyDeposit(batteryMemberCard.getDeposit());
+        }
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
