@@ -488,6 +488,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
+                //获取租车用户邀请人
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
+
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user battery info error for car rental.", e);
@@ -510,7 +513,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
                 item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user insurance info error for car rental.", e);

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
@@ -398,17 +399,28 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @return
      */
     @PostMapping("/admin/battery/excel/v2")
-    @Transactional(rollbackFor = Exception.class)
-    public R uploadV2(@RequestParam("file") MultipartFile file,  @RequestParam("franchiseeId") Long franchiseeId) {
+    public R uploadV2(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId)  {
         try {
-            EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return uploadV2WithTransaction(file, franchiseeId);
+        } catch (CustomBusinessException e) {
+            return R.failMsg(e.getMessage());
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof CustomBusinessException) {
+                CustomBusinessException customException = (CustomBusinessException) cause;
+                return R.failMsg(customException.getMessage());
+            }
+            log.error("IMPORT BATTERY ERROR! ", e);
+            return R.failMsg("导入失败");
         }
-        return R.ok();
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public R uploadV2WithTransaction(MultipartFile file, Long franchiseeId) throws IOException {
+        EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
+                new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
+        return R.ok();
+    }
     /**
      * 电池总览
      *
