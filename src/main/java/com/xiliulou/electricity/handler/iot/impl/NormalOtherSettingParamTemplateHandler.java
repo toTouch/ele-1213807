@@ -203,5 +203,10 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
         private Integer enableBatteryBMSExceptionCheck;
         
         private List<BatteryMultiConfigDTO> batteryMultiConfigList;
+    
+        /**
+         * 充电器保护
+         */
+        private Integer defaultChargeStorageProtect;
     }
 }
