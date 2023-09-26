@@ -1287,8 +1287,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
             } else {
-                String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
-                commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+                ElectricityBattery lastElectricityBattery=  selectLastExchangeOrderBattery(userInfo);
+                commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
             }
         }
 
@@ -1434,8 +1434,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
             } else {
-                String batteryType = userBatteryTypeService.selectOneByUid(userInfo.getUid());
-                commandData.put("multiBatteryModelName", StringUtils.isBlank(batteryType) ? "UNKNOWN" : batteryType);
+                ElectricityBattery lastElectricityBattery=  selectLastExchangeOrderBattery(userInfo);
+                commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
             }
         }
 
@@ -1451,6 +1451,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         return Triple.of(true, null, electricityCabinetOrder.getOrderId());
+    }
+
+    private ElectricityBattery selectLastExchangeOrderBattery(UserInfo userInfo) {
+        ElectricityCabinetOrder lastElectricityCabinetOrder = selectLatestByUid(userInfo.getUid(), userInfo.getTenantId());
+        if(Objects.isNull(lastElectricityCabinetOrder) || StringUtils.isBlank(lastElectricityCabinetOrder.getNewElectricityBatterySn())){
+            return null;
+        }
+
+        return electricityBatteryService.queryBySnFromDb(lastElectricityCabinetOrder.getNewElectricityBatterySn());
     }
 
     private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {

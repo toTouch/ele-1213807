@@ -267,7 +267,7 @@
     </select>
 
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
-        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
+        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} and tenant_id=#{tenantId} order by id desc limit 1
     </select>
 
     <!--获取柜机今日订单-->
