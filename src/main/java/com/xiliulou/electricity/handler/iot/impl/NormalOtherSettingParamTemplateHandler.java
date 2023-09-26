@@ -207,6 +207,6 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
         /**
          * 充电器保护
          */
-        private Integer chargerProtection;
+        private Integer defaultChargeStorageProtect;
     }
 }
