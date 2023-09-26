@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * (UserBatteryType)实体类
  *
@@ -26,6 +28,7 @@ public class UserBatteryType {
     /**
      * 用户id
      */
+    @NotNull(message = "用户id不可以为空")
     private Long uid;
     /**
      * 电池类型

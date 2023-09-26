@@ -1057,14 +1057,11 @@
             tui.phone,
             ubmc.card_pay_count AS cardPayCount,
             tui.id AS user_info_id,
-            teb.sn,
             tui.battery_rent_status,
             tui.battery_deposit_status,
             ubmc.member_card_id,
             ubmc.member_card_status,
             ubmc.member_card_expire_time,
-            tiui.is_use,
-            tiui.insurance_expire_time,
             tui.uid,
             tui.create_time AS userCertificationTime,
             tui.franchisee_id,
@@ -1075,10 +1072,6 @@
             t_user_info tui
             LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
             AND ubmc.del_flag = 0
-            LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
-            AND teb.del_flag = 0
-            LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
-            AND tiui.del_flag = 0 AND tiui.type = 0
         WHERE
             tui.del_flag = 0
             AND tui.auth_status = 2
@@ -1117,18 +1110,18 @@
                 and tui.phone =#{query.phone}
             </if>
             <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
-                order by tui.create_time desc
+                order by tui.id desc
             </if>
 
             <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
-                order by tui.create_time
+                order by tui.id
             </if>
             <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
                 order by  CASE
                 WHEN ubmc.member_card_expire_time IS NULL THEN 2
                 WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
                 WHEN ubmc.member_card_expire_time > 0 THEN 0
-                END ,ubmc.member_card_expire_time desc
+                END ,ubmc.member_card_expire_time ,tui.id desc
             </if>
 
             <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
@@ -1136,7 +1129,7 @@
                 WHEN ubmc.member_card_expire_time IS NULL THEN 2
                 WHEN ubmc.member_card_expire_time &lt;= 0 THEN 1
                 WHEN ubmc.member_card_expire_time > 0 THEN 0
-                END ,ubmc.member_card_expire_time
+                END ,ubmc.member_card_expire_time,tui.id
             </if>
 
             limit  #{query.offset}, #{query.size}
@@ -1148,10 +1141,6 @@
         t_user_info tui
         LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
         AND ubmc.del_flag = 0
-        LEFT JOIN t_electricity_battery teb ON tui.uid = teb.uid
-        AND teb.del_flag = 0
-        LEFT JOIN t_insurance_user_info tiui ON tui.uid = tiui.uid
-        AND tiui.del_flag = 0 AND tiui.type = 0
         WHERE
         tui.del_flag = 0
         AND tui.auth_status = 2
