@@ -2667,7 +2667,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user battery other info error!", e);
             return null;
         });
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo);
+
+        CompletableFuture<Void> queryUserOtherInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                item.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+
+                InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(item.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+                if (Objects.nonNull(insuranceUserInfoVo)) {
+                    item.setIsUse(insuranceUserInfoVo.getIsUse());
+                    item.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user other info error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserOtherInfo);
+
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
