@@ -1454,12 +1454,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     private ElectricityBattery selectLastExchangeOrderBattery(UserInfo userInfo) {
-        ElectricityCabinetOrder lastElectricityCabinetOrder = selectLatestByUid(userInfo.getUid(), userInfo.getTenantId());
+        ElectricityCabinetOrder lastElectricityCabinetOrder = selectLatestByUidV2(userInfo.getUid());
         if(Objects.isNull(lastElectricityCabinetOrder) || StringUtils.isBlank(lastElectricityCabinetOrder.getNewElectricityBatterySn())){
             return null;
         }
 
         return electricityBatteryService.queryBySnFromDb(lastElectricityCabinetOrder.getNewElectricityBatterySn());
+    }
+
+    private ElectricityCabinetOrder selectLatestByUidV2(Long uid) {
+        return electricityCabinetOrderMapper.selectLatestByUidV2(uid);
     }
 
     private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
