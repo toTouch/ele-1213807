@@ -142,4 +142,9 @@ public class ElectricityCabinetOtherSetting {
      * 高温告警阈值
      */
     private Double temperatureWarningValue;
+    
+    /**
+     * 充电器保护
+     */
+    private Integer chargerProtection;
 }
