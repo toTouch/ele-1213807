@@ -271,7 +271,7 @@
     </select>
 
     <select id="selectLatestByUidV2" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
-        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} order by id desc limit 1,1
+        select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} status='COMPLETE_BATTERY_TAKE_SUCCESS' order by id desc limit 1
     </select>
 
     <!--获取柜机今日订单-->
