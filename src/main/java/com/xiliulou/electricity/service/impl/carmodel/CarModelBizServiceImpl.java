@@ -187,7 +187,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             }
             confineExit = rentalPackage.getConfine();
             freeDepositExit = rentalPackage.getFreeDeposit();
-            depositExit = memberTermEntity.getDeposit();
+            depositExit = memberTermEntity.getRentalPackageDeposit();
             rentalPackageTypeExit = memberTermEntity.getRentalPackageType();
             franchiseeIdExit = memberTermEntity.getFranchiseeId();
             storeIdExit = memberTermEntity.getStoreId();
