@@ -488,6 +488,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
+                //获取租车用户邀请人
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
+
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user battery info error for car rental.", e);
@@ -510,7 +513,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 item.setInsuranceStatus(insuranceUserInfoVo.getIsUse());
                 item.setInsuranceExpiredTime(insuranceUserInfoVo.getInsuranceExpireTime());
-                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), userInfoQuery.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("Query user insurance info error for car rental.", e);
@@ -2670,7 +2672,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user battery other info error!", e);
             return null;
         });
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo);
+
+        CompletableFuture<Void> queryUserOtherInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                item.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+
+                InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(item.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+                if (Objects.nonNull(insuranceUserInfoVo)) {
+                    item.setIsUse(insuranceUserInfoVo.getIsUse());
+                    item.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user other info error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo, queryUserOtherInfo);
+
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

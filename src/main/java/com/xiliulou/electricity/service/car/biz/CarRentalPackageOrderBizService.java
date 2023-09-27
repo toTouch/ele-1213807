@@ -185,4 +185,13 @@ public interface CarRentalPackageOrderBizService {
      */
     Pair<Boolean, Object> handBuyRentalPackageOrderFailed(String orderNo, Integer tenantId, Long uid);
 
+    /**
+     *  根据资产类型,租户，uid，查询用户是否存在对应的资产
+     * @param uid
+     * @param tenantId
+     * @param assetType
+     * @return
+     */
+    boolean checkUserHasAssets(Long uid,Integer tenantId,Integer assetType);
+
 }

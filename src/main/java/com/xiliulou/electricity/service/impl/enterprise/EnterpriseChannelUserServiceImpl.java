@@ -17,6 +17,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.Objects;
  */
 
 @Slf4j
+@Service("enterpriseChannelUserService")
 public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserService {
     
     @Resource

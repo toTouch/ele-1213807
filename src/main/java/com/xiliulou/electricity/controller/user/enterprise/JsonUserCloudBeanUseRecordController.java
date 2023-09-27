@@ -8,9 +8,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author zzlong
@@ -70,6 +68,14 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
                 .endTime(endTime).build();
 
         return R.ok(cloudBeanUseRecordService.cloudBeanUseStatisticsByUid(query));
+    }
+
+    /**
+     * 回收用户套餐余量及押金
+     */
+    @PostMapping("/user/cloudBean/recycle/{uid}")
+    public R recycleDepositMembercard(@PathVariable("uid") Long uid){
+        return returnTripleResult(cloudBeanUseRecordService.recycleDepositMembercard(uid));
     }
 
 
