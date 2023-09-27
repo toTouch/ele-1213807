@@ -111,4 +111,12 @@ public class EnterpriseMemberCardQuery {
 
     private Long uid;
 
+    private String batteryV;
+
+    private List<Integer> rentTypes;
+
+    private List<Long> packageIds;
+
+    private Long enterpriseId;
+
 }

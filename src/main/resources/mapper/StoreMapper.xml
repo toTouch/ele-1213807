@@ -67,7 +67,7 @@
         <if test="query.franchiseeId != null">
             and franchisee_id = #{query.franchiseeId}
         </if>
-        <if test="query.franchiseeIds != null">
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size > 0">
             and franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
@@ -82,7 +82,7 @@
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
         </if>
-        <if test="query.storeIdList!=null and query.storeIdList!=''">
+        <if test="query.storeIdList !=null and query.storeIdList.size > 0">
             and id in
             <foreach collection="query.storeIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
@@ -284,6 +284,18 @@
         </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null">
+            and id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         order by id
         limit #{offset}, #{size}

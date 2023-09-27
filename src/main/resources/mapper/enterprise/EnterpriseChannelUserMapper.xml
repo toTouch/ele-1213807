@@ -184,5 +184,19 @@
         </where>
     </select>
 
+    <!--根据EnterpriseID 和 UID查询已关联至企业的用户-->
+    <select id="selectChannelUserByEnterpriseIdAndUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
 
 </mapper>

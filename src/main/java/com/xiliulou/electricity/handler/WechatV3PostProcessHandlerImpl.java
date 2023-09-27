@@ -84,6 +84,8 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             return;
         }
 
+        log.info("WECHAT INFO! orderNo={}", orderNo);
+
         if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
             electricityTradeOrderService.notifyDepositOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)) {
@@ -105,6 +107,9 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             unionTradeOrderService.notifyServiceFee(callBackResource);
         }else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)){
             electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
+        }else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_PURCHASE_ENTERPRISE_PACKAGE)){
+            //企业渠道购买换电套餐回调
+            electricityTradeOrderService.notifyPurchaseEnterprisePackageOrder(callBackResource);
         } else {
             electricityTradeOrderService.notifyMemberOrder(callBackResource);
         }

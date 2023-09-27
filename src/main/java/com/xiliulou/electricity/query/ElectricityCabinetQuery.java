@@ -72,4 +72,14 @@ public class ElectricityCabinetQuery {
 
     private Double fullChargeRate;
     private Double lowChargeRate;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Long> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Long> storeIdList;
 }

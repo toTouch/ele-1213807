@@ -309,6 +309,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
 
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
+
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL)
                         || Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
 

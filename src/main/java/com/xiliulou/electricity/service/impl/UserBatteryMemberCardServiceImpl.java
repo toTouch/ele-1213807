@@ -327,7 +327,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      * 换电套餐过期  将订单状态更新为已失效
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void batteryMembercardExpireUpdateStatusTask() {
         int offset = 0;
         int size = 200;

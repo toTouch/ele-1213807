@@ -25,8 +25,14 @@ public class EnterpriseChannelUser {
      * 主键ID
      */
     private Long id;
+
     /**
-     * 企业用户id
+     * 企业id
+     */
+    private Long enterpriseId;
+
+    /**
+     * 企业添加用户的uid
      */
     private Long uid;
     /**
@@ -34,10 +40,7 @@ public class EnterpriseChannelUser {
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
-    /**
-     * 企业id
-     */
-    private Long enterpriseId;
+
     /**
      * 所属加盟商id
      */
@@ -51,10 +54,7 @@ public class EnterpriseChannelUser {
      * @see RenewalStatusEnum
      */
     private Integer renewalStatus;
-    /**
-     * 邀请人id
-     */
-    private Long inviterId;
+
     /**
      * 创建时间
      */

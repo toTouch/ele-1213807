@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -145,6 +146,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
 
         return Triple.of(true, "", enterpriseChannelUser);
+    }
+
+    @Override
+    public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid) {
+
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByEnterpriseIdAndUid(enterpriseId, uid);
+        EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
+        BeanUtils.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        return enterpriseChannelUserVO;
     }
 
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query){
