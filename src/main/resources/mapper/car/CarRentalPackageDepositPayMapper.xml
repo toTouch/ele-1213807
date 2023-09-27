@@ -101,7 +101,7 @@
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> `source_order_no`, </if>
-            <if test=" rentalPackageDeposit != null and rentalPackageDeposit != '' "> `rental_package_deposit`, </if>
+            <if test=" rentalPackageDeposit != null "> `rental_package_deposit`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -128,7 +128,7 @@
             <if test=" payState != null "> #{payState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> #{sourceOrderNo}, </if>
-            <if test=" rentalPackageDeposit != null and rentalPackageDeposit != '' "> #{rentalPackageDeposit}, </if>
+            <if test=" rentalPackageDeposit != null "> #{rentalPackageDeposit}, </if>
         </trim>
     </sql>
 
