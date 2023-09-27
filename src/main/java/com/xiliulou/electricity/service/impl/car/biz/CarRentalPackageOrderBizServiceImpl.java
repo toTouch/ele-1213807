@@ -198,6 +198,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Autowired
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
+
+    public static final Integer ELE = 0;
+    public static final Integer CAR = 1;
+    public static final Integer CAR_AND_ELE = 2;
+
     /**
      * 根据用户UID查询总金额<br />
      * 订单支付成功总金额 - 退租订单成功总金额
@@ -374,15 +380,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (carRentalPackageOrderService.isExitUnUseAndRefund(tenantId, carRentalPackageRefundReq.getUid(), System.currentTimeMillis())) {
                 throw new BizException("300017", "存在未使用的订单");
             }
-            // 查询设备信息，存在设备，不允许退租
-            ElectricityCar electricityCar = carService.selectByUid(tenantId, carRentalPackageRefundReq.getUid());
-            if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
-                throw new BizException("300018", "存在未归还的车辆");
-            }
-            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
-                ElectricityBattery battery = batteryService.queryByUid(carRentalPackageRefundReq.getUid());
-                if (ObjectUtils.isNotEmpty(battery)) {
-                    throw new BizException("300019", "存在未归还的电池");
+
+            CarRentalPackageOrderPo unUsePackageOrder = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(tenantId, carRentalPackageRefundReq.getUid());
+            if (ObjectUtils.isEmpty(unUsePackageOrder)) {
+                // 查询设备信息，存在设备，不允许退租
+                ElectricityCar electricityCar = carService.selectByUid(tenantId, carRentalPackageRefundReq.getUid());
+                if (ObjectUtils.isNotEmpty(electricityCar) && ObjectUtils.isNotEmpty(electricityCar.getSn()) ) {
+                    throw new BizException("300018", "存在未归还的车辆");
+                }
+                if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
+                    ElectricityBattery battery = batteryService.queryByUid(carRentalPackageRefundReq.getUid());
+                    if (ObjectUtils.isNotEmpty(battery)) {
+                        throw new BizException("300019", "存在未归还的电池");
+                    }
                 }
             }
 
@@ -1587,6 +1597,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300015", "订单状态异常");
         }
 
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())
+                && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets())
+                && checkUserHasAssets(uid, tenantId, packageOrderEntity.getRentalPackageType())) {
+            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
+        }
+
         Long useBeginTime = packageOrderEntity.getUseBeginTime();
         // 查询是否存在冻结订单
         CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
@@ -1729,6 +1746,30 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return slippageEntity;
     }
 
+    /**
+     * 校验当前用户是否有对应类型的资产
+     * @param uid
+     * @param tenantId
+     * @param assetType
+     * @return
+     */
+    @Override
+    public boolean checkUserHasAssets(Long uid,Integer tenantId,Integer assetType){
+        if (CarRentalPackageOrderBizServiceImpl.CAR.equals(assetType)) {
+            ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
+            if (ObjectUtils.isNotEmpty(electricityCar)) {
+                return true;
+            }
+        } else if (CarRentalPackageOrderBizServiceImpl.ELE.equals(assetType)) {
+            ElectricityBattery battery = batteryService.queryByUid(uid);
+            if (Objects.nonNull(battery)) {
+                return true;
+            }
+        } else if (CarRentalPackageOrderBizServiceImpl.CAR_AND_ELE.equals(assetType)) {
+            return checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.CAR) || checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.ELE);
+        }
+        return false;
+    }
 
     /**
      * 根据用户ID及订单编码，退租购买的订单
