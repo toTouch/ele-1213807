@@ -825,12 +825,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = buyPackageEntity.getRent();
             log.info("BuyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
-            // 实际支付总金额（租金 + 押金 + 保险）
-            BigDecimal paymentAmount = rentPaymentAmount.add(rentalPackageDeposit);
-            log.info("BuyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 4）生成租车套餐订单，准备 insert
-            CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType);
+            CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, payDeposit);
             carRentalPackageOrderService.insert(carRentalPackageOrder);
 
             // 判定 depositPayInsertEntity 是否需要新增
@@ -2642,7 +2639,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             log.info("buyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 4）生成租车套餐订单，准备 insert
-            CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType);
+            CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, null);
             carRentalPackageOrderService.insert(carRentalPackageOrder);
 
             // 判定 depositPayInsertEntity 是否需要新增
@@ -3257,9 +3254,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param depositPayOrderNo 押金缴纳订单编号
+     * @param deposit 实缴押金金额
      * @return
      */
-    private CarRentalPackageOrderPo buildCarRentalPackageOrder(CarRentalPackagePo packagePO, BigDecimal rentPayment, Integer tenantId, Long uid, String depositPayOrderNo, Integer payType) {
+    private CarRentalPackageOrderPo buildCarRentalPackageOrder(CarRentalPackagePo packagePO, BigDecimal rentPayment, Integer tenantId, Long uid, String depositPayOrderNo, Integer payType, BigDecimal deposit) {
 
         CarRentalPackageOrderPo carRentalPackageOrderEntity = new CarRentalPackageOrderPo();
         carRentalPackageOrderEntity.setUid(uid);
@@ -3279,7 +3277,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(packagePO.getRentRebateTerm())) {
             carRentalPackageOrderEntity.setRentRebateEndTime(TimeConstant.DAY_MILLISECOND * packagePO.getRentRebateTerm() + System.currentTimeMillis());
         }
-        carRentalPackageOrderEntity.setDeposit(packagePO.getDeposit());
+        carRentalPackageOrderEntity.setDeposit(ObjectUtils.isEmpty(deposit) ? packagePO.getDeposit() : deposit);
         carRentalPackageOrderEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
         carRentalPackageOrderEntity.setPayType(payType);
@@ -3296,6 +3294,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setCreateTime(System.currentTimeMillis());
         carRentalPackageOrderEntity.setUpdateTime(System.currentTimeMillis());
         carRentalPackageOrderEntity.setDelFlag(DelFlagEnum.OK.getCode());
+        carRentalPackageOrderEntity.setRentalPackageDeposit(packagePO.getDeposit());
 
         return carRentalPackageOrderEntity;
     }
