@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service;
+package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
@@ -48,4 +48,6 @@ public interface CloudBeanUseRecordService {
     CloudBeanUseRecordVO cloudBeanUseStatisticsByUid(CloudBeanUseRecordQuery query);
 
     Triple<Boolean, String, Object> recycleDepositMembercard(Long uid);
+    
+    void recycleCloudBeanTask();
 }

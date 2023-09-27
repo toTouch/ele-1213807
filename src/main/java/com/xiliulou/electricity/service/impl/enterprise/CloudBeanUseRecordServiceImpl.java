@@ -3,14 +3,19 @@ package com.xiliulou.electricity.service.impl.enterprise;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -53,6 +58,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
 
     @Autowired
     private EnterpriseInfoService enterpriseInfoService;
+    
+    @Autowired
+    private UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    private EleDepositOrderService eleDepositOrderService;
 
 
     @Override
@@ -187,5 +198,45 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
 
         this.cloudBeanUseRecordMapper.insert(cloudBeanUseRecord);
         return Triple.of(true,null,null);
+    }
+    
+    @Override
+    public void recycleCloudBeanTask() {
+        int offset = 0;
+        int size = 200;
+    
+        long startTime=System.currentTimeMillis();
+        
+        while (true) {
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectExpireList(offset, size, startTime);
+            if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
+                return;
+            }
+    
+            userBatteryMemberCardList.forEach(item->{
+                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                if (Objects.isNull(userInfo)) {
+                    return;
+                }
+    
+                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                    return;
+                }
+    
+                EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
+                if(Objects.isNull(enterpriseChannelUser)){
+                    return;
+                }
+                
+
+                
+                
+                
+    
+    
+            });
+        
+            offset += size;
+        }
     }
 }

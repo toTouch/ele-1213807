@@ -10,7 +10,14 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.MemberCardFailureRecordService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
@@ -269,6 +276,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public List<UserBatteryMemberCard> selectList(int offset, int size) {
         return userBatteryMemberCardMapper.selectByList(offset, size);
+    }
+    
+    @Override
+    public List<UserBatteryMemberCard> selectExpireList(int offset, int size, long memberCardExpireTime) {
+        return userBatteryMemberCardMapper.selectExpireList(offset, size, memberCardExpireTime);
     }
 
     @Override

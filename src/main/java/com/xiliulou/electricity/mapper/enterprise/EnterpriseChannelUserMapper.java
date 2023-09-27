@@ -93,4 +93,6 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
 
 
     EnterpriseChannelUser selectChannelUserByEnterpriseIdAndUid(@Param("enterpriseId")Long enterpriseId, @Param("uid") Long uid);
+    
+    EnterpriseChannelUser selectByUid(Long uid);
 }

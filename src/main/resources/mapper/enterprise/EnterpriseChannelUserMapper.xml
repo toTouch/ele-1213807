@@ -198,5 +198,9 @@
 
         </where>
     </select>
-
+    
+    <select id="selectByUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        where uid = #{uid} order by id limit 1
+    </select>
 </mapper>

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
@@ -43,4 +44,6 @@ public interface EnterpriseChannelUserService {
     public Triple<Boolean, String, Object> checkUserExist(Long id, Long uid);
 
     public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid);
+    
+    EnterpriseChannelUser selectByUid(Long uid);
 }

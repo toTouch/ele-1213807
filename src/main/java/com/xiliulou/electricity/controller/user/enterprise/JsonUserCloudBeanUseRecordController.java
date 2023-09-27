@@ -3,7 +3,7 @@ package com.xiliulou.electricity.controller.user.enterprise;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
-import com.xiliulou.electricity.service.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;

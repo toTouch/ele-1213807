@@ -156,7 +156,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         BeanUtils.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
         return enterpriseChannelUserVO;
     }
-
+    
+    @Override
+    public EnterpriseChannelUser selectByUid(Long uid) {
+        return enterpriseChannelUserMapper.selectByUid(uid);
+    }
+    
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query){
 
         //检查当前用户是否可用
