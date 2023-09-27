@@ -54,7 +54,12 @@ public class EnterpriseChannelUser {
      * @see RenewalStatusEnum
      */
     private Integer renewalStatus;
-
+    
+    /**
+     * 邀请人UID
+     */
+    private Long inviterId;
+    
     /**
      * 创建时间
      */

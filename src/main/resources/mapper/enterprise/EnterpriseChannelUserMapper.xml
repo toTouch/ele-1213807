@@ -10,6 +10,7 @@
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
+        <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
@@ -82,6 +83,7 @@
             franchisee_id,
             tenant_id,
             renewal_status,
+            inviter_id,
             create_time,
             update_time,
             remark
@@ -93,6 +95,7 @@
             #{franchiseeId},
             #{tenantId},
             #{renewalStatus},
+            #{inviterId},
             #{createTime},
             #{updateTime},
             #{remark}
@@ -120,6 +123,10 @@
             </if>
             <if test="renewalStatus != null">
                 renewal_status = #{renewalStatus},
+            </if>
+    
+            <if test="inviterId != null">
+                inviter_id = #{inviterId},
             </if>
 
             <if test="createTime != null">

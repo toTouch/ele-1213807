@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.query.enterprise;
 
+import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author BaoYu
@@ -17,15 +20,27 @@ import lombok.NoArgsConstructor;
 @Builder
 public class EnterprisePackageOrderQuery {
 
+    @NotNull(message = "套餐不能为空!", groups = {CreateGroup.class})
     private Long packageId;
 
+    @NotNull(message = "企业信息不能为空!", groups = {CreateGroup.class})
     private Long enterpriseId;
 
+    @NotNull(message = "购买用户不能为空!", groups = {CreateGroup.class})
     private Long uid;
 
     private Integer tenantId;
 
     //优惠券
     private Integer userCouponId;
+
+    private String productKey;
+
+    private String deviceName;
+
+    private Long beginTime;
+
+    private Long endTime;
+
 
 }

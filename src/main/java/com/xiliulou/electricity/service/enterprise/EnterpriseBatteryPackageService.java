@@ -38,6 +38,19 @@ public interface EnterpriseBatteryPackageService {
      */
     public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
 
+    /**
+     * 查询骑手当前套餐详情信息
+     * @param query
+     * @return
+     */
+    public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query);
+
+    /**
+     * 查询骑手消费详情信息
+     * @return
+     */
+    public Triple<Boolean, String, Object> queryCostDetails(EnterprisePackageOrderQuery query);
+
 
 
 }
