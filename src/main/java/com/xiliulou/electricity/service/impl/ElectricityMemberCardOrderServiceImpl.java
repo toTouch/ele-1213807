@@ -3575,7 +3575,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query) {
         //参数不可为空
-        if (Objects.isNull(query) && Objects.isNull(query.getBatteryDeposit()) && BigDecimalUtil.smallerThanZero(query.getBatteryDeposit())) {
+        if (Objects.isNull(query) || Objects.isNull(query.getBatteryDeposit()) || BigDecimalUtil.smallerThanZero(query.getBatteryDeposit())) {
             return Triple.of(false,"ELECTRICITY.0007", "不合法的参数");
         }
         
