@@ -9,17 +9,19 @@ import lombok.Data;
  */
 @Data
 public class ElePowerExcelVo {
+    
     @ExcelProperty("电柜名称")
     private String cabinetName;
-
+    
     @ExcelProperty("上报时间")
     private String reportTime;
-
+    
     @ExcelProperty("总耗电量")
     private Double sumPower;
-
+    
     @ExcelProperty("每小时耗电量")
     private Double hourPower;
+    
     /**
      * 每小时电费
      */

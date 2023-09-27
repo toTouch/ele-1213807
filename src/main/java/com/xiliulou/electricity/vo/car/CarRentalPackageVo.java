@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.vo.car;
 
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -35,6 +39,7 @@ public class CarRentalPackageVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer type;
@@ -50,6 +55,7 @@ public class CarRentalPackageVo implements Serializable {
      *     1-天
      *     0-分钟
      * </pre>
+     *
      * @see RentalUnitEnum
      */
     private Integer tenancyUnit;
@@ -81,6 +87,7 @@ public class CarRentalPackageVo implements Serializable {
      *     1-新租套餐
      *     2-续租套餐
      * </pre>
+     *
      * @see ApplicableTypeEnum
      */
     private Integer applicableType;
@@ -91,6 +98,7 @@ public class CarRentalPackageVo implements Serializable {
      *     0-是
      *     1-否
      * </pre>
+     *
      * @see YesNoEnum
      */
     private Integer rentRebate;
@@ -106,6 +114,7 @@ public class CarRentalPackageVo implements Serializable {
      *     0-是
      *     1-否
      * </pre>
+     *
      * @see YesNoEnum
      */
     private Integer freeDeposit;
@@ -126,6 +135,7 @@ public class CarRentalPackageVo implements Serializable {
      *     0-不限制
      *     1-次数
      * </pre>
+     *
      * @see RenalPackageConfineEnum
      */
     private Integer confine;
@@ -141,6 +151,7 @@ public class CarRentalPackageVo implements Serializable {
      *     0-是
      *     1-否
      * </pre>
+     *
      * @see YesNoEnum
      */
     private Integer giveCoupon;
@@ -156,6 +167,7 @@ public class CarRentalPackageVo implements Serializable {
      *     0-上架
      *     1-下架
      * </pre>
+     *
      * @see UpDownEnum
      */
     private Integer status;

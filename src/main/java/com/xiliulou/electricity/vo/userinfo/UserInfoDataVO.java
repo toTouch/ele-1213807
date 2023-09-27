@@ -12,6 +12,7 @@ import java.util.List;
  */
 @Data
 public class UserInfoDataVO {
+
     /**
      * 用户ID
      */
@@ -62,12 +63,12 @@ public class UserInfoDataVO {
         return userInfoDataVO;
     }
 
-    public static List<UserInfoDataVO> entityListToVoList(List<UserInfoDataEntity> userInfoDataEntityList){
-        if(CollectionUtils.isEmpty(userInfoDataEntityList)){
+    public static List<UserInfoDataVO> entityListToVoList(List<UserInfoDataEntity> userInfoDataEntityList) {
+        if (CollectionUtils.isEmpty(userInfoDataEntityList)) {
             return Lists.newArrayList();
         }
         List<UserInfoDataVO> userInfoDataVOList = Lists.newArrayList();
-        for(UserInfoDataEntity userInfoDataEntity : userInfoDataEntityList){
+        for (UserInfoDataEntity userInfoDataEntity : userInfoDataEntityList) {
             userInfoDataVOList.add(userInfoDataEntityToUserInfoDataVO(userInfoDataEntity));
         }
         return userInfoDataVOList;

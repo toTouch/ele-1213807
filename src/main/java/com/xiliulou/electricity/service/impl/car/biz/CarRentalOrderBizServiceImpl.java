@@ -395,14 +395,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("bindingCarByQR failed, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
-            throw new BizException("300037", "用户暂无可用套餐，请先购买套餐");
+            throw new BizException("300064", "用户暂无可用套餐，请先购买套餐");
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
             log.error("bindingCarByQR failed, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
-            throw new BizException("300037", "用户暂无可用套餐，请先购买套餐");
+            throw new BizException("300064", "用户暂无可用套餐，请先购买套餐");
         }
 
         Integer memberTermEntityStatus = memberTermEntity.getStatus();
@@ -477,7 +477,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
                 rentalPackageOrderNo = packageOrderEntityUnUse.getOrderNo();
             } else {
                 log.error("bindingCarByQR, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
-                throw new BizException("300037", "用户暂无可用套餐，请先购买套餐");
+                throw new BizException("300064", "用户暂无可用套餐，请先购买套餐");
             }
         }
 
@@ -671,14 +671,14 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             log.error("bindingCar failed, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
-            throw new BizException("300037", "用户暂无可用套餐，请先购买套餐");
+            throw new BizException("300064", "用户暂无可用套餐，请先购买套餐");
         }
 
         Long rentalPackageId = memberTermEntity.getRentalPackageId();
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         if (ObjectUtils.isEmpty(rentalPackageId)) {
             log.error("bindingCar failed, t_car_rental_package_member_term not have rentalPackageId. uid is {}", uid);
-            throw new BizException("300037", "用户暂无可用套餐，请先购买套餐");
+            throw new BizException("300064", "用户暂无可用套餐，请先购买套餐");
         }
 
         Integer memberTermEntityStatus = memberTermEntity.getStatus();

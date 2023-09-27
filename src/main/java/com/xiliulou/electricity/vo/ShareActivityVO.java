@@ -2,7 +2,6 @@ package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
-import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import lombok.Data;
@@ -17,110 +16,121 @@ import java.util.List;
  */
 @Data
 public class ShareActivityVO {
-
+    
+    List<ShareActivityRuleVO> shareActivityRuleQueryList;
+    
     private Integer id;
+    
     /**
-    * 活动名称
-    */
+     * 活动名称
+     */
     private String name;
+    
     /**
-    * 活动状态，分为 1--上架，2--下架
-    */
+     * 活动状态，分为 1--上架，2--下架
+     */
     private Integer status;
+    
     /**
-    * 页面横幅文件名(banner)
-    */
+     * 页面横幅文件名(banner)
+     */
     private String pageBannerImageName;
+    
     /**
-    * 活动说明
-    */
+     * 活动说明
+     */
     private String description;
+    
     /**
      * 创建人uid
      */
     private Long uid;
+    
     /**
      * 创建人用户名
      */
     private String userName;
+    
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Integer delFlg;
+    
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
+    
     /**
-    * 修改时间
-    */
+     * 修改时间
+     */
     private Long updateTime;
+    
     /**
      * 活动类型，分为 1--自营，2--代理
      */
     private Integer type;
+    
     /**
      * 领取方式 0--阶梯，1--循环
      */
     private Integer receiveType;
+    
     /**
      * 小时
      */
     private Integer hours;
-
+    
     //优惠券列表
     private List<CouponVO> couponVOList;
-
+    
     /**
      * 活动图片url
      */
     private List<ElectricityCabinetFile> electricityCabinetFiles;
-
+    
     //邀请人数
     private Integer count;
-
+    
     //领劵次数
     private Integer couponCount;
-
+    
     /**
      * 优惠类型，1--减免券，2--打折券，3-天数
      */
     private Integer discountType;
-
+    
     /**
      * 可用邀请人数
      */
     private Integer availableCount;
-
-
-    List<ShareActivityRuleVO> shareActivityRuleQueryList;
-
+    
     /**
      * 领券套餐
      */
     private List<BatteryMemberCard> memberCards;
-
+    
     /**
      * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     *
      * @see ActivityEnum
      */
     private Integer invitationCriteria;
-
+    
     /**
      * 邀请活动关联的换电套餐列表
      */
     private List<BatteryMemberCardVO> batteryPackages;
-
+    
     /**
      * 邀请活动关联的租车套餐列表
      */
     private List<BatteryMemberCardVO> carRentalPackages;
-
+    
     /**
      * 邀请活动关联的车电一体套餐列表
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
-
-
-
+    
+    
 }

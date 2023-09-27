@@ -18,6 +18,7 @@ public class ActivityPackageVO {
 
     /**
      * 套餐类型
+     *
      * @see PackageTypeEnum
      */
     private Integer packageType;

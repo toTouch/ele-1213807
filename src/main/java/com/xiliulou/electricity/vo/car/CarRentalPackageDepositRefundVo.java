@@ -34,6 +34,7 @@ public class CarRentalPackageDepositRefundVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
@@ -55,6 +56,7 @@ public class CarRentalPackageDepositRefundVo implements Serializable {
      *     2-线下
      *     3-免押
      * </pre>
+     *
      * @see PayTypeEnum
      */
     private Integer payType;
@@ -69,6 +71,7 @@ public class CarRentalPackageDepositRefundVo implements Serializable {
      *     5-退款成功
      *     6-退款失败
      * </pre>
+     *
      * @see RefundStateEnum
      */
     private Integer refundState;

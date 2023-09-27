@@ -12,6 +12,7 @@ import lombok.Data;
 public class DepositProtocolVO {
 
     private Integer id;
+
     /**
      * 内容
      */

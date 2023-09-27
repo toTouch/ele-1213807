@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- *
  * @author makejava
  * @since 2022-07-07 14:17:59
  */
@@ -18,6 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class UserBatteryInfoVO {
+
+    /**
+     * 保险名称
+     */
+    List<String> insuranceNames;
 
     /**
      * 手机号
@@ -41,6 +45,7 @@ public class UserBatteryInfoVO {
      * 创建时间
      */
     private Long createTime;
+
     /**
      * 更新时间
      */
@@ -50,31 +55,36 @@ public class UserBatteryInfoVO {
     private Integer tenantId;
 
     private Long userInfoId;
+
     /**
      * 加盟商id
      */
     private Long franchiseeId;
 
     private String franchiseeName;
+
     /**
      * 换电套餐id
      */
     private Long memberCardId;
+
     /**
      * 套餐名称
      */
     private String memberCardName;
+    
     /**
      * 类型(0:月卡,1:季卡,2:年卡)
      */
     private Integer cardType;
-    
-    
+
     private Integer memberCardStatus;
+
     /**
      * 月卡过期时间
      */
     private Long memberCardExpireTime;
+
     /**
      * 月卡剩余次数
      */
@@ -89,10 +99,12 @@ public class UserBatteryInfoVO {
      * 当前电池编号
      */
     private String nowElectricityBatterySn;
+
     /**
      * 租电池押金
      */
     private BigDecimal batteryDeposit;
+
     /**
      * 电池租赁状态 0--未租电池，1--已租电池
      */
@@ -147,7 +159,6 @@ public class UserBatteryInfoVO {
      */
     private Integer usableStatus;
 
-
     /**
      * 月卡停启用状态 0--启用 1--停用
      */
@@ -163,6 +174,7 @@ public class UserBatteryInfoVO {
     private String orderId;
 
     private Long storeId;
+
     /**
      * 电池业务状态
      */
@@ -182,7 +194,7 @@ public class UserBatteryInfoVO {
      * 保险购买时间
      */
     private Long payInsuranceTime;
-
+    
     /**
      * 租车套餐过期时间
      */
@@ -192,14 +204,9 @@ public class UserBatteryInfoVO {
      * 购买套餐次数
      */
     private Integer payCount;
-    
+
     /**
      * 邀请人
      */
     private String inviterUserName;
-
-    /**
-     * 保险名称
-     */
-    List<String> insuranceNames;
 }

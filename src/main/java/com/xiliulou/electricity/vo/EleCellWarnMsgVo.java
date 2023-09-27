@@ -10,23 +10,23 @@ import lombok.Data;
 @Data
 public class EleCellWarnMsgVo {
 
-	private String sessionId;
+    private String sessionId;
 
-	private String createTime;
+    private String createTime;
 
-	private Long errorCode;
+    private Long errorCode;
 
-	private Integer cellNo;
+    private Integer cellNo;
 
-	private String errorMsg;
+    private String errorMsg;
 
-	private Integer operateType;
+    private Integer operateType;
 
-	private String reportTime;
+    private String reportTime;
 
-	private String electricityCabinetId;
+    private String electricityCabinetId;
 
-	private String cabinetName;
+    private String cabinetName;
 
-	private Integer tenantId;
+    private Integer tenantId;
 }

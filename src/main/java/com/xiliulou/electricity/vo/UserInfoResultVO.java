@@ -10,6 +10,10 @@ import lombok.Data;
 @Data
 public class UserInfoResultVO {
 
+    public static final Integer YES = 0;
+
+    public static final Integer NO = 1;
+
     //实名认证审核状态 -1:初始化，0：等待审核中,1：审核被拒绝,2：审核通过
     private Integer authStatus;
 
@@ -46,9 +50,5 @@ public class UserInfoResultVO {
      * 获取用户状态（离线换电）
      */
     private UserFrontDetectionVO userFrontDetection;
-
-
-    public static final Integer YES = 0;
-    public static final Integer NO = 1;
 
 }

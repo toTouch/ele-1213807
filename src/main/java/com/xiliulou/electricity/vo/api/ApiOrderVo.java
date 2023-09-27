@@ -10,10 +10,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ApiOrderVo {
+
     /**
      * 订单号
      */
     private String orderId;
+
     /**
      * 订单状态
      */
