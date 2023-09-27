@@ -1,10 +1,10 @@
-package com.xiliulou.electricity.service.impl;
+package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
@@ -134,6 +134,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> recycleDepositMembercard(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
@@ -158,22 +159,33 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
 
         //获取当前用户所属企业
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
-        if(Objects.isNull(enterpriseInfo)){
+        if (Objects.isNull(enterpriseInfo)) {
             log.warn("RECYCLE CLOUDBEAN ERROR! not found enterpriseInfo,enterpriseUid={}", SecurityUtils.getUid());
             return Triple.of(false, "", "未缴纳押金");
         }
 
         Triple<Boolean, String, Object> checkUserExist = enterpriseChannelUserService.checkUserExist(enterpriseInfo.getId(), uid);
-        if(Boolean.TRUE.equals(!checkUserExist.getLeft())){
+        if (Boolean.TRUE.equals(!checkUserExist.getLeft())) {
             log.warn("RECYCLE CLOUDBEAN ERROR! not found enterpriseInfo,enterpriseUid={}", SecurityUtils.getUid());
             return Triple.of(false, "", "用户不合法");
         }
 
-        //回收押金
+        //回收押金&套餐
 
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(0L);
+        cloudBeanUseRecord.setUid(0L);
+        cloudBeanUseRecord.setType(0);
+        cloudBeanUseRecord.setBeanAmount(new BigDecimal("0"));
+        cloudBeanUseRecord.setRemainingBeanAmount(new BigDecimal("0"));
+        cloudBeanUseRecord.setPackageId(0L);
+        cloudBeanUseRecord.setFranchiseeId(0L);
+        cloudBeanUseRecord.setRef("");
+        cloudBeanUseRecord.setTenantId(0);
+        cloudBeanUseRecord.setCreateTime(0L);
+        cloudBeanUseRecord.setUpdateTime(0L);
 
-        //回收套餐
-
-
+        this.cloudBeanUseRecordMapper.insert(cloudBeanUseRecord);
+        return Triple.of(true,null,null);
     }
 }
