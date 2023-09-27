@@ -87,4 +87,9 @@ public class TenantConfigVO {
      * 是否开启电子签名 0--是 1--否
      */
     private Integer isEnableEsign;
+
+    /**
+     * 冻结是否强制退资产 0--是 1--否
+     */
+    private Integer allowFreezeWithAssets;
 }

@@ -141,6 +141,11 @@ public class ElectricityConfig {
      */
     private Integer allowReturnEle;
 
+    /**
+     * 冻结是否强制退资产 0--是 1--否
+     */
+    private Integer allowFreezeWithAssets;
+
 
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
 
@@ -238,4 +243,10 @@ public class ElectricityConfig {
     public static  Integer ALLOW_RETURN_ELE=0;
     public static  Integer NOT_ALLOW_RETURN_ELE=1;
 
+
+    /**
+     * 冻结套餐强制资产开关 0--是 1--否
+     */
+    public static Integer ALLOW_FREEZE_ASSETS = 0;
+    public static Integer NOT_ALLOW_FREEZE_ASSETS = 1;
 }

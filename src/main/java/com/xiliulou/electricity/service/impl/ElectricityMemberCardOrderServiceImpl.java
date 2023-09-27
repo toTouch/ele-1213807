@@ -38,7 +38,9 @@ import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -222,6 +224,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
     /**
      * 根据用户ID查询对应状态的记录
@@ -826,7 +831,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 log.error("BATTERY MEMBER ORDER ERROR! wechat v3 order error,uid={}", user.getUid(), e);
             }
         } finally {
-            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid());
+//            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid());
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "下单失败");
@@ -1225,6 +1230,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())
+                && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets())
+                && carRentalPackageOrderBizService.checkUserHasAssets(user.getUid(), user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE)) {
+            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
@@ -2883,7 +2894,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void systemEnableMemberCardTask() {
         int offset = 0;
         int size = 300;

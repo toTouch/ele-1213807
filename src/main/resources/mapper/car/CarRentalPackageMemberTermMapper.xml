@@ -325,19 +325,19 @@
         </where>
 
         <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'DESC'.toString()">
-            order by tui.create_time desc
+            order by tui.id desc
         </if>
 
         <if test="query.sortType != null and query.sortType == 1 and query.sortBy == 'ASC'.toString()">
-            order by ISNULL(tui.create_time), tui.create_time
+            order by tui.create_time,tui.id
         </if>
 
         <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'DESC'.toString()">
-            order by tcrpme.due_time_total desc
+            order by tcrpme.due_time_total,tui.id desc
         </if>
 
         <if test="query.sortType != null and query.sortType == 2 and query.sortBy == 'ASC'.toString()">
-            order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total
+            order by ISNULL(tcrpme.due_time_total), tcrpme.due_time_total,tui.id
         </if>
 
         limit #{query.offset}, #{query.size}

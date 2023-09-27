@@ -3,8 +3,10 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.exception.InnerRemoteCallException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -101,11 +103,19 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
      */
     private void saveData() {
         if (ObjectUtil.isNotEmpty(list)) {
+
             List<ElectricityBattery> saveList = new ArrayList<>();
             List<String> snList = new ArrayList<>();
+            Set<String> set=new HashSet<String>();
+
             for (BatteryExcelQuery batteryExcelQuery : list) {
                 //租户
                 Integer tenantId = TenantContextHolder.getTenantId();
+
+                if(set.contains(batteryExcelQuery.getSn())){
+                    throw new CustomBusinessException("Excel模版中电池编码重复，请检查修改后再操作");
+                }
+                set.add(batteryExcelQuery.getSn());
 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batteryExcelQuery.getSn());
                 if (Objects.nonNull(electricityBattery)) {
@@ -147,7 +157,10 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
                 snList.add(batteryExcelQuery.getSn());
                 saveList.add(electricityBattery);
             }
-
+            //导入的数据不为空，校验之后的数据为空，
+            if (DataUtil.collectionIsUsable(list) && !DataUtil.collectionIsUsable(snList)) {
+                throw new CustomBusinessException("电池编码重复/为空，请检查修改后再操作");
+            }
             Map<String, String> headers = new HashMap<>();
             String time = String.valueOf(System.currentTimeMillis());
             headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
@@ -160,9 +173,11 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
             R r = batteryPlatRetrofitService.batchSave(headers, query);
             if (!r.isSuccess()) {
                 log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
-                throw new InnerRemoteCallException(r.getErrMsg());
+                //throw new InnerRemoteCallException(r.getErrMsg());
             }
             electricityBatteryService.insertBatch(saveList);
+        }else{
+            throw new CustomBusinessException("导入数据为空");
         }
 
     }

@@ -172,7 +172,6 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void membercardExpireGenerateServiceFeeOrder(String s) {
         int offset = 0;
         int size = 200;
