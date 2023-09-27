@@ -734,8 +734,11 @@
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
+        <if test="query.queryType == 2">
+            and teb.physics_status =0
+        </if>
         <if test="query.queryType == 3">
-            and (teb.franchisee_id is null or teb.franchisee_id=0)
+            and (teb.franchisee_id is null or teb.franchisee_id=0) and teb.business_status=1
         </if>
         <if test="query.franchiseeId != null">
             and teb.franchisee_id =#{query.franchiseeId}
@@ -750,7 +753,7 @@
         </if>
 
         <if test="query.queryType == 4">
-            and teb.uid is not null
+            and teb.uid is not null and teb.business_status=2
         </if>
         <if test="query.franchiseeIds != null">
             and teb.franchisee_id in
@@ -775,8 +778,11 @@
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
+        <if test="query.queryType == 2">
+            and teb.physics_status =0
+        </if>
         <if test="query.queryType == 3">
-            and (teb.franchisee_id is null or teb.franchisee_id=0)
+            and (teb.franchisee_id is null or teb.franchisee_id=0) and teb.business_status=1
         </if>
         <if test="query.franchiseeId != null">
             and teb.franchisee_id =#{query.franchiseeId}
@@ -791,7 +797,7 @@
         </if>
 
         <if test="query.queryType == 4">
-            and teb.uid is not null
+            and teb.uid is not null and teb.business_status=2
         </if>
         <if test="query.franchiseeIds != null">
             and teb.franchisee_id in
@@ -826,7 +832,13 @@
                 #{id}
             </foreach>
         </if>
-        and ((teb.physics_status =#{query.physicsStatus} and teb.business_status =#{query.businessStatus}) or teb.business_status=4)
+        and ((teb.physics_status =1 and teb.business_status =3) or teb.business_status=4)
+        <if test="query.physicsStatus != null">
+            and teb.physics_status =#{query.physicsStatus}
+        </if>
+        <if test="query.businessStatus != null">
+            and teb.business_status =#{query.businessStatus}
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -853,8 +865,13 @@
                 #{id}
             </foreach>
         </if>
-        and ((teb.physics_status =#{query.physicsStatus} and teb.business_status =#{query.businessStatus}) or teb.business_status=4)
-
+        and ((teb.physics_status =1 and teb.business_status =3) or teb.business_status=4)
+        <if test="query.physicsStatus != null">
+            and teb.physics_status =#{query.physicsStatus}
+        </if>
+        <if test="query.businessStatus != null">
+            and teb.business_status =#{query.businessStatus}
+        </if>
     </select>
 
     <select id="queryOverdueBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
@@ -865,6 +882,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.member_card_expire_time>0 and temc.del_flag=0
+        and teb.business_status =2
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
@@ -898,6 +916,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.member_card_expire_time>0 and temc.del_flag=0
+        and teb.business_status =2
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
@@ -931,6 +950,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.del_flag=0 and temc.due_time_total >0 and temc.rental_package_type=2
+        and teb.business_status =2
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
@@ -964,6 +984,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.del_flag=0 and temc.due_time_total >0 and temc.rental_package_type=2
+        and teb.business_status =2
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
@@ -997,6 +1018,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null
+        and teb.physics_status =0 and teb.business_status =1
         <if test="query.physicsStatus != null">
             and teb.physics_status =#{query.physicsStatus}
         </if>
@@ -1031,6 +1053,7 @@
         left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null
+        and teb.physics_status =0 and teb.business_status =1
         <if test="query.physicsStatus != null">
             and teb.physics_status =#{query.physicsStatus}
         </if>
