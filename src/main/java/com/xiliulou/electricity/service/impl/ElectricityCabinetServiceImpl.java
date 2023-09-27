@@ -24,20 +24,117 @@ import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryGeo;
+import com.xiliulou.electricity.entity.CabinetMoveHistory;
+import com.xiliulou.electricity.entity.CarDepositOrder;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleOtaFile;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.Message;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
+import com.xiliulou.electricity.entity.OtaFileConfig;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
+import com.xiliulou.electricity.query.FreeCellNoQuery;
+import com.xiliulou.electricity.query.HomePageDepositQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.LowBatteryExchangeModel;
+import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryGeoService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.CabinetMoveHistoryService;
+import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleOtaFileService;
+import com.xiliulou.electricity.service.EleOtaUpgradeService;
+import com.xiliulou.electricity.service.EleOtherConfigService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetServerService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
+import com.xiliulou.electricity.service.OtaFileConfigService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.CabinetBatteryVO;
+import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.HomePageDepositVo;
+import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
+import com.xiliulou.electricity.vo.HomePageTurnOverAnalysisVo;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.HomePageTurnOverVo;
+import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
+import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import com.xiliulou.electricity.vo.HomepageBatteryVo;
+import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
+import com.xiliulou.electricity.vo.HomepageElectricityExchangeVo;
+import com.xiliulou.electricity.vo.HomepageOverviewDetailVo;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
@@ -69,7 +166,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -2631,70 +2738,65 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
-
+    
             List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
-
+    
             List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
             if (CollectionUtils.isEmpty(electricityBatteries)) {
                 return Triple.of(false, "100225", "电池不存在");
             }
-
+    
             //把本柜机加盟商的绑定电池信息拿出来
             electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
                 return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
             }
-
+    
             //获取全部可用电池id
             List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-
+    
             //把加盟商绑定的电池过滤出来
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-
+    
             //多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 if (Objects.nonNull(electricityBattery)) {
                     //用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();
-
-                    List<ElectricityCabinetBox> userBindBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType) && Objects.nonNull(e.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-                    if (!CollectionUtils.isEmpty(userBindBatteryCellNos)) {
-                        return Triple.of(true, null, userBindBatteryCellNos.get(0));
+                    usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
+                            .collect(Collectors.toList());
+                } else {
+                    //获取用户绑定的型号
+                    List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                    if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                        log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                        return Triple.of(false, "100352", "未找到用户电池型号");
                     }
-                }
-
-                //获取用户绑定的型号
-                List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
-                if (CollectionUtils.isEmpty(userBatteryTypes)) {
-                    log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
-                    return Triple.of(false, "100352", "未找到用户电池型号");
-                }
-
-                usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
-                    return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
-                }
-
-                //电量最大的
-                Double maxPower = usableBatteryCellNos.get(0).getPower();
-                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-                if (usableBatteryCellNos.size() == 1) {
-                    return Triple.of(true, null, usableBatteryCellNos.get(0));
+            
+                    usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType()))
+                            .collect(Collectors.toList());
                 }
             }
-
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+    
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
+                    .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
                 return Triple.of(false, "", "换电柜暂无满电电池");
             }
-
-            //如果存在多个电量相同的格挡，取充电器电压最大
+    
             Double maxPower = usableBatteryCellNos.get(0).getPower();
-            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+            if (usableBatteryCellNos.size() == 1) {
+                return Triple.of(true, null, usableBatteryCellNos.get(0));
+            }
+    
+            //如果存在多个电量相同的格挡，取充电器电压最大
+            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
+                    .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
             if (Objects.isNull(usableCabinetBox)) {
                 return Triple.of(false, "", "换电柜暂无满电电池");
             }
-
+    
             return Triple.of(true, null, usableCabinetBox);
         }
     }
