@@ -653,7 +653,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
             }
         } finally {
-            redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
+            /// 因缓存锁删除过快，导致重复发起支付。因此注释掉该功能
+            //redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "滞纳金支付失败");
