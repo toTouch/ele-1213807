@@ -937,6 +937,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
 
     public Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, BatteryMemberCardAndInsuranceQuery query, ElectricityCabinet electricityCabinet) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getMemberId());
+            return Triple.of(false,"ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
+        }
 
         //查找计算优惠券
         //计算优惠后支付金额
@@ -951,8 +958,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             payAmount = BigDecimal.valueOf(0);
         }
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
-                .selectByUidFromCache(userInfo.getUid());
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
