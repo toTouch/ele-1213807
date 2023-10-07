@@ -80,7 +80,7 @@
         select
         count(1)
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
-        where
+        <where>
         <if test="name != null and name != ''">
             and tei.name = #{name}
         </if>
@@ -102,6 +102,7 @@
         <if test="tenantId != null">
             and tei.tenant_id = #{tenantId}
         </if>
+        </where>
     </select>
 
     <!--通过主键修改数据-->
