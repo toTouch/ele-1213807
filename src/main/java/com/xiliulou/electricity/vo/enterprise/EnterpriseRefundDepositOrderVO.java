@@ -62,6 +62,16 @@ public class EnterpriseRefundDepositOrderVO {
     private Integer refundOrderType;
     
     /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 套餐名称
+     */
+    private String packageName;
+    
+    /**
      * 创建时间
      */
     private Long createTime;

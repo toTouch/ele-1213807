@@ -28,8 +28,23 @@ public class EnterprisePackageOrderQuery {
 
     @NotNull(message = "购买用户不能为空!", groups = {CreateGroup.class})
     private Long uid;
+    
+    /**
+     * 电池类型
+     */
+    private Integer model;
 
     private Integer tenantId;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 保险ID
+     */
+    private Integer insuranceId;
 
     //优惠券
     private Integer userCouponId;

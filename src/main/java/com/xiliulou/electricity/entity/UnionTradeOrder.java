@@ -56,6 +56,11 @@ public class UnionTradeOrder {
 
 
     public static final String ATTACH_INTEGRATED_PAYMENT = "integratedPayment";
+    
+    /**
+     * 企业渠道套餐+押金混合支付
+     */
+    public static final String ATTACH_ENTERPRISE_PACKAGE_DEPOSIT_PAYMENT = "enterprisePackageDepositPayment";
 
     /**
      * 保险套餐混合支付

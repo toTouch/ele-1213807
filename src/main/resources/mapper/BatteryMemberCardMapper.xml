@@ -113,7 +113,10 @@
         service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         <where>
-            business_type=0
+            <if test="businessType != null">
+                and business_type = #{businessType}
+            </if>
+        
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -289,7 +292,9 @@
         count(*)
         from t_battery_member_card
         <where>
-            business_type=0
+            <if test="businessType != null">
+                and business_type = #{businessType}
+            </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>

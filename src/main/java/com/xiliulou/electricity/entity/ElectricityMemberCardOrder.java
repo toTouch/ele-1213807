@@ -64,6 +64,7 @@ public class ElectricityMemberCardOrder {
     
     /**
      *交易方式： 0-线上， 1-线下， 2-企业代付
+     *
      */
     private Integer payType;
     /**

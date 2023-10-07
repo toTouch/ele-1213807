@@ -247,11 +247,11 @@
     </select>
     
     <!--查询退押的订单信息-->
-    <select id="queryBatteryDepositOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseFreezePackageRecordVO">
+    <select id="queryBatteryDepositOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseRefundDepositOrderVO">
         select
             tero.id as id,
-            tero.refund_order_no as refundOrderNo,
-            tero.order_id as orderId,
+            tero.refund_order_no as depositOrderNo,
+            tero.order_id as orderNo,
             tero.pay_amount as payAmount,
             tero.refund_amount as refundAmount,
             tero.status as status,

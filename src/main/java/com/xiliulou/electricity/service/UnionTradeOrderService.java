@@ -26,6 +26,8 @@ public interface UnionTradeOrderService {
     Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus);
 
     Pair<Boolean, Object> manageMemberCardOrderV2(String orderNo, Integer orderStatus);
+    
+    Pair<Boolean, Object> manageEnterpriseMemberCardOrder(String orderNo, Integer orderStatus);
 
     Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus);
 
@@ -36,4 +38,6 @@ public interface UnionTradeOrderService {
     Pair<Boolean, Object>  notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource);
 
     Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
+    
+    Pair<Boolean, Object> notifyEnterprisePackageAndDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
 }

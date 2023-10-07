@@ -44,7 +44,7 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     int deleteById(Long id);
 
     List<BatteryMemberCard> selectByPage(BatteryMemberCardQuery query);
-
+    
     Integer selectByPageCount(BatteryMemberCardQuery query);
 
     List<BatteryMemberCard> selectBySearch(BatteryMemberCardQuery query);

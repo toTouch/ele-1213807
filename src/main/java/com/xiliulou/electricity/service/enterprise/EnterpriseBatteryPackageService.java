@@ -37,6 +37,14 @@ public interface EnterpriseBatteryPackageService {
      * @return
      */
     public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
+    
+    /**
+     * 企业站长代付 套餐 + 押金
+     * @param query
+     * @param request
+     * @return
+     */
+    public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
 
     /**
      * 查询骑手当前套餐详情信息
