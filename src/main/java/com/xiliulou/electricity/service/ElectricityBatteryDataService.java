@@ -5,44 +5,45 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 
 
 public interface ElectricityBatteryDataService extends IService<ElectricityBattery> {
-
-    R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectAllBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R  selectInCabinetBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectInCabinetBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectPendingRentalBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectPendingRentalBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R  selectLeasedBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectLeasedBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R  selectStrayBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectStrayBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R  selectOverdueBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R  selectOverdueCarBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
-    R selectOverdueCarBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid);
-
+    
+    R selectAllBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectAllBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectInCabinetBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectInCabinetBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectPendingRentalBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectPendingRentalBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectLeasedBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectLeasedBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectStrayBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectStrayBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectOverdueBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectOverdueBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectOverdueCarBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R selectOverdueCarBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
     BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery, Tenant tenant);
-
-    R queryStockBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId);
-
-    R queryStockBatteryPageDataCount(String sn, Long franchiseeId, Integer electricityCabinetId);
-
-
+    
+    R queryStockBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    R queryStockBatteryPageDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
+    
+    
 }
