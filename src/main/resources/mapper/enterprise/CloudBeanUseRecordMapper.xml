@@ -36,19 +36,20 @@
         select
           id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
-        where
-        <if test="startTime != null">
-            and create_time &gt;=  #{startTime}
-        </if>
-        <if test="endTime != null">
-            and create_time &lt;= #{startTime}
-        </if>
-        <if test="uid != null">
-            and uid = #{uid}
-        </if>
-        <if test="tenantId != null">
-            and tenant_id = #{tenantId}
-        </if>
+        <where>
+            <if test="startTime != null">
+                and create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{startTime}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
         order by id desc
         limit #{offset}, #{size}
     </select>

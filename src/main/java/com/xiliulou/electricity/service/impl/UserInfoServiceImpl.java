@@ -1190,7 +1190,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //判断电池滞纳金
-
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
                 log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", oldUserInfo.getUid());
@@ -1237,6 +1236,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(electricityBattery);
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
+        //生成退电池记录
+        RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+        rentBatteryOrder.setUid(oldUserInfo.getUid());
+        rentBatteryOrder.setName(oldUserInfo.getName());
+        rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+        rentBatteryOrder.setElectricityBatterySn(oldElectricityBattery.getSn());
+        rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+        rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
+        rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+        rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+        rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+        rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
+        rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+        rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+        rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+        rentBatteryOrderService.insert(rentBatteryOrder);
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()

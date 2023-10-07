@@ -49,28 +49,29 @@
           tei.update_time,
           tei.remark
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
-        where
-        <if test="name != null and name != ''">
-            and tei.name = #{name}
-        </if>
-        <if test="franchiseeId != null">
-            and tei.franchisee_id = #{franchiseeId}
-        </if>
-        <if test="phone != null and phone != ''">
-            and tei.phone = #{phone}
-        </if>
-        <if test="packageId != null">
-            and tep.package_id = #{packageId}
-        </if>
-        <if test="status != null">
-            and tei.status = #{status}
-        </if>
-        <if test="uid != null">
-            and tei.uid = #{uid}
-        </if>
-        <if test="tenantId != null">
-            and tei.tenant_id = #{tenantId}
-        </if>
+        <where>
+            <if test="name != null and name != ''">
+                and tei.name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and tei.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tei.phone = #{phone}
+            </if>
+            <if test="packageId != null">
+                and tep.package_id = #{packageId}
+            </if>
+            <if test="status != null">
+                and tei.status = #{status}
+            </if>
+            <if test="uid != null">
+                and tei.uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tei.tenant_id = #{tenantId}
+            </if>
+        </where>
         order by tei.id desc
         limit #{offset}, #{size}
     </select>

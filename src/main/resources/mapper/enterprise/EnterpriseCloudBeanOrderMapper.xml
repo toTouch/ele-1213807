@@ -32,25 +32,26 @@
         select
           id, enterprise_id, uid, operate_uid ,pay_amount, order_id, status, pay_type, type, bean_amount, franchisee_id, tenant_id, create_time, update_time, remark
         from t_enterprise_cloud_bean_order
-        where
-        <if test="orderId != null and orderId != ''">
-            order_id = #{orderId},
-        </if>
-        <if test="enterpriseId != null">
-            and enterprise_id = #{enterpriseId}
-        </if>
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
-        </if>
-        <if test="uid != null">
-            and uid = #{uid}
-        </if>
-        <if test="type != null">
-            and type = #{type}
-        </if>
-        <if test="tenantId != null">
-            and tenant_id = #{tenantId}
-        </if>
+        <where>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
         order by id desc
         limit #{offset}, #{size}
     </select>
@@ -59,25 +60,26 @@
         select
         count(1)
         from t_enterprise_cloud_bean_order
-        where
-        <if test="orderId != null and orderId != ''">
-            order_id = #{orderId},
-        </if>
-        <if test="enterpriseId != null">
-            and enterprise_id = #{enterpriseId}
-        </if>
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
-        </if>
-        <if test="uid != null">
-            and uid = #{uid}
-        </if>
-        <if test="type != null">
-            and type = #{type}
-        </if>
-        <if test="tenantId != null">
-            and tenant_id = #{tenantId}
-        </if>
+        <where>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
     </select>
 
     <!--通过主键修改数据-->
