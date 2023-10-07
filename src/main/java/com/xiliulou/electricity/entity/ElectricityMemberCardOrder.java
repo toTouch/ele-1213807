@@ -61,7 +61,11 @@ public class ElectricityMemberCardOrder {
     private Long franchiseeId;
 
     private Integer isBindActivity;
-
+    
+    /**
+     *交易方式： 0-线上， 1-线下， 2-企业代付
+     *
+     */
     private Integer payType;
     /**
      * 套餐订单使用状态 1未使用,2：使用中,3：已失效, 4:已退租
@@ -110,6 +114,11 @@ public class ElectricityMemberCardOrder {
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
+    /**
+     * 企业ID
+     */
+    private Long enterpriseId;
 
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
@@ -126,6 +135,7 @@ public class ElectricityMemberCardOrder {
 
     public static final Integer ONLINE_PAYMENT = 0;
     public static final Integer OFFLINE_PAYMENT = 1;
+    public static final Integer ENTERPRISE_PAYMENT = 2;
 
     //套餐订单来源，1：扫码，2：线上，3：后台
     public static final Integer SOURCE_SCAN = 1;

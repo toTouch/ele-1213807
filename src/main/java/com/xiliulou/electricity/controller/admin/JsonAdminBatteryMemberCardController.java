@@ -101,6 +101,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "rentType", required = false) Integer rentType,
                   @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
+                  @RequestParam(value = "businessType", required = false) Integer businessType,
                   @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -125,6 +126,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .status(status)
+                .businessType(businessType == null ?  0 : businessType)
                 .rentType(rentType)
                 .rentUnit(rentUnit)
                 .name(name)
@@ -142,6 +144,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "rentType", required = false) Integer rentType,
                        @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
+                       @RequestParam(value = "businessType", required = false) Integer businessType,
                        @RequestParam(value = "name", required = false) String name) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -156,6 +159,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .franchiseeId(franchiseeId)
                 .status(status)
+                .businessType(businessType == null ?  0 : businessType)
                 .rentType(rentType)
                 .rentUnit(rentUnit)
                 .name(name)

@@ -28,21 +28,33 @@ public interface EnterpriseChannelUserService {
     public Triple<Boolean, String, Object> queryUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
 
     /**
-     * 生成企业渠道用户数基础数据
+     * 生成企业渠道用户基础数据
      * @param query
      * @return
      */
     public Triple<Boolean, String, Object> generateChannelUser(EnterpriseChannelUserQuery query);
 
     /**
-     *
+     * 扫码成功后，将用户更新至企业渠道用户表中
      * @param query
      * @return
      */
     public Triple<Boolean, String, Object> updateUserAfterQRScan(EnterpriseChannelUserQuery query);
-
+    
+    /**
+     * 检测指定用户是否与企业关联
+     * @param id
+     * @param uid
+     * @return
+     */
     public Triple<Boolean, String, Object> checkUserExist(Long id, Long uid);
-
+    
+    /**
+     * 根据企业ID和用户UID查询当前企业渠道用户信息
+     * @param enterpriseId
+     * @param uid
+     * @return
+     */
     public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid);
     
     EnterpriseChannelUser selectByUid(Long uid);

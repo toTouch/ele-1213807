@@ -130,10 +130,159 @@
 
     </insert>
 
+    <select id="queryBatteryPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
+          select
+                temco.id,
+                temco.pay_amount as payAmount,
+                temco.status,
+                temco.member_card_id as packageId,
+                temco.card_name as packageName,
+                temco.order_id as orderNo,
+                temco.uid,
+                tui.name,
+                tui.phone,
+                temco.use_status,
+                temco.create_time,
+                temco.update_time
+          from t_electricity_member_card_order temco
+          left join t_user_info tui on tui.uid = temco.uid
 
+        <where>
+            temco.order_type = 1 and temco.del_flag = 0 and temco.status = 1
+            <if test="uid != null">
+                and temco.uid = #{uid}
+            </if>
 
+            <if test="enterpriseId != null">
+                and temco.enterprise_id = #{enterpriseId}
+            </if>
 
+            <if test="beginTime != null">
+                and temco.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and temco.create_time &lt;= #{endTime}
+            </if>
+            order by temco.create_time desc
+        </where>
+    </select>
+    
+    <!--查询租/还电池订单记录-->
+    <select id="queryRentBatteryOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseRentBatteryOrderVO">
+        select
+            trbo.id,
+            trbo.order_id as orderNo,
+            trbo.uid,
+            tui.name,
+            tui.phone,
+            trbo.electricity_battery_sn,
+            trbo.battery_deposit,
+            trbo.electricity_cabinet_id,
+            trbo.cell_no,
+            trbo.type,
+            trbo.status,
+            trbo.create_time,
+            trbo.update_time
+        from t_rent_battery_order trbo
+        left join t_user_info tui on tui.uid = trbo.uid
+        
+        <where>
+            trbo.del_flag = 0
+            <if test="uid != null">
+                and trbo.uid = #{uid}
+            </if>
+            
+            <if test="beginTime != null">
+                and trbo.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and trbo.create_time &lt;= #{endTime}
+            </if>
+            order by trbo.create_time desc
+        </where>
+    </select>
+    
+    <!--查询冻结套餐订单信息-->
+    <select id="queryBatteryFreezeOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseFreezePackageRecordVO">
+        select
+            dmcr.id,
+            dmcr.member_card_name as packageName,
+            dmcr.status ,
+            dmcr.uid,
+            dmcr.user_name,
+            dmcr.phone,
+            dmcr.create_time,
+            dmcr.update_time,
+            dmcr.tenant_id,
+            dmcr.err_msg,
+            dmcr.battery_member_card_id as packageId,
+            dmcr.disable_member_card_no as packageFreezeOrderNo,
+            dmcr.card_days,
+            dmcr.choose_days ,
+            dmcr.real_days ,
+            dmcr.pay_status,
+            dmcr.charge_rate,
+            dmcr.disable_card_time_type ,
+            dmcr.apply_reason,
+            dmcr.disable_member_card_time as freezePackageTime,
+            emcr.enable_time as enablePackageTime
+        from  t_ele_disable_member_card_record  dmcr
+        left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
+    
+        <where>
+            dmcr.del_flag = 0 and dmcr.status = 1
+            <if test="uid != null">
+                and dmcr.uid = #{uid}
+            </if>
+        
+            <if test="beginTime != null">
+                and dmcr.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and dmcr.create_time &lt;= #{endTime}
+            </if>
+            order by dmcr.create_time desc
+        </where>
 
-
+    </select>
+    
+    <!--查询退押的订单信息-->
+    <select id="queryBatteryDepositOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseRefundDepositOrderVO">
+        select
+            tero.id as id,
+            tero.refund_order_no as depositOrderNo,
+            tero.order_id as orderNo,
+            tero.pay_amount as payAmount,
+            tero.refund_amount as refundAmount,
+            tero.status as status,
+            tero.err_msg as errMsg,
+            tero.create_time as createTime,
+            tero.update_time as updateTime ,
+            tero.member_card_owe_number as memberCardOweNumber,
+            tedo.uid as uid,
+            tedo.name as name,
+            tedo.phone as phone,
+            tero.refund_order_type as refundOrderType,
+            tedo.pay_type as payType,
+            tedo.mid as packageId
+        from t_ele_refund_order as tero
+        left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
+        <where>
+            tero.del_flag = 0 and tero.status = 4
+            <if test="uid != null">
+                and tero.uid = #{uid}
+            </if>
+        
+            <if test="beginTime != null">
+                and tero.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tero.create_time &lt;= #{endTime}
+            </if>
+            order by tero.create_time desc
+        </where>
+    
+    </select>
+    
 
 </mapper>
