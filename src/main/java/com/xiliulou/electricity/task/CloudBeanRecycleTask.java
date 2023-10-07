@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @date 2023-09-27-14:10
  */
 @Component
-@JobHandler(value = "failureMemberCardTask")
+@JobHandler(value = "cloudBeanRecycleTask")
 @Slf4j
 public class CloudBeanRecycleTask extends IJobHandler {
     
