@@ -677,7 +677,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
         
         // 未缴纳押金
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode())) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode())) {
             log.error("bindingCar, user did not pay the deposit. uid is {}", userInfo.getUid());
             throw new BizException("100209", "用户未缴纳押金，请先缴纳押金");
         }
