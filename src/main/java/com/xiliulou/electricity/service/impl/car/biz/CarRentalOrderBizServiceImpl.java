@@ -659,6 +659,28 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+        
+        // 查询用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("bindingCar, user is disable. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+            
+        }
+        
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("bindingCar, user not auth. uid is {}", userInfo.getUid());
+            throw new BizException("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        // 未缴纳押金
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode())) {
+            log.error("bindingCar, user did not pay the deposit. uid is {}", userInfo.getUid());
+            throw new BizException("100209", "用户未缴纳押金，请先缴纳押金");
+        }
 
         // 判定滞纳金
         boolean exitUnpaid = carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid);
@@ -666,6 +688,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             log.error("bindingCar failed. User has a late fee. uid is {}", uid);
             throw new BizException("300001", "用户存在滞纳金，请先缴纳滞纳金");
         }
+        
 
         // 查询租车会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
@@ -775,22 +798,6 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         if (ObjectUtils.isNotEmpty(electricityCar.getUid()) && !uid.equals(electricityCar.getUid())) {
             log.error("bindingCar, t_electricity_car bind uid is {}", electricityCar.getUid());
             throw new BizException("300038", "该车已被其他用户绑定");
-        }
-
-        // 查询用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-
-        //用户是否可用
-        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("bindingCar, user is disable. uid is {}", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
-
-        }
-
-        //未实名认证
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("bindingCar, user not auth. uid is {}", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0041", "未实名认证");
         }
 
         // 查询自己名下是否存在车辆
