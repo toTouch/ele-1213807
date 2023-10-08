@@ -17,7 +17,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectUserDeposit">
-       	select   id, uid, did, order_id, battery_deposit, del_flag, create_time, update_time, apply_deposit_time , deposit_type        from t_user_battery_deposit
+       	select   id, uid, did, order_id, battery_deposit, del_flag, create_time, update_time, apply_deposit_time , deposit_type , deposit_modify_flag, before_modify_deposit       from t_user_battery_deposit
     </sql>
 
     <!--查询单个-->
