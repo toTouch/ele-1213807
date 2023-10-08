@@ -285,6 +285,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
         enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
         enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
+        enterpriseInfo.setTotalBeanAmount(BigDecimal.ZERO);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
