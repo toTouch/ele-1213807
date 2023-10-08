@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -29,6 +30,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -197,6 +199,9 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     CloudBeanUseRecordService cloudBeanUseRecordService;
+    
+    @Resource
+    UserBehaviorRecordService userBehaviorRecordService;
 
     /**
      * 租车套餐购买回调
@@ -1260,7 +1265,10 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
-
+    
+        //保存骑手购买套餐信息，用于云豆回收业务
+        userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+    
         return Pair.of(result, null);
 
     }

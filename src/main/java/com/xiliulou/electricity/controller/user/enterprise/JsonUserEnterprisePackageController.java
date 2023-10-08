@@ -2,14 +2,18 @@ package com.xiliulou.electricity.controller.user.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +36,9 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     @Resource
     private EnterpriseBatteryPackageService enterpriseBatteryPackageService;
+    
+    @Resource
+    private FranchiseeInsuranceService franchiseeInsuranceService;
     
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
@@ -60,6 +67,29 @@ public class JsonUserEnterprisePackageController extends BaseController {
                 .build();
         
         return returnTripleResult(enterpriseBatteryPackageService.queryPackagesByBatteryV(query));
+    }
+    
+    /**
+     * 根据电池型号查询保险信息
+     * @param franchiseeId
+     * @param insuranceType
+     * @param simpleBatteryType
+     * @return
+     */
+    @GetMapping(value = "/user/enterprise/queryInsuranceByType")
+    public R queryInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId,
+                                  @RequestParam("insuranceType") Integer insuranceType,
+                                  @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType){
+    
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
+                .franchiseeId(franchiseeId)
+                .insuranceType(insuranceType)
+                .status(FranchiseeInsurance.STATUS_USABLE)
+                .simpleBatteryType(simpleBatteryType)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+        
+        return R.ok(franchiseeInsuranceService.selectInsuranceByType(query));
     }
     
     

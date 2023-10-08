@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.enterprise;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,7 +59,13 @@ public interface EnterpriseBatteryPackageService {
      * @return
      */
     public Triple<Boolean, String, Object> queryCostDetails(EnterprisePackageOrderQuery query);
-
+    
+    /**
+     * 查询用户购买订单记录
+     * @param query
+     * @return
+     */
+    public Triple<Boolean, String, Object> queryPurchasedPackageOrders(EnterprisePurchaseOrderQuery query);
 
 
 }

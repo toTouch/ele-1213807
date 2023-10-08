@@ -5,8 +5,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -91,7 +93,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     }
     
     @GetMapping("/user/enterprise/checkChannelUser")
-    public R checkChannelUser(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid) {
+    public R checkChannelUser(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = false) Long uid) {
         
         return returnTripleResult(enterpriseChannelUserService.checkUserExist(id, uid));
     }
@@ -124,6 +126,33 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         EnterprisePackageOrderQuery query = EnterprisePackageOrderQuery.builder().enterpriseId(enterpriseId).uid(uid).build();
         
         return returnTripleResult(enterpriseBatteryPackageService.queryCostDetails(query));
+    }
+    
+    /**
+     * 查询企业侧已支付，待支付，未支付骑手对应的套餐信息
+     * @param enterpriseId 企业ID
+     * @param paymentStatus 1- 代付到期， 2-已代付， 3-未代付
+     * @param userName
+     * @param phone
+     * @return
+     */
+    @GetMapping("/user/enterprise/queryPurchaseOrder")
+    public R queryPurchaseOrder(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
+                                @RequestParam(value = "paymentStatus", required = true) Integer paymentStatus,
+                                @RequestParam(value = "userName", required = false) String userName,
+                                @RequestParam(value = "phone", required = false) String phone) {
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+        EnterprisePurchaseOrderQuery enterprisePurchaseOrderQuery = EnterprisePurchaseOrderQuery.builder()
+                .enterpriseId(enterpriseId)
+                .userName(userName)
+                .phone(phone)
+                .tenantId(tenantId)
+                .currentTime(System.currentTimeMillis())
+                .build();
+    
+        return returnTripleResult(enterpriseBatteryPackageService.queryPurchasedPackageOrders(enterprisePurchaseOrderQuery));
+        
     }
     
 }
