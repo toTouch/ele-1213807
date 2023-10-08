@@ -172,6 +172,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            enterpriseInfoVO.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
 
             enterpriseInfoVO.setMemcardName(getMembercardNames(item.getId()));
 
@@ -285,6 +286,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         BeanUtils.copyProperties(enterpriseInfoQuery, enterpriseInfo);
         enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
         enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
+        enterpriseInfo.setTotalBeanAmount(BigDecimal.ZERO);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());

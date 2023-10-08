@@ -219,7 +219,7 @@ public class UserBizServiceImpl implements UserBizService {
         // 事务处理
         log.info("depositRefundUnbind saveDepositRefundUnbindTx params userInfoEntity is {}, electricityCarUpdate is {}, carLockCtrlHistory is {}",
                 JsonUtil.toJson(userInfoEntity), JsonUtil.toJson(electricityCarUpdate), JsonUtil.toJson(carLockCtrlHistory));
-        saveDepositRefundUnbindTx(userInfoEntity, electricityCarUpdate, carLockCtrlHistory);
+        saveDepositRefundUnbindTx(userInfoEntity, electricityCarUpdate, carLockCtrlHistory, type);
 
         return true;
     }
@@ -230,7 +230,7 @@ public class UserBizServiceImpl implements UserBizService {
      * @param electricityCarUpdate 解绑用户车辆信息
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCar electricityCarUpdate, CarLockCtrlHistory carLockCtrlHistory) {
+    public void saveDepositRefundUnbindTx(UserInfo userInfoEntity, ElectricityCar electricityCarUpdate, CarLockCtrlHistory carLockCtrlHistory, Integer type) {
         // 解绑用户信息
         userInfoService.update(userInfoEntity);
         // 解绑用户车辆
@@ -241,9 +241,11 @@ public class UserBizServiceImpl implements UserBizService {
         if (ObjectUtils.isNotEmpty(carLockCtrlHistory)) {
             carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
-
-        //删除用户绑定的电池型号
-        userBatteryTypeService.deleteByUid(userInfoEntity.getUid());
+        
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(type)) {
+            //删除用户绑定的电池型号
+            userBatteryTypeService.deleteByUid(userInfoEntity.getUid());
+        }
     }
 
     /**
