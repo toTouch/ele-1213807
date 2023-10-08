@@ -578,7 +578,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/stockBattery/page")
     public R getStockBatteryPageDate(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -608,10 +609,10 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).businessStatus(businessStatus).physicsStatus(physicsStatus)
-                .build();
+    
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
+                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId)
+                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
         return electricityBatteryDataService.queryStockBatteryPageData(electricityBatteryQuery);
     }
     
@@ -621,7 +622,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/stockBattery/count")
     public R getStockBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "uid", required = false) Long uid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -639,9 +641,9 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).businessStatus(businessStatus).physicsStatus(physicsStatus)
-                .build();
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
+                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds)
+                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
         return electricityBatteryDataService.queryStockBatteryPageDataCount(electricityBatteryQuery);
     }
     

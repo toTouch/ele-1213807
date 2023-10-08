@@ -1047,6 +1047,9 @@
         <if test="query.franchiseeId != null">
             and teb.franchisee_id =#{query.franchiseeId}
         </if>
+        <if test="query.uid != null">
+            and teb.uid = #{query.uid}
+        </if>
         <if test="query.franchiseeIds != null">
             and teb.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -1078,6 +1081,9 @@
         </if>
         <if test="query.franchiseeId != null">
             and teb.franchisee_id =#{query.franchiseeId}
+        </if>
+        <if test="query.uid != null">
+            and teb.uid = #{query.uid}
         </if>
         <if test="query.franchiseeIds != null">
             and teb.franchisee_id in
