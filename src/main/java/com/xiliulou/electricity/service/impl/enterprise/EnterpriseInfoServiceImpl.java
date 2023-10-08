@@ -172,6 +172,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            enterpriseInfoVO.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
 
             enterpriseInfoVO.setMemcardName(getMembercardNames(item.getId()));
 
