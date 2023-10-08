@@ -30,78 +30,39 @@ import java.util.*;
 
 @Service
 @Slf4j
-public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBatteryMapper, ElectricityBattery>
-        implements ElectricityBatteryDataService {
-
+public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBatteryMapper, ElectricityBattery> implements ElectricityBatteryDataService {
+    
     @Resource
     private ElectricityBatteryMapper electricitybatterymapper;
-
+    
     @Autowired
     UserDataScopeService userDataScopeService;
-
+    
     @Autowired
     TenantService tenantService;
-
+    
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     @Autowired
     UserInfoService userInfoService;
-
+    
     @Autowired
     BatteryModelService batteryModelService;
-
+    
     @Override
     @Slave
-    public R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .electricityCabinetId(electricityCabinetId)
-                .uid(uid)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
-
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    public R selectAllBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fid = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -118,95 +79,32 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
-
+            
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
     }
-
+    
     @Override
-    public R selectAllBatteryDataCount( String sn, Long franchiseeId, Integer electricityCabinetId, Long uid)  {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .electricityCabinetId(electricityCabinetId)
-                .uid(uid)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
-
+    public R selectAllBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
     }
-
+    
     @Override
-	@Slave
-    public R selectInCabinetBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .electricityCabinetId(electricityCabinetId)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    @Slave
+    public R selectInCabinetBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -223,96 +121,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
+    
     @Override
-	@Slave
-    public R selectInCabinetBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .electricityCabinetId(electricityCabinetId)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
+    @Slave
+    public R selectInCabinetBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
     }
-
+    
     @Override
-	@Slave
-    public R selectPendingRentalBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    @Slave
+    public R selectPendingRentalBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -329,95 +164,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
+    
     @Override
-	@Slave
-    public R selectPendingRentalBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
+    @Slave
+    public R selectPendingRentalBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
     }
-
+    
     @Override
-	@Slave
-    public R selectLeasedBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    @Slave
+    public R selectLeasedBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -434,96 +207,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
+    
     @Override
-	@Slave
-    public R selectLeasedBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
+    @Slave
+    public R selectLeasedBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
     }
-
+    
     @Override
-	@Slave
-    public R selectStrayBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryStrayBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    @Slave
+    public R selectStrayBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryStrayBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -540,98 +250,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
+    
     @Override
-	@Slave
-    public R selectStrayBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
+    @Slave
+    public R selectStrayBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryStrayBatteryCount(electricityBatteryQuery));
     }
-
+    
     @Override
-	@Slave
-    public R selectOverdueBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryOverdueBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    @Slave
+    public R selectOverdueBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryOverdueBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -648,97 +293,33 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setFranchiseeName(franchisee.getName());
                 }
             }
-
-            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), tenantId);
-            if(StringUtils.isNotEmpty(batteryShortType)){
+            
+            String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
+            if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
-    @Override
-	@Slave
-    public R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).build();
-        return R.ok(electricitybatterymapper.queryOverdueBatteryCount(electricityBatteryQuery));
-    }
+    
     @Override
     @Slave
-    public R selectOverdueCarBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(tenantId)
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryOverdueCarBatteryList(electricityBatteryQuery, offset, size);
-        if(CollectionUtils.isEmpty(electricityBatteries)){
+    public R selectOverdueBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        return R.ok(electricitybatterymapper.queryOverdueBatteryCount(electricityBatteryQuery));
+    }
+    
+    @Override
+    @Slave
+    public R selectOverdueCarBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
+                .queryOverdueCarBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().forEach(item->{
+        electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -756,198 +337,109 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
-
+        return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
+        
     }
-
+    
     @Override
     @Slave
-    public R selectOverdueCarBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId, Long uid) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .uid(uid)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
-                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).build();
+    public R selectOverdueCarBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         return R.ok(electricitybatterymapper.queryOverdueCarBatteryCount(electricityBatteryQuery));
     }
+    
     /**
      * 查询BMS
+     *
      * @param batteryInfoQuery
      * @return
      */
     @Override
-    public BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery,Tenant tenant) {
-        try{
-
-
+    public BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery, Tenant tenant) {
+        try {
+            
             Map<String, String> headers = new HashMap<>();
             String time = String.valueOf(System.currentTimeMillis());
             headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
             headers.put(CommonConstant.INNER_HEADER_TIME, time);
             headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
             headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
-
+            
             R<BatteryInfoDto> r = batteryPlatRetrofitService.queryBatteryInfo(headers, batteryInfoQuery);
             if (!r.isSuccess()) {
                 log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
                 return null;
             }
-
+            
             return r.getData();
-
-        }catch (Exception e){
+            
+        } catch (Exception e) {
             log.error("BATTERYDATA QUERY BMS ERROR! ", e);
             return null;
         }
-
+        
     }
-
-    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBatteryDataVO> electricityBatteries,Tenant tenant){
+    
+    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant) {
         try {
-
+            
             if (CollectionUtils.isEmpty(electricityBatteries)) {
                 return new ArrayList<EleBatteryDataVO>();
             }
-
-            List<EleBatteryDataVO> eleBatteryDataVOS=new ArrayList<>(electricityBatteries.size());
-
-            for(int i=0;i<electricityBatteries.size();i++){
-                EleBatteryDataVO vo=new EleBatteryDataVO();
+            
+            List<EleBatteryDataVO> eleBatteryDataVOS = new ArrayList<>(electricityBatteries.size());
+            
+            for (int i = 0; i < electricityBatteries.size(); i++) {
+                EleBatteryDataVO vo = new EleBatteryDataVO();
                 vo.setElectricityBatteryDataVO(electricityBatteries.get(i));
                 eleBatteryDataVOS.add(vo);
             }
-
-            eleBatteryDataVOS.parallelStream().forEach(item ->{
+            
+            eleBatteryDataVOS.parallelStream().forEach(item -> {
                 ElectricityBatteryDataVO electricityBatteryDataVO = item.getElectricityBatteryDataVO();
                 if (!Objects.isNull(electricityBatteryDataVO) && !Objects.isNull(electricityBatteryDataVO.getSn())) {
                     BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
                     batteryInfoQuery.setSn(electricityBatteryDataVO.getSn());
-                    item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery,tenant));
+                    item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery, tenant));
                 }
             });
-
+            
             return eleBatteryDataVOS;
-
-        }catch (Exception e){
+            
+        } catch (Exception e) {
             log.error("BATTERYDATA QUERY BMS ERROR! ", e);
             return new ArrayList<EleBatteryDataVO>();
         }
     }
-
-    /**
-     * 分页查询库存电池
-     * @param offset
-     * @param size
-     * @param sn
-     * @param franchiseeId
-     * @param electricityCabinetId
-     * @return
-     */
+    
+    
     @Override
     @Slave
-    public R queryStockBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId){
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-        if (offset < 0) {
-            offset = 0;
-        }
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
+    public R queryStockBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.
-                queryStockBatteryList(buildStockBatteryDataQuery(sn,franchiseeId,electricityCabinetId,franchiseeIds), offset, size);
-
-        return  R.ok(buildEleBatteryDataVOList(electricityBatteries,tenant));
+                queryStockBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        
+        return R.ok(buildEleBatteryDataVOList(electricityBatteries, electricityBatteryQuery.getTenant()));
     }
-
-    /**
-     * 库存电池个数统计
-     * @param sn
-     * @param franchiseeId
-     * @param electricityCabinetId
-     * @return
-     */
+    
+    
     @Override
     @Slave
-    public R queryStockBatteryPageDataCount(String sn, Long franchiseeId, Integer electricityCabinetId){
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(0);
-            }
-        }
-
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(0);
-        }
-        return R.ok(electricitybatterymapper.queryStockBatteryCount(buildStockBatteryDataQuery(sn, franchiseeId, electricityCabinetId,franchiseeIds)));
+    public R queryStockBatteryPageDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
+        
+        return R.ok(electricitybatterymapper.queryStockBatteryCount(electricityBatteryQuery));
     }
+    
     // 组装库存电池的查询参数
-    private ElectricityBatteryDataQuery  buildStockBatteryDataQuery(String sn, Long franchiseeId, Integer electricityCabinetId,List<Long> franchiseeIds){
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .electricityCabinetId(electricityCabinetId)
-                .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).build();
+    private ElectricityBatteryDataQuery buildStockBatteryDataQuery(String sn, Long franchiseeId, Integer electricityCabinetId, List<Long> franchiseeIds) {
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn)
+                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
+                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE).physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).build();
         return electricityBatteryQuery;
     }
-
-
+    
+    
     // 组装EleBatteryDataVO
     private List<EleBatteryDataVO> buildEleBatteryDataVOList(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant) {
         if (CollectionUtils.isEmpty(electricityBatteries)) {
@@ -975,7 +467,6 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         });
         return queryDataFromBMS(electricityBatteries, tenant);
     }
-
-
-
+    
+    
 }
