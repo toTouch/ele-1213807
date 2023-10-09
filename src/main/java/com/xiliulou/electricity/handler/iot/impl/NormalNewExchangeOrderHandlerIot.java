@@ -170,6 +170,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
      * @param electricityCabinetOrder
      */
     private void handlePackageNumber(ExchangeOrderRsp exchangeOrderRsp, ReceiverMessage receiverMessage, ElectricityCabinetOrder electricityCabinetOrder) {
+        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber, requestId is {}, orderId is {}, uid is {}",
+                receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
         // 定义异常状态，此处需要考虑后续抽出枚举或者常量池的方法
         List<String> warnStateList = new ArrayList<>();
         warnStateList.add(ElectricityCabinetOrder.ORDER_CANCEL);
@@ -183,10 +185,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS);
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_FAIL);
         
-        if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.ORDER_CANCEL) || Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
-            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber begin, requestId is {}, orderId is {}, uid is {}",
-                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
-            
+        if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
+            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber begin, order status is {}", exchangeOrderRsp.getOrderStatus());
             // 通过订单的 UID 获取用户信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
             
