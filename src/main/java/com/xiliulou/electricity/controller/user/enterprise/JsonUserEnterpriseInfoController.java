@@ -49,7 +49,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     @GetMapping("/user/enterpriseInfo/detail")
     public R queryEnterpriseInfo(@RequestParam(value = "uid", required = true) Long uid){
 
-        return R.ok(enterpriseInfoService.selectByUid(uid));
+        return R.ok(enterpriseInfoService.selectEnterpriseInfoByUid(uid));
     }
 
     /**

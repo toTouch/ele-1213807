@@ -10,10 +10,12 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageServi
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,8 +27,6 @@ import javax.annotation.Resource;
  * @description:
  * @date 2023/9/21 11:08
  */
-
-
 @Slf4j
 @RestController
 public class JsonUserEnterpriseChannelUserController extends BaseController {
@@ -36,6 +36,28 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     @Resource
     private EnterpriseBatteryPackageService enterpriseBatteryPackageService;
+    
+    /**
+     * 根据UID查询企业渠道骑手信息
+     * @param uid
+     * @return
+     */
+    @GetMapping("/user/enterprise/queryEnterpriseChannelUser")
+    public R queryEnterpriseChannelUser(@RequestParam(value = "uid", required = true) Long uid) {
+        
+        return R.ok(enterpriseChannelUserService.queryEnterpriseChannelUser(uid));
+    }
+    
+    /**
+     * 修改骑手自主续费状态
+     * @param enterpriseChannelUserQuery
+     * @return
+     */
+    @PutMapping("/user/enterprise/updateRenewalStatus")
+    public R updateRenewalStatus(@RequestBody @Validated(UpdateGroup.class) EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+        
+        return R.ok(enterpriseChannelUserService.updateChannelUser(enterpriseChannelUserQuery));
+    }
     
     @PostMapping("/user/enterprise/addUser")
     public R addUser(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
@@ -137,7 +159,9 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @GetMapping("/user/enterprise/queryPurchaseOrder")
-    public R queryPurchaseOrder(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
+    public R queryPurchaseOrder(@RequestParam("offset") long offset,
+                                @RequestParam("size") long size,
+                                @RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
                                 @RequestParam(value = "paymentStatus", required = true) Integer paymentStatus,
                                 @RequestParam(value = "userName", required = false) String userName,
                                 @RequestParam(value = "phone", required = false) String phone) {
@@ -145,10 +169,13 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterprisePurchaseOrderQuery enterprisePurchaseOrderQuery = EnterprisePurchaseOrderQuery.builder()
                 .enterpriseId(enterpriseId)
+                .paymentStatus(paymentStatus)
                 .userName(userName)
                 .phone(phone)
                 .tenantId(tenantId)
                 .currentTime(System.currentTimeMillis())
+                .offset(offset)
+                .size(size)
                 .build();
     
         return returnTripleResult(enterpriseBatteryPackageService.queryPurchasedPackageOrders(enterprisePurchaseOrderQuery));

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -169,6 +170,45 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public EnterpriseChannelUser selectByUid(Long uid) {
         return enterpriseChannelUserMapper.selectByUid(uid);
+    }
+    
+    @Override
+    public EnterpriseChannelUserVO queryEnterpriseChannelUser(Long uid) {
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
+        EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
+        BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        
+        return enterpriseChannelUserVO;
+    }
+    
+    @Override
+    public EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid) {
+        
+        
+        return null;
+    }
+    
+    @Override
+    public Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+        Integer result = enterpriseChannelUserMapper.updateChannelUser(enterpriseChannelUserQuery);
+        
+        return result;
+    }
+    
+    /**
+     * 检查骑手是否为自主续费，true 则为自主续费， false 则为非自主续费
+     * @param enterpriseChannelUserQuery
+     * @return
+     */
+    @Override
+    public Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+    
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(enterpriseChannelUserQuery.getUid());
+        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+            return Boolean.TRUE;
+        }
+        
+        return Boolean.FALSE;
     }
     
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query) {
