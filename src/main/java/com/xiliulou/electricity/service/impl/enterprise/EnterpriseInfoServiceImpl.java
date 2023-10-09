@@ -38,6 +38,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CloudBeanGeneralViewVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -172,7 +173,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public List<EnterpriseInfoVO> selectByPage(EnterpriseInfoQuery query) {
-        List<EnterpriseInfo> list = this.enterpriseInfoMapper.selectByPage(query);
+        List<EnterpriseInfoPackageVO> list = this.enterpriseInfoMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
