@@ -351,7 +351,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         //先获取企业关联套餐信息
-        List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getId());
+        List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
         if(CollectionUtils.isEmpty(packageIds)){
             return Triple.of(true, "", Collections.emptyList());
         }
