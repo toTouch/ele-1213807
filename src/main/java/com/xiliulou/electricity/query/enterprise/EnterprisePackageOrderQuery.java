@@ -45,6 +45,7 @@ public class EnterprisePackageOrderQuery {
      * 保险ID
      */
     private Integer insuranceId;
+    
 
     //优惠券
     private Integer userCouponId;
@@ -56,6 +57,9 @@ public class EnterprisePackageOrderQuery {
     private Long beginTime;
 
     private Long endTime;
-
-
+    
+    private Long size;
+    
+    private Long offset;
+    
 }

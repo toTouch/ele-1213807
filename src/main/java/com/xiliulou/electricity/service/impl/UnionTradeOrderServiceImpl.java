@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -222,6 +224,9 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    UserBehaviorRecordService userBehaviorRecordService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -1049,6 +1054,9 @@ public class UnionTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+    
+        //保存骑手购买套餐信息，用于云豆回收业务
+        userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
     
         return Pair.of(true, null);
         

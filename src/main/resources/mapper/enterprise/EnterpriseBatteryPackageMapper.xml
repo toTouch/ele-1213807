@@ -148,7 +148,9 @@
           left join t_user_info tui on tui.uid = temco.uid
 
         <where>
-            temco.order_type = 1 and temco.del_flag = 0 and temco.status = 1
+            temco.order_type = 1
+           
+            and temco.status = 1
             <if test="uid != null">
                 and temco.uid = #{uid}
             </if>
@@ -284,5 +286,108 @@
     
     </select>
     
+    <!--查询代付已过期的订单信息-->
+    <select id="queryExpiredPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
+    
+        select
+            tecu.uid,
+            tui.name,
+            tui.phone,
+            tecu.enterprise_id as enterpriseId,
+            tubmc.member_card_id as packageId,
+            tubmc.order_id as orderNo,
+            tubmc.create_time as createTime,
+            tubmc.member_card_expire_time as packageExpiredTime,
+            tubmc.order_effective_time as effectiveTime
+        from t_enterprise_channel_user tecu, t_user_battery_member_card tubmc, t_user_info tui
+        where tubmc.uid = tecu.uid
+          and tecu.uid = tui.uid
+          and tubmc.del_flag = 0
+          
+        <if test="tenantId != null">
+            and tecu.tenant_id = #{tenantId}
+        </if>
+        
+        <if test="enterpriseId != null">
+            and tecu.enterprise_id = #{enterpriseId}
+        </if>
+        
+        <if test="currentTime != null">
+            and tubmc.member_card_expire_time &lt;= #{currentTime}
+        </if>
+    
+        <if test="userName != null and userName != ''">
+            and tui.name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.phone = #{phone}
+        </if>
+        
+        limit #{offset}, #{limit}
+    
+    </select>
+    
+    <select id="queryPaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
+        select
+        tecu.uid,
+        tui.name,
+        tui.phone,
+        tecu.enterprise_id as enterpriseId,
+        tubmc.member_card_id as packageId,
+        tubmc.order_id as orderNo,
+        tubmc.create_time as createTime,
+        tubmc.member_card_expire_time as packageExpiredTime,
+        tubmc.order_effective_time as effectiveTime
+        from t_enterprise_channel_user tecu, t_user_battery_member_card tubmc, t_user_info tui
+        where tubmc.uid = tecu.uid
+        and tecu.uid = tui.uid
+        and tubmc.del_flag = 0
+        <if test="enterpriseId != null">
+            and trbo.enterprise_id = #{enterpriseId}
+        </if>
+    
+        <if test="currentTime != null">
+            and tubmc.member_card_expire_time &gt; #{currentTime}
+        </if>
+    
+        <if test="userName != null and userName != ''">
+            and tui.name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.phone = #{phone}
+        </if>
+    
+        limit #{offset}, #{limit}
+        
+    </select>
+    
+    <select id="queryUnpaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
+        select
+            tecu.uid,
+            tui.name,
+            tui.phone,
+            tecu.create_time as createTime,
+            tecu.update_time as updateTime
+        from t_enterprise_channel_user tecu
+        left join t_user_info tui on tui.uid = tecu.uid
+        <where>
+            <if test="enterpriseId != null">
+                and tecu.uid not in (select uid from t_electricity_member_card_order where status = 1 and enterprise_id = #{enterpriseId})
+            </if>
+    
+            <if test="userName != null and userName != ''">
+                and tui.name like concat('%',#{userName},'%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
+            </if>
 
+        </where>
+    
+        limit #{offset}, #{limit}
+    
+    </select>
+    
+    
+    
 </mapper>

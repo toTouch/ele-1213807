@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.enterprise;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseRentBatteryOrderQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseFreezePackageRecordVO;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO;
@@ -28,6 +29,11 @@ public interface EnterpriseBatteryPackageMapper extends BaseMapper<ElectricityMe
     List<EnterpriseFreezePackageRecordVO> queryBatteryFreezeOrder(@Param("query") EnterprisePackageOrderQuery query);
     
     List<EnterpriseRefundDepositOrderVO> queryBatteryDepositOrder(@Param("query") EnterprisePackageOrderQuery query);
-
-
+    
+    List<EnterprisePackageOrderVO> queryExpiredPackageOrder(EnterprisePurchaseOrderQuery query);
+    
+    List<EnterprisePackageOrderVO> queryPaidPackageOrder(EnterprisePurchaseOrderQuery query);
+    
+    List<EnterprisePackageOrderVO> queryUnpaidPackageOrder(EnterprisePurchaseOrderQuery query);
+    
 }

@@ -145,12 +145,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Override
     public Triple<Boolean, String, Object> checkUserExist(Long id, Long uid) {
-        if (!ObjectUtils.allNotNull(id, uid)) {
+       /* if (!ObjectUtils.allNotNull(id, uid)) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-        }
+        }*/
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByIdAndUid(id, uid);
-        if (Objects.isNull(enterpriseChannelUser)) {
+        if (Objects.isNull(enterpriseChannelUser) || Objects.isNull(enterpriseChannelUser.getUid())) {
             return Triple.of(false, "300062", "被邀请的用户不存在");
         }
         
