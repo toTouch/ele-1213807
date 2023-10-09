@@ -57,5 +57,15 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R recharge(@RequestBody @Validated UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request) {
         return returnTripleResult(enterpriseInfoService.rechargeForUser(userCloudBeanRechargeQuery, request));
     }
+    
+    /**
+     * 云豆概览
+     */
+    @GetMapping("/user/enterpriseInfo/cloudBean/generalView")
+    public R cloudBeanGeneralView(){
+        return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
+    }
+    
+    
 
 }

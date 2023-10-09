@@ -50,4 +50,10 @@ public interface CloudBeanUseRecordService {
     Triple<Boolean, String, Object> recycleDepositMembercard(Long uid);
     
     void recycleCloudBeanTask();
+    
+    List<CloudBeanUseRecord> selectByEnterpriseIdAndType(Long id, Integer typePayMembercard);
+    
+    List<CloudBeanUseRecord> selectCanRecycleRecord(Long id, long currentTimeMillis);
+    
+    Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime);
 }

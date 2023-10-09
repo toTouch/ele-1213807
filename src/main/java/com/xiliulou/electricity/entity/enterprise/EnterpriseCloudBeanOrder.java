@@ -83,7 +83,8 @@ public class EnterpriseCloudBeanOrder {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
-    // 订单状态 0未支付,1支付成功 2支付失败
+    // 订单状态 -1:套餐回收 0未支付,1支付成功 2支付失败
+    public static final Integer STATUS_RECYCLE = -1;
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
@@ -96,7 +97,8 @@ public class EnterpriseCloudBeanOrder {
     public static final Integer TYPE_ADMIN_RECHARGE = 4;
     public static final Integer TYPE_ADMIN_DEDUCT = 5;
 
-    //交易方式 0--线上 1--线下
+    //交易方式 -1:套餐回收 0--线上 1--线下
+    public static final Integer RECYCLE_PAYMENT = -1;
     public static final Integer ONLINE_PAYMENT = 0;
     public static final Integer OFFLINE_PAYMENT = 1;
 

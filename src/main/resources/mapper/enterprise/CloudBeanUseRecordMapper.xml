@@ -25,10 +25,46 @@
         where id = #{id}
     </select>
 
-    <select id="selectCloudBeanByUidAndType" resultMap="CloudBeanUseRecordMap">
+    <select id="selectCloudBeanByUidAndType">
         select sum(bean_amount)
         from t_cloud_bean_use_record
         where uid = #{uid} and type=#{type}
+    </select>
+    
+    <select id="selectByEnterpriseIdAndType" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where enterprise_id = #{enterpriseId} and type=#{type}
+    </select>
+    
+    <select id="selectByTime" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where enterprise_id = #{enterpriseId} and create_time &gt;= #{beginTime} and  create_time &lt;= #{endTime}
+    </select>
+    
+    <select id="selectCanRecycleRecord" resultMap="CloudBeanUseRecordMap">
+        SELECT
+	        cbur.id,
+	        cbur.enterprise_id,
+	        cbur.uid,
+	        cbur.type,
+	        cbur.bean_amount,
+	        cbur.remaining_bean_amount,
+	        cbur.package_id,
+	        cbur.franchisee_id,
+	        cbur.ref,
+	        cbur.tenant_id,
+	        cbur.create_time,
+	        cbur.update_time
+        FROM
+	        t_cloud_bean_use_record cbur
+	        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = cbur.uid
+	        LEFT JOIN t_user_behavior_record ubr ON ubr.uid = cbur.uid
+        WHERE
+            enterprise_id = #{enterpriseId} and ubmc &lt;= #{currentTimeMillis}
     </select>
 
 
