@@ -115,5 +115,21 @@ public class DateUtils {
         long days = TimeUnit.MILLISECONDS.toDays(endTime - beginTime) + 1;
         return days;
     }
+    
+    /**
+     * 判断两个时间段是否有交集
+     *
+     * @param leftStartDate  第一个时间段的开始时间
+     * @param leftEndDate    第一个时间段的结束时间
+     * @param rightStartDate 第二个时间段的开始时间
+     * @param rightEndDate   第二个时间段的结束时间
+     * @return 若有交集, 返回true, 否则返回false
+     */
+    public static boolean hasOverlap(long leftStartDate, long leftEndDate, long rightStartDate, long rightEndDate) {
+    
+        return ((leftStartDate >= rightStartDate) && leftStartDate < rightEndDate) || ((leftStartDate > rightStartDate) && leftStartDate <= rightEndDate) || (
+                (rightStartDate >= leftStartDate) && rightStartDate < leftEndDate) || ((rightStartDate > leftStartDate) && rightStartDate <= leftEndDate);
+    
+    }
 
 }

@@ -53,6 +53,7 @@ public class UserBehaviorRecord {
     //订单类型(1--租电池,2--还电池,3--交押金,4--买套餐)
     public static final Integer TYPE_RENT_BATTERY = 1;
     public static final Integer TYPE_RETURN_BATTERY = 2;
+    @Deprecated
     public static final Integer TYPE_PAY_DEPOSIT = 3;
     public static final Integer TYPE_PAY_MEMBERCARD = 4;
     

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.enterprise;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -45,4 +46,5 @@ public interface EnterpriseCloudBeanOrderService {
     Integer insert(EnterpriseCloudBeanOrder enterpriseCloudBeanOrder);
 
     EnterpriseCloudBeanOrder selectByOrderId(String orderNo);
+    
 }

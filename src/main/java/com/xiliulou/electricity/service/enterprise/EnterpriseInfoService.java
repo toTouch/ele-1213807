@@ -64,4 +64,6 @@ public interface EnterpriseInfoService {
     UserCloudBeanDetailVO cloudBeanDetail();
 
     Triple<Boolean, String, Object> rechargeForUser(UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request);
+    
+    Triple<Boolean, String, Object> cloudBeanGeneralView();
 }
