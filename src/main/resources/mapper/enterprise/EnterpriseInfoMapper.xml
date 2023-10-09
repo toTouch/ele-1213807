@@ -98,8 +98,8 @@
 
     <select id="selectByPageCount" resultType="int">
         select
-        count(1)
-        from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
+        count(1) from (
+        select tei.id from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id group by tei.id) a
         <where>
         <if test="name != null and name != ''">
             and tei.name = #{name}
