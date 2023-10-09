@@ -19,6 +19,11 @@ public class EnterpriseChannelUserVO {
      * 企业id
      */
     private Long enterpriseId;
+    
+    /**
+     * 企业名称
+     */
+    private String enterpriseName;
 
     /**
      * 企业添加用户的uid

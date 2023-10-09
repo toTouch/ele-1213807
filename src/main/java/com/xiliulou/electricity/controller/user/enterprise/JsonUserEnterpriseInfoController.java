@@ -41,7 +41,6 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
 
-
     /**
      * 根据UID查询企业详情
      * @return

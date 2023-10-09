@@ -58,6 +58,8 @@ public interface EnterpriseInfoService {
     Boolean checkUserType();
 
     EnterpriseInfo selectByUid(Long uid);
+    
+    EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid);
 
     EnterpriseInfo queryByIdFromCache(Long enterpriseId);
 

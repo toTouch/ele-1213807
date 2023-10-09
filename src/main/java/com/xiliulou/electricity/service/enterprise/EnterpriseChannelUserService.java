@@ -58,4 +58,13 @@ public interface EnterpriseChannelUserService {
     public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid);
     
     EnterpriseChannelUser selectByUid(Long uid);
+    
+    EnterpriseChannelUserVO queryEnterpriseChannelUser(Long uid);
+    
+    EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid);
+    
+    Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
 }

@@ -122,5 +122,10 @@ public class UserEleInfoVO {
      * 使用次数
      */
     private Long useCount;
+    
+    /**
+     * 所属企业名称
+     */
+    private String enterpriseName;
 
 }

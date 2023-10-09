@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -72,16 +74,15 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
      * @param tenantId
      * @return
      */
-    EnterpriseChannelUser selectUnusedChannelUser(@Param("enterpriseId") Long enterpriseId, @Param("franchiseeId") Long franchiseeId, @Param("tenantIds") Long tenantId);
+    EnterpriseChannelUser selectUnusedChannelUser(@Param("enterpriseId") Long enterpriseId, @Param("tenantId") Long tenantId);
 
     /**
      * 查询已关联到企业的用户
      * @param uid
-     * @param franchiseeId
      * @param tenantId
      * @return
      */
-    EnterpriseChannelUser selectUsedChannelUser(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId,  @Param("tenantId") Long tenantId);
+    EnterpriseChannelUser selectUsedChannelUser(@Param("uid") Long uid,  @Param("tenantId") Long tenantId);
 
     /**
      * 根据ID和UID查询已加入企业的用户
@@ -95,4 +96,8 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     EnterpriseChannelUser selectChannelUserByEnterpriseIdAndUid(@Param("enterpriseId")Long enterpriseId, @Param("uid") Long uid);
     
     EnterpriseChannelUser selectByUid(Long uid);
+    
+    EnterpriseChannelUserVO selectUserRelatedEnterprise(Long uid);
+    
+    Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
 }

@@ -150,23 +150,27 @@
     <!--查询未关联到企业的记录-->
     <select id="selectUnusedChannelUser" resultMap="EnterpriseChannelUserMap">
         <include refid="selectEnterpriseChannelUser"/>
-        where  enterprise_id = #{enterpriseId}
-        and franchisee_id = #{franchiseeId}
-        and tenant_id = #{tenantId}
-        and uid is null
-        limit 1
+        <where>
+            uid is null
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            
+        </where>
+       
     </select>
 
     <!--查询已关联至企业的用户-->
     <select id="selectUsedChannelUser" resultMap="EnterpriseChannelUserMap">
         <include refid="selectEnterpriseChannelUser"/>
         <where>
+            
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
-            </if>
-
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
             </if>
 
             <if test="uid != null">
@@ -210,4 +214,41 @@
         <include refid="selectEnterpriseChannelUser"/>
         where uid = #{uid} order by id limit 1
     </select>
+    
+    <select id="selectUserRelatedEnterprise" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO">
+        select
+            tecu.id,
+            tecu.uid,
+            tecu.invitation_way,
+            tecu.enterprise_id,
+            tei.name,
+            tei.uid as chiefUid,
+            tecu.franchisee_id,
+            tecu.tenant_id,
+            tecu.cloud_bean_status,
+            tecu.renewal_status,
+            tecu.inviter_id,
+            tecu.create_time,
+            tecu.update_time
+        from t_enterprise_channel_user tecu
+        left join t_enterprise_info tei on tei.id = tecu.enterprise_id
+        where uid = #{uid} order by id limit 1
+    </select>
+    
+    <update id="updateChannelUser">
+        update t_enterprise_channel_user
+        <set>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+    
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            
+        </set>
+        where uid = #{uid}
+    </update>
+    
+    
 </mapper>

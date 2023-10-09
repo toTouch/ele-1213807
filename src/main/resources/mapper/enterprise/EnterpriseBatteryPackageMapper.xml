@@ -322,8 +322,8 @@
         <if test="phone != null and phone != ''">
             and tui.phone = #{phone}
         </if>
-        
-        limit #{offset}, #{limit}
+    
+        limit #{offset}, #{size}
     
     </select>
     
@@ -357,7 +357,7 @@
             and tui.phone = #{phone}
         </if>
     
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
         
     </select>
     
@@ -384,7 +384,7 @@
 
         </where>
     
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     
     </select>
     

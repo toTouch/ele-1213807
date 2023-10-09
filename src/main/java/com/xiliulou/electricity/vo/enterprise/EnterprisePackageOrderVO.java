@@ -57,6 +57,8 @@ public class EnterprisePackageOrderVO {
 
     private Long updateTime;
     
+    private Long paymentTime;
+    
     private Long packageExpiredTime;
     
     private Long effectiveTime;

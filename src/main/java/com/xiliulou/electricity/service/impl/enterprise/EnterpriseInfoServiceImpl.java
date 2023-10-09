@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -392,11 +393,23 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, null);
     }
     
+    @Slave
     @Override
     public EnterpriseInfo selectByUid(Long uid) {
         return this.enterpriseInfoMapper.selectByUid(uid);
     }
     
+    @Slave
+    @Override
+    public EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid) {
+        EnterpriseInfo enterpriseInfo = enterpriseInfoMapper.selectByUid(uid);
+        EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
+        BeanUtil.copyProperties(enterpriseInfo, enterpriseInfoVO);
+        
+        return enterpriseInfoVO;
+    }
+    
+    @Slave
     @Override
     public UserCloudBeanDetailVO cloudBeanDetail() {
         EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());

@@ -2,10 +2,15 @@ package com.xiliulou.electricity.query.enterprise;
 
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author BaoYu
@@ -22,11 +27,13 @@ public class EnterpriseChannelUserQuery {
     /**
      * 主键ID
      */
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
 
     /**
      * 企业ID
      */
+    @NotBlank(message = "企业id不能为空", groups = {CreateGroup.class})
     private Long enterpriseId;
 
     /**
@@ -59,6 +66,7 @@ public class EnterpriseChannelUserQuery {
      * 续费状态
      * @see RenewalStatusEnum
      */
+    @NotBlank(message = "自主续费状态不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer renewalStatus;
 
 
