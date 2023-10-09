@@ -118,6 +118,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
         enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
+        enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
         enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
         enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
