@@ -170,8 +170,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
      * @param electricityCabinetOrder
      */
     private void handlePackageNumber(ExchangeOrderRsp exchangeOrderRsp, ReceiverMessage receiverMessage, ElectricityCabinetOrder electricityCabinetOrder) {
-        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber, requestId is {}, orderId is {}, uid is {}",
-                receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
+        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber, requestId is {}, orderId is {}, uid is {}, order status is {}",
+                receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid(), exchangeOrderRsp.getOrderStatus());
         // 定义异常状态，此处需要考虑后续抽出枚举或者常量池的方法
         List<String> warnStateList = new ArrayList<>();
         warnStateList.add(ElectricityCabinetOrder.ORDER_CANCEL);
@@ -186,7 +186,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_FAIL);
         
         if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
-            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber begin, order status is {}", exchangeOrderRsp.getOrderStatus());
             // 通过订单的 UID 获取用户信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
             
@@ -196,7 +195,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 if (Objects.nonNull(userBatteryMemberCard)) {
                     BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                     if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, refund user battery member card number.");
+                        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user battery member card number.");
                         userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
                     }
                 }
@@ -204,7 +203,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //回退车电一体套餐次数
             if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-                log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, refund user car_battery member number.");
+                log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
                 carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
             }
             
