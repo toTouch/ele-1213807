@@ -25,7 +25,7 @@
         where id = #{id}
     </select>
 
-    <select id="selectCloudBeanByUidAndType">
+    <select id="selectCloudBeanByUidAndType" resultType="double">
         select sum(bean_amount)
         from t_cloud_bean_use_record
         where uid = #{uid} and type=#{type}
