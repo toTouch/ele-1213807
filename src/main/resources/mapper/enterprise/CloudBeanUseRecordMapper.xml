@@ -24,9 +24,9 @@
         from t_cloud_bean_use_record
         where id = #{id}
     </select>
-
-    <select id="selectCloudBeanByUidAndType">
-        select sum(bean_amount)
+    
+    <select id="selectCloudBeanByUidAndType" resultType="double">
+        select IFNULL(sum(bean_amount),0)
         from t_cloud_bean_use_record
         where uid = #{uid} and type=#{type}
     </select>

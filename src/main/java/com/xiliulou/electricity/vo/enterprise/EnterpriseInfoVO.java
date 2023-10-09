@@ -33,6 +33,8 @@ public class EnterpriseInfoVO {
     private Long franchiseeId;
 
     private String franchiseeName;
+    
+    private Long businessId;
     /**
      * 企业状态 0:开启,1:关闭
      */
@@ -63,4 +65,6 @@ public class EnterpriseInfoVO {
     private String remark;
 
     private List<String> memcardName;
+    
+    private List<Long> packageIds;
 }

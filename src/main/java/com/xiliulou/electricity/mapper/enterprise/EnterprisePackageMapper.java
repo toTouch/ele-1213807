@@ -41,4 +41,6 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
     void batchInsert(List<EnterprisePackage> packageList);
 
     List<Long> selectByEnterpriseId(Long id);
+    
+    EnterprisePackage selectByPackageId(Long packageId);
 }

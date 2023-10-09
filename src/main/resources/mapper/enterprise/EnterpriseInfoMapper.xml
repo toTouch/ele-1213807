@@ -99,7 +99,7 @@
     <select id="selectByPageCount" resultType="int">
         select
         count(1) from (
-        select tei.id from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id group by tei.id) a
+        select tei.id from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
         <if test="name != null and name != ''">
             and tei.name = #{name}
@@ -123,6 +123,8 @@
             and tei.tenant_id = #{tenantId}
         </if>
         </where>
+        group by tei.id
+        ) a
     </select>
 
     <!--通过主键修改数据-->
