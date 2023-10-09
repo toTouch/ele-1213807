@@ -65,4 +65,6 @@ public class EnterpriseInfoVO {
     private String remark;
 
     private List<String> memcardName;
+    
+    private List<Long> packageIds;
 }

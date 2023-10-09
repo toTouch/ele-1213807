@@ -43,6 +43,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,15 +182,17 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return list.stream().map(item -> {
             EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
             BeanUtils.copyProperties(item, enterpriseInfoVO);
-            
+    
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             enterpriseInfoVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-            
+    
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
             enterpriseInfoVO.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
-            
-            enterpriseInfoVO.setMemcardName(getMembercardNames(item.getId()));
+    
+            Pair<List<Long>, List<String>> listPair = getMembercardNames(item.getId());
+            enterpriseInfoVO.setMemcardName(listPair.getRight());
+            enterpriseInfoVO.setPackageIds(listPair.getLeft());
             
             return enterpriseInfoVO;
         }).collect(Collectors.toList());
@@ -506,22 +509,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Boolean.FALSE;
     }
     
-    private List<String> getMembercardNames(Long id) {
-        
-        List<String> list = Lists.newArrayList();
+    private Pair<List<Long>,List<String>> getMembercardNames(Long id) {
+
         
         List<Long> membercardIds = enterprisePackageService.selectByEnterpriseId(id);
         if (CollectionUtils.isEmpty(membercardIds)) {
-            return list;
+            return Pair.of(Lists.newArrayList(),Lists.newArrayList());
         }
         
+        List<String> list = Lists.newArrayList();
         membercardIds.forEach(e -> {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(e);
             if (Objects.nonNull(batteryMemberCard)) {
                 list.add(batteryMemberCard.getName());
             }
         });
-        
-        return list;
+    
+        return Pair.of(membercardIds,list);
     }
 }
