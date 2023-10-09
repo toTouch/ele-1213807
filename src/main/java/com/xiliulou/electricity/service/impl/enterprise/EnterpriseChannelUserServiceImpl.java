@@ -108,11 +108,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.info("exist channel user record end, channel user info = {}", JsonUtil.toJson(existEnterpriseChannelRecord));
             return Triple.of(true, "", existEnterpriseChannelRecord);
         }
+    
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
+        if(Objects.isNull(enterpriseInfo)){
+            log.info("The enterprise info is not exist, enterprise id = {}", query.getEnterpriseId());
+            return Triple.of(false, "", "企业信息不存在");
+        }
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
         enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
-        enterpriseChannelUser.setFranchiseeId(query.getFranchiseeId());
+        enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
         enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
         enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
