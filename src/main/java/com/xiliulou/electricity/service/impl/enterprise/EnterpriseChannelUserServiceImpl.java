@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.enterprise;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -44,6 +46,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
+    
+    @Resource
+    TenantService tenantService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -118,6 +123,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
         enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
+        //默认设置骑手不自主续费
         enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
         enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
@@ -127,8 +133,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
         log.info("generate channel user end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUser));
+    
+        EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
+        BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+    
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.nonNull(tenant)) {
+            enterpriseChannelUserVO.setTenantCode(tenant.getCode());
+        }
         
-        return Triple.of(true, "", enterpriseChannelUser);
+        return Triple.of(true, "", enterpriseChannelUserVO);
     }
     
     @Override
@@ -198,9 +212,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Slave
     @Override
     public EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid) {
+    
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserMapper.selectUserRelatedEnterprise(uid);
         
-        
-        return null;
+        return enterpriseChannelUserVO;
     }
     
     @Override

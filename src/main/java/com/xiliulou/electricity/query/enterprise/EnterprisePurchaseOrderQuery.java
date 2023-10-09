@@ -35,7 +35,7 @@ public class EnterprisePurchaseOrderQuery {
      */
     private Integer paymentStatus;
     
-    private Integer tenantId;
+    private Long tenantId;
     
     /**
      * 加盟商ID

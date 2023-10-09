@@ -2,8 +2,11 @@ package com.xiliulou.electricity.controller.user.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 
 /**
@@ -66,6 +70,26 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
     }
     
+    /**
+     * 骑手概览
+     * @return
+     */
+    @GetMapping("/user/enterpriseInfo/queryPurchasePackageCount")
+    public R queryPurchasePackageCount(){
+        Long uid = SecurityUtils.getUid();
+        Long tenantId = TenantContextHolder.getTenantId().longValue();
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
+        
+        if(Objects.isNull(enterpriseInfo)){
+            return R.fail("300074", "未找到企业信息");
+        }
     
+        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder()
+                .enterpriseId(enterpriseInfo.getId())
+                .tenantId(tenantId)
+                .build();
+        
+        return R.ok(enterpriseInfoService.queryPurchasedPackageCount(query));
+    }
 
 }

@@ -19,9 +19,12 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -40,6 +43,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CloudBeanGeneralViewVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -102,6 +106,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Autowired
     private CloudBeanUseRecordService cloudBeanUseRecordService;
+    
+    @Resource
+    EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
     
     /**
      * 通过ID查询单条数据从DB
@@ -483,6 +490,33 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query) {
+    
+        List<EnterprisePurchasedPackageResultVO> enterprisePurchasedPackageResultVOList = Lists.newArrayList();
+        
+        EnterprisePurchasedPackageResultVO expiredPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer expiredPackageCount = enterpriseBatteryPackageMapper.queryExpiredPackageOrderCount(query);
+        expiredPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+        expiredPackageResult.setRecordSize(expiredPackageCount);
+        enterprisePurchasedPackageResultVOList.add(expiredPackageResult);
+    
+        EnterprisePurchasedPackageResultVO unpaidPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer unpaidPackageCount = enterpriseBatteryPackageMapper.queryUnpaidPackageOrderCount(query);
+        unpaidPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+        unpaidPackageResult.setRecordSize(unpaidPackageCount);
+        enterprisePurchasedPackageResultVOList.add(unpaidPackageResult);
+    
+        EnterprisePurchasedPackageResultVO paidPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer paidPackageCount = enterpriseBatteryPackageMapper.queryPaidPackageOrderCount(query);
+        paidPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_SUCCESS.getCode());
+        paidPackageResult.setRecordSize(paidPackageCount);
+        enterprisePurchasedPackageResultVOList.add(paidPackageResult);
+        
+        return enterprisePurchasedPackageResultVOList;
     }
     
     @Override

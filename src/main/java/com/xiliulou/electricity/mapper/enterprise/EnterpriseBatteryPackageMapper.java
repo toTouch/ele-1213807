@@ -36,4 +36,10 @@ public interface EnterpriseBatteryPackageMapper extends BaseMapper<ElectricityMe
     
     List<EnterprisePackageOrderVO> queryUnpaidPackageOrder(EnterprisePurchaseOrderQuery query);
     
+    Integer queryExpiredPackageOrderCount(EnterprisePurchaseOrderQuery query);
+    
+    Integer queryPaidPackageOrderCount(EnterprisePurchaseOrderQuery query);
+    
+    Integer queryUnpaidPackageOrderCount(EnterprisePurchaseOrderQuery query);
+    
 }

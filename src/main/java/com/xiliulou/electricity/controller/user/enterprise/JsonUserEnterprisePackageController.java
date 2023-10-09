@@ -72,7 +72,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     /**
      * 根据电池型号查询保险信息
      * @param franchiseeId
-     * @param insuranceType
+     * @param insuranceType 保险类型 0--电池 1--车辆 2--车电一体
      * @param simpleBatteryType
      * @return
      */

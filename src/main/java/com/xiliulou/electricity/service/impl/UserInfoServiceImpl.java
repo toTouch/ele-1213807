@@ -45,6 +45,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -2708,6 +2709,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 // 邀请人
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                
+                // 设置企业信息
+                EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
+                if(Objects.nonNull(enterpriseChannelUserVO)){
+                    item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
+                }
+                
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery other info error!", e);
