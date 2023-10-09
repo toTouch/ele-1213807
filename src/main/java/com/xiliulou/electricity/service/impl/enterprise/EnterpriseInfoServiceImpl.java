@@ -379,12 +379,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
         return Triple.of(true, null, null);
     }
-
+    
+    @Slave
     @Override
     public EnterpriseInfo selectByUid(Long uid) {
         return this.enterpriseInfoMapper.selectByUid(uid);
     }
     
+    @Slave
     @Override
     public EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid) {
         EnterpriseInfo enterpriseInfo = enterpriseInfoMapper.selectByUid(uid);
@@ -394,6 +396,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoVO;
     }
     
+    @Slave
     @Override
     public UserCloudBeanDetailVO cloudBeanDetail() {
         EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
@@ -417,7 +420,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
         return userCloudBeanDetailVO;
     }
-
+    
+    @Slave
     @Override
     public Boolean checkUserType() {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());

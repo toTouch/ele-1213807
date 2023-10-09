@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -826,8 +827,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
-                //TODO 待确认
-                //.storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId())
+                .orderType(PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())
                 .mid(batteryMemberCard.getId())
                 .modelType(0).build();
         
@@ -980,6 +980,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryCostDetails(EnterprisePackageOrderQuery query) {
         
@@ -1060,6 +1061,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, enterpriseUserCostDetailsVOList);
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryPurchasedPackageOrders(EnterprisePurchaseOrderQuery query) {
         List<EnterprisePackageOrderVO> enterprisePackageOrderVOList = Lists.newArrayList();

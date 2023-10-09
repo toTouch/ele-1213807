@@ -70,13 +70,16 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * 根据手机号查询当前加盟商下的企业渠道用户信息
      *
      * @param phone
-     * @param franchiseeId
+     * @param
      * @return
      */
     @GetMapping("/user/enterprise/queryUser")
-    public R queryUser(@RequestParam(value = "phone", required = true) String phone, @RequestParam(value = "franchiseeId", required = true) Long franchiseeId) {
-        
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().phone(phone).franchiseeId(franchiseeId).build();
+    public R queryUser(@RequestParam(value = "phone", required = true) String phone) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
+                .phone(phone)
+                .tenantId(tenantId.longValue())
+                .build();
         
         return returnTripleResult(enterpriseChannelUserService.queryUser(enterpriseChannelUserQuery));
     }
@@ -85,14 +88,16 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * 企业生成二维码前，创建用户邀请记录
      *
      * @param enterpriseId
-     * @param franchiseeId
+     * @param
      * @return
      */
     @GetMapping("/user/enterprise/generateEnterpriseUser")
-    public R generateUserRecord(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
-            @RequestParam(value = "franchiseeId", required = true) Long franchiseeId) {
+    public R generateUserRecord(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
         
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().enterpriseId(enterpriseId).franchiseeId(franchiseeId).build();
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
+                .enterpriseId(enterpriseId)
+                .tenantId(TenantContextHolder.getTenantId().longValue())
+                .build();
         
         return returnTripleResult(enterpriseChannelUserService.generateChannelUser(enterpriseChannelUserQuery));
     }
