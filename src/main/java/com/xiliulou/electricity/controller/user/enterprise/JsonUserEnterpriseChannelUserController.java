@@ -177,7 +177,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                 .paymentStatus(paymentStatus)
                 .userName(userName)
                 .phone(phone)
-                .tenantId(tenantId)
+                .tenantId(tenantId.longValue())
                 .currentTime(System.currentTimeMillis())
                 .offset(offset)
                 .size(size)
