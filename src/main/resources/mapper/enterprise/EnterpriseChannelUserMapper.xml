@@ -221,18 +221,27 @@
             tecu.uid,
             tecu.invitation_way,
             tecu.enterprise_id,
-            tei.name,
+            tei.name as enterpriseName,
             tei.uid as chiefUid,
             tecu.franchisee_id,
             tecu.tenant_id,
             tecu.cloud_bean_status,
             tecu.renewal_status,
             tecu.inviter_id,
+            tecu.del_flag,
             tecu.create_time,
             tecu.update_time
         from t_enterprise_channel_user tecu
         left join t_enterprise_info tei on tei.id = tecu.enterprise_id
-        where uid = #{uid} order by id limit 1
+    
+        <where>
+            tecu.del_flag = 0
+            <if test="uid != null">
+                and tecu.uid = #{uid}
+            </if>
+        
+        </where>
+       
     </select>
     
     <update id="updateChannelUser">

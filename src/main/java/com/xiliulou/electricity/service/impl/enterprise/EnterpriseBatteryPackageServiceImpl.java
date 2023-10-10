@@ -210,6 +210,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
     
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> save(EnterpriseMemberCardQuery query) {
         
@@ -247,6 +248,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatterV(EnterpriseChannelUserQuery query) {
         
@@ -305,6 +307,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
      * @param query
      * @return
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryPackagesByBatteryV(EnterpriseMemberCardQuery query) {
         
@@ -883,7 +886,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
-    
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query) {
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();

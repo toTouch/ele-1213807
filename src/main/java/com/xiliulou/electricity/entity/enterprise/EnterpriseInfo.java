@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.enterprise;
 
 
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,6 +54,11 @@ public class EnterpriseInfo {
      * 企业云豆总数
      */
     private BigDecimal totalBeanAmount;
+    /**
+     * 自主续费状态 0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatus;
     /**
      * 租户ID
      */

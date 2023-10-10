@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.enterprise;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -70,4 +72,9 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> cloudBeanGeneralView();
     
     Triple<Boolean, String, Object> recycleCloudBean(Long uid);
+    
+    List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
+    
+    Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
+    
 }

@@ -30,9 +30,14 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -64,6 +69,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CloudBeanGeneralViewVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
+import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -171,6 +177,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Autowired
     private ElectricityMemberCardOrderService batteryMemberCardOrderService;
+    
+    @Resource
+    EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
     
     /**
      * 通过ID查询单条数据从DB
@@ -949,6 +958,67 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query) {
+    
+        List<EnterprisePurchasedPackageResultVO> enterprisePurchasedPackageResultVOList = Lists.newArrayList();
+        
+        EnterprisePurchasedPackageResultVO expiredPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer expiredPackageCount = enterpriseBatteryPackageMapper.queryExpiredPackageOrderCount(query);
+        expiredPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+        expiredPackageResult.setRecordSize(expiredPackageCount);
+        enterprisePurchasedPackageResultVOList.add(expiredPackageResult);
+    
+        EnterprisePurchasedPackageResultVO unpaidPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer unpaidPackageCount = enterpriseBatteryPackageMapper.queryUnpaidPackageOrderCount(query);
+        unpaidPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+        unpaidPackageResult.setRecordSize(unpaidPackageCount);
+        enterprisePurchasedPackageResultVOList.add(unpaidPackageResult);
+    
+        EnterprisePurchasedPackageResultVO paidPackageResult = new EnterprisePurchasedPackageResultVO();
+        Integer paidPackageCount = enterpriseBatteryPackageMapper.queryPaidPackageOrderCount(query);
+        paidPackageResult.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_SUCCESS.getCode());
+        paidPackageResult.setRecordSize(paidPackageCount);
+        enterprisePurchasedPackageResultVOList.add(paidPackageResult);
+        
+        return enterprisePurchasedPackageResultVOList;
+    }
+    
+    @Override
+    public Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        Long uid = SecurityUtils.getUid();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("update all renewal status error! not found user info, uid = {} ", uid);
+            throw new BizException("300075", "当前用户不存在");
+        }
+    
+        EnterpriseInfo enterpriseInfo = this.selectByUid(uid);
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("update all renewal status error! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
+            throw new BizException("300076", "用户所属企业不存在");
+        }
+        
+        if(!enterpriseInfo.getId().equals(enterpriseInfoQuery.getId())){
+            log.error("update all renewal status error! enterprise director not match current user, request params = {}, current user id = {} ", enterpriseInfoQuery.getId(), uid);
+            throw new BizException("300077", "企业负责人和当前用户不匹配");
+        }
+        
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
+                .enterpriseId(enterpriseInfoQuery.getId())
+                .tenantId(tenantId.longValue())
+                .build();
+    
+        List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.queryChannelUserList(enterpriseChannelUserQuery);
+        
+        
+        
+        return null;
     }
     
     @Override

@@ -49,7 +49,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     }
     
     /**
-     * 修改骑手自主续费状态
+     * 修改单个骑手自主续费状态
      * @param enterpriseChannelUserQuery
      * @return
      */
@@ -177,7 +177,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                 .paymentStatus(paymentStatus)
                 .userName(userName)
                 .phone(phone)
-                .tenantId(tenantId)
+                .tenantId(tenantId.longValue())
                 .currentTime(System.currentTimeMillis())
                 .offset(offset)
                 .size(size)
