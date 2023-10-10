@@ -73,4 +73,6 @@ public interface EnterpriseInfoService {
     
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
+    Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
+    
 }

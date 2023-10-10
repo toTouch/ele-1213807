@@ -15,13 +15,16 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
@@ -33,6 +36,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
@@ -110,6 +114,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
+    
+    @Resource
+    private EnterpriseChannelUserService enterpriseChannelUserService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -520,6 +527,40 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterprisePurchasedPackageResultVOList.add(paidPackageResult);
         
         return enterprisePurchasedPackageResultVOList;
+    }
+    
+    @Override
+    public Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        Long uid = SecurityUtils.getUid();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("update all renewal status error! not found user info, uid = {} ", uid);
+            throw new BizException("300075", "当前用户不存在");
+        }
+    
+        EnterpriseInfo enterpriseInfo = this.selectByUid(uid);
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("update all renewal status error! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
+            throw new BizException("300076", "用户所属企业不存在");
+        }
+        
+        if(!enterpriseInfo.getId().equals(enterpriseInfoQuery.getId())){
+            log.error("update all renewal status error! enterprise director not match current user, request params = {}, current user id = {} ", enterpriseInfoQuery.getId(), uid);
+            throw new BizException("300077", "企业负责人和当前用户不匹配");
+        }
+        
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
+                .enterpriseId(enterpriseInfoQuery.getId())
+                .tenantId(tenantId.longValue())
+                .build();
+    
+        List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.queryChannelUserList(enterpriseChannelUserQuery);
+        
+        
+        
+        return null;
     }
     
     @Override

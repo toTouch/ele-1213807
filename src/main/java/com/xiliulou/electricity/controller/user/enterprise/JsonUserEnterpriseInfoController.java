@@ -91,5 +91,15 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         
         return R.ok(enterpriseInfoService.queryPurchasedPackageCount(query));
     }
+    
+    /**
+     * 企业端更新骑手自主续费状态，总开关
+     * @return
+     */
+    @GetMapping("/user/enterpriseInfo/updateAllRenewalStatus")
+    public R updateAllRenewalStatus(){
+        
+        return null;
+    }
 
 }

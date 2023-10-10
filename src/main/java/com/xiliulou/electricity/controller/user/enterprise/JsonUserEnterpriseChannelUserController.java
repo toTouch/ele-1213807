@@ -49,7 +49,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     }
     
     /**
-     * 修改骑手自主续费状态
+     * 修改单个骑手自主续费状态
      * @param enterpriseChannelUserQuery
      * @return
      */

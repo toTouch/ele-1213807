@@ -13,7 +13,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,27 +70,21 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 根据电池型号查询保险信息
+     *
      * @param franchiseeId
-     * @param insuranceType 保险类型 0--电池 1--车辆 2--车电一体
+     * @param insuranceType     保险类型 0--电池 1--车辆 2--车电一体
      * @param simpleBatteryType
      * @return
      */
     @GetMapping(value = "/user/enterprise/queryInsuranceByType")
-    public R queryInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId,
-                                  @RequestParam("insuranceType") Integer insuranceType,
-                                  @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType){
-    
-        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
-                .franchiseeId(franchiseeId)
-                .insuranceType(insuranceType)
-                .status(FranchiseeInsurance.STATUS_USABLE)
-                .simpleBatteryType(simpleBatteryType)
-                .tenantId(TenantContextHolder.getTenantId())
-                .build();
+    public R queryInsuranceByType(@RequestParam("franchiseeId") Long franchiseeId, @RequestParam("insuranceType") Integer insuranceType,
+            @RequestParam(value = "simpleBatteryType", required = false) String simpleBatteryType) {
+        
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder().franchiseeId(franchiseeId).insuranceType(insuranceType).status(FranchiseeInsurance.STATUS_USABLE)
+                .simpleBatteryType(simpleBatteryType).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(franchiseeInsuranceService.selectInsuranceByType(query));
     }
-    
     
     /**
      * 企业代付续租购买套餐
@@ -109,6 +102,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 企业代付购买套餐+押金+保险
+     *
      * @param query
      * @param request
      * @return
@@ -119,6 +113,5 @@ public class JsonUserEnterprisePackageController extends BaseController {
         return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query, request));
         
     }
-    
     
 }

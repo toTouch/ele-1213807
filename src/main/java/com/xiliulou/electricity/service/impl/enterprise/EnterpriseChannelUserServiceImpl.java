@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -221,6 +222,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+        enterpriseChannelUserQuery.setUpdateTime(System.currentTimeMillis());
+        
         Integer result = enterpriseChannelUserMapper.updateChannelUser(enterpriseChannelUserQuery);
         
         return result;
@@ -241,6 +244,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         return Boolean.FALSE;
+    }
+    
+    @Override
+    public List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+    
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+        enterpriseChannelUser.setEnterpriseId(enterpriseChannelUserQuery.getEnterpriseId());
+        enterpriseChannelUser.setTenantId(enterpriseChannelUserQuery.getTenantId());
+    
+        List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
+        
+        return enterpriseChannelUserList;
     }
     
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query) {
