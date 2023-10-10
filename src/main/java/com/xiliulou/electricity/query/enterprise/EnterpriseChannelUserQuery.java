@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -33,7 +32,7 @@ public class EnterpriseChannelUserQuery {
     /**
      * 企业ID
      */
-    @NotBlank(message = "企业id不能为空", groups = {CreateGroup.class})
+    @NotNull(message = "企业id不能为空", groups = {CreateGroup.class})
     private Long enterpriseId;
 
     /**
@@ -66,7 +65,7 @@ public class EnterpriseChannelUserQuery {
      * 续费状态
      * @see RenewalStatusEnum
      */
-    @NotBlank(message = "自主续费状态不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "自主续费状态不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer renewalStatus;
     
     /**
