@@ -71,6 +71,8 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> cloudBeanGeneralView();
     
+    Triple<Boolean, String, Object> recycleCloudBean(Long uid);
+    
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);

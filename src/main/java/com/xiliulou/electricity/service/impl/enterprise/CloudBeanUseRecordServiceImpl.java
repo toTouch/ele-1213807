@@ -455,7 +455,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     }
     
     private Triple<Boolean, String, BigDecimal> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
-        BigDecimal recycleMembercard = BigDecimal.ZERO;
         
         List<UserBehaviorRecord> userBehaviorRecords = userBehaviorRecordService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(userBehaviorRecords)) {
@@ -533,6 +532,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
         long membercardStartTime;
         for (UserBehaviorRecord membercardRecord : membercardRecords) {
+            BigDecimal recycleMembercard = BigDecimal.ZERO;
+            
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(membercardRecord.getOrderId());
             if (Objects.isNull(electricityMemberCardOrder)) {
                 log.warn("RECYCLE BATTERY MEMBERCARD WARN! not found electricityMemberCardOrder,uid={},orderId={}", userInfo.getUid(), membercardRecord.getOrderId());
@@ -599,19 +600,19 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             
             recycleMembercard = recycleMembercard.add(BigDecimal.valueOf(recycleDay).multiply(recyclePrice));
             
-            membercardStartTime = membercardEndTime;
+            
             
             //保存回收记录
             EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
             enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
             enterpriseCloudBeanOrder.setUid(userInfo.getUid());
             enterpriseCloudBeanOrder.setOperateUid(0L);
-            enterpriseCloudBeanOrder.setPayAmount(electricityMemberCardOrder.getPayAmount());
+            enterpriseCloudBeanOrder.setPayAmount(recycleMembercard);
             enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
             enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
             enterpriseCloudBeanOrder.setPayType(EnterpriseCloudBeanOrder.RECYCLE_PAYMENT);
             enterpriseCloudBeanOrder.setType(EnterpriseCloudBeanOrder.TYPE_RECYCLE);
-            enterpriseCloudBeanOrder.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+            enterpriseCloudBeanOrder.setBeanAmount(recycleMembercard);
             enterpriseCloudBeanOrder.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             enterpriseCloudBeanOrder.setTenantId(enterpriseInfo.getTenantId());
             enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
@@ -622,7 +623,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
             cloudBeanUseRecord.setUid(userInfo.getUid());
             cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
-            cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+            cloudBeanUseRecord.setBeanAmount(recycleMembercard);
             cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
             cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
             cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
@@ -631,9 +632,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+            membercardStartTime = membercardEndTime;
         }
         
-        return Triple.of(true, null, recycleMembercard);
+        return Triple.of(true, null, null);
     }
     
     private void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
