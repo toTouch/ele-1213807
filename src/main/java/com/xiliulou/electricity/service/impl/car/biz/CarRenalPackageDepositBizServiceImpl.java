@@ -750,6 +750,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageMemberTermEntity.setRentalPackageConfine(packageEntity.getConfine());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(packageEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setRentalPackageDeposit(packageEntity.getDeposit());
         carRentalPackageMemberTermEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageMemberTermEntity.setTenantId(tenantId);
         carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
