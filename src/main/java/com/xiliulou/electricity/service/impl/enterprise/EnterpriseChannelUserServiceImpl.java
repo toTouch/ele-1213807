@@ -139,6 +139,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
     
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        log.info("query tenant info by tenant id, tenant info  = {}", tenant);
         if (Objects.nonNull(tenant)) {
             enterpriseChannelUserVO.setTenantCode(tenant.getCode());
         }
