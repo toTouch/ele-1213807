@@ -1124,14 +1124,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
-    
-            EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(rentBatteryOrder.getUid());
-            if (Objects.nonNull(enterpriseChannelUser)) {
-                userBehaviorRecordService
-                        .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RENT_BATTERY, rentBatteryOrder.getTenantId());
-    
-            }
-
+            
             return null;
         });
         return R.ok();
@@ -1272,14 +1265,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
         rentBatteryOrderService.insert(rentBatteryOrder);
-    
-        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(rentBatteryOrder.getUid());
-        if (Objects.nonNull(enterpriseChannelUser)) {
-            userBehaviorRecordService
-                    .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RETURN_BATTERY, rentBatteryOrder.getTenantId());
         
-        }
-
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.BATTERY_MODEL)

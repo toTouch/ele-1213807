@@ -663,14 +663,6 @@ public class EleOperateQueueHandler {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
                         String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
             }
-    
-            //套餐池保存用户租电成功记录
-            EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(rentBatteryOrder.getUid());
-            if (Objects.nonNull(enterpriseChannelUser)) {
-                userBehaviorRecordService
-                        .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RENT_BATTERY, rentBatteryOrder.getTenantId());
-            }
-            
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
         }
@@ -678,13 +670,6 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             checkReturnBatteryDoor(rentBatteryOrder);
-    
-            //套餐池保存用户退电成功记录
-            EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(rentBatteryOrder.getUid());
-            if (Objects.nonNull(enterpriseChannelUser)) {
-                userBehaviorRecordService
-                        .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RETURN_BATTERY, rentBatteryOrder.getTenantId());
-            }
         }
     }
 

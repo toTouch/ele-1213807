@@ -65,14 +65,6 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     }
     
     /**
-     * 回收用户套餐余量及押金
-     */
-    @PostMapping("/user/cloudBean/recycle/{uid}")
-    public R recycleDepositMembercard(@PathVariable("uid") Long uid) {
-        return returnTripleResult(cloudBeanUseRecordService.recycleDepositMembercard(uid));
-    }
-    
-    /**
      * 云豆账单下载
      */
     @GetMapping("/user/cloudBeanOrder/download")
