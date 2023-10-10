@@ -66,6 +66,13 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
     }
     
+    /**
+     * 云豆回收
+     */
+    @PutMapping("/user/enterpriseInfo/recycleCloudBean/{uid}")
+    public R recycleCloudBean(@PathVariable("uid") Long uid) {
+        return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid));
+    }
     
 
 }

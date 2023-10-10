@@ -68,4 +68,6 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> rechargeForUser(UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request);
     
     Triple<Boolean, String, Object> cloudBeanGeneralView();
+    
+    Triple<Boolean, String, Object> recycleCloudBean(Long uid);
 }
