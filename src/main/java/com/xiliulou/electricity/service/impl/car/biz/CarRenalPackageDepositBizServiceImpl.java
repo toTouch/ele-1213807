@@ -458,7 +458,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             }
             if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
                 freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
-                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+                freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(authStatus);
             }
             return freeDepositUserInfoVo;
         }
@@ -520,7 +520,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
         if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
             freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
-            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+            freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(authStatus);
         }
         return freeDepositUserInfoVo;
     }
@@ -562,13 +562,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
             userInfoUpdate.setStoreId(Long.valueOf(storeId));
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(userInfoUpdate);
             if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             }
+            userInfoService.updateByUid(userInfoUpdate);
             // 车电一体，同步押金
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 log.info("saveFreeDepositSuccessTx, userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
