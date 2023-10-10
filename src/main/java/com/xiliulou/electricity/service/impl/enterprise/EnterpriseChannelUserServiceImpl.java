@@ -106,14 +106,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
         log.info("generate channel user start, enterprise channel info = {}", query.getEnterpriseId());
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
-        //先查找库中是否存在已经创建好的基础用户数据，如果存在，则使用已存在的数据，若不存在，则创建新的。
-        EnterpriseChannelUser existEnterpriseChannelRecord = enterpriseChannelUserMapper.selectUnusedChannelUser(query.getEnterpriseId(), tenantId.longValue());
-        if (Objects.nonNull(existEnterpriseChannelRecord)) {
-            log.info("exist channel user record end, channel user info = {}", JsonUtil.toJson(existEnterpriseChannelRecord));
-            return Triple.of(true, "", existEnterpriseChannelRecord);
-        }
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         if(Objects.isNull(enterpriseInfo)){
@@ -121,27 +113,35 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "", "企业信息不存在");
         }
         
-        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
-        enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
-        //默认设置骑手不自主续费
-        enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
-        enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-        enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
-        enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
-        enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
-        
-        enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
-        log.info("generate channel user end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUser));
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        log.info("query tenant info by tenant id, tenant info  = {}", tenant);
     
         EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
-        BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        //先查找库中是否存在已经创建好的基础用户数据，如果存在，则使用已存在的数据，若不存在，则创建新的。
+        EnterpriseChannelUser existEnterpriseChannelRecord = enterpriseChannelUserMapper.selectUnusedChannelUser(query.getEnterpriseId(), tenantId.longValue());
+        if (Objects.nonNull(existEnterpriseChannelRecord)) {
+            BeanUtil.copyProperties(existEnterpriseChannelRecord, enterpriseChannelUserVO);
+        }else{
+            EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+            enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
+            enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
+            //默认设置骑手不自主续费
+            enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
+            enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
+            enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
+            enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+            enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
+            log.info("generate channel user end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUser));
+            BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        }
     
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.nonNull(tenant)) {
             enterpriseChannelUserVO.setTenantCode(tenant.getCode());
         }
+        log.info("exist channel user record end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUserVO));
         
         return Triple.of(true, "", enterpriseChannelUserVO);
     }
