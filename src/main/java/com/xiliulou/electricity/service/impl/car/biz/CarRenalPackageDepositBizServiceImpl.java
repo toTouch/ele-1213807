@@ -457,8 +457,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
             }
             if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-                freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
-                freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(authStatus);
+                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
             }
             return freeDepositUserInfoVo;
         }
@@ -519,8 +519,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
         }
         if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-            freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
-            freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(authStatus);
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
         }
         return freeDepositUserInfoVo;
     }
