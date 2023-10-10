@@ -108,10 +108,19 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("generate channel user start, enterprise channel info = {}", query.getEnterpriseId());
         
         Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        log.info("query tenant info by tenant id, tenant info  = {}", tenant);
+        
         //先查找库中是否存在已经创建好的基础用户数据，如果存在，则使用已存在的数据，若不存在，则创建新的。
         EnterpriseChannelUser existEnterpriseChannelRecord = enterpriseChannelUserMapper.selectUnusedChannelUser(query.getEnterpriseId(), tenantId.longValue());
         if (Objects.nonNull(existEnterpriseChannelRecord)) {
-            log.info("exist channel user record end, channel user info = {}", JsonUtil.toJson(existEnterpriseChannelRecord));
+            EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
+            BeanUtil.copyProperties(existEnterpriseChannelRecord, enterpriseChannelUserVO);
+            if (Objects.nonNull(tenant)) {
+                enterpriseChannelUserVO.setTenantCode(tenant.getCode());
+            }
+            log.info("exist channel user record end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUserVO));
+            
             return Triple.of(true, "", existEnterpriseChannelRecord);
         }
     
@@ -137,9 +146,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
         EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
         BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
-    
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        log.info("query tenant info by tenant id, tenant info  = {}", tenant);
         if (Objects.nonNull(tenant)) {
             enterpriseChannelUserVO.setTenantCode(tenant.getCode());
         }
