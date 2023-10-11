@@ -431,13 +431,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         return R.ok(electricitybatterymapper.queryStockBatteryCount(electricityBatteryQuery));
     }
     
-    // 组装库存电池的查询参数
-    private ElectricityBatteryDataQuery buildStockBatteryDataQuery(String sn, Long franchiseeId, Integer electricityCabinetId, List<Long> franchiseeIds) {
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
-                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE).physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).build();
-        return electricityBatteryQuery;
-    }
+
     
     
     // 组装EleBatteryDataVO
