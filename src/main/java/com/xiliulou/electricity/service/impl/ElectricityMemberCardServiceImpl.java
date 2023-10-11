@@ -450,11 +450,14 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
-            if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
-                query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
-            } else {
-                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                    query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
+                } else {
+                    query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                }
             }
+
 
         } else {
             //续费
