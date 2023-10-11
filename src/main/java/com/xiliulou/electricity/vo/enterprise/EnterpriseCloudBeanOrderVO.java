@@ -19,6 +19,8 @@ public class EnterpriseCloudBeanOrderVO {
      * 企业id
      */
     private Long enterpriseId;
+    
+    private Long businessId;
 
     private String enterpriseName;
     /**
