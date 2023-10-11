@@ -221,10 +221,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+    public Integer updateRenewStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
         enterpriseChannelUserQuery.setUpdateTime(System.currentTimeMillis());
         
-        Integer result = enterpriseChannelUserMapper.updateChannelUser(enterpriseChannelUserQuery);
+        Integer result = enterpriseChannelUserMapper.updateRenewStatus(enterpriseChannelUserQuery);
         
         return result;
     }
@@ -264,6 +264,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         
         return enterpriseChannelUserList;
+    }
+    
+    @Override
+    public Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+        enterpriseChannelUser.setId(enterpriseChannelUserQuery.getId());
+        enterpriseChannelUser.setCloudBeanStatus(enterpriseChannelUserQuery.getCloudBeanStatus());
+        enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+        
+        return enterpriseChannelUserMapper.update(enterpriseChannelUser);
     }
     
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query) {

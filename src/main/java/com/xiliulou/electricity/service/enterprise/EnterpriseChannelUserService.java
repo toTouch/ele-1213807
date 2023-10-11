@@ -65,12 +65,14 @@ public interface EnterpriseChannelUserService {
     
     EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid);
     
-    Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    Integer updateRenewStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     Integer batchUpdateRenewStatus(List<Long> channelUserIds, Integer renewalStatus);
     
     Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
 }

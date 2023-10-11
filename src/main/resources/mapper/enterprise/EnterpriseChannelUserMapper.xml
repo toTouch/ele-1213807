@@ -10,6 +10,7 @@
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
+        <result property="cloudBeanStatus" column="cloud_bean_status" jdbcType="INTEGER"/>
         <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -18,7 +19,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectEnterpriseChannelUser">
-        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, inviter_id, create_time, update_time, remark from t_enterprise_channel_user
+        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, cloud_bean_status, inviter_id, create_time, update_time, remark from t_enterprise_channel_user
     </sql>
 
     <!--查询单个-->
@@ -245,7 +246,7 @@
        
     </select>
     
-    <update id="updateChannelUser">
+    <update id="updateRenewStatus">
         update t_enterprise_channel_user
         <set>
             <if test="renewalStatus != null">

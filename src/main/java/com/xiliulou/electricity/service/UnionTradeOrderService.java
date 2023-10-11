@@ -40,4 +40,9 @@ public interface UnionTradeOrderService {
     Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
     
     Pair<Boolean, Object> notifyEnterprisePackageAndDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
+    
+    Pair<Boolean, Object>  notifyEnterprisePackageWithoutDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
+    
+    Pair<Boolean, Object> notifyEnterprisePackageRenewalOrder(WechatJsapiOrderCallBackResource callBackResource);
+    
 }

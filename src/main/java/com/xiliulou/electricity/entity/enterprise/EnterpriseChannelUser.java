@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.enterprise;
 
 
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.AllArgsConstructor;
@@ -54,6 +55,12 @@ public class EnterpriseChannelUser {
      * @see RenewalStatusEnum
      */
     private Integer renewalStatus;
+    
+    /**
+     * 云豆状态（1-未回收，2-已回收）
+     * @see CloudBeanStatusEnum
+     */
+    private Integer cloudBeanStatus;
     
     /**
      * 邀请人UID

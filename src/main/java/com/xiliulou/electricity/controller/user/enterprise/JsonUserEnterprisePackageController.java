@@ -172,7 +172,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
     public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
         
-        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query, request));
+        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithFreeDeposit(query, request));
         
     }
     

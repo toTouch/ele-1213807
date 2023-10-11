@@ -99,7 +99,7 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     
     EnterpriseChannelUserVO selectUserRelatedEnterprise(@Param("uid")Long uid);
     
-    Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    Integer updateRenewStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     Integer batchUpdateRenewStatus(@Param("channelUserIds")List<Long> channelUserIds, @Param("renewalStatus")Integer renewalStatus, @Param("updateTime")Long updateTime);
     

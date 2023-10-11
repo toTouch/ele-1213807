@@ -56,7 +56,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     @PutMapping("/user/enterprise/updateRenewalStatus")
     public R updateRenewalStatus(@RequestBody @Validated(UpdateGroup.class) EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
         
-        return R.ok(enterpriseChannelUserService.updateChannelUser(enterpriseChannelUserQuery));
+        return R.ok(enterpriseChannelUserService.updateRenewStatus(enterpriseChannelUserQuery));
     }
     
     @PostMapping("/user/enterprise/addUser")

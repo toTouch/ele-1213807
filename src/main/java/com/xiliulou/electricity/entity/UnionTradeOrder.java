@@ -68,6 +68,11 @@ public class UnionTradeOrder {
     public static final String ATTACH_ENTERPRISE_PACKAGE_WITHOUT_DEPOSIT_PAYMENT = "enterprisePackageWithoutDepositPayment";
     
     /**
+     * 企业渠道套餐续费支付
+     */
+    public static final String  ATTACH_ENTERPRISE_PACKAGE_RENEWAL_PAYMENT = "enterprisePackageRenewalPayment";
+    
+    /**
      * 保险套餐混合支付
      */
     public static final String ATTACH_MEMBERCARD_INSURANCE = "membercardInsurance";

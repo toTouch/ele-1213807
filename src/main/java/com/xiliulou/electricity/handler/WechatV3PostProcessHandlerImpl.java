@@ -36,7 +36,6 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
     @Autowired
     WechatV3MerchantLoadAndUpdateCertificateService certificateService;
 
-
     @Autowired
     RedisService redisService;
 
@@ -107,15 +106,16 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             unionTradeOrderService.notifyServiceFee(callBackResource);
         }else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)){
             electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
-        }else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_PURCHASE_ENTERPRISE_PACKAGE)){
-            //企业渠道购买换电套餐回调
-            electricityTradeOrderService.notifyPurchaseEnterprisePackageOrder(callBackResource);
+        }else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_RENEWAL_PAYMENT)){
+            //企业渠道购买换电套餐续费回调
+            //electricityTradeOrderService.notifyPurchaseEnterprisePackageOrder(callBackResource);
+            unionTradeOrderService.notifyEnterprisePackageRenewalOrder(callBackResource);
         }else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_DEPOSIT_PAYMENT)) {
             //企业渠道购买换电套餐+押金回调
             unionTradeOrderService.notifyEnterprisePackageAndDepositOrder(callBackResource);
         }else if(Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_WITHOUT_DEPOSIT_PAYMENT)){
             //企业渠道免押购买换电套餐回调
-            //TODO
+            unionTradeOrderService.notifyEnterprisePackageWithoutDepositOrder(callBackResource);
         } else {
             electricityTradeOrderService.notifyMemberOrder(callBackResource);
         }

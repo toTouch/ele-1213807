@@ -16,16 +16,20 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -226,6 +230,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Resource
     AnotherPayMembercardRecordService anotherPayMembercardRecordService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -894,7 +901,7 @@ public class UnionTradeOrderServiceImpl extends
     
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!not found electricityMemberCardOrder,orderNo={}", orderNo);
+            log.error("notify member card order error, not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
     
@@ -904,19 +911,19 @@ public class UnionTradeOrderServiceImpl extends
         }
     
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!electricityMemberCardOrder status is not init, orderNo={}", orderNo);
+            log.error("notify member card order error, electricityMemberCardOrder status is not init, orderNo={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if(Objects.isNull(userInfo)){
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            log.error("notify member card order error, userInfo is null,uid={}", electricityMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在");
         }
     
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if(Objects.isNull(batteryMemberCard)){
-            log.error("NOTIFY MEMBERCARD INSURANCE ORDER ERROR!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),electricityMemberCardOrder.getMemberCardId());
+            log.error("notify member card order error, batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),electricityMemberCardOrder.getMemberCardId());
             return Pair.of(false, "套餐不存在");
         }
     
@@ -1055,8 +1062,15 @@ public class UnionTradeOrderServiceImpl extends
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
     
         //保存骑手购买套餐信息，用于云豆回收业务
-        //userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
         anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
+        
+        //更新云豆状态为未回收状态
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(electricityMemberCardOrder.getUid());
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = new EnterpriseChannelUserQuery();
+        enterpriseChannelUserQuery.setId(enterpriseChannelUser.getId());
+        enterpriseChannelUserQuery.setUid(electricityMemberCardOrder.getUid());
+        enterpriseChannelUserQuery.setCloudBeanStatus(CloudBeanStatusEnum.NOT_RECYCLE.getCode());
+        enterpriseChannelUserService.updateCloudBeanStatus(enterpriseChannelUserQuery);
         
         return Pair.of(true, null);
         
@@ -1314,6 +1328,174 @@ public class UnionTradeOrderServiceImpl extends
                 userInfo.getTenantId());
     
         return Pair.of(result, null);
+        
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> notifyEnterprisePackageWithoutDepositOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+    
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.error("notify enterprise package without deposit order error, not found unionTradeOrder,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.error("notify enterprise package without deposit order error, unionTradeOrder status is not init,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+    
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (CollectionUtils.isEmpty(electricityTradeOrderList)) {
+            log.error("notify enterprise package without deposit order error, electricityTradeOrderList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+    
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderType(), Integer.class);
+        if (CollectionUtils.isEmpty(orderTypeList)) {
+            log.error("notify enterprise package without deposit order error, orderTypeList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+    
+        List<String> orderIdList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class);
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            log.error("notify enterprise package without deposit order error, orderIdList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+    
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+        }else {
+            log.error("notify enterprise package without deposit order error, ORDER_NO={}" + tradeOrderNo);
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("notify enterprise package without deposit order error, not found userInfo,uid={}", unionTradeOrder.getUid());
+            return Pair.of(true, null);
+        }
+    
+    
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
+            }
+        
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                manageEnterpriseMemberCardOrder(orderIdList.get(i), tradeOrderStatus);
+            }
+        }
+    
+        //系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+    
+        //混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+    
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+    
+        return Pair.of(true, null);
+  
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> notifyEnterprisePackageRenewalOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+    
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.error("notify enterprise package renewal error, not found unionTradeOrder,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.error("notify enterprise package renewal error, unionTradeOrder status is not init,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+    
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (CollectionUtils.isEmpty(electricityTradeOrderList)) {
+            log.error("notify enterprise package renewal error, electricityTradeOrderList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+    
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderType(), Integer.class);
+        if (CollectionUtils.isEmpty(orderTypeList)) {
+            log.error("notify enterprise package renewal error, orderTypeList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+    
+        List<String> orderIdList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class);
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            log.error("notify enterprise package renewal error, orderIdList is empty,tradeOrderNo={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+    
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+        }else {
+            log.error("notify redult pay fail, order_no={}" + tradeOrderNo);
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("notify enterprise package renewal error, not found userInfo,uid={}", unionTradeOrder.getUid());
+            return Pair.of(true, null);
+        }
+    
+    
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
+            }
+        
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                manageEnterpriseMemberCardOrder(orderIdList.get(i), tradeOrderStatus);
+            }
+        }
+    
+        //系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+    
+        //混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+    
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+    
+        return Pair.of(true, null);
         
     }
     
