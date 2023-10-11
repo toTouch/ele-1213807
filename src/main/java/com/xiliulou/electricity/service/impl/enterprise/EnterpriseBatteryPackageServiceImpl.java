@@ -18,9 +18,11 @@ import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
@@ -57,9 +59,12 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FreeDepositDataService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -79,6 +84,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.UserBatteryDepositVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
@@ -89,6 +95,12 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseRefundDepositOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseRentBatteryOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserPackageDetailsVO;
+import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
+import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -120,101 +132,77 @@ import java.util.stream.Collectors;
  * @description:
  * @date 2023/9/15 13:58
  */
-
-
 @Service
 @Slf4j
 public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPackageService {
-    
     @Resource
     EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
-    
     @Resource
     ElectricityPayParamsService electricityPayParamsService;
-    
     @Resource
     UserOauthBindService userOauthBindService;
-    
     @Resource
     ElectricityTradeOrderService electricityTradeOrderService;
-    
     @Resource
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
-    
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
-    
     @Resource
     private BatteryMemberCardMapper batteryMemberCardMapper;
-    
     @Resource
     private RedisService redisService;
-    
     @Resource
     private UserBatteryMemberCardService userBatteryMemberCardService;
-    
     @Resource
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
-    
     @Resource
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
-    
     @Resource
     private UserInfoService userInfoService;
-    
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
-    
     @Resource
     private FranchiseeService franchiseeService;
-    
     @Resource
     private CouponService couponService;
-    
     @Resource
     private CarRentalPackageService carRentalPackageService;
-    
     @Resource
     private BatteryModelService batteryModelService;
-    
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
-    
     @Resource
     private UserBatteryDepositService userBatteryDepositService;
-    
     @Resource
     private BatteryMemberCardService batteryMemberCardService;
-    
     @Resource
     private EnterprisePackageService enterprisePackageService;
-    
     @Resource
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
-    
     @Resource
     EleDepositOrderService eleDepositOrderService;
-    
     @Resource
     UnionTradeOrderService unionTradeOrderService;
-    
     @Resource
     FranchiseeInsuranceService franchiseeInsuranceService;
-    
     @Resource
     InsuranceOrderService insuranceOrderService;
-    
     @Resource
     UserBehaviorRecordService userBehaviorRecordService;
-    
     @Resource
     private ElectricityMemberCardOrderService eleMemberCardOrderService;
-    
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
-    
     @Resource
     private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
+    @Resource
+    FreeDepositDataService freeDepositDataService;
+    @Resource
+    PxzConfigService pxzConfigService;
+    @Resource
+    PxzDepositService pxzDepositService;
     
     @Deprecated
     @Override
@@ -419,6 +407,78 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return null;
     }
     
+    @Override
+    public Triple<Boolean, String, Object> queryRiderDepositAndPackage(Long uid) {
+    
+        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO = new UserBatteryMemberCardInfoVO();
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("query rider deposit and package failed, not found userInfo,uid = {}", uid);
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+    
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        userBatteryMemberCardInfoVO.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
+        userBatteryMemberCardInfoVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
+        userBatteryMemberCardInfoVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+        userBatteryMemberCardInfoVO.setFranchiseeId(userInfo.getFranchiseeId());
+        userBatteryMemberCardInfoVO.setStoreId(userInfo.getStoreId());
+        userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
+            log.warn("query rider deposit and package failed, not found userBatteryDeposit,uid={}", userInfo.getUid());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+    
+        userBatteryMemberCardInfoVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+            log.warn("query rider deposit and package failed, not found userBatteryMemberCard,uid={}", userInfo.getUid());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+    
+        userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.YES);
+        userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+        userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        userBatteryMemberCardInfoVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("query rider deposit and package failed, not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+        if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
+            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000.0) : 0);
+        } else {
+            userBatteryMemberCardInfoVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000.0) : 0);
+        }
+    
+        //套餐订单金额
+        ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder) ? null : electricityMemberCardOrder.getPayAmount());
+        userBatteryMemberCardInfoVO.setMemberCardPayTime(Objects.isNull(electricityMemberCardOrder) ? null : electricityMemberCardOrder.getCreateTime());
+        userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
+        userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());
+        userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
+    
+        //用户电池型号
+        userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
+    
+        //查询当前用户是否存在最新的冻结订单信息
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+        if(Objects.nonNull(eleDisableMemberCardRecord)
+                && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())){
+            userBatteryMemberCardInfoVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
+        }
+    
+        return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        
+    }
+    
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryUserBatteryDeposit(Long uid) {
@@ -447,6 +507,130 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setDepositType(userBatteryDeposit.getDepositType());
     
         return Triple.of(true, "", userBatteryDepositVO);
+        
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatus(Long uid) {
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("check user deposit status error, not found user info,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.error("check user deposit status error, not found userBatteryDeposit,uid={}", uid);
+            return Triple.of(true, "", "");
+        }
+    
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.error("check user deposit status error, not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+    
+        //如果已冻结  直接返回
+        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
+            freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            return Triple.of(true, null, freeDepositUserInfoVo);
+        }
+    
+        //        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        //        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+        //            return Triple.of(false, "100418", "押金免押功能未开启,请联系客服处理");
+        //        }
+    
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            log.error("check user deposit status error, not found pxzConfig,uid={}", uid);
+            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
+        }
+    
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("check user deposit status error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+    
+        PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(userBatteryDeposit.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+    
+        PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(freeDepositOrder.getOrderId());
+        query.setData(request);
+    
+    
+        PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+        try {
+            pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+        } catch (PxzFreeDepositException e) {
+            log.error("query Pxz error, freeDepositOrderQuery fail! uid={},orderId={}", uid, userBatteryDeposit.getOrderId(), e);
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+    
+        if (Objects.isNull(pxzQueryOrderRsp)) {
+            log.error("query Pxz error, freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+    
+        if (!pxzQueryOrderRsp.isSuccess()) {
+            return Triple.of(false, "100402", pxzQueryOrderRsp.getRespDesc());
+        }
+    
+        PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+        if (Objects.isNull(queryOrderRspData)) {
+            log.error("query Pxz error, freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+    
+        //更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthNo(queryOrderRspData.getAuthNo());
+        freeDepositOrderUpdate.setAuthStatus(queryOrderRspData.getAuthStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+    
+        //冻结成功
+        if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+        
+            //扣减免押次数
+            freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
+        
+            //更新押金订单状态
+            EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
+            eleDepositOrderUpdate.setId(eleDepositOrder.getId());
+            eleDepositOrderUpdate.setStatus(EleDepositOrder.STATUS_SUCCESS);
+            eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleDepositOrderService.update(eleDepositOrderUpdate);
+        
+            //绑定加盟商、更新押金状态
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(uid);
+            userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+            userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
+            userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
+        
+            //绑定电池型号
+            List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(batteryTypeList)) {
+                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+            }
+        }
+    
+        freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
+        freeDepositUserInfoVo.setBatteryDepositAuthStatus(queryOrderRspData.getAuthStatus());
+    
+        return Triple.of(true, null, freeDepositUserInfoVo);
         
     }
     

@@ -32,7 +32,11 @@ public interface EnterpriseBatteryPackageService {
 
     public Triple<Boolean, String, Object> queryByPackageId(EnterpriseMemberCardQuery query);
     
+    public Triple<Boolean, String, Object> queryRiderDepositAndPackage(Long uid);
+    
     public Triple<Boolean, String, Object>  queryUserBatteryDeposit(Long uid);
+    
+    public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatus(Long uid);
 
     /**
      * 企业站长为用户购买套餐
