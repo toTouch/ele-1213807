@@ -98,6 +98,18 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
+     * 购买套餐时，查询骑手套餐信息和押金信息
+     * @param uid
+     * @return
+     */
+    @GetMapping(value = "/user/enterprise/queryRiderPackageInfo")
+    public R queryRiderPackageInfo(@RequestParam(value = "uid", required = true) Long uid) {
+        
+        return returnTripleResult(enterpriseBatteryPackageService.queryRiderDepositAndPackage(uid));
+    
+    }
+    
+    /**
      * 查询指定骑手的押金信息
      * @param uid
      * @return
@@ -106,6 +118,16 @@ public class JsonUserEnterprisePackageController extends BaseController {
     public R queryBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid) {
     
         return returnTripleResult(enterpriseBatteryPackageService.queryUserBatteryDeposit(uid));
+    }
+    
+    /**
+     * 查询电池免押是否成功
+     * @return
+     */
+    @GetMapping("/user/enterprise/freeDeposit/status")
+    public R freeBatteryDepositOrderStatus(@RequestParam(value = "uid", required = true) Long uid) {
+        
+        return returnTripleResult(enterpriseBatteryPackageService.checkUserFreeBatteryDepositStatus(uid));
     }
     
     
