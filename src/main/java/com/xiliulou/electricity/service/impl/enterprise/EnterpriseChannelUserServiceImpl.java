@@ -57,6 +57,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("add new user by enterprise start, channel user = {}", JsonUtil.toJson(query));
         //检查当前用户是否可用
         Triple<Boolean, String, Object> result = verifyUserInfo(query);
+        if(Boolean.FALSE.equals(result.getLeft())){
+            return Triple.of(false, "", result.getRight());
+        }
     
         EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
