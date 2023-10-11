@@ -21,14 +21,14 @@
     <!--查询单个-->
     <select id="queryById" resultMap="EnterpriseInfoMap">
         select
-          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
+          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
         from t_enterprise_info
         where id = #{id}
     </select>
 
     <select id="selectByUid" resultMap="EnterpriseInfoMap">
         select
-          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, tenant_id, create_time, update_time, remark
+          id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
         from t_enterprise_info
         where uid = #{uid}
     </select>

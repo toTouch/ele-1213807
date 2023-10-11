@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.enterprise;
 
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -48,6 +49,13 @@ public class EnterpriseInfoVO {
      * 企业云豆总数
      */
     private BigDecimal totalBeanAmount;
+    
+    /**
+     * 企业设置骑手续租状态总开关：0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatus;
+    
     /**
      * 租户ID
      */

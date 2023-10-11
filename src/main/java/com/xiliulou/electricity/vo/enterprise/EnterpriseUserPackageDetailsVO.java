@@ -19,6 +19,11 @@ public class EnterpriseUserPackageDetailsVO {
     private String name;
 
     private String phone;
+    
+    /**
+     * 身份证号
+     */
+    private String idNumber;
 
     private Integer renewalStatus;
 

@@ -51,8 +51,6 @@ public class JsonUserEnterprisePackageController extends BaseController {
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
     
-    
-    
     @GetMapping("/user/enterprise/queryBatteryV")
     public R queryBatteryV(@RequestParam(value = "enterpriseId") Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid) {
         
@@ -121,6 +119,18 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
+     * 查询指定骑手的押金信息
+     * @param uid
+     * @return
+     */
+    @GetMapping(value = "/user/enterprise/freeBatteryDeposit")
+    public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid) {
+        
+        return returnTripleResult(enterpriseBatteryPackageService.queryUserBatteryDeposit(uid));
+    }
+    
+    
+    /**
      * 查询电池免押是否成功
      * @return
      */
@@ -154,6 +164,13 @@ public class JsonUserEnterprisePackageController extends BaseController {
      */
     @PostMapping("/user/enterprise/purchasePackageWithDeposit")
     public R purchasePackageWithDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
+        
+        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query, request));
+        
+    }
+    
+    @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
+    public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
         
         return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query, request));
         

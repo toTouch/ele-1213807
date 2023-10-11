@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseFreeDepositQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
@@ -37,6 +38,8 @@ public interface EnterpriseBatteryPackageService {
     public Triple<Boolean, String, Object>  queryUserBatteryDeposit(Long uid);
     
     public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatus(Long uid);
+    
+    public Triple<Boolean, String, Object> freeBatteryDeposit(EnterpriseFreeDepositQuery enterpriseFreeDepositQuery);
 
     /**
      * 企业站长为用户购买套餐
@@ -52,6 +55,8 @@ public interface EnterpriseBatteryPackageService {
      * @return
      */
     public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
+    
+    public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query, HttpServletRequest request);
 
     /**
      * 查询骑手当前套餐详情信息
