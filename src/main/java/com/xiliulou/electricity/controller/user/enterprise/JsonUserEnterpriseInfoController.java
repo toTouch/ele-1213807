@@ -51,7 +51,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping("/user/enterpriseInfo/detail")
     public R queryEnterpriseInfo(){
-        return R.ok(enterpriseInfoService.selectByUid(SecurityUtils.getUid()));
+        return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
     }
 
     /**

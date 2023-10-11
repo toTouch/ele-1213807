@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
-import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 
 /**
  * (UserBehaviorRecord)表数据库访问层

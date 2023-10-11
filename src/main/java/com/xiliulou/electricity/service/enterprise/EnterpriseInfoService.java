@@ -77,4 +77,5 @@ public interface EnterpriseInfoService {
     
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
     
+    EnterpriseInfoVO selectDetailByUid(Long uid);
 }

@@ -1,18 +1,19 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 import com.xiliulou.electricity.mapper.AnotherPayMembercardRecordMapper;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 代付记录表(AnotherPayMembercardRecord)表服务实现类
@@ -26,6 +27,9 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     
     @Resource
     private AnotherPayMembercardRecordMapper anotherPayMembercardRecordMapper;
+    
+    @Autowired
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -76,9 +80,25 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     
     @Override
     public int saveAnotherPayMembercardRecord(Long uid, String orderId, Integer tenantId) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if(Objects.isNull(electricityMemberCardOrder)){
+            log.error("save Another Pay Membercard Record error!not found electricityMemberCardOrder,orderId={}",orderId);
+            return 0;
+        }
+    
+        Long startTime = System.currentTimeMillis();
+        Long endTime = System.currentTimeMillis() + electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+        AnotherPayMembercardRecord latestAnotherPayMembercardRecord = this.anotherPayMembercardRecordMapper.selectLatestByUid(uid);
+        if (Objects.nonNull(latestAnotherPayMembercardRecord)) {
+            startTime = latestAnotherPayMembercardRecord.getEndTime();
+            endTime = latestAnotherPayMembercardRecord.getEndTime() + electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+        }
+        
         AnotherPayMembercardRecord anotherPayMembercardRecord = new AnotherPayMembercardRecord();
         anotherPayMembercardRecord.setOrderId(orderId);
         anotherPayMembercardRecord.setUid(uid);
+        anotherPayMembercardRecord.setBeginTime(startTime);
+        anotherPayMembercardRecord.setEndTime(endTime);
         anotherPayMembercardRecord.setCreateTime(System.currentTimeMillis());
         anotherPayMembercardRecord.setUpdateTime(System.currentTimeMillis());
         anotherPayMembercardRecord.setTenantId(tenantId);

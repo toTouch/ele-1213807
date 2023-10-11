@@ -61,5 +61,11 @@ public interface CloudBeanUseRecordService {
      */
     BigDecimal acquireUserCanRecycleCloudBean(Long uid);
     
+    /**
+     * 获取用户已回收云豆数
+     * @return
+     */
+    BigDecimal acquireUserRecycledCloudBean(Long uid);
+    
     Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime);
 }

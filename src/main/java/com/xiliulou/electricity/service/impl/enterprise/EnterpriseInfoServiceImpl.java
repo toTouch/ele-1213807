@@ -480,6 +480,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return this.enterpriseInfoMapper.selectByUid(uid);
     }
     
+    @Override
+    public EnterpriseInfoVO selectDetailByUid(Long uid) {
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(uid);
+        if (Objects.isNull(enterpriseInfo)) {
+            return null;
+        }
+        
+        EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
+        BeanUtils.copyProperties(enterpriseInfo, enterpriseInfoVO);
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(enterpriseInfo.getUid());
+        enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
+    
+        return enterpriseInfoVO;
+    }
+    
     @Slave
     @Override
     public EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid) {

@@ -6,6 +6,8 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="beginTime" column="begin_time" jdbcType="INTEGER"/>
+        <result property="endTime" column="end_time" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -17,6 +19,13 @@
           id, order_id, uid, create_time, update_time, tenant_id
         from t_another_pay_membercard_record
         where id = #{id}
+    </select>
+    
+    <select id="selectLatestByUid" resultMap="AnotherPayMembercardRecordMap">
+        select
+          id, order_id, begin_time, end_time, uid, create_time, update_time, tenant_id
+        from t_another_pay_membercard_record
+        where uid = #{uid} order by id desc limit 1
     </select>
     
     <!--通过主键修改数据-->
