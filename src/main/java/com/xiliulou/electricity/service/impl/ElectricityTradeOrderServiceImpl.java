@@ -14,7 +14,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -31,7 +30,6 @@ import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordSer
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -200,9 +198,6 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     CloudBeanUseRecordService cloudBeanUseRecordService;
-    
-    @Resource
-    UserBehaviorRecordService userBehaviorRecordService;
     
     @Resource
     AnotherPayMembercardRecordService anotherPayMembercardRecordService;
