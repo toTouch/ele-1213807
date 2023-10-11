@@ -70,7 +70,7 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     /**
      * 查询未关联到企业渠道用户的记录(已生成邀请二维码，但是还没有用户扫码加入)
      * @param enterpriseId
-     * @param franchiseeId
+     * @param
      * @param tenantId
      * @return
      */
@@ -97,7 +97,10 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     
     EnterpriseChannelUser selectByUid(Long uid);
     
-    EnterpriseChannelUserVO selectUserRelatedEnterprise(Long uid);
+    EnterpriseChannelUserVO selectUserRelatedEnterprise(@Param("uid")Long uid);
     
     Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Integer batchUpdateRenewStatus(@Param("channelUserIds")List<Long> channelUserIds, @Param("renewalStatus")Integer renewalStatus, @Param("updateTime")Long updateTime);
+    
 }

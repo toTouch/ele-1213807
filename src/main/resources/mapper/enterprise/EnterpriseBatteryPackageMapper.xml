@@ -329,21 +329,21 @@
     
     <select id="queryPaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
         select
-        tecu.uid,
-        tui.name,
-        tui.phone,
-        tecu.enterprise_id as enterpriseId,
-        tubmc.member_card_id as packageId,
-        tubmc.order_id as orderNo,
-        tubmc.create_time as createTime,
-        tubmc.member_card_expire_time as packageExpiredTime,
-        tubmc.order_effective_time as effectiveTime
+            tecu.uid,
+            tui.name,
+            tui.phone,
+            tecu.enterprise_id as enterpriseId,
+            tubmc.member_card_id as packageId,
+            tubmc.order_id as orderNo,
+            tubmc.create_time as createTime,
+            tubmc.member_card_expire_time as packageExpiredTime,
+            tubmc.order_effective_time as effectiveTime
         from t_enterprise_channel_user tecu, t_user_battery_member_card tubmc, t_user_info tui
         where tubmc.uid = tecu.uid
         and tecu.uid = tui.uid
         and tubmc.del_flag = 0
         <if test="enterpriseId != null">
-            and trbo.enterprise_id = #{enterpriseId}
+            and tecu.enterprise_id = #{enterpriseId}
         </if>
     
         <if test="currentTime != null">

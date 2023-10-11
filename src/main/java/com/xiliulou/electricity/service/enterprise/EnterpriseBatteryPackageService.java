@@ -31,6 +31,8 @@ public interface EnterpriseBatteryPackageService {
     public Triple<Boolean, String, Object> queryPackagesByBatteryV(EnterpriseMemberCardQuery query);
 
     public Triple<Boolean, String, Object> queryByPackageId(EnterpriseMemberCardQuery query);
+    
+    public Triple<Boolean, String, Object>  queryUserBatteryDeposit(Long uid);
 
     /**
      * 企业站长为用户购买套餐
@@ -66,6 +68,6 @@ public interface EnterpriseBatteryPackageService {
      * @return
      */
     public Triple<Boolean, String, Object> queryPurchasedPackageOrders(EnterprisePurchaseOrderQuery query);
-
+    
 
 }

@@ -26,6 +26,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -227,6 +228,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Resource
     UserBehaviorRecordService userBehaviorRecordService;
+    
+    @Resource
+    AnotherPayMembercardRecordService anotherPayMembercardRecordService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -1056,8 +1060,9 @@ public class UnionTradeOrderServiceImpl extends
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
     
         //保存骑手购买套餐信息，用于云豆回收业务
-        userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
-    
+        //userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+        anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
+        
         return Pair.of(true, null);
         
     }

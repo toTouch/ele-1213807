@@ -27,6 +27,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -202,6 +203,9 @@ public class ElectricityTradeOrderServiceImpl extends
     
     @Resource
     UserBehaviorRecordService userBehaviorRecordService;
+    
+    @Resource
+    AnotherPayMembercardRecordService anotherPayMembercardRecordService;
 
     /**
      * 租车套餐购买回调
@@ -1267,7 +1271,8 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
     
         //保存骑手购买套餐信息，用于云豆回收业务
-        userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+        //userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+        anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
     
         return Pair.of(result, null);
 

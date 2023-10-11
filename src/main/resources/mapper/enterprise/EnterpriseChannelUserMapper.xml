@@ -259,5 +259,30 @@
         where uid = #{uid}
     </update>
     
+    <update id="batchUpdateRenewStatus">
+        update t_enterprise_channel_user
+        <set>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+        
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+    
+        </set>
+    
+        <where>
+            <if test="channelUserIds != null">
+                and id in
+                <foreach collection="channelUserIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    
+    
+    
     
 </mapper>

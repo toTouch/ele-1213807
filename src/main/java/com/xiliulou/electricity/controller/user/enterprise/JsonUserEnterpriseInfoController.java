@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.enterprise;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -103,10 +104,15 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      * 企业端更新骑手自主续费状态，总开关
      * @return
      */
-    @GetMapping("/user/enterpriseInfo/updateAllRenewalStatus")
-    public R updateAllRenewalStatus(){
+    @PutMapping("/user/enterpriseInfo/updateAllRenewalStatus/{renewalStatus}")
+    public R updateAllRenewalStatus(@PathVariable("renewalStatus") Integer renewalStatus){
+        Integer tenantId = TenantContextHolder.getTenantId();
+        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder()
+                .renewalStatus(renewalStatus)
+                .tenantId(tenantId)
+                .build();
         
-        return null;
+        return R.ok(enterpriseInfoService.updateAllRenewalStatus(enterpriseInfoQuery));
     }
 
 }
