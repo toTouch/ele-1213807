@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -64,6 +65,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -75,6 +77,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.UserBatteryDepositVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseFreezePackageRecordVO;
@@ -206,6 +209,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
+    
+    @Resource
+    private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
     @Deprecated
     @Override
@@ -408,6 +414,37 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     public Triple<Boolean, String, Object> queryByPackageId(EnterpriseMemberCardQuery query) {
         
         return null;
+    }
+    
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryUserBatteryDeposit(Long uid) {
+        UserBatteryDepositVO userBatteryDepositVO = new UserBatteryDepositVO();
+        userBatteryDepositVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+        userBatteryDepositVO.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+        userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("query deposit warning, not found userInfo,uid = {}", SecurityUtils.getUid());
+            return Triple.of(true, "", userBatteryDepositVO);
+            
+        }
+    
+        userBatteryDepositVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
+        userBatteryDepositVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("query deposit warning, not found userBatteryDeposit,uid = {}", userInfo.getUid());
+            return Triple.of(true, "", userBatteryDepositVO);
+        }
+    
+        userBatteryDepositVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        userBatteryDepositVO.setDepositType(userBatteryDeposit.getDepositType());
+    
+        return Triple.of(true, "", userBatteryDepositVO);
+        
     }
     
     @Override
@@ -735,7 +772,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 }
     
                 //保存骑手购买套餐信息，用于云豆回收业务
-                userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+                //userBehaviorRecordService.saveUserBehaviorRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, electricityMemberCardOrder.getTenantId());
+                anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
             }
             
             return Triple.of(true, "", null);
@@ -1284,7 +1322,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
     
         //保存骑手购买套餐信息，用于云豆回收业务
-        userBehaviorRecordService.saveUserBehaviorRecord(memberCardOrder.getUid(), memberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, memberCardOrder.getTenantId());
+        //userBehaviorRecordService.saveUserBehaviorRecord(memberCardOrder.getUid(), memberCardOrder.getOrderId(), UserBehaviorRecord.TYPE_PAY_MEMBERCARD, memberCardOrder.getTenantId());
+        anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(memberCardOrder.getUid(), memberCardOrder.getOrderId(),memberCardOrder.getTenantId());
     
     }
     

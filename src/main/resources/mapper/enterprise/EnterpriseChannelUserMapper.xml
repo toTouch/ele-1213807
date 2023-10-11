@@ -39,6 +39,7 @@
     <select id="queryAll" resultMap="EnterpriseChannelUserMap">
         <include refid="selectEnterpriseChannelUser"/>
         <where>
+            uid is not null
             <if test="id != null">
                 and id = #{id}
             </if>
@@ -257,6 +258,15 @@
             
         </set>
         where uid = #{uid}
+    </update>
+    
+    <update id="batchUpdateRenewStatus">
+        update t_enterprise_channel_user set renewal_status = #{renewalStatus}, update_time = UNIX_TIMESTAMP()*1000
+        where id in
+        <foreach collection="channelUserIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+      
     </update>
     
     

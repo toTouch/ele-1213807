@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo.enterprise;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public class EnterpriseInfoVO {
     /**
      * 企业云豆总数
      */
-    private Double totalBeanAmount;
+    private BigDecimal totalBeanAmount;
     /**
      * 租户ID
      */

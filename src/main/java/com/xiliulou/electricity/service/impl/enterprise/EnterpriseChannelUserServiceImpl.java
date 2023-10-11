@@ -57,8 +57,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("add new user by enterprise start, channel user = {}", JsonUtil.toJson(query));
         //检查当前用户是否可用
         Triple<Boolean, String, Object> result = verifyUserInfo(query);
-        if (Boolean.FALSE.equals(result.getLeft())) {
-            return result;
+        if(Boolean.FALSE.equals(result.getLeft())){
+            return Triple.of(false, "", result.getRight());
         }
     
         EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();
@@ -178,10 +178,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByIdAndUid(id, uid);
         if (Objects.isNull(enterpriseChannelUser) || Objects.isNull(enterpriseChannelUser.getUid())) {
-            return Triple.of(false, "300062", "被邀请的用户不存在");
+            return Triple.of(true, "300062", Boolean.FALSE);
         }
         
-        return Triple.of(true, "", enterpriseChannelUser);
+        return Triple.of(true, "", Boolean.TRUE);
     }
     
     @Slave
@@ -229,6 +229,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return result;
     }
     
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer batchUpdateRenewStatus(List<Long> channelUserIds, Integer renewalStatus) {
+        Long updateTime = System.currentTimeMillis();
+        return enterpriseChannelUserMapper.batchUpdateRenewStatus(channelUserIds, renewalStatus, updateTime);
+    }
+    
     /**
      * 检查骑手是否为自主续费，true 则为自主续费， false 则为非自主续费
      * @param enterpriseChannelUserQuery
@@ -252,6 +259,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setEnterpriseId(enterpriseChannelUserQuery.getEnterpriseId());
         enterpriseChannelUser.setTenantId(enterpriseChannelUserQuery.getTenantId());
+        enterpriseChannelUser.setRenewalStatus(enterpriseChannelUserQuery.getRenewalStatus());
     
         List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         

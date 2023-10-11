@@ -67,6 +67,8 @@ public interface EnterpriseChannelUserService {
     
     Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
+    Integer batchUpdateRenewStatus(List<Long> channelUserIds, Integer renewalStatus);
+    
     Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery);

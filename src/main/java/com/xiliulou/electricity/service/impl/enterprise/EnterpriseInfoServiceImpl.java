@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
@@ -1004,6 +1006,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -1020,21 +1023,39 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             throw new BizException("300076", "用户所属企业不存在");
         }
         
-        if(!enterpriseInfo.getId().equals(enterpriseInfoQuery.getId())){
+        /*if(!enterpriseInfo.getId().equals(enterpriseInfoQuery.getId())){
             log.error("update all renewal status error! enterprise director not match current user, request params = {}, current user id = {} ", enterpriseInfoQuery.getId(), uid);
             throw new BizException("300077", "企业负责人和当前用户不匹配");
+        }*/
+        
+        Integer renewalStatus = RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode();
+        if(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseInfoQuery.getRenewalStatus())) {
+            renewalStatus = RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode();
+        } else if(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseInfoQuery.getRenewalStatus())){
+            renewalStatus = RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode();
         }
         
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder()
                 .enterpriseId(enterpriseInfoQuery.getId())
+                .renewalStatus(renewalStatus)
                 .tenantId(tenantId.longValue())
                 .build();
     
         List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.queryChannelUserList(enterpriseChannelUserQuery);
         
+        List<Long> enterpriseUserIds = enterpriseChannelUserList.stream().map(EnterpriseChannelUser:: getId).collect(Collectors.toList());
         
+        if(CollectionUtil.isNotEmpty(enterpriseUserIds)){
+            enterpriseChannelUserService.batchUpdateRenewStatus(enterpriseUserIds, enterpriseInfoQuery.getRenewalStatus());
+        }
+        EnterpriseInfo enterprise = new EnterpriseInfo();
+        enterprise.setId(enterpriseInfoQuery.getId());
+        enterprise.setRenewalStatus(enterpriseInfoQuery.getRenewalStatus());
+        enterprise.setUpdateTime(System.currentTimeMillis());
         
-        return null;
+        Integer result = enterpriseInfoMapper.update(enterprise);
+        
+        return result;
     }
     
     @Override
