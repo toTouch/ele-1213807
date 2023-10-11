@@ -25,6 +25,11 @@ public class EleCommonConfig {
     private Double showDistance;
 
     /**
+     * 换电流程需要特殊处理的租户
+     */
+    private Integer specialTenantId;
+
+    /**
      * 电池上报电量变化diff值
      */
     private Integer powerChangeDiff;

@@ -38,7 +38,9 @@ import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -223,6 +225,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
     /**
      * 根据用户ID查询对应状态的记录
@@ -1226,6 +1231,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())
+                && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets())
+                && carRentalPackageOrderBizService.checkUserHasAssets(user.getUid(), user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE)) {
+            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
