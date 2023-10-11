@@ -373,6 +373,11 @@ public interface CacheConstant {
      */
     String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITH_DEPOSIT_LOCK_KEY = "enterprise_user_purchase_package_with_deposit_lock_key:";
     
+    /**
+     * 企业渠道用户免押购买套餐
+     */
+    String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITHOUT_DEPOSIT_LOCK_KEY = "enterprise_user_purchase_package_without_deposit_lock_key:";
+    
     
     String ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY = "user_cloud_bean_recharge_lock_key:";
 
