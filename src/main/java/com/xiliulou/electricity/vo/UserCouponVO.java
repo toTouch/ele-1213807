@@ -1,13 +1,7 @@
 package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,61 +16,75 @@ import java.util.List;
 public class UserCouponVO {
 
     private Long id;
+
     /**
      * 优惠券来源 0--后台发放，1--邀请好友活动
      */
     private Integer source;
+
     /**
      * 活动id
      */
     private Integer activityId;
+
     /**
      * 优惠券id
      */
     private Integer couponId;
+
     /**
-    * 优惠券名称，也就是t_coupon的名称
-    */
+     * 优惠券名称，也就是t_coupon的名称
+     */
     private String name;
+
     /**
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
     private Integer discountType;
+
     /**
-    * 用户uid
-    */
+     * 用户uid
+     */
     private Long uid;
+
     /**
-    * 用户手机号
-    */
+     * 用户手机号
+     */
     private String phone;
+
     /**
-    * 优惠券截止time
-    */
+     * 优惠券截止time
+     */
     private Long deadline;
+
     /**
-    * 优惠券使用的订单id
-    */
+     * 优惠券使用的订单id
+     */
     private String orderId;
+
     /**
      * 加盟商id
      */
     private Integer franchiseeId;
+
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
+
     /**
-    * 修改时间
-    */
+     * 修改时间
+     */
     private Long updateTime;
+
     /**
-    * 优惠券状态1--未使用， 2--已使用 ，3--已过期
-    */
+     * 优惠券状态1--未使用， 2--已使用 ，3--已过期
+     */
     private Integer status;
+
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Integer delFlag;
 
     /**
@@ -88,6 +96,7 @@ public class UserCouponVO {
      * 优惠金额
      */
     private BigDecimal amount;
+
     /**
      * 折扣
      */
@@ -104,6 +113,7 @@ public class UserCouponVO {
 
     /**
      * 是否指定套餐使用 1-指定套餐, 2-不指定套餐,适用于所有套餐
+     *
      * @see SpecificPackagesEnum
      */
     private Integer specificPackages;

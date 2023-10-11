@@ -8,15 +8,26 @@ import lombok.Data;
  */
 @Data
 public class ChargeConfigVo {
+
     private String name;
+
     private Long id;
+
     private String jsonRule;
+
     private String franchiseeName;
+
     private Long franchiseeId;
+
     private String storeName;
+
     private Long storeId;
+
     private String electricityName;
+
     private Long eid;
+
     private Long createTime;
+
     private Integer type;
 }

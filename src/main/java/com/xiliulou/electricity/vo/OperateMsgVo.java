@@ -9,14 +9,15 @@ import lombok.Data;
  */
 @Data
 public class OperateMsgVo {
-	/**
-	 * 操作记录
-	 */
-	private String operateMsg;
 
-	/**
-	 * 操作时间
-	 */
-	private Long operateTime;
+    /**
+     * 操作记录
+     */
+    private String operateMsg;
+
+    /**
+     * 操作时间
+     */
+    private Long operateTime;
 
 }

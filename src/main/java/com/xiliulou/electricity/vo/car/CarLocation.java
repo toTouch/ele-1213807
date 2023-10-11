@@ -16,5 +16,4 @@ public class CarLocation {
     private Double latitude;
 
 
-
 }

@@ -10,5 +10,6 @@ import lombok.Data;
  */
 @Data
 public class StoreAmountVO extends StoreAmount {
+
     private String userName;
 }

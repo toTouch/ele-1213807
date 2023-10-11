@@ -9,14 +9,17 @@ import lombok.Data;
  */
 @Data
 public class CabinetBatteryVO {
+
     /**
      * 空仓数量
      */
     private long emptyCellNumber;
+
     /**
      * 有电池数量
      */
     private long haveBatteryNumber;
+
     /**
      * 可换电数量
      */

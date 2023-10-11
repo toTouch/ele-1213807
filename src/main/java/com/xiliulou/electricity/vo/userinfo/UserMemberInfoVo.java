@@ -27,6 +27,7 @@ public class UserMemberInfoVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer type;
@@ -57,6 +58,7 @@ public class UserMemberInfoVo implements Serializable {
      *     4-申请退押
      *     5-申请退租
      * </pre>
+     *
      * @see MemberTermStatusEnum
      */
     private Integer status;
@@ -123,7 +125,7 @@ public class UserMemberInfoVo implements Serializable {
 
     /**
      * 车辆信息
-     * */
+     */
     private CarVo car;
 
     /**

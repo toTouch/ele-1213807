@@ -11,11 +11,18 @@ import java.util.List;
  */
 @Data
 public class OtaRequestVo {
+
     private Integer upgradeType;
+
     private Long completeTime;
+
     private List<Integer> successCells;
+
     private List<Integer> failCells;
+
     private Boolean coreUpgradeResult;
+
     private Boolean operateResult;
+
     private String msg;
 }

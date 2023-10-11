@@ -17,14 +17,17 @@ import lombok.NoArgsConstructor;
 public class TenantVO {
 
     private Integer id;
+
     /**
      * 租户名称
      */
     private String name;
+
     /**
      * 租户编号
      */
     private String code;
+
     /**
      * 0正常 1-冻结
      */
