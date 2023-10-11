@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
@@ -70,7 +71,6 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EnterpriseRentRecord enterpriseRentRecord) {
         return this.enterpriseRentRecordMapper.update(enterpriseRentRecord);
-        
     }
     
     /**
@@ -91,6 +91,16 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     }
     
     @Override
+    public int deleteByUid(Long uid) {
+        return this.enterpriseRentRecordMapper.deleteByUid(uid);
+    }
+    
+    @Override
+    public List<EnterpriseRentRecord> selectByUid(Long uid) {
+        return this.enterpriseRentRecordMapper.selectList(new LambdaQueryWrapper<EnterpriseRentRecord>().eq(EnterpriseRentRecord::getUid,uid));
+    }
+    
+    @Override
     public void saveEnterpriseRentRecord(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if(Objects.isNull(enterpriseChannelUser)){
@@ -107,8 +117,8 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         EnterpriseRentRecord enterpriseRentRecord = new EnterpriseRentRecord();
         enterpriseRentRecord.setUid(uid);
         enterpriseRentRecord.setRentMembercardOrderId(userBatteryMemberCard.getOrderId());
-        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
-        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
+//        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
+//        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         enterpriseRentRecord.setRentTime(System.currentTimeMillis());
         enterpriseRentRecord.setCreateTime(System.currentTimeMillis());
         enterpriseRentRecord.setUpdateTime(System.currentTimeMillis());
@@ -139,7 +149,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
-        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
+//        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(enterpriseReturnRecordUpdate);

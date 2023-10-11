@@ -33,21 +33,21 @@ public class EnterpriseRentRecord {
      *退电套餐订单编码
      */
     private String returnMembercardOrderId;
-    
-    /**
-     * 租电套餐id
-     */
-    private Long rentMid;
-    
-    /**
-     * 退电套餐id
-     */
-    private Long returnMid;
-    
-    /**
-     * 当前套餐订单到期时间
-     */
-    private Long orderExpireTime;
+//
+//    /**
+//     * 租电套餐id
+//     */
+//    private Long rentMid;
+//
+//    /**
+//     * 退电套餐id
+//     */
+//    private Long returnMid;
+//
+//    /**
+//     * 当前套餐订单到期时间
+//     */
+//    private Long orderExpireTime;
     
     /**
      * 租电时间

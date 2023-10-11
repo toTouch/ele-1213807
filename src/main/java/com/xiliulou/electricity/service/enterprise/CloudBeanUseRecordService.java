@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -68,4 +70,10 @@ public interface CloudBeanUseRecordService {
     BigDecimal acquireUserRecycledCloudBean(Long uid);
     
     Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime);
+    
+    BigDecimal getReturnBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
+    
+    BigDecimal getRentBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
+    
+    BigDecimal getContainMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
 }

@@ -7,9 +7,6 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="rentMembercardOrderId" column="rent_membercard_order_id" jdbcType="VARCHAR"/>
         <result property="returnMembercardOrderId" column="return_membercard_order_id" jdbcType="VARCHAR"/>
-        <result property="rentMid" column="rent_mid" jdbcType="INTEGER"/>
-        <result property="returnMid" column="return_mid" jdbcType="INTEGER"/>
-        <result property="orderExpireTime" column="order_expire_time" jdbcType="INTEGER"/>
         <result property="rentTime" column="rent_time" jdbcType="INTEGER"/>
         <result property="returnTime" column="return_time" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -20,21 +17,21 @@
     <!--查询单个-->
     <select id="queryById" resultMap="EnterpriseRentRecordMap">
         select
-          id, uid, rent_mid, return_mid, order_expire_time, rent_time, return_time, create_time, update_time, tenant_id
+          id, uid, rent_time, return_time, create_time, update_time, tenant_id
         from t_enterprise_rent_record
         where id = #{id}
     </select>
     
     <select id="selectByUidAndTime" resultMap="EnterpriseRentRecordMap">
         select
-          id, uid, rent_mid, return_mid,rent_membercard_order_id,return_membercard_order_id, order_expire_time, rent_time, return_time, create_time, update_time, tenant_id
+          id, uid, rent_membercard_order_id,return_membercard_order_id, rent_time, return_time, create_time, update_time, tenant_id
         from t_enterprise_rent_record
         where uid = #{uid} and create_time &gt; #{startTime}
     </select>
     
     <select id="selectLatestRentRecord" resultMap="EnterpriseRentRecordMap">
         select
-          id, uid, rent_membercard_order_id,return_membercard_order_id,rent_mid, return_mid, order_expire_time, rent_time, return_time, create_time, update_time, tenant_id
+          id, uid, rent_membercard_order_id,return_membercard_order_id, rent_time, return_time, create_time, update_time, tenant_id
         from t_enterprise_rent_record
         where uid = #{uid} and return_time is null order by id desc limit 1
     </select>
@@ -45,15 +42,6 @@
         <set>
             <if test="uid != null">
                 uid = #{uid},
-            </if>
-            <if test="rentMid != null">
-                rent_mid = #{rentMid},
-            </if>
-            <if test="returnMid != null">
-                return_mid = #{returnMid},
-            </if>
-            <if test="orderExpireTime != null">
-                order_expire_time = #{orderExpireTime},
             </if>
             <if test="rentTime != null">
                 rent_time = #{rentTime},
@@ -77,6 +65,10 @@
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_enterprise_rent_record where id = #{id}
+    </delete>
+    
+    <delete id="deleteByUid">
+        delete from t_enterprise_rent_record where uid = #{uid}
     </delete>
 
 </mapper>
