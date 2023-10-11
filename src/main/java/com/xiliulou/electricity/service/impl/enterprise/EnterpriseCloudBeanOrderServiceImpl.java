@@ -108,6 +108,7 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
             
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
             enterpriseCloudBeanOrderVO.setEnterpriseName(Objects.isNull(enterpriseInfo) ? "" : enterpriseInfo.getName());
+            enterpriseCloudBeanOrderVO.setBusinessId(Objects.isNull(enterpriseInfo) ? null : enterpriseInfo.getBusinessId());
             
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             enterpriseCloudBeanOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());

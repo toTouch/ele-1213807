@@ -430,7 +430,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
-        enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
+        if (Objects.equals(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT, enterpriseCloudBeanRechargeQuery.getType())) {
+            enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().subtract(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
+        } else {
+            enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()));
+        }
         enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(enterpriseInfoUpdate);
         
