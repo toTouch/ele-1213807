@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.enterprise;
 
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
@@ -45,6 +46,12 @@ public class EnterpriseChannelUserVO {
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
+    
+    /**
+     * 云豆状态（1-未回收，2-已回收）
+     * @see CloudBeanStatusEnum
+     */
+    private Integer cloudBeanStatus;
     
     /**
      * 邀请人ID
