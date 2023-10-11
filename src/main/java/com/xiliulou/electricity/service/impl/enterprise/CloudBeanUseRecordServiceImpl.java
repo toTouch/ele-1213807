@@ -552,9 +552,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         BigDecimal income = list.stream()
                 .filter(item -> !(Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_DEDUCT)))
                 .map(CloudBeanUseRecord::getBeanAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        cloudBeanUseRecordVO.setIncome(income);
-        cloudBeanUseRecordVO.setExpend(expend);
+    
+        cloudBeanUseRecordVO.setIncome(Objects.isNull(income) ? BigDecimal.ZERO : income);
+        cloudBeanUseRecordVO.setExpend(Objects.isNull(expend) ? BigDecimal.ZERO : expend);
         
         return cloudBeanUseRecordVO;
     }
