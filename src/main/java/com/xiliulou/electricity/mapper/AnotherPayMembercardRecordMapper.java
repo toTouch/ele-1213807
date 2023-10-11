@@ -37,4 +37,6 @@ public interface AnotherPayMembercardRecordMapper extends BaseMapper<AnotherPayM
     int deleteById(Long id);
     
     int deleteByUid(Long uid);
+    
+    AnotherPayMembercardRecord selectLatestByUid(Long uid);
 }

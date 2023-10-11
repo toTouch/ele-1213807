@@ -30,6 +30,16 @@ public class AnotherPayMembercardRecord {
     private Long uid;
     
     /**
+     * 套餐开始时间
+     */
+    private Long beginTime;
+    
+    /**
+     * 套餐结束时间
+     */
+    private Long endTime;
+    
+    /**
      * 创建时间
      */
     private Long createTime;

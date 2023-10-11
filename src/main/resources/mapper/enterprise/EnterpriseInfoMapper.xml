@@ -54,20 +54,21 @@
     </resultMap>
     
     <select id="selectByPage" resultMap="EnterpriseInfoPackageVO">
+        select * from (
         select
-          tei.id,
-          tei.uid,
-          tei.business_id,
-          tei.name,
-          tei.phone,
-          tei.franchisee_id,
-          tei.status,
-          tei.recovery_mode,
-          tei.total_bean_amount,
-          tei.tenant_id,
-          tei.create_time,
-          tei.update_time,
-          tei.remark
+        tei.id,
+        tei.uid,
+        tei.business_id,
+        tei.name,
+        tei.phone,
+        tei.franchisee_id,
+        tei.status,
+        tei.recovery_mode,
+        tei.total_bean_amount,
+        tei.tenant_id,
+        tei.create_time,
+        tei.update_time,
+        tei.remark
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
             <if test="name != null and name != ''">
@@ -92,7 +93,9 @@
                 and tei.tenant_id = #{tenantId}
             </if>
         </where>
+        group by tei.id
         order by tei.id desc
+        ) a
         limit #{offset}, #{size}
     </select>
 

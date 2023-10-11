@@ -1537,7 +1537,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
         return rentBatteryOrderMapper.selectUsedRecordsTotalCount(eleCabinetUsedRecordQuery);
     }
-
+    
+    @Slave
+    @Override
+    public List<RentBatteryOrder> selectByUidAndTime(Long uid, Long startTime, Long endTime) {
+        return rentBatteryOrderMapper.selectByUidAndTime(uid,startTime,endTime);
+    }
+    
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {
         //营业时间
         if (Objects.nonNull(electricityCabinet.getBusinessTime())) {

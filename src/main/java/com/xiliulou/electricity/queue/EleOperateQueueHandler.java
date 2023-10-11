@@ -27,8 +27,6 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -46,8 +44,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
@@ -152,10 +149,8 @@ public class EleOperateQueueHandler {
     BatteryMemberCardService batteryMemberCardService;
     
     @Autowired
-    UserBehaviorRecordService userBehaviorRecordService;
+    EnterpriseRentRecordService enterpriseRentRecordService;
     
-    @Autowired
-    EnterpriseChannelUserService enterpriseChannelUserService;
 
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
 
@@ -621,7 +616,8 @@ public class EleOperateQueueHandler {
 
     //开租/还 电池门
     public void handleRentOrder(RentBatteryOrder rentBatteryOrder, EleOpenDTO finalOpenDTO) {
-
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
+        
         //开门失败
         if (finalOpenDTO.getIsProcessFail()) {
             //取消订单
@@ -665,11 +661,15 @@ public class EleOperateQueueHandler {
             }
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
+
+            enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
         }
 
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             checkReturnBatteryDoor(rentBatteryOrder);
+
+            enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
         }
     }
 

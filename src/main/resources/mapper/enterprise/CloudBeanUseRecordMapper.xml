@@ -62,11 +62,9 @@
         FROM
 	        t_cloud_bean_use_record cbur
 	        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = cbur.uid
-	        LEFT JOIN t_user_behavior_record ubr ON ubr.uid = cbur.uid
         WHERE
-            enterprise_id = #{enterpriseId} and ubmc &lt;= #{currentTimeMillis}
+            cbur.enterprise_id = #{enterpriseId} and ubmc.member_card_expire_time &lt;= #{currentTimeMillis}
     </select>
-
 
     <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
         select
