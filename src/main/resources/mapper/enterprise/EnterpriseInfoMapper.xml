@@ -71,7 +71,7 @@
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
             <if test="name != null and name != ''">
-                and tei.name = #{name}
+                and tei.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
             <if test="franchiseeId != null">
                 and tei.franchisee_id = #{franchiseeId}
