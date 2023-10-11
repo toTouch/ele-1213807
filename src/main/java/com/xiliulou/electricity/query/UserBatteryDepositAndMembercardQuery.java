@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * @author zzlong
@@ -30,5 +31,7 @@ public class UserBatteryDepositAndMembercardQuery {
     private Long useCount;
 
     private Long storeId;
+
+    private BigDecimal batteryDeposit;
 
 }
