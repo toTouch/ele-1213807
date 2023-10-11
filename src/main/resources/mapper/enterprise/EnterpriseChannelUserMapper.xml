@@ -39,6 +39,7 @@
     <select id="queryAll" resultMap="EnterpriseChannelUserMap">
         <include refid="selectEnterpriseChannelUser"/>
         <where>
+            uid is not null
             <if test="id != null">
                 and id = #{id}
             </if>
