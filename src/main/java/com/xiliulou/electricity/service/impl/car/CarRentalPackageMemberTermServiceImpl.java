@@ -35,6 +35,23 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
+     * 根据用户UID查询套餐购买次数<br />
+     * p.s：不区分删除与否，不走缓存
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return 若不存在，则返回0
+     */
+    @Override
+    public Integer selectPayCountByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermMapper.selectLastByUid(tenantId, uid);
+        return ObjectUtils.isEmpty(memberTermPo) ? 0 : memberTermPo.getPayCount();
+    }
+
+    /**
      * 分页查询过期的会员套餐信息<br />
      * nowTime 若传入，以传入为准<br />
      * nowTime 不传入，以系统时间为准

@@ -8,6 +8,7 @@ import lombok.Data;
  */
 @Data
 public class Jt808DeviceInfoVo {
+    
     /**
      * 来源ip
      */

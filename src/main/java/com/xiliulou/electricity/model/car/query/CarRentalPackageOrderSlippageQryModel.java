@@ -112,4 +112,14 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
      * @see PayStateEnum
      */
     private List<Integer> payStateList;
+
+    /**
+     * 支付时间开始
+     */
+    private Long payTimeBegin;
+
+    /**
+     * 支付时间截止
+     */
+    private Long payTimeEnd;
 }

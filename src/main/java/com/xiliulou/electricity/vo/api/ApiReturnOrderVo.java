@@ -7,18 +7,22 @@ import java.util.List;
 
 @Data
 public class ApiReturnOrderVo {
+
     /**
      * 订单id
      */
     private String orderId;
+
     /**
      * 柜机id
      */
     private String cabinetName;
+
     /**
      * 柜机deviceName
      */
     private String deviceName;
+
     /**
      * 柜机productkey
      */
@@ -33,6 +37,7 @@ public class ApiReturnOrderVo {
      * 电池类型
      */
     private String batteryType;
+
     /**
      * 柜门号
      */
@@ -42,6 +47,7 @@ public class ApiReturnOrderVo {
      * 订单状态
      */
     private String status;
+
     /**
      * 订单序列号
      */

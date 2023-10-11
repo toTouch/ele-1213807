@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class EleBatteryDataVO {
 
-   private ElectricityBatteryDataVO electricityBatteryDataVO;
+    private ElectricityBatteryDataVO electricityBatteryDataVO;
 
-   private BatteryInfoDto batteryInfoDto;
+    private BatteryInfoDto batteryInfoDto;
 
 }

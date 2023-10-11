@@ -17,30 +17,37 @@ import lombok.NoArgsConstructor;
 public class OldUserActivityVO {
 
     private Integer id;
+
     /**
-    * 活动名称
-    */
+     * 活动名称
+     */
     private String name;
+
     /**
-    * 活动状态，分为 1--上架，2--下架
-    */
+     * 活动状态，分为 1--上架，2--下架
+     */
     private Integer status;
+
     /**
      * 活动类型，分为 1--自营，2--代理
      */
     private Integer type;
+
     /**
      * 时间类型，分为 1--有限制，2--无限制
      */
     private Integer timeType;
+
     /**
      * 活动开始时间
      */
     private Long beginTime;
+
     /**
      * 活动结束时间
      */
     private Long endTime;
+
     /**
      * 奖励类型，1--次数，2--优惠券
      */
@@ -58,20 +65,23 @@ public class OldUserActivityVO {
     private Integer couponId;
 
     /**
-    * 活动说明
-    */
+     * 活动说明
+     */
     private String description;
+
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Integer delFlg;
+
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
+
     /**
-    * 修改时间
-    */
+     * 修改时间
+     */
     private Long updateTime;
 
 
@@ -89,6 +99,7 @@ public class OldUserActivityVO {
      * 创建人uid
      */
     private Long uid;
+
     /**
      * 创建人用户名
      */

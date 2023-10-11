@@ -1286,6 +1286,7 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setStatus(status);
         eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
     }
 
@@ -1338,6 +1339,7 @@ public class UnionTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setStatus(status);
         eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
     }
 

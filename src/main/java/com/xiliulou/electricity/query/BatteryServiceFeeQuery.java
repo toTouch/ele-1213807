@@ -35,4 +35,14 @@ public class BatteryServiceFeeQuery {
     
     private List<Long> franchiseeIds;
     private List<Long> storeIds;
+
+    /**
+     * 支付时间开始
+     */
+    private Long payTimeBegin;
+
+    /**
+     * 支付时间截止
+     */
+    private Long payTimeEnd;
 }

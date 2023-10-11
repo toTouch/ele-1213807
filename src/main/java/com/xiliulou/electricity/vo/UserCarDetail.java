@@ -9,22 +9,26 @@ import lombok.Data;
  */
 @Data
 public class UserCarDetail {
+
     /**
      * 是否缴纳租车押金 0：是，1：否
      */
-    private Integer  isCarDeposit;
+    private Integer isCarDeposit;
+
     /**
      * 是否购买租车套餐 0：是，1：否
      */
-    private Integer  isCarMemberCard;
+    private Integer isCarMemberCard;
+
     /**
      * 租车套餐是否过期 0：是，1：否
      */
-    private Integer  isCarMemberCardExpire;
+    private Integer isCarMemberCardExpire;
+
     /**
      * 是否绑定车辆 0：是，1：否
      */
-    private Integer  isRentCar;
+    private Integer isRentCar;
 
     private String carSN;
 
@@ -39,6 +43,7 @@ public class UserCarDetail {
      *     0-是
      *     1-否
      * </pre>
+     *
      * @see com.xiliulou.electricity.enums.YesNoEnum
      */
     private Integer carRentalPackageSlippage;

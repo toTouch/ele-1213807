@@ -67,7 +67,7 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
     private BigDecimal changeAmount;
 
     /**
-     * 押金
+     * 实缴押金
      */
     private BigDecimal deposit;
 
@@ -113,5 +113,10 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
      * 来源订单编码
      */
     private String sourceOrderNo;
+
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
 
 }

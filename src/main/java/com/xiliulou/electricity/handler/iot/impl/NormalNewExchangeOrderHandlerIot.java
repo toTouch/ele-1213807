@@ -5,38 +5,44 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.web.R;
 import com.xiliulou.core.utils.TimeUtils;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
 @Slf4j
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
+
+    @Resource
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     @Autowired
     RedisService redisService;
@@ -110,6 +116,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
         }
 
+        // 处理失败回退电池套餐次数
+        handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
+
         if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
             //确认订单结束
             log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
@@ -153,7 +162,55 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
         handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
     }
-
+    
+    /**
+     * 异常失败，回退套餐次数
+     * @param exchangeOrderRsp
+     * @param receiverMessage
+     * @param electricityCabinetOrder
+     */
+    private void handlePackageNumber(ExchangeOrderRsp exchangeOrderRsp, ReceiverMessage receiverMessage, ElectricityCabinetOrder electricityCabinetOrder) {
+        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg, handlePackageNumber, requestId is {}, orderId is {}, uid is {}, order status is {}",
+                receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid(), exchangeOrderRsp.getOrderStatus());
+        // 定义异常状态，此处需要考虑后续抽出枚举或者常量池的方法
+        List<String> warnStateList = new ArrayList<>();
+        warnStateList.add(ElectricityCabinetOrder.ORDER_CANCEL);
+        warnStateList.add(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
+        warnStateList.add(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL);
+        warnStateList.add(ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS);
+        warnStateList.add(ElectricityCabinetOrder.COMPLETE_CHECK_FAIL);
+        warnStateList.add(ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT);
+        warnStateList.add(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL);
+        warnStateList.add(ElectricityCabinetOrder.INIT_OPEN_FAIL);
+        warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS);
+        warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_FAIL);
+        warnStateList.add(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT);
+        
+        if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
+            // 通过订单的 UID 获取用户信息
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
+            
+            //回退单电套餐次数
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user battery member card number.");
+                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                    }
+                }
+            }
+            
+            //回退车电一体套餐次数
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
+                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            }
+            
+        }
+    }
+    
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet,
                                     ElectricityCabinetOrder electricityCabinetOrder) {
         HashMap<String, Object> dataMap = Maps.newHashMap();

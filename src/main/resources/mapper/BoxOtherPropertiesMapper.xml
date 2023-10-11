@@ -78,7 +78,7 @@
             <if test="electricityCabinetId != null">electricity_cabinet_id,</if>
             <if test="cellNo != null">cell_no,</if>
             <if test="delFlag != null">del_flag,</if>
-            <if test="remark != null  and remark != '' ">remark,</if>
+            <if test="remark != null ">remark,</if>
             <if test="lockReason != null">lock_reason,</if>
             <if test="lockStatusChangeTime != null">lock_status_change_time,</if>
             <if test="createTime != null">create_time,</if>
@@ -88,7 +88,7 @@
             <if test="electricityCabinetId != null">#{electricityCabinetId},</if>
             <if test="cellNo != null">#{cellNo},</if>
             <if test="delFlag != null">#{delFlag},</if>
-            <if test="remark != null  and remark != '' ">#{remark},</if>
+            <if test="remark != null ">#{remark},</if>
             <if test="lockReason != null">#{lockReason},</if>
             <if test="lockStatusChangeTime != null">#{lockStatusChangeTime},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -96,7 +96,7 @@
         </trim>
         on duplicate key
         update
-        <if test="remark != null  and remark != '' ">remark=#{remark},</if>
+        <if test="remark != null ">remark=#{remark},</if>
         <if test="lockReason != null">lock_reason=#{lockReason},</if>
         <if test="lockStatusChangeTime != null">lock_status_change_time=#{lockStatusChangeTime},</if>
         <if test="updateTime != null">update_time=#{updateTime}</if>

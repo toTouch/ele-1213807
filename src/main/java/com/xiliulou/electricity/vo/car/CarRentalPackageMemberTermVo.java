@@ -22,6 +22,7 @@ public class CarRentalPackageMemberTermVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
@@ -47,6 +48,7 @@ public class CarRentalPackageMemberTermVo implements Serializable {
      *     4-申请退押
      *     5-申请退租
      * </pre>
+     *
      * @see MemberTermStatusEnum
      */
     private Integer status;

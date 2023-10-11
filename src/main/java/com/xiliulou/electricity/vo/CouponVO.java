@@ -11,27 +11,27 @@ import lombok.Data;
 @Data
 public class CouponVO {
 
-	/**
-	 * 邀请人数
-	 */
-	private Integer triggerCount;
+    //已领取
+    public static final Integer IS_RECEIVED = 1;
 
-	/**
-	 * 优惠券
-	 */
-	private Coupon coupon;
+    //未领取
+    public static final Integer IS_NOT_RECEIVE = 2;
 
-	/**
-	 * 是否领取 1--已领取  2--未领取  3--不能领取
-	 */
-	private Integer isGet;
+    //不能领取
+    public static final Integer IS_CANNOT_RECEIVE = 3;
 
-	//已领取
-	public static final Integer IS_RECEIVED = 1;
+    /**
+     * 邀请人数
+     */
+    private Integer triggerCount;
 
-	//未领取
-	public static final Integer IS_NOT_RECEIVE = 2;
+    /**
+     * 优惠券
+     */
+    private Coupon coupon;
 
-	//不能领取
-	public static final Integer IS_CANNOT_RECEIVE = 3;
+    /**
+     * 是否领取 1--已领取  2--未领取  3--不能领取
+     */
+    private Integer isGet;
 }

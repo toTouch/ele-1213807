@@ -39,6 +39,17 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	UserService userService;
 
 	//列表查询
+
+	/**
+	 * 和时孟杨确认，此方法无调用
+	 * @param distance
+	 * @param franchiseeId
+	 * @param name
+	 * @param lon
+	 * @param lat
+	 * @return
+	 */
+	@Deprecated
 	@GetMapping(value = "/outer/electricityCabinet/showInfoByDistance")
 	public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
 			@RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
@@ -86,7 +97,9 @@ public class JsonUserElectricityCabinetController extends BaseController {
 				.lon(lon)
 				.lat(lat)
 				.franchiseeId(franchiseeId)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.usableStatus(0)
+				.build();
 
 		return electricityCabinetService.showInfoByDistanceV2(electricityCabinetQuery);
 	}
@@ -123,7 +136,9 @@ public class JsonUserElectricityCabinetController extends BaseController {
 				.lat(lat)
 				.franchiseeId(franchiseeId)
 				.address(address)
-				.tenantId(TenantContextHolder.getTenantId()).build();
+				.tenantId(TenantContextHolder.getTenantId())
+				.usableStatus(0)
+				.build();
 
 		return R.ok(electricityCabinetService.selectElectricityCabinetByAddress(electricityCabinetQuery));
 	}

@@ -60,9 +60,9 @@
             <if test="query.payType != null">
                 and tio.pay_type = #{query.payType}
             </if>
-            <if test="query.franchiseeName != null and '' != query.franchiseeName">
+<!--            <if test="query.franchiseeName != null and '' != query.franchiseeName">
                 and tf.name like  concat('%',#{query.franchiseeName},'%')
-            </if>
+            </if>-->
             <if test="query.franchiseeIds != null">
                 and tio.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -85,6 +85,9 @@
         <where>
             <if test="query.orderId != null and query.orderId !=''">
                 and tio.order_id = #{query.orderId}
+            </if>
+            <if test="query.franchiseeId != null">
+                and tio.franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.isUse != null">
                 and tio.is_use = #{query.isUse}
@@ -122,9 +125,9 @@
             <if test="query.payType != null">
                 and tio.pay_type = #{query.payType}
             </if>
-            <if test="query.franchiseeName != null and '' != query.franchiseeName">
+<!--            <if test="query.franchiseeName != null and '' != query.franchiseeName">
                 and tf.name like  concat('%',#{query.franchiseeName},'%')
-            </if>
+            </if>-->
             <if test="query.franchiseeIds != null">
                 and tio.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">

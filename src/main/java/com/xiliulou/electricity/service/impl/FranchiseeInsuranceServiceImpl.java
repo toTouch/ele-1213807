@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -90,7 +91,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0038", "未找到加盟商！");
         }
 
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && !Objects.equals(franchiseeInsuranceAddAndUpdate.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType())) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && !Objects.equals(franchiseeInsuranceAddAndUpdate.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_CAR)
+                && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType()) && BigDecimal.ZERO.compareTo(franchiseeInsuranceAddAndUpdate.getForehead()) <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
@@ -141,6 +143,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         if (!Objects.equals(oldFranchiseeInsurance.getName() ,franchiseeInsuranceAddAndUpdate.getName() ) && baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName()) > 0) {
             return R.fail("100304", "保险名称已存在！");
+        }
+
+        if (BigDecimal.ZERO.compareTo(franchiseeInsuranceAddAndUpdate.getForehead()) <= 0) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();

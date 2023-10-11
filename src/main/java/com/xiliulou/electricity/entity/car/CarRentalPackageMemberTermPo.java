@@ -91,7 +91,7 @@ public class CarRentalPackageMemberTermPo extends BasicCarPo {
     private String remark;
 
     /**
-     * 押金金额(元)
+     * 实缴押金金额(元)
      */
     private BigDecimal deposit;
 
@@ -104,5 +104,10 @@ public class CarRentalPackageMemberTermPo extends BasicCarPo {
      * 套餐购买次数
      */
     private Integer payCount;
+
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
 
 }

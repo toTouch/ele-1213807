@@ -457,7 +457,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
             }
             if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-                freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
+                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
                 freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
             }
             return freeDepositUserInfoVo;
@@ -519,7 +519,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
         }
         if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-            freeDepositUserInfoVo.setApplyCarBatteryDepositTime(createTime);
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
             freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
         }
         return freeDepositUserInfoVo;
@@ -562,13 +562,13 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
             userInfoUpdate.setStoreId(Long.valueOf(storeId));
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(userInfoUpdate);
             if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             }
+            userInfoService.updateByUid(userInfoUpdate);
             // 车电一体，同步押金
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 log.info("saveFreeDepositSuccessTx, userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
@@ -750,6 +750,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageMemberTermEntity.setRentalPackageConfine(packageEntity.getConfine());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(packageEntity.getDeposit());
+        carRentalPackageMemberTermEntity.setRentalPackageDeposit(packageEntity.getDeposit());
         carRentalPackageMemberTermEntity.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackageMemberTermEntity.setTenantId(tenantId);
         carRentalPackageMemberTermEntity.setFranchiseeId(packageEntity.getFranchiseeId());
@@ -819,6 +820,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         carRentalPackageDepositPay.setFranchiseeId(carRentalPackage.getFranchiseeId());
         carRentalPackageDepositPay.setStoreId(carRentalPackage.getStoreId());
         carRentalPackageDepositPay.setCreateUid(uid);
+        carRentalPackageDepositPay.setRentalPackageDeposit(carRentalPackage.getDeposit());
         return carRentalPackageDepositPay;
     }
 
@@ -930,6 +932,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         depositPayVo.setPayType(depositPayEntity.getPayType());
         depositPayVo.setStoreId(depositPayEntity.getStoreId());
         depositPayVo.setCarModelId(rentalPackageEntity.getCarModelId());
+        depositPayVo.setRentalPackageDeposit(depositPayEntity.getRentalPackageDeposit());
 
         //查询当前订单是否存在退押的状态
         CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(memberTermEntity.getDepositPayOrderNo());

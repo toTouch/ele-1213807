@@ -35,6 +35,7 @@ public class UserMemberCarPackageVo implements Serializable {
      *     4-申请退押
      *     5-申请退租
      * </pre>
+     *
      * @see MemberTermStatusEnum
      */
     private Integer status;

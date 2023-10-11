@@ -18,6 +18,16 @@ import java.util.List;
 public interface CarRentalPackageMemberTermMapper {
 
     /**
+     * 根据用户UID查询最后一条数据<br />
+     * p.s：不区分删除与否，不走缓存
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return
+     */
+    CarRentalPackageMemberTermPo selectLastByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+
+    /**
      * 分页查询过期的会员套餐信息<br />
      * nowTime 若传入，以传入为准<br />
      * nowTime 不传入，以系统时间为准

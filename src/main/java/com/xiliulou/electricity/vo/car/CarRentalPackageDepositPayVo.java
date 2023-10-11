@@ -16,30 +16,31 @@ import java.math.BigDecimal;
  **/
 @Data
 public class CarRentalPackageDepositPayVo implements Serializable {
-
+    
     private static final long serialVersionUID = 1718767898763254057L;
-
+    
     /**
      * 用户ID
      */
     private Long uid;
-
+    
     /**
      * 订单编码
      */
     private String orderNo;
-
-
+    
+    
     /**
      * 套餐类型
      * <pre>
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
-
+    
     /**
      * 类型
      * <pre>
@@ -50,12 +51,12 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * @see DepositTypeEnum
      */
     private Integer type;
-
+    
     /**
-     * 押金
+     * 实缴押金
      */
     private BigDecimal deposit;
-
+    
     /**
      * 交易方式
      * <pre>
@@ -63,10 +64,11 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      *     2-线下
      *     3-免押
      * </pre>
+     *
      * @see PayTypeEnum
      */
     private Integer payType;
-
+    
     /**
      * 支付状态
      * <pre>
@@ -74,32 +76,38 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      *     2-支付成功
      *     3-支付失败
      * </pre>
+     *
      * @see PayStateEnum
      */
     private Integer payState;
-
+    
     /**
      * 备注
      */
     private String remark;
-
+    
     /**
      * 创建时间，时间戳
      */
     private Long createTime;
-
+    
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
+    
     // ++++++++++ 辅助业务数据 ++++++++++
-
+    
     /**
      * 用户真实姓名
      */
     private String userRelName;
-
+    
     /**
      * 用户手机号
      */
     private String userPhone;
-
+    
     /**
      * 业务状态，没有枚举值
      * <pre>
@@ -109,30 +117,30 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * </pre>
      */
     private Integer status;
-
+    
     /**
      * 门店ID
      */
     private Integer storeId;
-
+    
     /**
      * 车辆型号ID
      */
     private Integer carModelId;
-
+    
     /**
      * 可退标识
      */
     private boolean refundFlag = true;
-
+    
     /**
      * 退押拒绝原因
      */
     private String rejectReason;
-
+    
     /**
      * 特殊可退标识（2.0迁移数据过度）
      */
     private boolean refundSpecialFlag = false;
-
+    
 }

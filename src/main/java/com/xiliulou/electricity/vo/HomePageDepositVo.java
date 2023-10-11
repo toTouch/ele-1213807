@@ -31,38 +31,47 @@ public class HomePageDepositVo {
      * 电池押金
      */
     private BigDecimal payBatteryDeposit;
+
     /**
      * 免押电池押金
      */
     private BigDecimal freeBatteryDeposit;
+
     /**
      * 电池总押金
      */
     private BigDecimal batteryDeposit;
+
     /**
      * 车辆押金
      */
     private BigDecimal payCarDeposit;
+
     /**
      * 免押车辆押金
      */
     private BigDecimal freeCarDeposit;
+
     /**
      * 车辆押金
      */
     private BigDecimal carDeposit;
+
     /**
      * 今日退押金
      */
     private BigDecimal todayPayRefundDeposit;
+
     /**
      * 今日免押退押金
      */
     private BigDecimal todayFreeRefundDeposit;
+
     /**
      * 今日总退押金
      */
     private BigDecimal todayRefundDeposit;
+
     /**
      * 总营业额
      */

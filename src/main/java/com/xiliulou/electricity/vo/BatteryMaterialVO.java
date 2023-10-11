@@ -9,12 +9,14 @@ import lombok.Data;
  */
 @Data
 public class BatteryMaterialVO {
+
     /**
      * 类型
      */
     private String type;
 
     private String shortType;
+
     /**
      * 材料体系
      */

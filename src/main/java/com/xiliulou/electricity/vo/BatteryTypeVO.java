@@ -14,16 +14,19 @@ public class BatteryTypeVO {
      * 电池型号
      */
     private Integer batteryModel;
+
     /**
      * 电池型号
      */
     private String batteryType;
 
     private String batteryTypeName;
+
     /**
      * 电池电压
      */
     private Double batteryV;
+
     /**
      * 电池短型号
      */
