@@ -371,14 +371,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-
+    
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
-            if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
-                query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
-            } else {
-                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                    query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
+                } else {
+                    query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                }
             }
-
+            
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
