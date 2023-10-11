@@ -313,7 +313,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return result.add(totalCloudBean.subtract(totalUsedCloudBean));
     }
     
-    private BigDecimal getReturnBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    @Override
+    public BigDecimal getReturnBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
     
         AnotherPayMembercardRecord anotherPayMembercardRecord = anotherPayMembercardRecords.stream()
@@ -365,7 +366,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
     }
     
-    private BigDecimal getRentBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    @Override
+    public BigDecimal getRentBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
         
         AnotherPayMembercardRecord anotherPayMembercardRecord = anotherPayMembercardRecords.stream()
@@ -391,7 +393,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
     }
     
-    private BigDecimal getContainMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    @Override
+    public BigDecimal getContainMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
         
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
@@ -437,8 +440,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
     
         return result;
-        
-        
     }
     
     @Override
@@ -459,7 +460,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return Triple.of(false, null, "云豆账单为空!");
         }
         
-        List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList();
+        List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         
         for (CloudBeanUseRecord cloudBeanUseRecord : list) {
@@ -544,6 +545,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
         
         CloudBeanUseRecordVO cloudBeanUseRecordVO = new CloudBeanUseRecordVO();
+        cloudBeanUseRecordVO.setIncome(BigDecimal.ZERO);
+        cloudBeanUseRecordVO.setExpend(BigDecimal.ZERO);
+        
         //支出
         BigDecimal expend = list.stream()
                 .filter(item -> Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_DEDUCT))
@@ -558,7 +562,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
         return cloudBeanUseRecordVO;
     }
-
     
     @Override
     public void recycleCloudBeanTask() {
@@ -604,7 +607,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 recycleBatteryDeposit(userInfo, enterpriseInfo);
                 
                 //清除用户租退电、购买套餐记录
-//                userBehaviorRecordService.deleteByUid(userInfo.getUid());
+                anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
+    
+                enterpriseRentRecordService.deleteByUid(userInfo.getUid());
                 
                 //解绑用户绑定信息
                 UserInfo updateUserInfo = new UserInfo();
