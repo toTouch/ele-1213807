@@ -54,12 +54,16 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery);
 
     Triple<Boolean, String, Object> save(EnterpriseInfoQuery enterpriseInfoQuery);
+    
+    
 
     Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery);
 
     Boolean checkUserType();
 
     EnterpriseInfo selectByUid(Long uid);
+    
+    EnterpriseInfo selectByName(String name);
     
     EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid);
 
