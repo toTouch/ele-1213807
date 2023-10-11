@@ -3278,8 +3278,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return authMessageNotifyCommon;
         }).collect(Collectors.toList());
     }
-
-
+    
     @Override
     public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
         return baseMapper.insert(electricityMemberCardOrder);

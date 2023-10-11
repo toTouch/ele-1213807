@@ -2,8 +2,11 @@ package com.xiliulou.electricity.controller.user.enterprise;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 
 /**
@@ -41,7 +45,6 @@ public class JsonUserEnterpriseInfoController extends BaseController {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
 
-
     /**
      * 根据UID查询企业详情
      * @return
@@ -57,6 +60,53 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     @PutMapping("/user/enterpriseInfo/recharge")
     public R recharge(@RequestBody @Validated UserCloudBeanRechargeQuery userCloudBeanRechargeQuery, HttpServletRequest request) {
         return returnTripleResult(enterpriseInfoService.rechargeForUser(userCloudBeanRechargeQuery, request));
+    }
+    
+    /**
+     * 云豆概览
+     */
+    @GetMapping("/user/enterpriseInfo/cloudBean/generalView")
+    public R cloudBeanGeneralView(){
+        return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
+    }
+    
+    /**
+     * 云豆回收
+     */
+    @PutMapping("/user/enterpriseInfo/recycleCloudBean/{uid}")
+    public R recycleCloudBean(@PathVariable("uid") Long uid) {
+        return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid));
+    }
+    /**
+     * 骑手概览
+     * @return
+     */
+    @GetMapping("/user/enterpriseInfo/queryPurchasePackageCount")
+    public R queryPurchasePackageCount(){
+        Long uid = SecurityUtils.getUid();
+        Long tenantId = TenantContextHolder.getTenantId().longValue();
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
+        
+        if(Objects.isNull(enterpriseInfo)){
+            return R.fail("300074", "未找到企业信息");
+        }
+    
+        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder()
+                .enterpriseId(enterpriseInfo.getId())
+                .tenantId(tenantId)
+                .build();
+        
+        return R.ok(enterpriseInfoService.queryPurchasedPackageCount(query));
+    }
+    
+    /**
+     * 企业端更新骑手自主续费状态，总开关
+     * @return
+     */
+    @GetMapping("/user/enterpriseInfo/updateAllRenewalStatus")
+    public R updateAllRenewalStatus(){
+        
+        return null;
     }
 
 }

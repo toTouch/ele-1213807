@@ -43,4 +43,10 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     double selectCloudBeanByUidAndType(@Param("uid") Long uid, @Param("type") Integer type);
 
     List<CloudBeanUseRecord> selectByUserPage(CloudBeanUseRecordQuery query);
+    
+    List<CloudBeanUseRecord> selectByEnterpriseIdAndType(@Param("enterpriseId") Long enterpriseId, @Param("type") Integer type);
+    
+    List<CloudBeanUseRecord> selectCanRecycleRecord(@Param("enterpriseId") Long enterpriseId, @Param("currentTimeMillis") long currentTimeMillis);
+    
+    List<CloudBeanUseRecord> selectByTime(Long beginTime, Long endTime, Long id);
 }

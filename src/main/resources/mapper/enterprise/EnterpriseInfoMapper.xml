@@ -32,8 +32,28 @@
         from t_enterprise_info
         where uid = #{uid}
     </select>
-
-    <select id="selectByPage" resultMap="EnterpriseInfoMap">
+    
+    <resultMap type="com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO" id="EnterpriseInfoPackageVO">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="businessId" column="business_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="recoveryMode" column="recovery_mode" jdbcType="INTEGER"/>
+        <result property="totalBeanAmount" column="total_bean_amount" jdbcType="NUMERIC"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <collection property="enterprisePackage" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.enterprise.EnterprisePackage">
+            <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
+            <result property="packageId" column="package_id" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+    
+    <select id="selectByPage" resultMap="EnterpriseInfoPackageVO">
         select
           tei.id,
           tei.uid,
@@ -78,8 +98,8 @@
 
     <select id="selectByPageCount" resultType="int">
         select
-        count(1)
-        from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
+        count(1) from (
+        select tei.id from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
         <if test="name != null and name != ''">
             and tei.name = #{name}
@@ -103,6 +123,8 @@
             and tei.tenant_id = #{tenantId}
         </if>
         </where>
+        group by tei.id
+        ) a
     </select>
 
     <!--通过主键修改数据-->

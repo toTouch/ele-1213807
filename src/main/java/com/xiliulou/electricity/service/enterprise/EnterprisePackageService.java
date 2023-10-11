@@ -47,4 +47,6 @@ public interface EnterprisePackageService {
     void batchInsert(List<EnterprisePackage> packageList);
 
     List<Long> selectByEnterpriseId(Long id);
+    
+    EnterprisePackage selectByPackageId(Long id);
 }

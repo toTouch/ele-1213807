@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -46,8 +47,19 @@ public interface CloudBeanUseRecordService {
     List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query);
 
     CloudBeanUseRecordVO cloudBeanUseStatisticsByUid(CloudBeanUseRecordQuery query);
-
-    Triple<Boolean, String, Object> recycleDepositMembercard(Long uid);
     
     void recycleCloudBeanTask();
+    
+    List<CloudBeanUseRecord> selectByEnterpriseIdAndType(Long id, Integer typePayMembercard);
+    
+    List<CloudBeanUseRecord> selectCanRecycleRecord(Long id, long currentTimeMillis);
+    
+    /**
+     * 获取用户可回收云豆
+     * @param uid
+     * @return
+     */
+    BigDecimal acquireUserCanRecycleCloudBean(Long uid);
+    
+    Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime);
 }

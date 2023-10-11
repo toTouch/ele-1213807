@@ -8,17 +8,17 @@ import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * (UserBehaviorRecord)实体类
+ * 代付记录表(AnotherPayMembercardRecord)实体类
  *
  * @author Eclair
- * @since 2023-09-27 17:08:36
+ * @since 2023-10-10 15:07:39
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_behavior_record")
-public class UserBehaviorRecord {
+@TableName("t_another_pay_membercard_record")
+public class AnotherPayMembercardRecord {
     
     private Long id;
     
@@ -28,11 +28,6 @@ public class UserBehaviorRecord {
     private String orderId;
     
     private Long uid;
-    
-    /**
-     * 订单类型(1--租电池,2--还电池,3--交押金,4--买套餐)
-     */
-    private Integer type;
     
     /**
      * 创建时间
@@ -49,12 +44,5 @@ public class UserBehaviorRecord {
     public static final Integer DEL_NORMAL = 0;
     
     public static final Integer DEL_DEL = 1;
-    
-    //订单类型(1--租电池,2--还电池,3--交押金,4--买套餐)
-    public static final Integer TYPE_RENT_BATTERY = 1;
-    public static final Integer TYPE_RETURN_BATTERY = 2;
-    @Deprecated
-    public static final Integer TYPE_PAY_DEPOSIT = 3;
-    public static final Integer TYPE_PAY_MEMBERCARD = 4;
     
 }

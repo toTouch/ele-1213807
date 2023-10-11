@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
      */
     int deleteById(Long id);
 
-    List<EnterpriseInfo> selectByPage(EnterpriseInfoQuery query);
+    List<EnterpriseInfoPackageVO> selectByPage(EnterpriseInfoQuery query);
 
     Integer selectByPageCount(EnterpriseInfoQuery query);
 

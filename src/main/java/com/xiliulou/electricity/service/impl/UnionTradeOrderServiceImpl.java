@@ -1277,6 +1277,11 @@ public class UnionTradeOrderServiceImpl extends
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                Pair<Boolean, Object> manageInsuranceOrderResult = manageInsuranceOrder(orderIdList.get(i), depositOrderStatus);
+                if (!manageInsuranceOrderResult.getLeft()) {
+                    return manageInsuranceOrderResult;
+                }
             }
         }
     

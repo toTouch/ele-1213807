@@ -27,6 +27,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -45,6 +46,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -151,6 +153,9 @@ public class EleOperateQueueHandler {
     
     @Autowired
     UserBehaviorRecordService userBehaviorRecordService;
+    
+    @Autowired
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
 
@@ -658,11 +663,6 @@ public class EleOperateQueueHandler {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
                         String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
             }
-    
-            //套餐池保存用户租电成功记录
-            userBehaviorRecordService
-                    .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RENT_BATTERY, rentBatteryOrder.getTenantId());
-
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
         }
@@ -670,11 +670,6 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             checkReturnBatteryDoor(rentBatteryOrder);
-    
-            //套餐池保存用户租电成功记录
-            userBehaviorRecordService
-                    .saveUserBehaviorRecord(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserBehaviorRecord.TYPE_RETURN_BATTERY, rentBatteryOrder.getTenantId());
-    
         }
     }
 

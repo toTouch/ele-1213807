@@ -19,6 +19,11 @@ public class EnterpriseChannelUserVO {
      * 企业id
      */
     private Long enterpriseId;
+    
+    /**
+     * 企业名称
+     */
+    private String enterpriseName;
 
     /**
      * 企业添加用户的uid
@@ -40,6 +45,11 @@ public class EnterpriseChannelUserVO {
      * @see InvitationWayEnum
      */
     private Integer invitationWay;
+    
+    /**
+     * 邀请人ID
+     */
+    private Long inviterId;
 
     /**
      * 所属加盟商id
@@ -69,5 +79,9 @@ public class EnterpriseChannelUserVO {
     private String remark;
 
     private Integer authStatus;
+    
+    private Integer delFlag;
+    
+    private String tenantCode;
 
 }

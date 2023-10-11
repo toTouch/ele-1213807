@@ -21,6 +21,8 @@ import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.UserBehaviorRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -35,12 +37,15 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.UserBehaviorRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -220,6 +225,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     UserAuthMessageService userAuthMessageService;
+    
+    @Autowired
+    EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    UserBehaviorRecordService userBehaviorRecordService;
 
     /**
      * 分页查询
@@ -1113,7 +1124,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
-
+            
             return null;
         });
         return R.ok();
@@ -1254,7 +1265,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
         rentBatteryOrderService.insert(rentBatteryOrder);
-
+        
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.BATTERY_MODEL)
@@ -2684,6 +2695,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 // 邀请人
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                
+                // 设置企业信息
+                EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
+                if(Objects.nonNull(enterpriseChannelUserVO)){
+                    item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
+                }
+                
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery other info error!", e);

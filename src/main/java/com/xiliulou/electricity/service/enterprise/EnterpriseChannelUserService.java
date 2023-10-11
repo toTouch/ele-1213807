@@ -6,6 +6,8 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.List;
+
 /**
  * @author BaoYu
  * @description:
@@ -58,4 +60,15 @@ public interface EnterpriseChannelUserService {
     public EnterpriseChannelUserVO selectUserByEnterpriseIdAndUid(Long enterpriseId, Long uid);
     
     EnterpriseChannelUser selectByUid(Long uid);
+    
+    EnterpriseChannelUserVO queryEnterpriseChannelUser(Long uid);
+    
+    EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid);
+    
+    Integer updateChannelUser(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
 }

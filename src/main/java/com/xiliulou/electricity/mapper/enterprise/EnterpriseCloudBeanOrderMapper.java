@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

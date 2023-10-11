@@ -25,6 +25,12 @@
         from t_enterprise_package
         where enterprise_id = #{id}
     </select>
+    
+    <select id="selectByPackageId" resultMap="EnterprisePackageMap">
+        select  package_id
+        from t_enterprise_package
+        where package_id = #{packageId}
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">
