@@ -154,7 +154,7 @@
                 recovery_mode = #{recoveryMode},
             </if>
             <if test="renewalStatus != null">
-                renewal_status = #{renewalStatus}
+                renewal_status = #{renewalStatus},
             </if>
             <if test="totalBeanAmount != null">
                 total_bean_amount = #{totalBeanAmount},
