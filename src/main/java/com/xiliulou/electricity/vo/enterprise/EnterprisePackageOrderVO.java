@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.enterprise;
 
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -36,10 +37,6 @@ public class EnterprisePackageOrderVO {
      */
     private String userBatterySimpleType;
     
-    /**
-     * 可回收云豆数
-     */
-    private BigDecimal recyclableBeanAmount;
 
     private String orderNo;
     
@@ -63,9 +60,15 @@ public class EnterprisePackageOrderVO {
     
     private Long effectiveTime;
     
-    private BigDecimal canRecycleBeanAmount;
+    /**
+     * 云豆状态（1-未回收，2-已回收）
+     * @see CloudBeanStatusEnum
+     */
+    private Integer cloudBeanStatus;
     
-    private BigDecimal recycledBeanAmount;
+    //private BigDecimal canRecycleBeanAmount;
+    
+    //private BigDecimal recycledBeanAmount;
     
     //private Integer expirationDays;
     
