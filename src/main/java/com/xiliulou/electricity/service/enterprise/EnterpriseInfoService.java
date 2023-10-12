@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
@@ -77,6 +79,12 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> cloudBeanGeneralView();
     
     Triple<Boolean, String, Object> recycleCloudBean(Long uid);
+    
+    void unbindUserData(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser);
+    
+    Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    
+    void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
