@@ -452,7 +452,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> delete(Long id) {
+        enterpriseChannelUserService.deleteByEnterpriseId(id);
         this.deleteById(id);
         return Triple.of(true, null, null);
     }
