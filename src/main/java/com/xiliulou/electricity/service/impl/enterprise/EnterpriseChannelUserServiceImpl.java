@@ -190,7 +190,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByEnterpriseIdAndUid(enterpriseId, uid);
         EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
-        BeanUtils.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        if(Objects.nonNull(enterpriseChannelUser)){
+            BeanUtils.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        }
         return enterpriseChannelUserVO;
     }
     

@@ -72,6 +72,7 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -81,6 +82,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -214,6 +216,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     EleRefundOrderService eleRefundOrderService;
     @Resource
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    @Resource
+    CloudBeanUseRecordService cloudBeanUseRecordService;
+    @Resource
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
     
     @Deprecated
     @Override
@@ -911,6 +917,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }*/
+        
+        //判断是否存在滞纳金
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+            return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
+        }
     
         //套餐订单
         Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCard, query, null);
@@ -1067,6 +1081,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
             log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
+        }
+    
+        //判断是否存在滞纳金
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+            return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
         }
     
         //押金订单
@@ -1274,6 +1296,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
             log.warn("purchase Package with free deposit warning, battery membercard refund review,uid={}", userInfo.getUid());
             return Triple.of(false,"100018", "套餐租金退款审核中");
+        }
+    
+        //判断是否存在滞纳金
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+            return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
         }
     
         //获取扫码柜机
@@ -1711,9 +1741,20 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if(Objects.nonNull(electricityMemberCardOrder)){
                 enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
             }
+            
+            //设置可回收云豆信息
+            EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(enterprisePackageOrderVO.getUid());
+            if(Objects.nonNull(enterpriseChannelUser)){
+                if(CloudBeanStatusEnum.NOT_RECYCLE.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
+                    BigDecimal canRecycleCloudBean = cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(enterprisePackageOrderVO.getUid());
+                    enterprisePackageOrderVO.setCanRecycleBeanAmount(canRecycleCloudBean);
         
-            //TODO 设置可回收云豆信息
-        
+                }else if(CloudBeanStatusEnum.RECOVERED.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
+                    //设置已回收云豆信息
+                    BigDecimal recycledCloudBean = cloudBeanUseRecordService.acquireUserRecycledCloudBean(enterprisePackageOrderVO.getUid());
+                    enterprisePackageOrderVO.setRecycledBeanAmount(recycledCloudBean);
+                }
+            }
         }
     }
     

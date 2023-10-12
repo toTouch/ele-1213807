@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -89,6 +90,8 @@ public class DetailsUserInfoVo {
     private Long franchiseeId;
 
     private Long storeId;
+    
+    private EnterpriseChannelUserVO enterpriseChannelUserInfo;
 
     /**
      * 租车套餐金额（总支付成功-总退租成功）

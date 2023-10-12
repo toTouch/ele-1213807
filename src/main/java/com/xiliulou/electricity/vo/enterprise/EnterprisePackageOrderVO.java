@@ -63,6 +63,10 @@ public class EnterprisePackageOrderVO {
     
     private Long effectiveTime;
     
+    private BigDecimal canRecycleBeanAmount;
+    
+    private BigDecimal recycledBeanAmount;
+    
     //private Integer expirationDays;
     
     
