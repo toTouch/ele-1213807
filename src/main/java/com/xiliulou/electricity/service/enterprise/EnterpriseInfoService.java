@@ -83,4 +83,6 @@ public interface EnterpriseInfoService {
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
     
     EnterpriseInfoVO selectDetailByUid(Long uid);
+    
+    Triple<Boolean, String, Object> refund(String orderId,HttpServletRequest request);
 }
