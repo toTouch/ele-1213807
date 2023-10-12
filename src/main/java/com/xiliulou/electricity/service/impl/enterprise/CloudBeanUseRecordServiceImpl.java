@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
@@ -52,6 +54,7 @@ import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,7 +155,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
     
     @Autowired
-    private RentBatteryOrderService rentBatteryOrderService;
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
     
     @Autowired
     private EnterpriseRentRecordService enterpriseRentRecordService;
@@ -273,16 +276,16 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             //完整的租退
             if (StringUtils.isNotBlank(enterpriseRentRecord.getRentMembercardOrderId()) && StringUtils.isNotBlank(enterpriseRentRecord.getReturnMembercardOrderId())) {
                 //租退电时间包含的套餐消耗的云豆
-                BigDecimal containMembercardUsedCloudBean=getContainMembercardUsedCloudBean(enterpriseRentRecord,anotherPayMembercardRecords);
+                BigDecimal containMembercardUsedCloudBean=getContainMembercardUsedCloudBean(userInfo,enterpriseInfo,enterpriseRentRecord,anotherPayMembercardRecords);
                 totalUsedCloudBean=totalUsedCloudBean.add(containMembercardUsedCloudBean);
                 
                 //租电时间所在的套餐消耗的云豆
-                BigDecimal rentBatteryMembercardUsedCloudBean=getRentBatteryMembercardUsedCloudBean(enterpriseRentRecord,anotherPayMembercardRecords);
+                BigDecimal rentBatteryMembercardUsedCloudBean=getRentBatteryMembercardUsedCloudBean(userInfo,enterpriseInfo,enterpriseRentRecord,anotherPayMembercardRecords);
                 totalUsedCloudBean=totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
                 
                 
                 //退电时间所在的套餐消耗的云豆
-                BigDecimal returnBatteryMembercardUsedCloudBean=getReturnBatteryMembercardUsedCloudBean(enterpriseRentRecord,anotherPayMembercardRecords);
+                BigDecimal returnBatteryMembercardUsedCloudBean=getReturnBatteryMembercardUsedCloudBean(userInfo,enterpriseInfo,enterpriseRentRecord,anotherPayMembercardRecords);
                 totalUsedCloudBean=totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
             }
             
@@ -293,7 +296,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 totalUsedCloudBean=totalUsedCloudBean.add(containMembercardUsedCloudBean);
     
                 //租电时间所在的套餐消耗的云豆
-                BigDecimal rentBatteryMembercardUsedCloudBean=getRentBatteryMembercardUsedCloudBean(enterpriseRentRecord,anotherPayMembercardRecords);
+                BigDecimal rentBatteryMembercardUsedCloudBean=getRentBatteryMembercardUsedCloudBean(userInfo,enterpriseInfo,enterpriseRentRecord,anotherPayMembercardRecords);
                 totalUsedCloudBean=totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
     
     
@@ -314,7 +317,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     }
     
     @Override
-    public BigDecimal getReturnBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    public BigDecimal getReturnBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo,EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
     
         AnotherPayMembercardRecord anotherPayMembercardRecord = anotherPayMembercardRecords.stream()
@@ -337,6 +340,40 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         //退电套餐单价
         BigDecimal membercardPrice = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
     
+        //保存回收记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+        cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+        batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+        batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+        batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+        batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+        batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+        batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+        batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
+        batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
+        batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
+        batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+        batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+        batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+        batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+        batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
+        
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
     }
     
@@ -367,7 +404,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     }
     
     @Override
-    public BigDecimal getRentBatteryMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    public BigDecimal getRentBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo,EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
         
         AnotherPayMembercardRecord anotherPayMembercardRecord = anotherPayMembercardRecords.stream()
@@ -389,31 +426,101 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         long useDays = dateDifferent(enterpriseRentRecord.getRentTime(), anotherPayMembercardRecord.getEndTime());
         //租电套餐单价
         BigDecimal membercardPrice = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
+    
+        //保存回收记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+        cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+        batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+        batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+        batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+        batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+        batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+        batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+        batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
+        batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
+        batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
+        batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+        batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+        batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+        batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+        batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
         
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
     }
     
     @Override
-    public BigDecimal getContainMembercardUsedCloudBean(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
+    public BigDecimal getContainMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo,EnterpriseRentRecord enterpriseRentRecord,
+            List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
-        
+    
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
             //套餐是否在租退电时间内
             if (((enterpriseRentRecord.getRentTime() - anotherPayMembercardRecord.getBeginTime()) <= 0) && (
                     (anotherPayMembercardRecord.getEndTime() - enterpriseRentRecord.getReturnTime()) <= 0)
                     || ((enterpriseRentRecord.getReturnTime() - anotherPayMembercardRecord.getBeginTime()) >= 0) && (
                     (enterpriseRentRecord.getRentTime() - anotherPayMembercardRecord.getEndTime()) <= 0)) {
+            
                 ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                 if (Objects.isNull(electricityMemberCardOrder)) {
                     log.warn("GET CONTAIN MEMBERCARD USED CLOUD BEAN WARN! electricityMemberCardOrder is null,uid={},orderId={}", enterpriseRentRecord.getUid(),
                             anotherPayMembercardRecord.getOrderId());
                     continue;
                 }
+    
+                //保存回收记录
+                CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+                cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+                cloudBeanUseRecord.setUid(userInfo.getUid());
+                cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+                cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+                cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+                cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+                cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+                cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+                cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+                cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+                cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+                cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+                BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+                batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+                batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+                batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+                batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+                batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+                batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+                batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
+                batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
+                batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
+                batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+                batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+                batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+                batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+                batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+                batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+                batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+                batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
                 
                 result = result.add(electricityMemberCardOrder.getPayAmount());
             }
         }
-        
+    
         return result;
     }
     

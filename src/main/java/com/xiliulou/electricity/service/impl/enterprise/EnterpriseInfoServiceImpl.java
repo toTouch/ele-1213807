@@ -10,6 +10,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -416,7 +417,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "", "企业配置不存在");
         }
-    
+        
         EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
         if (Objects.nonNull(enterpriseInfoOld) && !Objects.equals(enterpriseInfoOld.getUid(), enterpriseInfo.getUid())) {
             return Triple.of(false, "", "用户已存在");
@@ -426,9 +427,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Objects.nonNull(enterpriseInfoExit) && !Objects.equals(enterpriseInfoExit.getId(), enterpriseInfo.getId())) {
             return Triple.of(false, "", "企业已存在");
         }
-    
+        
         enterprisePackageService.deleteByEnterpriseId(enterpriseInfo.getId());
-        if(!CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())){
+        if (!CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())) {
             List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
                 EnterprisePackage enterprisePackage = new EnterprisePackage();
                 enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
@@ -621,7 +622,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         //回收套餐
-        Triple<Boolean, String, Object> booleanStringObjectTriple = recycleBatteryMembercard(userInfo);
+        Triple<Boolean, String, Object> booleanStringObjectTriple = recycleBatteryMembercard(userInfo, enterpriseInfo);
         if (Boolean.FALSE.equals(booleanStringObjectTriple.getLeft())) {
             return booleanStringObjectTriple;
         }
@@ -631,7 +632,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //清除用户租退电、购买套餐记录
         anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
-    
+        
         enterpriseRentRecordService.deleteByUid(userInfo.getUid());
         
         //更新用户云豆状态为已回收
@@ -682,7 +683,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, null);
     }
     
-    private Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo) {
+    public Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         BigDecimal result = BigDecimal.ZERO;
         
         List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(userInfo.getUid());
@@ -707,17 +708,47 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //若未租退电
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
-            //生成回收记录
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            //生成退租记录、回收记录
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
+                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(anotherPayMembercardRecord.getOrderId());
+                if (Objects.isNull(electricityMemberCardOrder)) {
+                    log.warn("RECYCLE BATTERY MEMBERCARD WARN! not found electricityMemberCardOrder,uid={},orderId={}", userInfo.getUid(), anotherPayMembercardRecord.getOrderId());
+                    continue;
+                }
+                
+                CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+                cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+                cloudBeanUseRecord.setUid(userInfo.getUid());
+                cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+                cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+                cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+                cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+                cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+                cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+                cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+                cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+                cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+                cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+                
+                BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+                batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+                batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+                batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+                batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+                batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+                batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+                batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
+                batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
+                batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
+                batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+                batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+                batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+                batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+                batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+                batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+                batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+                batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
+            }
             return Triple.of(true, null, totalCloudBean);
         }
         
@@ -729,15 +760,18 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             //完整的租退
             if (StringUtils.isNotBlank(enterpriseRentRecord.getRentMembercardOrderId()) && StringUtils.isNotBlank(enterpriseRentRecord.getReturnMembercardOrderId())) {
                 //租退电时间包含的套餐消耗的云豆
-                BigDecimal containMembercardUsedCloudBean = cloudBeanUseRecordService.getContainMembercardUsedCloudBean(enterpriseRentRecord, anotherPayMembercardRecords);
+                BigDecimal containMembercardUsedCloudBean = cloudBeanUseRecordService
+                        .getContainMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(containMembercardUsedCloudBean);
                 
                 //租电时间所在的套餐消耗的云豆
-                BigDecimal rentBatteryMembercardUsedCloudBean = cloudBeanUseRecordService.getRentBatteryMembercardUsedCloudBean(enterpriseRentRecord, anotherPayMembercardRecords);
+                BigDecimal rentBatteryMembercardUsedCloudBean = cloudBeanUseRecordService
+                        .getRentBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
                 
                 //退电时间所在的套餐消耗的云豆
-                BigDecimal returnBatteryMembercardUsedCloudBean = cloudBeanUseRecordService.getReturnBatteryMembercardUsedCloudBean(enterpriseRentRecord, anotherPayMembercardRecords);
+                BigDecimal returnBatteryMembercardUsedCloudBean = cloudBeanUseRecordService
+                        .getReturnBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
             }
             
@@ -751,7 +785,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, result.add(totalCloudBean.subtract(totalUsedCloudBean)));
     }
     
-    private void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
+    public void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("RECYCLE BATTERY DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
@@ -934,21 +968,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     public Triple<Boolean, String, Object> refund(String orderId, HttpServletRequest request) {
         try {
-        
+            
             EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(orderId);
             if (Objects.isNull(enterpriseCloudBeanOrder)) {
                 return Triple.of(false, null, "订单不存在!");
             }
-        
+            
             RefundOrder refundOrder = RefundOrder.builder().orderId(orderId)
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, enterpriseCloudBeanOrder.getUid()))
                     .payAmount(enterpriseCloudBeanOrder.getPayAmount()).refundAmount(enterpriseCloudBeanOrder.getPayAmount()).build();
-        
+            
             return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
         } catch (WechatPayException e) {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
-    
+        
         return Triple.of(true, null, "退款成功!");
     }
     
