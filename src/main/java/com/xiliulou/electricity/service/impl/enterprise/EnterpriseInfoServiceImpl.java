@@ -807,7 +807,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         } else {
             cloudBeanGeneralViewVO.setAllocationCloudBean(payRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
             cloudBeanGeneralViewVO.setAllocationMembercard(payRecords.size());
-            cloudBeanGeneralViewVO.setAllocationUser(payRecords.stream().mapToLong(CloudBeanUseRecord::getUid).distinct().sum());
+            cloudBeanGeneralViewVO.setAllocationUser(payRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
         
         //已回收订单
@@ -819,7 +819,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         } else {
             cloudBeanGeneralViewVO.setRecycleCloudBean(recycleRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
             cloudBeanGeneralViewVO.setRecycleMembercard(recycleRecords.size());
-            cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().mapToLong(CloudBeanUseRecord::getUid).distinct().sum());
+            cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
         
         //可回收订单
@@ -831,7 +831,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         } else {
             cloudBeanGeneralViewVO.setCanRecycleCloudBean(cloudBeanUseRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
             cloudBeanGeneralViewVO.setCanRecycleMembercard(cloudBeanUseRecords.size());
-            cloudBeanGeneralViewVO.setCanRecycleUser(cloudBeanUseRecords.stream().mapToLong(CloudBeanUseRecord::getUid).distinct().sum());
+            cloudBeanGeneralViewVO.setCanRecycleUser(cloudBeanUseRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
