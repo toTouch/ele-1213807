@@ -58,6 +58,8 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCard> selectByQuery(BatteryMemberCardQuery query);
 
     List<BatteryMemberCardAndTypeVO> selectMemberCardsByEnterprise(EnterpriseMemberCardQuery query);
+    
+    List<BatteryMemberCardVO> selectMembercardBatteryVByEnterprise(EnterpriseMemberCardQuery query);
 
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 }

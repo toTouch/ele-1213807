@@ -269,15 +269,28 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Override
     public Triple<Boolean, String, Object> queryBatterV(EnterpriseChannelUserQuery query) {
         
-        //获取企业对应的加盟商
+        //获取当前企业信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
             log.info("not found enterprise record, enterprise id = {}", query.getEnterpriseId());
             return Triple.of(false, "", "当前企业不存在");
         }
+        List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
+        if (Objects.isNull(packageIds)) {
+            log.info("not found enterprise package record, enterprise id = {}", query.getEnterpriseId());
+            return Triple.of(false, "", "当前企业套餐不存在");
+        }
         
-        BatteryMemberCardQuery batteryMemberCardQuery = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(enterpriseInfo.getFranchiseeId())
-                .status(BatteryMemberCard.STATUS_UP).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        //根据企业加盟商获取套餐信息
+        /*BatteryMemberCardQuery batteryMemberCardQuery = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(enterpriseInfo.getFranchiseeId())
+                .status(BatteryMemberCard.STATUS_UP).delFlag(BatteryMemberCard.DEL_NORMAL).build();*/
+    
+        EnterpriseMemberCardQuery batteryMemberCardQuery = new EnterpriseMemberCardQuery();
+        batteryMemberCardQuery.setTenantId(TenantContextHolder.getTenantId());
+        batteryMemberCardQuery.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        batteryMemberCardQuery.setStatus(BatteryMemberCard.STATUS_UP);
+        batteryMemberCardQuery.setDelFlag(BatteryMemberCard.DEL_NORMAL);
+        batteryMemberCardQuery.setPackageIds(packageIds);
         
         //待添加套餐的用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
@@ -288,7 +301,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         //未缴纳押金
         if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())) {
-            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
+            List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryVByEnterprise(batteryMemberCardQuery);
+            //List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
             if (CollectionUtils.isEmpty(list)) {
                 return Triple.of(true, "", Collections.emptyList());
             }
@@ -299,7 +313,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
-            List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
+            List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryVByEnterprise(batteryMemberCardQuery);
+            //List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
             if (CollectionUtils.isEmpty(list)) {
                 return Triple.of(true, "", Collections.emptyList());
             }
@@ -1195,13 +1210,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         //是否开启购买保险（是进入）
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        /*ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
             //保险ID是否有传入
             if(Objects.isNull(query.getInsuranceId())){
                 return Triple.of(false,"100309", "请先选择购买保险");
             }
-        }
+        }*/
     
         //押金订单
         Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, batteryMemberCard);
@@ -1511,13 +1526,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         //是否开启购买保险（是进入）
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        /*ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
             //保险ID是否有传入
             if(Objects.isNull(query.getInsuranceId())){
                 return Triple.of(false,"100309", "请先选择购买保险");
             }
-        }
+        }*/
     
         //获取扫码柜机
        /* ElectricityCabinet electricityCabinet = null;

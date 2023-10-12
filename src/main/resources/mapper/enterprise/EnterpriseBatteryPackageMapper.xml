@@ -375,6 +375,9 @@
             <if test="enterpriseId != null">
                 and tecu.uid not in (select uid from t_electricity_member_card_order where status = 1 and enterprise_id = #{enterpriseId})
             </if>
+            <if test="enterpriseId != null">
+                and tecu.enterprise_id = #{enterpriseId}
+            </if>
     
             <if test="userName != null and userName != ''">
                 and tui.name like concat('%',#{userName},'%')
