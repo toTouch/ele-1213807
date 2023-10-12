@@ -844,6 +844,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
     
+        //检查骑手信息是否属于当前企业
+        EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
+        if(Objects.isNull(enterpriseChannelUser)){
+            log.error("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+            return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
+        }
+    
         //检查套餐是否属于当前的企业
         List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
         if (Objects.isNull(packageIds) || !packageIds.contains(query.getPackageId())) {
@@ -872,11 +879,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
     
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+       /* ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.warn("purchase package by enterprise user error, not found pay params,uid={}", userInfo.getUid());
             return Triple.of(false, "100307", "未配置支付参数!");
-        }
+        }*/
     
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
@@ -1099,37 +1106,44 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
+        
+        //检查骑手信息是否属于当前企业
+        EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
+        if(Objects.isNull(enterpriseChannelUser)){
+            log.error("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+            return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
+        }
     
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("purchase package with deposit by enterprise user warn, not found user,uid={}", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, not found user,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
     
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.warn("purchase package with deposit by enterprise user warn, user is unUsable,uid={}", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, user is unUsable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
     
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.warn("purchase package with deposit by enterprise user warn, user not auth,uid={}", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.warn("purchase package with deposit by enterprise user warn, user is rent deposit,uid={} ", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, user is rent deposit,uid={} ", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
         }
     
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        /*ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.warn("purchase package with deposit by enterprise user warn, not found pay params,uid={}", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, not found pay params,uid={}", userInfo.getUid());
             return Triple.of(false, "100307", "未配置支付参数!");
-        }
+        }*/
     
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.warn("purchase package with deposit by enterprise user warn, not found user oauth bind or third id is null,uid={}", user.getUid());
+            log.warn("purchase package with deposit by enterprise user warn, not found user oauth bind or third id is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
         }
     
@@ -1144,10 +1158,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "100275", "电池套餐不可用");
         }
     
-        if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
+        /*if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
             log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
-        }
+        }*/
     
         //判断是否存在滞纳金
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -1363,6 +1377,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Objects.isNull(enterpriseInfo)) {
             log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
+        }
+    
+        //检查骑手信息是否属于当前企业
+        EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
+        if(Objects.isNull(enterpriseChannelUser)){
+            log.error("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+            return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
