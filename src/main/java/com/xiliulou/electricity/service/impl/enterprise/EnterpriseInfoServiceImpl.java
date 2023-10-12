@@ -19,6 +19,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -73,6 +74,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -933,6 +935,27 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         return Boolean.FALSE;
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> refund(String orderId, HttpServletRequest request) {
+        try {
+        
+            EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(orderId);
+            if (Objects.isNull(enterpriseCloudBeanOrder)) {
+                return Triple.of(false, null, "订单不存在!");
+            }
+        
+            RefundOrder refundOrder = RefundOrder.builder().orderId(orderId)
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, enterpriseCloudBeanOrder.getUid()))
+                    .payAmount(enterpriseCloudBeanOrder.getPayAmount()).refundAmount(enterpriseCloudBeanOrder.getPayAmount()).build();
+        
+            return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
+        } catch (WechatPayException e) {
+            log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
+        }
+    
+        return Triple.of(true, null, "退款成功!");
     }
     
     private Pair<List<Long>, List<String>> getMembercardNames(Long id) {
