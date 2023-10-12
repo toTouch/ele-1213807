@@ -75,7 +75,7 @@
                 and create_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt;= #{startTime}
+                and create_time &lt;= #{endTime}
             </if>
             <if test="uid != null">
                 and uid = #{uid}

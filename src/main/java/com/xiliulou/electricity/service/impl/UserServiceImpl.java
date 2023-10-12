@@ -18,10 +18,12 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -121,6 +123,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    
+    @Autowired
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -795,6 +800,12 @@ public class UserServiceImpl implements UserService {
         Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
         if (!Objects.isNull(checkCarResult)) {
             return Triple.of(false, "100253", "用户已绑定车辆");
+        }
+        
+        //判断用户是否为企业用户
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if(Objects.nonNull(enterpriseChannelUser)){
+            return Triple.of(false, "100253", "请先删除企业用户配置");
         }
 
         //删除用户
