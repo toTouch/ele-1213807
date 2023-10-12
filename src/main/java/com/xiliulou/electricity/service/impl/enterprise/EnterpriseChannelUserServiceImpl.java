@@ -248,11 +248,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     public Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
     
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(enterpriseChannelUserQuery.getUid());
-        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
-            return Boolean.TRUE;
+        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+            return Boolean.FALSE;
         }
         
-        return Boolean.FALSE;
+        return Boolean.TRUE;
     }
     
     @Override
