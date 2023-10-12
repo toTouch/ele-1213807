@@ -1129,7 +1129,7 @@ public class ElectricityTradeOrderServiceImpl extends
         enterpriseCloudBeanOrderUpdate.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
         enterpriseCloudBeanOrderUpdate.setUpdateTime(System.currentTimeMillis());
 
-        if (Objects.equals(tradeState, EnterpriseCloudBeanOrder.STATUS_SUCCESS)) {
+        if (Objects.equals(tradeOrderStatus, EnterpriseCloudBeanOrder.STATUS_SUCCESS)) {
             EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
             enterpriseInfoUpdate.setId(enterpriseInfo.getId());
             enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(enterpriseCloudBeanOrder.getBeanAmount()));
