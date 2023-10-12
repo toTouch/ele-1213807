@@ -278,6 +278,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return enterpriseChannelUserMapper.update(enterpriseChannelUser);
     }
     
+    @Override
+    public int update(EnterpriseChannelUser enterpriseChannelUserUpdate) {
+        return enterpriseChannelUserMapper.update(enterpriseChannelUserUpdate);
+    }
+    
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query) {
         
         //检查当前用户是否可用

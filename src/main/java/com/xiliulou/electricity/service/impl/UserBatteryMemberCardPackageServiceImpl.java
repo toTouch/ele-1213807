@@ -156,7 +156,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
 
         UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(userBatteryMemberCard.getUid());
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
-            log.warn("BATTERY MEMBER TRANSFORM WARN! not found userBatteryMemberCardPackageLatest,uid={}", userInfo.getUid());
+//            log.warn("BATTERY MEMBER TRANSFORM WARN! not found userBatteryMemberCardPackageLatest,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
 
