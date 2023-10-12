@@ -899,7 +899,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseChannelUserService.batchUpdateRenewStatus(enterpriseUserIds, enterpriseInfoQuery.getRenewalStatus());
         }
         EnterpriseInfo enterprise = new EnterpriseInfo();
-        enterprise.setId(enterpriseInfoQuery.getId());
+        enterprise.setId(enterpriseInfo.getId());
         enterprise.setRenewalStatus(enterpriseInfoQuery.getRenewalStatus());
         enterprise.setUpdateTime(System.currentTimeMillis());
         
