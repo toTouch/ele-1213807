@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -62,6 +64,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
@@ -221,6 +224,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     CloudBeanUseRecordService cloudBeanUseRecordService;
     @Resource
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    @Resource
+    ElectricityConfigService electricityConfigService;
     
     @Deprecated
     @Override
@@ -933,6 +938,23 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
         }
+        
+        //续租操作时，已经有了电池信息，查询用户当前关联的电池型号
+        String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
+    
+        //是否开启购买保险（是进入）
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险是否强制购买（是进入）
+            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType, userInfo.getTenantId());
+            long now = System.currentTimeMillis();
+            if (Objects.nonNull(franchiseeInsurance) && Objects.equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+                //保险ID是否有传入
+                if(Objects.isNull(query.getInsuranceId())){
+                    return Triple.of(false,"100309", "请先选择购买保险");
+                }
+            }
+        }
     
         //套餐订单
         Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCard, query, null);
@@ -1025,6 +1047,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
         enterpriseUserPackageDetailsVO.setName(userInfo.getName());
         enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
         enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
         enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
     
@@ -1167,8 +1190,17 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+            log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
+        }
+    
+        //是否开启购买保险（是进入）
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险ID是否有传入
+            if(Objects.isNull(query.getInsuranceId())){
+                return Triple.of(false,"100309", "请先选择购买保险");
+            }
         }
     
         //押金订单
@@ -1258,6 +1290,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
         }
     
+        //扣减企业云豆数量
         BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
         totalBeanAmount = totalBeanAmount.subtract(integratedPaAmount);
     
@@ -1267,6 +1300,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
         enterpriseInfoService.update(updateEnterpriseInfo);
     
+        //添加云豆使用记录
         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
@@ -1281,10 +1315,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
     
+        //构造前端页面套餐购买成功后显示信息
         EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
         enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
         enterpriseUserPackageDetailsVO.setName(userInfo.getName());
         enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
         enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
         enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrder.getPayAmount());
     
@@ -1465,6 +1501,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
         }
     
+        //是否开启购买保险（是进入）
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险ID是否有传入
+            if(Objects.isNull(query.getInsuranceId())){
+                return Triple.of(false,"100309", "请先选择购买保险");
+            }
+        }
+    
         //获取扫码柜机
        /* ElectricityCabinet electricityCabinet = null;
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
@@ -1563,6 +1608,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
         enterpriseUserPackageDetailsVO.setName(userInfo.getName());
         enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
         enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
         enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
         

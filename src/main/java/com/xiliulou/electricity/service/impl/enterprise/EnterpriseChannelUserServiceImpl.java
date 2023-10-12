@@ -287,10 +287,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         //检查当前用户是否可用
         
-        // 0. 添加的骑手不能是当前的企业站长
-        if(SecurityUtils.getUid().equals(query.getUid())){
+        // 0. 添加的骑手不能是企业站长
+        EnterpriseInfo enterpriseData = enterpriseInfoService.selectByUid(query.getUid());
+        if(Objects.nonNull(enterpriseData)){
             log.error("add user to enterprise failed. current user is enterprise director. uid = {}, enterprise director uid ", query.getUid(), SecurityUtils.getUid());
-            return Triple.of(false, "300062", "待添加用户为当前企业负责人，无法添加");
+            return Triple.of(false, "300062", "待添加用户为企业负责人，无法添加");
         }
         
         // 1. 获取用户信息
