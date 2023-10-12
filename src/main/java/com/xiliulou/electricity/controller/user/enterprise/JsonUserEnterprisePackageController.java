@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseFreeDepositQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
@@ -119,14 +120,24 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
-     * 查询指定骑手的押金信息
+     * 生成骑手免押二维码信息
      * @param uid
      * @return
      */
     @GetMapping(value = "/user/enterprise/freeBatteryDeposit")
-    public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid) {
+    public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid,
+                                @RequestParam(value = "realName", required = true) String realName,
+                                @RequestParam(value = "idCard", required = true) String idCard,
+                                @RequestParam(value = "phone", required = true) String phone) {
+    
+        EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder()
+                .uid(uid)
+                .realName(realName)
+                .idCard(idCard)
+                .phoneNumber(phone)
+                .build();
         
-        return returnTripleResult(enterpriseBatteryPackageService.queryUserBatteryDeposit(uid));
+        return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDeposit(freeQuery));
     }
     
     
