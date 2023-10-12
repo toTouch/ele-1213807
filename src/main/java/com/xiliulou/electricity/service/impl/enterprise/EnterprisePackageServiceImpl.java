@@ -91,4 +91,9 @@ public class EnterprisePackageServiceImpl implements EnterprisePackageService {
     public EnterprisePackage selectByPackageId(Long packageId) {
         return this.enterprisePackageMapper.selectByPackageId(packageId);
     }
+    
+    @Override
+    public int deleteByEnterpriseId(Long id) {
+        return this.enterprisePackageMapper.deleteByEnterpriseId(id);
+    }
 }

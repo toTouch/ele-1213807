@@ -62,6 +62,10 @@
     <delete id="deleteById">
         delete from t_enterprise_package where id = #{id}
     </delete>
+    
+    <delete id="deleteByEnterpriseId">
+        delete from t_enterprise_package where enterprise_id = #{id}
+    </delete>
 
     <insert id="batchInsert">
         insert into t_enterprise_package(enterprise_id, package_id, package_type, tenant_id, create_time, update_time)
