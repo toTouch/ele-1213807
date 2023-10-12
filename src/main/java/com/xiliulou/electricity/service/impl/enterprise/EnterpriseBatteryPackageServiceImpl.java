@@ -1274,6 +1274,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             throw new BizException("300079", "云豆数量不足，请先充值");
         }
     
+        //更新押金状态
+        if(Objects.nonNull(eleDepositOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                //return  Triple.of(false, "100349", result.getRight());
+                throw new BizException("300071", (String) result.getRight());
+            }
+        }
+    
         //更新保险状态
         if(Objects.nonNull(insuranceOrder)){
             Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);

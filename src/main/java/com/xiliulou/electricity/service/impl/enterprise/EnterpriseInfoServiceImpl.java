@@ -909,6 +909,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterprise.setRenewalStatus(enterpriseInfoQuery.getRenewalStatus());
         enterprise.setUpdateTime(System.currentTimeMillis());
         
+        log.info("Update all renewal status = {}", enterpriseInfoQuery.getRenewalStatus());
+        
         Integer result = enterpriseInfoMapper.update(enterprise);
         
         return result;
