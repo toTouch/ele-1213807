@@ -22,13 +22,13 @@ public interface EnterpriseBatteryPackageMapper extends BaseMapper<ElectricityMe
 
     Integer insertMemberCardOrder(ElectricityMemberCardOrder memberCardOrder);
 
-    List<EnterprisePackageOrderVO> queryBatteryPackageOrder(@Param("query") EnterprisePackageOrderQuery query);
+    List<EnterprisePackageOrderVO> queryBatteryPackageOrder(EnterprisePackageOrderQuery query);
     
-    List<EnterpriseRentBatteryOrderVO> queryRentBatteryOrder(@Param("query") EnterpriseRentBatteryOrderQuery query);
+    List<EnterpriseRentBatteryOrderVO> queryRentBatteryOrder(EnterpriseRentBatteryOrderQuery query);
     
-    List<EnterpriseFreezePackageRecordVO> queryBatteryFreezeOrder(@Param("query") EnterprisePackageOrderQuery query);
+    List<EnterpriseFreezePackageRecordVO> queryBatteryFreezeOrder(EnterprisePackageOrderQuery query);
     
-    List<EnterpriseRefundDepositOrderVO> queryBatteryDepositOrder(@Param("query") EnterprisePackageOrderQuery query);
+    List<EnterpriseRefundDepositOrderVO> queryBatteryDepositOrder(EnterprisePackageOrderQuery query);
     
     List<EnterprisePackageOrderVO> queryExpiredPackageOrder(EnterprisePurchaseOrderQuery query);
     

@@ -453,7 +453,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> delete(Long id) {
+        enterpriseChannelUserService.deleteByEnterpriseId(id);
         this.deleteById(id);
         return Triple.of(true, null, null);
     }
@@ -931,7 +933,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseChannelUserService.batchUpdateRenewStatus(enterpriseUserIds, enterpriseInfoQuery.getRenewalStatus());
         }
         EnterpriseInfo enterprise = new EnterpriseInfo();
-        enterprise.setId(enterpriseInfoQuery.getId());
+        enterprise.setId(enterpriseInfo.getId());
         enterprise.setRenewalStatus(enterpriseInfoQuery.getRenewalStatus());
         enterprise.setUpdateTime(System.currentTimeMillis());
         

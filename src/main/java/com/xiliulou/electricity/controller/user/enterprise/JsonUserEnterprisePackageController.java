@@ -128,13 +128,15 @@ public class JsonUserEnterprisePackageController extends BaseController {
     public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid,
                                 @RequestParam(value = "realName", required = true) String realName,
                                 @RequestParam(value = "idCard", required = true) String idCard,
-                                @RequestParam(value = "phone", required = true) String phone) {
+                                @RequestParam(value = "phone", required = true) String phone,
+                                @RequestParam(value = "packageId", required = true) Long packageId) {
     
         EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder()
                 .uid(uid)
                 .realName(realName)
                 .idCard(idCard)
                 .phoneNumber(phone)
+                .membercardId(packageId)
                 .build();
         
         return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDeposit(freeQuery));

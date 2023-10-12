@@ -76,4 +76,6 @@ public interface EnterpriseChannelUserService {
     Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     int update(EnterpriseChannelUser enterpriseChannelUserUpdate);
+    
+    int deleteByEnterpriseId(Long id);
 }

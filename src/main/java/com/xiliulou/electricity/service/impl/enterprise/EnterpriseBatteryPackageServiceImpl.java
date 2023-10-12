@@ -1978,6 +1978,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             enterpriseUserCostDetailsVO.setPayAmount(enterpriseRefundDepositOrderVO.getPayAmount());
             enterpriseUserCostDetailsVO.setDepositAmount(enterpriseRefundDepositOrderVO.getRefundAmount());
+            enterpriseUserCostDetailsVO.setOperationTime(enterpriseRefundDepositOrderVO.getCreateTime());
             enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);
         }
         
