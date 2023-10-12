@@ -271,4 +271,9 @@
     </update>
     
     
+    <delete id="deleteByEnterpriseId">
+        delete from t_enterprise_info where enterprise_id = #{enterpriseId}
+    </delete>
+    
+    
 </mapper>
