@@ -49,4 +49,6 @@ public interface EnterprisePackageService {
     List<Long> selectByEnterpriseId(Long id);
     
     EnterprisePackage selectByPackageId(Long id);
+    
+    int deleteByEnterpriseId(Long id);
 }

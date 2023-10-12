@@ -407,6 +407,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseInfoQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
@@ -416,6 +417,21 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
         if (Objects.nonNull(enterpriseInfoExit) && !Objects.equals(enterpriseInfoExit.getId(), enterpriseInfo.getId())) {
             return Triple.of(false, "", "企业已存在");
+        }
+    
+        enterprisePackageService.deleteByEnterpriseId(enterpriseInfo.getId());
+        if(!CollectionUtils.isEmpty(enterpriseInfoQuery.getPackageIds())){
+            List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
+                EnterprisePackage enterprisePackage = new EnterprisePackage();
+                enterprisePackage.setEnterpriseId(enterpriseInfo.getId());
+                enterprisePackage.setPackageId(item);
+                enterprisePackage.setPackageType(enterpriseInfoQuery.getPackageType());
+                enterprisePackage.setTenantId(enterpriseInfo.getTenantId());
+                enterprisePackage.setCreateTime(System.currentTimeMillis());
+                enterprisePackage.setUpdateTime(System.currentTimeMillis());
+                return enterprisePackage;
+            }).collect(Collectors.toList());
+            enterprisePackageService.batchInsert(packageList);
         }
         
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
