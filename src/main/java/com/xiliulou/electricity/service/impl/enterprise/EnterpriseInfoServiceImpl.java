@@ -624,6 +624,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
         enterpriseRentRecordService.deleteByUid(userInfo.getUid());
         
+        //更新用户云豆状态为已回收
+        EnterpriseChannelUser enterpriseChannelUserUpdate = new EnterpriseChannelUser();
+        enterpriseChannelUserUpdate.setId(enterpriseChannelUser.getId());
+//TODO        enterpriseChannelUserUpdate.setRenewalStatus();
+        enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
+        enterpriseChannelUserService.update(enterpriseChannelUserUpdate);
+        
         //解绑用户绑定信息
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
@@ -690,6 +697,17 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //若未租退电
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
+            //生成回收记录
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             return Triple.of(true, null, totalCloudBean);
         }
         
