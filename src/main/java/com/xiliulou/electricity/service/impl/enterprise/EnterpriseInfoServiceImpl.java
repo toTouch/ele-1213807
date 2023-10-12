@@ -630,6 +630,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         //回收押金
         recycleBatteryDeposit(userInfo, enterpriseInfo);
         
+        //解绑用户相关信息
+        unbindUserData(userInfo, enterpriseChannelUser);
+        
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public void unbindUserData(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser) {
         //清除用户租退电、购买套餐记录
         anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
         
@@ -679,10 +687,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //删除用户电池服务费
         serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
-        
-        return Triple.of(true, null, null);
     }
     
+    @Override
     public Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         BigDecimal result = BigDecimal.ZERO;
         
@@ -785,6 +792,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return Triple.of(true, null, result.add(totalCloudBean.subtract(totalUsedCloudBean)));
     }
     
+    @Override
     public void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
