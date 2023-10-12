@@ -534,13 +534,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return enterpriseInfoVO;
     }
     
-    @Override
-    public Integer updateCloudBeanByPurchasePackage(Long enterpriseId, BigDecimal cloudBeanAmount) {
-        
-        
-        return null;
-    }
-    
     @Slave
     @Override
     public EnterpriseInfoVO selectEnterpriseInfoByUid(Long uid) {
