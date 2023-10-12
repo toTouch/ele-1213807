@@ -65,6 +65,24 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     }
     
     /**
+     * 可回收云豆
+     * @return
+     */
+    @GetMapping("/user/cloudBeanUse/recyclable")
+    public R cloudBeanUseRecyclable() {
+        return R.ok(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(SecurityUtils.getUid()));
+    }
+    
+    /**
+     * 已回收云豆
+     * @return
+     */
+    @GetMapping("/user/cloudBeanUse/recyclabed")
+    public R cloudBeanUseRecyclabed() {
+        return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(SecurityUtils.getUid()));
+    }
+    
+    /**
      * 云豆账单下载
      */
     @GetMapping("/user/cloudBeanOrder/download")
