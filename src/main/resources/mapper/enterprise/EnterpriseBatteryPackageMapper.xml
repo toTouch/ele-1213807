@@ -189,7 +189,6 @@
         left join t_user_info tui on tui.uid = trbo.uid
         
         <where>
-            trbo.del_flag = 0
             <if test="uid != null">
                 and trbo.uid = #{uid}
             </if>
@@ -232,7 +231,7 @@
         left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
     
         <where>
-            dmcr.del_flag = 0 and dmcr.status = 1
+            dmcr.status = 1
             <if test="uid != null">
                 and dmcr.uid = #{uid}
             </if>
@@ -270,7 +269,7 @@
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
-            tero.del_flag = 0 and tero.status = 4
+            tero.status = 4
             <if test="uid != null">
                 and tero.uid = #{uid}
             </if>
