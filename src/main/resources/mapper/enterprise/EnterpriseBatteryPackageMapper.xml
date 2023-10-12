@@ -271,7 +271,7 @@
         <where>
             tero.status = 4
             <if test="uid != null">
-                and tero.uid = #{uid}
+                and tedo.uid = #{uid}
             </if>
         
             <if test="beginTime != null">
