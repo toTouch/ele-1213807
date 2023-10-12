@@ -34,6 +34,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
@@ -968,8 +969,73 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             integratedPaAmount = integratedPaAmount.add(insuranceOrder.getPayAmount());
         }
     
+        //判断企业云豆数量是否满足代付金额
+        if(enterpriseInfo.getTotalBeanAmount().compareTo(integratedPaAmount) < 0){
+            log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+            throw new BizException("300079", "云豆数量不足，请先充值");
+        }
+    
+        //更新保险状态
+        if(Objects.nonNull(insuranceOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300072", (String) result.getRight());
+            }
+        }
+    
+        //更新套餐购买状态
+        if(Objects.nonNull(electricityMemberCardOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300073", (String) result.getRight());
+            }
+        }
+    
+        BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
+        totalBeanAmount = totalBeanAmount.subtract(integratedPaAmount);
+    
+        EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
+        updateEnterpriseInfo.setId(enterpriseInfo.getId());
+        updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
+        updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
+        enterpriseInfoService.update(updateEnterpriseInfo);
+    
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
+        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
+        enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setName(userInfo.getName());
+        enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
+        enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
+    
+        UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
+    
+        //查询用户保险信息
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        if(Objects.nonNull(insuranceUserInfo)) {
+            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+        }
+        enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+    
+        return Triple.of(true, "", enterpriseUserPackageDetailsVO);
+    
         //支付0元
-        if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        /*if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
     
             //更新保险状态
             if(Objects.nonNull(insuranceOrder)){
@@ -1008,7 +1074,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.error("purchase package by enterprise user error, wechat v3 order  error! uid={}", userInfo.getUid(), e);
         }
         
-        return Triple.of(false, "ELECTRICITY.0099", "企业渠道套餐续费失败");
+        return Triple.of(false, "ELECTRICITY.0099", "企业渠道套餐续费失败");*/
     }
     
     @Override
@@ -1155,13 +1221,79 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
         }
     
+        //判断企业云豆数量是否满足代付金额
+    
+        if(enterpriseInfo.getTotalBeanAmount().compareTo(integratedPaAmount) < 0){
+            log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+            throw new BizException("300079", "云豆数量不足，请先充值");
+        }
+    
+        //更新保险状态
+        if(Objects.nonNull(insuranceOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300072", (String) result.getRight());
+            }
+        }
+    
+        //更新套餐购买状态
+        if(Objects.nonNull(electricityMemberCardOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300073", (String) result.getRight());
+            }
+        }
+    
+        BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
+        totalBeanAmount = totalBeanAmount.subtract(integratedPaAmount);
+    
+        EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
+        updateEnterpriseInfo.setId(enterpriseInfo.getId());
+        updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
+        updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
+        enterpriseInfoService.update(updateEnterpriseInfo);
+    
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
+        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
+        enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setName(userInfo.getName());
+        enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
+        enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrder.getPayAmount());
+    
+        UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
+    
+        //查询用户保险信息
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        if(Objects.nonNull(insuranceUserInfo)) {
+            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+        }
+        enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+    
+        return Triple.of(true, "", enterpriseUserPackageDetailsVO);
+    
         //处理0元支付
-        if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        /*if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
         
-            /*Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            *//*Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
-            }*/
+            }*//*
             
             //更新押金状态
             if(Objects.nonNull(eleDepositOrder)){
@@ -1210,14 +1342,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.error("purchase package with deposit by enterprise user error, wechat v3 order  error! uid={}", user.getUid(), e);
         }
     
-        return Triple.of(false, "300073", "企业代付购买套餐支付失败");
+        return Triple.of(false, "300073", "企业代付购买套餐支付失败");*/
     }
     
     @Override
     public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query, HttpServletRequest request) {
     
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+        Long enterpriseId = query.getEnterpriseId();
         Long uid = query.getUid();
         if (Objects.isNull(uid)) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
@@ -1225,6 +1357,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITHOUT_DEPOSIT_LOCK_KEY + uid, "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+    
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -1302,7 +1440,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-            log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+            log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
             return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
         }
     
@@ -1355,8 +1493,72 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
         }
     
+        //判断企业云豆数量是否满足待支付云豆数
+        if(enterpriseInfo.getTotalBeanAmount().compareTo(totalPayAmount) < 0){
+            log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+            throw new BizException("300079", "云豆数量不足，请先充值");
+        }
+    
+        //更新保险状态
+        if(Objects.nonNull(insuranceOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300072", (String) result.getRight());
+            }
+        }
+    
+        //更新套餐购买状态
+        if(Objects.nonNull(electricityMemberCardOrder)){
+            Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                throw new BizException("300073", (String) result.getRight());
+            }
+        }
+    
+        BigDecimal totalBeanAmount = enterpriseInfo.getTotalBeanAmount();
+        totalBeanAmount = totalBeanAmount.subtract(totalPayAmount);
+    
+        EnterpriseInfo updateEnterpriseInfo = new EnterpriseInfo();
+        updateEnterpriseInfo.setId(enterpriseInfo.getId());
+        updateEnterpriseInfo.setTotalBeanAmount(totalBeanAmount);
+        updateEnterpriseInfo.setUpdateTime(System.currentTimeMillis());
+        enterpriseInfoService.update(updateEnterpriseInfo);
+    
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
+        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
+        enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setName(userInfo.getName());
+        enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
+        enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
+        
+        UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
+    
+        //查询用户保险信息
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        if(Objects.nonNull(insuranceUserInfo)) {
+            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+        }
+        enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+    
+        return Triple.of(true, "", enterpriseUserPackageDetailsVO);
         //处理支付0元场景
-        if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
+       /* if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
     
             //更新保险状态
             if(Objects.nonNull(insuranceOrder)){
@@ -1373,11 +1575,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     throw new BizException("300073", (String) result.getRight());
                 }
             }
-        
             return Triple.of(true, "", null);
-        }
+        }*/
     
-        try {
+       /* try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder()
                     .jsonOrderId(JsonUtil.toJson(orderList))
                     .jsonOrderType(JsonUtil.toJson(orderTypeList))
@@ -1391,9 +1592,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(true, null, resultDTO);
         } catch (WechatPayException e) {
             log.error("purchase Package with free deposit error, wechat v3 order  error! uid={}", uid, e);
-        }
-    
-        return Triple.of(false, "ELECTRICITY.0099", "下单失败");
+        }*/
+        //return Triple.of(false, "ELECTRICITY.0099", "下单失败");
         
     }
     
