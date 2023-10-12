@@ -555,7 +555,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 .map(CloudBeanUseRecord::getBeanAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         //收入
         BigDecimal income = list.stream()
-                .filter(item -> !(Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_DEDUCT)))
+                .filter(item -> Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_PRESENT) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_USER_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_RECYCLE))
                 .map(CloudBeanUseRecord::getBeanAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     
         cloudBeanUseRecordVO.setIncome(Objects.isNull(income) ? BigDecimal.ZERO : income);

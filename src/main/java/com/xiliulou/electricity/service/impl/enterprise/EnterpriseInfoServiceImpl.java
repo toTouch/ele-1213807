@@ -418,7 +418,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
     
         EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
-        if (Objects.nonNull(enterpriseInfoOld)) {
+        if (Objects.nonNull(enterpriseInfoOld) && !Objects.equals(enterpriseInfoOld.getUid(), enterpriseInfo.getUid())) {
             return Triple.of(false, "", "用户已存在");
         }
         
