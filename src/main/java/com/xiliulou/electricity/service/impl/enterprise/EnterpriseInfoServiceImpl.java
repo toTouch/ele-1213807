@@ -31,6 +31,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -415,6 +416,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "", "企业配置不存在");
         }
+    
+        EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
+        if (Objects.nonNull(enterpriseInfoOld)) {
+            return Triple.of(false, "", "用户已存在");
+        }
         
         EnterpriseInfo enterpriseInfoExit = this.selectByName(enterpriseInfoQuery.getName());
         if (Objects.nonNull(enterpriseInfoExit) && !Objects.equals(enterpriseInfoExit.getId(), enterpriseInfo.getId())) {
@@ -629,7 +635,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         //更新用户云豆状态为已回收
         EnterpriseChannelUser enterpriseChannelUserUpdate = new EnterpriseChannelUser();
         enterpriseChannelUserUpdate.setId(enterpriseChannelUser.getId());
-//TODO        enterpriseChannelUserUpdate.setRenewalStatus();
+        enterpriseChannelUserUpdate.setCloudBeanStatus(CloudBeanStatusEnum.RECOVERED.getCode());
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         enterpriseChannelUserService.update(enterpriseChannelUserUpdate);
         
@@ -751,22 +757,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         //保存回收记录
-        EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
-        enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
-        enterpriseCloudBeanOrder.setUid(userInfo.getUid());
-        enterpriseCloudBeanOrder.setOperateUid(0L);
-        enterpriseCloudBeanOrder.setPayAmount(userBatteryDeposit.getBatteryDeposit());
-        enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
-        enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
-        enterpriseCloudBeanOrder.setPayType(EnterpriseCloudBeanOrder.RECYCLE_PAYMENT);
-        enterpriseCloudBeanOrder.setType(EnterpriseCloudBeanOrder.TYPE_RECYCLE);
-        enterpriseCloudBeanOrder.setBeanAmount(userBatteryDeposit.getBatteryDeposit());
-        enterpriseCloudBeanOrder.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        enterpriseCloudBeanOrder.setTenantId(enterpriseInfo.getTenantId());
-        enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
-        enterpriseCloudBeanOrder.setUpdateTime(System.currentTimeMillis());
-        enterpriseCloudBeanOrderService.insert(enterpriseCloudBeanOrder);
-        
         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
@@ -775,7 +765,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
         cloudBeanUseRecord.setPackageId(userBatteryDeposit.getDid());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        cloudBeanUseRecord.setRef(enterpriseCloudBeanOrder.getOrderId());
+        cloudBeanUseRecord.setRef(userBatteryDeposit.getOrderId());
         cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
         cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
