@@ -40,6 +40,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
@@ -561,18 +562,21 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
         List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
+    
+        int index = 0;
         for (CloudBeanUseRecord cloudBeanUseRecord : list) {
+            index++;
             UserInfo userInfo = userInfoService.queryByUidFromCache(cloudBeanUseRecord.getUid());
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(cloudBeanUseRecord.getPackageId());
             
             CloudBeanOrderExcelVO cloudBeanOrderExcelVO = new CloudBeanOrderExcelVO();
+            cloudBeanOrderExcelVO.setId(index);
             cloudBeanOrderExcelVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
             cloudBeanOrderExcelVO.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
             cloudBeanOrderExcelVO.setType(acquireOrderType(cloudBeanUseRecord.getType()));
-            cloudBeanOrderExcelVO.setBeanAmount(cloudBeanUseRecord.getBeanAmount());
-            cloudBeanOrderExcelVO.setRemainingBeanAmount(cloudBeanUseRecord.getRemainingBeanAmount());
+            cloudBeanOrderExcelVO.setBeanAmount(cloudBeanUseRecord.getBeanAmount().toPlainString());
+            cloudBeanOrderExcelVO.setRemainingBeanAmount(cloudBeanUseRecord.getRemainingBeanAmount().toPlainString());
             cloudBeanOrderExcelVO.setPackageName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
             cloudBeanOrderExcelVO.setCreateTime(simpleDateFormat.format(new Date(cloudBeanUseRecord.getCreateTime())));
             if (Objects.equals(cloudBeanUseRecord.getType(), CloudBeanUseRecord.TYPE_ADMIN_DEDUCT) || Objects
@@ -591,7 +595,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             
-            EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").doWrite(list);
+            EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(list);
             
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
             

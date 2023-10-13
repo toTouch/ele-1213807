@@ -13,6 +13,9 @@ import java.math.BigDecimal;
 @Data
 public class CloudBeanOrderExcelVO {
     
+    @ExcelProperty("序号")
+    private Integer id;
+    
     @ExcelProperty("用户名")
     private String username;
     
@@ -27,12 +30,12 @@ public class CloudBeanOrderExcelVO {
      * 本次使用云豆数量
      */
     @ExcelProperty("云豆数量")
-    private BigDecimal beanAmount;
+    private String beanAmount;
     /**
      * 剩余云豆数量
      */
     @ExcelProperty("变更后云豆数量")
-    private BigDecimal remainingBeanAmount;
+    private String remainingBeanAmount;
     
     @ExcelProperty("套餐名称")
     private String packageName;
