@@ -939,7 +939,6 @@ public class UnionTradeOrderServiceImpl extends
         //月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
     
-    
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             //若用户未购买套餐  直接绑定
@@ -960,6 +959,9 @@ public class UnionTradeOrderServiceImpl extends
                 userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
                 userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
                 userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
+                
+                //TODO 新用户直接绑定电池
+                
             }else{
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 //若用户已购买套餐
@@ -993,6 +995,9 @@ public class UnionTradeOrderServiceImpl extends
                         electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
+                    
+                    //TODO 绑定电池信息。
+                    
                 } else {
                 
                     UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();

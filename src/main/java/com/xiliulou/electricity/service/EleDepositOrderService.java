@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -84,4 +85,7 @@ public interface EleDepositOrderService {
     R selectUserBatteryDeposit();
 
     Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId);
+    
+    EleDepositOrderVO queryBySourceOrderNo(Long uid, String sourceOrderNo);
+    
 }

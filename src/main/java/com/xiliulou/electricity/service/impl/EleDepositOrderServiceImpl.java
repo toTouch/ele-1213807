@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -793,7 +794,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         return Triple.of(true, null, insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY));
     }
-
+    
+    @Override
+    public EleDepositOrderVO queryBySourceOrderNo(Long uid, String sourceOrderNo) {
+    
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.queryByUidAndSourceOrderNo(uid, sourceOrderNo);
+        EleDepositOrderVO eleDepositOrderVO = new EleDepositOrderVO();
+        BeanUtils.copyProperties(eleDepositOrder, eleDepositOrderVO);
+        
+        return eleDepositOrderVO;
+    }
+    
     @Slave
     @Override
     public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {

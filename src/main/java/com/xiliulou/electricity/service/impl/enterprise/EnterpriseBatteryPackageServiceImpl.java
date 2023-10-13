@@ -98,6 +98,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.UserBatteryDepositVO;
@@ -1250,17 +1251,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         ElectricityMemberCardOrder electricityMemberCardOrder = null;
         EleDepositOrder eleDepositOrder = null;
         InsuranceOrder insuranceOrder = null;
-    
-        //保存押金订单
-        if (Boolean.TRUE.equals(generateDepositOrderResult.getLeft()) && Objects.nonNull(generateDepositOrderResult.getRight())) {
-            eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
-            eleDepositOrderService.insert(eleDepositOrder);
-        
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            allPayAmount.add(eleDepositOrder.getPayAmount());
-            integratedPaAmount = integratedPaAmount.add(eleDepositOrder.getPayAmount());
-        }
         
         //保存套餐订单
         if (Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
@@ -1272,12 +1262,26 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             allPayAmount.add(electricityMemberCardOrder.getPayAmount());
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
         }
+    
+        //保存押金订单
+        if (Boolean.TRUE.equals(generateDepositOrderResult.getLeft()) && Objects.nonNull(generateDepositOrderResult.getRight())) {
+            eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
+           
+            //设置押金关联套餐购买订单号
+            eleDepositOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
+            eleDepositOrderService.insert(eleDepositOrder);
+        
+            orderList.add(eleDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+            allPayAmount.add(eleDepositOrder.getPayAmount());
+            integratedPaAmount = integratedPaAmount.add(eleDepositOrder.getPayAmount());
+        }
         
         //保存保险订单
         if (Boolean.TRUE.equals(generateInsuranceOrderResult.getLeft()) && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
             insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
             
-            //设置保险关联购买订单号
+            //设置保险关联套餐购买订单号
             insuranceOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
             insuranceOrderService.insert(insuranceOrder);
         
@@ -1938,12 +1942,19 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostDetailsVO.setPackageId(enterprisePackageOrderVO.getPackageId());
             enterpriseUserCostDetailsVO.setPackageName(enterprisePackageOrderVO.getPackageName());
             enterpriseUserCostDetailsVO.setPayAmount(enterprisePackageOrderVO.getPayAmount());
-            enterpriseUserCostDetailsVO.setDepositAmount(enterprisePackageOrderVO.getBatteryDeposit());
+            //enterpriseUserCostDetailsVO.setDepositAmount(enterprisePackageOrderVO.getBatteryDeposit());
             enterpriseUserCostDetailsVO.setOperationTime(enterprisePackageOrderVO.getCreateTime());
     
+            //查询购买订单关联保险金额
             InsuranceOrder insuranceOrder = insuranceOrderService.selectBySourceOrderNoAndType(enterprisePackageOrderVO.getOrderNo(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             if(Objects.nonNull(insuranceOrder)){
                 enterpriseUserCostDetailsVO.setInsuranceAmount(insuranceOrder.getPayAmount());
+            }
+            
+            //查询购买订单关联押金金额
+            EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryBySourceOrderNo(channelUserId, enterprisePackageOrderVO.getOrderNo());
+            if(Objects.nonNull(eleDepositOrderVO)){
+                enterpriseUserCostDetailsVO.setDepositAmount(eleDepositOrderVO.getPayAmount());
             }
             
             enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);

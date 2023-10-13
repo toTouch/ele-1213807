@@ -85,6 +85,11 @@ public class EleDepositOrderVO {
      * 门店名称
      */
     private String storeName;
+    
+    /**
+     * 来源订单编码
+     */
+    private String sourceOrderNo;
 
     /**
      * 车辆名称

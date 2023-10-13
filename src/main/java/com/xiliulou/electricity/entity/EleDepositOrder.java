@@ -104,6 +104,11 @@ public class EleDepositOrder {
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
+    /**
+     * 来源订单编码
+     */
+    private String sourceOrderNo;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
