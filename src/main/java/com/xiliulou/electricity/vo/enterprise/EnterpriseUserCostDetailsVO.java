@@ -30,6 +30,8 @@ public class EnterpriseUserCostDetailsVO {
     
     private BigDecimal depositAmount;
     
+    private BigDecimal insuranceAmount;
+    
     private Long operationTime;
     
 }
