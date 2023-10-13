@@ -81,11 +81,11 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     @Override
     public int saveAnotherPayMembercardRecord(Long uid, String orderId, Integer tenantId) {
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-        if(Objects.isNull(electricityMemberCardOrder)){
-            log.error("save Another Pay Membercard Record error!not found electricityMemberCardOrder,orderId={}",orderId);
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("save Another Pay Membercard Record error!not found electricityMemberCardOrder,orderId={}", orderId);
             return 0;
         }
-    
+        
         Long startTime = System.currentTimeMillis();
         Long endTime = System.currentTimeMillis() + electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
         AnotherPayMembercardRecord latestAnotherPayMembercardRecord = this.anotherPayMembercardRecordMapper.selectLatestByUid(uid);
@@ -108,7 +108,7 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     
     @Override
     public List<AnotherPayMembercardRecord> selectByUid(Long uid) {
-        return this.anotherPayMembercardRecordMapper.selectList(new LambdaQueryWrapper<AnotherPayMembercardRecord>().eq(AnotherPayMembercardRecord::getUid,uid));
+        return this.anotherPayMembercardRecordMapper.selectList(new LambdaQueryWrapper<AnotherPayMembercardRecord>().eq(AnotherPayMembercardRecord::getUid, uid));
     }
     
     @Override

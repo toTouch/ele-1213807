@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord" id="CloudBeanUseRecordMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
@@ -16,7 +16,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="CloudBeanUseRecordMap">
         select
@@ -65,10 +65,10 @@
         WHERE
             cbur.enterprise_id = #{enterpriseId} and ubmc.member_card_expire_time &lt;= #{currentTimeMillis}
     </select>
-
+    
     <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
         select
-          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         <where>
             <if test="startTime != null">
@@ -87,7 +87,7 @@
         order by id desc
         limit #{offset}, #{size}
     </select>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_cloud_bean_use_record
@@ -125,7 +125,7 @@
         </set>
         where id = #{id}
     </update>
-
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_cloud_bean_use_record where id = #{id}

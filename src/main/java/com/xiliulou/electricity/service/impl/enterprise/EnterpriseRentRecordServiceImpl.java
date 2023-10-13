@@ -8,15 +8,12 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseRentRecordMapper;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -97,28 +94,28 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     
     @Override
     public List<EnterpriseRentRecord> selectByUid(Long uid) {
-        return this.enterpriseRentRecordMapper.selectList(new LambdaQueryWrapper<EnterpriseRentRecord>().eq(EnterpriseRentRecord::getUid,uid));
+        return this.enterpriseRentRecordMapper.selectList(new LambdaQueryWrapper<EnterpriseRentRecord>().eq(EnterpriseRentRecord::getUid, uid));
     }
     
     @Override
     public void saveEnterpriseRentRecord(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
-        if(Objects.isNull(enterpriseChannelUser)){
-            log.warn("SAVE RENT RECORD WARN!not found enterpriseChannelUser,uid={}",uid);
+        if (Objects.isNull(enterpriseChannelUser)) {
+            log.warn("SAVE RENT RECORD WARN!not found enterpriseChannelUser,uid={}", uid);
             return;
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        if(Objects.isNull(userBatteryMemberCard)){
-            log.warn("SAVE RENT RECORD WARN!not found userBatteryMemberCard,uid={}",uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("SAVE RENT RECORD WARN!not found userBatteryMemberCard,uid={}", uid);
             return;
         }
-    
+        
         EnterpriseRentRecord enterpriseRentRecord = new EnterpriseRentRecord();
         enterpriseRentRecord.setUid(uid);
         enterpriseRentRecord.setRentMembercardOrderId(userBatteryMemberCard.getOrderId());
-//        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
-//        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
+        //        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
+        //        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         enterpriseRentRecord.setRentTime(System.currentTimeMillis());
         enterpriseRentRecord.setCreateTime(System.currentTimeMillis());
         enterpriseRentRecord.setUpdateTime(System.currentTimeMillis());
@@ -129,27 +126,27 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     @Override
     public void saveEnterpriseReturnRecord(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
-        if(Objects.isNull(enterpriseChannelUser)){
-            log.warn("SAVE RENT RECORD WARN!not found enterpriseChannelUser,uid={}",uid);
+        if (Objects.isNull(enterpriseChannelUser)) {
+            log.warn("SAVE RENT RECORD WARN!not found enterpriseChannelUser,uid={}", uid);
             return;
         }
-    
+        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        if(Objects.isNull(userBatteryMemberCard)){
-            log.warn("SAVE RENT RECORD WARN!not found userBatteryMemberCard,uid={}",uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("SAVE RENT RECORD WARN!not found userBatteryMemberCard,uid={}", uid);
             return;
         }
-    
+        
         EnterpriseRentRecord enterpriseReturnRecord = this.enterpriseRentRecordMapper.selectLatestRentRecord(uid);
-        if(Objects.isNull(enterpriseReturnRecord)){
-            log.error("SAVE RENT RECORD WARN!not found enterpriseReturnRecord,uid={}",uid);
+        if (Objects.isNull(enterpriseReturnRecord)) {
+            log.error("SAVE RENT RECORD WARN!not found enterpriseReturnRecord,uid={}", uid);
             return;
         }
-    
+        
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
-//        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
+        //        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(enterpriseReturnRecordUpdate);

@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,20 +65,22 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     
     /**
      * 可回收云豆
+     *
      * @return
      */
-    @GetMapping("/user/cloudBeanUse/recyclable")
-    public R cloudBeanUseRecyclable() {
-        return R.ok(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(SecurityUtils.getUid()));
+    @GetMapping("/user/cloudBeanUse/recyclable/{uid}")
+    public R cloudBeanUseRecyclable(@PathVariable("uid") Long uid) {
+        return R.ok(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(uid));
     }
     
     /**
      * 已回收云豆
+     *
      * @return
      */
-    @GetMapping("/user/cloudBeanUse/recyclabed")
-    public R cloudBeanUseRecyclabed() {
-        return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(SecurityUtils.getUid()));
+    @GetMapping("/user/cloudBeanUse/recyclabed/{uid}")
+    public R cloudBeanUseRecyclabed(@PathVariable("uid") Long uid) {
+        return R.ok(cloudBeanUseRecordService.acquireUserRecycledCloudBean(uid));
     }
     
     /**
