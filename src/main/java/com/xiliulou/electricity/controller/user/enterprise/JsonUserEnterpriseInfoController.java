@@ -11,7 +11,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -26,10 +30,10 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserEnterpriseInfoController extends BaseController {
-
+    
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
-
+    
     /**
      * 获取用户是否属于企业渠道
      */
@@ -37,7 +41,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R enterpriseInfoCheck() {
         return R.ok(enterpriseInfoService.checkUserType());
     }
-
+    
     /**
      * 获取用户云豆详情
      */
@@ -45,16 +49,17 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R cloudBeanDetail() {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
-
+    
     /**
      * 根据UID查询企业详情
+     *
      * @return
      */
     @GetMapping("/user/enterpriseInfo/detail")
-    public R queryEnterpriseInfo(){
+    public R queryEnterpriseInfo() {
         return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
     }
-
+    
     /**
      * 云豆充值
      */
@@ -67,7 +72,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      * 云豆概览
      */
     @GetMapping("/user/enterpriseInfo/cloudBean/generalView")
-    public R cloudBeanGeneralView(){
+    public R cloudBeanGeneralView() {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
     }
     
@@ -78,41 +83,38 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R recycleCloudBean(@PathVariable("uid") Long uid) {
         return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid));
     }
+    
     /**
      * 骑手概览
+     *
      * @return
      */
     @GetMapping("/user/enterpriseInfo/queryPurchasePackageCount")
-    public R queryPurchasePackageCount(){
+    public R queryPurchasePackageCount() {
         Long uid = SecurityUtils.getUid();
         Long tenantId = TenantContextHolder.getTenantId().longValue();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         
-        if(Objects.isNull(enterpriseInfo)){
+        if (Objects.isNull(enterpriseInfo)) {
             return R.fail("300074", "未找到企业信息");
         }
-    
-        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder()
-                .enterpriseId(enterpriseInfo.getId())
-                .tenantId(tenantId)
-                .build();
+        
+        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder().enterpriseId(enterpriseInfo.getId()).tenantId(tenantId).build();
         
         return R.ok(enterpriseInfoService.queryPurchasedPackageCount(query));
     }
     
     /**
      * 企业端更新骑手自主续费状态，总开关
+     *
      * @return
      */
     @PutMapping("/user/enterpriseInfo/updateAllRenewalStatus/{renewalStatus}")
-    public R updateAllRenewalStatus(@PathVariable("renewalStatus") Integer renewalStatus){
+    public R updateAllRenewalStatus(@PathVariable("renewalStatus") Integer renewalStatus) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder()
-                .renewalStatus(renewalStatus)
-                .tenantId(tenantId)
-                .build();
+        EnterpriseInfoQuery enterpriseInfoQuery = EnterpriseInfoQuery.builder().renewalStatus(renewalStatus).tenantId(tenantId).build();
         
         return R.ok(enterpriseInfoService.updateAllRenewalStatus(enterpriseInfoQuery));
     }
-
+    
 }

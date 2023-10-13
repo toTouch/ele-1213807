@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2023-09-18 10:35:12
  */
 public interface CloudBeanUseRecordService {
-
+    
     /**
      * 通过ID查询单条数据从数据库
      *
@@ -27,9 +27,9 @@ public interface CloudBeanUseRecordService {
      * @return 实例对象
      */
     CloudBeanUseRecord queryByIdFromDB(Long id);
-
+    
     Integer insert(CloudBeanUseRecord cloudBeanUseRecord);
-
+    
     /**
      * 修改数据
      *
@@ -37,7 +37,7 @@ public interface CloudBeanUseRecordService {
      * @return 实例对象
      */
     Integer update(CloudBeanUseRecord cloudBeanUseRecord);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -45,11 +45,11 @@ public interface CloudBeanUseRecordService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-
+    
     Double selectCloudBeanByUidAndType(Long uid, Integer type);
-
+    
     List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query);
-
+    
     CloudBeanUseRecordVO cloudBeanUseStatisticsByUid(CloudBeanUseRecordQuery query);
     
     void recycleCloudBeanTask();
@@ -60,6 +60,7 @@ public interface CloudBeanUseRecordService {
     
     /**
      * 获取用户可回收云豆
+     *
      * @param uid
      * @return
      */
@@ -67,6 +68,7 @@ public interface CloudBeanUseRecordService {
     
     /**
      * 获取用户已回收云豆数
+     *
      * @return
      */
     BigDecimal acquireUserRecycledCloudBean(Long uid);
