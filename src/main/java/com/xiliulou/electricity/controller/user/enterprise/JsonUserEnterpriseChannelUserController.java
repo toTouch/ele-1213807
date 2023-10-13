@@ -12,6 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +55,10 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @PutMapping("/user/enterprise/updateRenewalStatus")
-    public R updateRenewalStatus(@RequestBody @Validated(UpdateGroup.class) EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+    public R updateRenewalStatus(@RequestBody EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+        if (!ObjectUtils.allNotNull(enterpriseChannelUserQuery, enterpriseChannelUserQuery.getUid(), enterpriseChannelUserQuery.getRenewalStatus())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
         
         return R.ok(enterpriseChannelUserService.updateRenewStatus(enterpriseChannelUserQuery));
     }
