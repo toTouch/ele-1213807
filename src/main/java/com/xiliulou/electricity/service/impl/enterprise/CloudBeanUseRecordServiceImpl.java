@@ -547,8 +547,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return Triple.of(false, "100314", "时间参数不合法");
         }
         
-//        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(1152256L);
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, null, "企业配置不存在!");
@@ -590,18 +589,17 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             
             cloudBeanOrderExcelVOList.add(cloudBeanOrderExcelVO);
         }
-        
-        String fileName = "云豆账单.xlsx";
+
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             
-            EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(list);
+            EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(cloudBeanOrderExcelVOList);
             
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
             
-            return Triple.of(true, null, excelPath);
+            return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
         }
