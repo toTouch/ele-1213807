@@ -272,7 +272,7 @@
     
     
     <delete id="deleteByEnterpriseId">
-        delete from t_enterprise_info where enterprise_id = #{enterpriseId}
+        delete from t_enterprise_channel_user where enterprise_id = #{enterpriseId}
     </delete>
     
     
