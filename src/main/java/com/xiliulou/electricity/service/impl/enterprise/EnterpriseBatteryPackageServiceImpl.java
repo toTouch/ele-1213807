@@ -1837,6 +1837,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setFranchiseeId(userInfo.getFranchiseeId());
         enterpriseUserPackageDetailsVO.setStoreId(userInfo.getStoreId());
         enterpriseUserPackageDetailsVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
+    
         //设置骑手个人信息
         enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
         enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -1851,6 +1852,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         enterpriseUserPackageDetailsVO.setRenewalStatus(enterpriseChannelUserVO.getRenewalStatus());
         
+        //查询用户押金状况
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
             log.warn("query rider details failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
@@ -1858,6 +1860,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         enterpriseUserPackageDetailsVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        enterpriseUserPackageDetailsVO.setDepositType(userBatteryDeposit.getDepositType());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),

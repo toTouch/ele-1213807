@@ -26,8 +26,16 @@ public class EnterpriseUserPackageDetailsVO {
     private String idNumber;
 
     private Integer renewalStatus;
-
+    
+    /**
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中,3--押金退款失败
+     */
     private Integer batteryRentStatus;
+    
+    /**
+     * 押金类型: 0 - 缴纳押金类型, 1- 免押类型
+     */
+    private Integer depositType;
 
     private Integer batteryDepositStatus;
 

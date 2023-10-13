@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -74,6 +75,12 @@ public class UserBatteryMemberCardInfoVO {
      * 用户电池型号
      */
     private String userBatterySimpleType;
+    
+    /**
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * @see BatteryMemberCardBusinessTypeEnum
+     */
+    private Integer businessType;
 
     private Long franchiseeId;
 
