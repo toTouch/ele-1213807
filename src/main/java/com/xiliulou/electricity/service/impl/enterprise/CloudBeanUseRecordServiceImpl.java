@@ -362,8 +362,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-        batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
-        batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+        batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
+        batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
         batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
         
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
@@ -449,8 +449,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-        batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
-        batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+        batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
+        batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
         batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
         
         return membercardPrice.multiply(BigDecimal.valueOf(useDays));
@@ -505,8 +505,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
                 batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
                 batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-                batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
-                batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+                batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
+                batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
                 batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
                 
                 result = result.add(electricityMemberCardOrder.getPayAmount());
