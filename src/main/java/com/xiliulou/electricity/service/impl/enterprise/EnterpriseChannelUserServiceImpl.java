@@ -232,7 +232,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Transactional(rollbackFor = Exception.class)
     public Integer updateRenewStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
         enterpriseChannelUserQuery.setUpdateTime(System.currentTimeMillis());
-        
         Integer result = enterpriseChannelUserMapper.updateRenewStatus(enterpriseChannelUserQuery);
         
         return result;

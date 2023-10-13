@@ -37,6 +37,11 @@ public class EnterprisePackageOrderVO {
      */
     private String userBatterySimpleType;
     
+    /**
+     * 电池编码
+     */
+    private String batterySn;
+    
 
     private String orderNo;
     

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -63,6 +64,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -172,7 +174,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
     @Resource
     private UserInfoService userInfoService;
-    @Autowired
+    @Resource
     private UserBatteryTypeService userBatteryTypeService;
     @Resource
     private FranchiseeService franchiseeService;
@@ -226,6 +228,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     ServiceFeeUserInfoService serviceFeeUserInfoService;
     @Resource
     ElectricityConfigService electricityConfigService;
+    @Resource
+    ElectricityBatteryService electricityBatteryService;
     
     @Deprecated
     @Override
@@ -2036,8 +2040,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
             }
         
-            //设置用户电池型号
+            //设置用户电池伏数
             enterprisePackageOrderVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(enterprisePackageOrderVO.getUid()));
+    
+            //设置电池编码
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(enterprisePackageOrderVO.getUid());
+            if (Objects.nonNull(electricityBattery)) {
+                enterprisePackageOrderVO.setBatterySn(electricityBattery.getSn());
+            }
             
             //设置套餐购买后企业代付时间
             ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
