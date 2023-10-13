@@ -19,11 +19,13 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -125,7 +127,7 @@ public class UserServiceImpl implements UserService {
     ElectricityBatteryService electricityBatteryService;
     
     @Autowired
-    EnterpriseChannelUserService enterpriseChannelUserService;
+    EnterpriseInfoService enterpriseInfoService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -803,8 +805,8 @@ public class UserServiceImpl implements UserService {
         }
         
         //判断用户是否为企业用户
-        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
-        if(Objects.nonNull(enterpriseChannelUser)){
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
+        if(Objects.nonNull(enterpriseInfo)){
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
 
