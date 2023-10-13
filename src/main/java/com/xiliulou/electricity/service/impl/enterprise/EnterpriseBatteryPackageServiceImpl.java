@@ -1143,6 +1143,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        //设置企业关联的加盟商
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
@@ -1804,13 +1806,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(batteryMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(batteryMemberCard.getTenantId());
-        //设置用户的加盟商为套餐订单的加盟商，因为用户加盟商和套餐所属加盟商一致
-        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        //设置企业的加盟商为套餐订单的加盟商
+        electricityMemberCardOrder.setFranchiseeId(query.getFranchiseeId());
         electricityMemberCardOrder.setPayCount(payCount);
         electricityMemberCardOrder.setSendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null);
         //electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
-        //TODO 需要和产品确认门店的归属
+        //企业套餐没有门店信息
         // electricityMemberCardOrder.setStoreId( );
         
         return Triple.of(true, null, electricityMemberCardOrder);
