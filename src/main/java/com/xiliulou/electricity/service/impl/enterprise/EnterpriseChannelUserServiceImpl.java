@@ -9,15 +9,19 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -50,6 +54,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     TenantService tenantService;
+    
+    @Resource
+    ElectricityBatteryService batteryService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -286,6 +293,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public int deleteByEnterpriseId(Long enterpriseId) {
         return enterpriseChannelUserMapper.deleteByEnterpriseId(enterpriseId);
+    }
+    
+    @Override
+    public ElectricityUserBatteryVo queryBatteryByUid(Long uid) {
+        Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
+        if (!batteryTriple.getLeft()) {
+            log.error("query battery for enterprise channel user error, uid = {}", uid);
+            throw new BizException(batteryTriple.getMiddle(), (String) batteryTriple.getRight());
+        }
+        ElectricityUserBatteryVo userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
+        
+        return userBatteryVo;
     }
     
     public Triple<Boolean, String, Object> verifyUserInfo(EnterpriseChannelUserQuery query) {

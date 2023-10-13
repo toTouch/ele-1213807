@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.enterprise;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -78,4 +79,6 @@ public interface EnterpriseChannelUserService {
     int update(EnterpriseChannelUser enterpriseChannelUserUpdate);
     
     int deleteByEnterpriseId(Long id);
+    
+    ElectricityUserBatteryVo queryBatteryByUid(Long uid);
 }

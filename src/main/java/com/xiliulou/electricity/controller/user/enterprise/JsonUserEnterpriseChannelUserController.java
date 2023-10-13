@@ -195,4 +195,15 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         
     }
     
+    /**
+     * 查询当前骑手的电池信息
+     * @param uid
+     * @return
+     */
+    @GetMapping("/user/enterprise/queryBattery")
+    public R queryBattery(@RequestParam(value = "uid", required = true) Long uid) {
+        return R.ok(enterpriseChannelUserService.queryBatteryByUid(uid));
+    }
+    
+    
 }
