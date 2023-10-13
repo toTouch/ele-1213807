@@ -547,7 +547,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return Triple.of(false, "100314", "时间参数不合法");
         }
         
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+//        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(1152256L);
         if (Objects.isNull(enterpriseInfo)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, null, "企业配置不存在!");

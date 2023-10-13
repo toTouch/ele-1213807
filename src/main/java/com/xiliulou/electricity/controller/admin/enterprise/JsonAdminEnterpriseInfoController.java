@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -194,5 +195,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
         return returnTripleResult(enterpriseInfoService.refund(orderId,request));
     }
     
-
+    @Autowired
+    CloudBeanUseRecordService cloudBeanUseRecordService;
+    @GetMapping("/admin/enterpriseInfo/download")
+    public R download() {
+        return returnTripleResult(cloudBeanUseRecordService.cloudBeanOrderDownload(1691517600000L, 1699466400000L));    }
 }
