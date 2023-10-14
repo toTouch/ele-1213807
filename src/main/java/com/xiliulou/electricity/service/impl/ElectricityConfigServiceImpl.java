@@ -314,6 +314,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
+        tenantConfigVO.setIsMoveFranchisee(ElectricityConfig.MOVE_FRANCHISEE_CLOSE);
 
         return tenantConfigVO;
     }
