@@ -29,6 +29,10 @@ public class JsonUserAmountHistoryController {
 	@Autowired
 	private UserAmountHistoryService userAmountHistoryService;
 
+	
+	
+	
+	
 
 
 	/**
