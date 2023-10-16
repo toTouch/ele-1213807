@@ -502,10 +502,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(enterpriseInfo.getUid());
-        cloudBeanUseRecord.setType(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount().compareTo(BigDecimal.valueOf(0)) > 0 ? CloudBeanUseRecord.TYPE_ADMIN_RECHARGE
-                : CloudBeanUseRecord.TYPE_ADMIN_DEDUCT);
-        cloudBeanUseRecord
-                .setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        cloudBeanUseRecord.setType(enterpriseCloudBeanRechargeQuery.getType());
+        cloudBeanUseRecord.setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
         cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfoUpdate.getTotalBeanAmount());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(enterpriseCloudBeanOrder.getOrderId());

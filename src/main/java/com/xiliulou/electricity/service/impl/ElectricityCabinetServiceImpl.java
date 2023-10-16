@@ -2763,8 +2763,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (Objects.nonNull(electricityBattery)) {
                     //用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();
-                    usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
+                    List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
                             .collect(Collectors.toList());
+    
+                    usableBatteryCellNos = CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos) ? usableBatteryCellNos : userCurrentBatteryUsableBatteryCellNos;
                 } else {
                     //获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
