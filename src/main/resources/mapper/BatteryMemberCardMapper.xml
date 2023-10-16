@@ -326,7 +326,7 @@
     </select>
 
     <select id="checkMembercardExist" resultType="Integer">
-        select 1 from t_battery_member_card where name=#{name} and del_flag = 0 and business_type=0 and tenant_id = #{tenantId} LIMIT 1
+        select 1 from t_battery_member_card where name=#{name} and del_flag = 0 and business_type in (0, 2) and tenant_id = #{tenantId} LIMIT 1
     </select>
 
     <!--通过主键修改数据-->

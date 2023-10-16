@@ -83,6 +83,8 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
      * @return
      */
     EnterpriseChannelUser selectUsedChannelUser(@Param("uid") Long uid,  @Param("tenantId") Long tenantId);
+    
+    EnterpriseChannelUser selectChannelUserByPhone(@Param("phone") String phone);
 
     /**
      * 根据ID和UID查询已加入企业的用户

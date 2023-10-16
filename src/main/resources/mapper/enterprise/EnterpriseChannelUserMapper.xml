@@ -181,6 +181,22 @@
 
         </where>
     </select>
+    
+    <!--根据电话查询已关联至企业的用户-->
+    <select id="selectChannelUserByPhone" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            
+            <if test="phone != null">
+                and phone = #{phone}
+            </if>
+            
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+        
+        </where>
+    </select>
 
     <!--根据ID 和 UID查询已关联至企业的用户-->
     <select id="selectChannelUserByIdAndUid" resultMap="EnterpriseChannelUserMap">

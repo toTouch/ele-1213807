@@ -20,6 +20,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserCheckVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -182,13 +183,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
        /* if (!ObjectUtils.allNotNull(id, uid)) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }*/
-        
+        EnterpriseChannelUserCheckVO enterpriseChannelUserVO = new EnterpriseChannelUserCheckVO();
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByIdAndUid(id, uid);
         if (Objects.isNull(enterpriseChannelUser) || Objects.isNull(enterpriseChannelUser.getUid())) {
-            return Triple.of(true, "300062", Boolean.FALSE);
+            enterpriseChannelUserVO.setIsExist(Boolean.FALSE);
+            return Triple.of(true, "300062", enterpriseChannelUserVO);
         }
+        enterpriseChannelUserVO.setIsExist(Boolean.TRUE);
+        enterpriseChannelUserVO.setUid(enterpriseChannelUser.getUid());
         
-        return Triple.of(true, "", Boolean.TRUE);
+        return Triple.of(true, "", enterpriseChannelUserVO);
     }
     
     @Slave
@@ -359,6 +363,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.nonNull(enterpriseChannelUser)) {
             log.info("The user already belongs to another enterprise, enterprise id = {}", enterpriseChannelUser.getEnterpriseId());
             return Triple.of(false, "300061", "当前用户已加入其他企业, 无法重复添加");
+        }
+        
+        //7. 骑手手机号不能重复添加
+        if(Objects.nonNull(query.getPhone())){
+            EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone());
+            if(Objects.nonNull(channelUser)){
+                log.info("The user already used in current enterprise, enterprise id = {}, phone = {}", channelUser.getEnterpriseId(), query.getPhone());
+                return Triple.of(false, "300061", "当前用户手机号已存在, 无法重复添加");
+            }
         }
         
         return Triple.of(true, "", enterpriseInfo);
