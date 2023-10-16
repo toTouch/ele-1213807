@@ -106,4 +106,6 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     Integer batchUpdateRenewStatus(@Param("channelUserIds")List<Long> channelUserIds, @Param("renewalStatus")Integer renewalStatus, @Param("updateTime")Long updateTime);
     
     int deleteByEnterpriseId(Long enterpriseId);
+    
+    int deleteByUid(Long uid);
 }

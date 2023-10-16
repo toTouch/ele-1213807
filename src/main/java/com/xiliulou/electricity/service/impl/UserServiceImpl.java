@@ -128,6 +128,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     EnterpriseInfoService enterpriseInfoService;
+    
+    @Autowired
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -809,6 +812,9 @@ public class UserServiceImpl implements UserService {
         if(Objects.nonNull(enterpriseInfo)){
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
+        
+        //删除企业用户
+        enterpriseChannelUserService.deleteByUid(uid);
 
         //删除用户
         deleteWxProUser(uid, user.getTenantId());
