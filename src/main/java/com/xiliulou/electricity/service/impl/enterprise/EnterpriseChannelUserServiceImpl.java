@@ -66,7 +66,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         //检查当前用户是否可用
         Triple<Boolean, String, Object> result = verifyUserInfo(query);
         if(Boolean.FALSE.equals(result.getLeft())){
-            return Triple.of(false, "", result.getRight());
+            return Triple.of(false, result.getMiddle(), result.getRight());
         }
     
         EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();

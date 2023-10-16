@@ -190,10 +190,6 @@
             <if test="phone != null">
                 and phone = #{phone}
             </if>
-    
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
         
         </where>
     </select>
