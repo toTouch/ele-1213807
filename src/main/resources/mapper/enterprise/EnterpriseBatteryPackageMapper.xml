@@ -290,6 +290,7 @@
     
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.enterprise_id as enterpriseId,
@@ -334,6 +335,7 @@
     <select id="queryPaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.enterprise_id as enterpriseId,
@@ -373,6 +375,7 @@
     <select id="queryUnpaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.create_time as createTime,

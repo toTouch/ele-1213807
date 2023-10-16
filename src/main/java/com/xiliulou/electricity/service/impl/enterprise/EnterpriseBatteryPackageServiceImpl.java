@@ -1902,20 +1902,22 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         enterpriseUserPackageDetailsVO.setRenewalStatus(enterpriseChannelUserVO.getRenewalStatus());
         
-        //查询用户押金状况
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
-            log.warn("query rider details failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
-            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
-        }
-        
-        enterpriseUserPackageDetailsVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-        enterpriseUserPackageDetailsVO.setDepositType(userBatteryDeposit.getDepositType());
-        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
                 NumberConstant.ZERO_L)) {
             log.warn("query rider details failed, not found userBatteryMemberCard,uid = {}", userInfo.getUid());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("query rider details failed, not found batteryMemberCard,uid = {},mid = {}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+        
+        //判断当前套餐是否为企业套餐
+        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.equals(batteryMemberCard.getBusinessType())){
+            log.warn("query rider details failed, current package is not belong enterprise package,uid = {},mid = {}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
         
@@ -1924,12 +1926,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         enterpriseUserPackageDetailsVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
         enterpriseUserPackageDetailsVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
-        
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.warn("query rider details failed, not found batteryMemberCard,uid = {},mid = {}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
-        }
+       
         if (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
             enterpriseUserPackageDetailsVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil(
                     (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000.0) : 0);
@@ -1937,6 +1934,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil(
                     (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000.0) : 0);
         }
+    
+        //查询用户押金状况
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
+            log.warn("query rider details failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+    
+        enterpriseUserPackageDetailsVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        enterpriseUserPackageDetailsVO.setDepositType(userBatteryDeposit.getDepositType());
         
         //套餐订单金额
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
@@ -1964,9 +1971,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
         }
         
-        
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
-        
     }
     
     @Slave

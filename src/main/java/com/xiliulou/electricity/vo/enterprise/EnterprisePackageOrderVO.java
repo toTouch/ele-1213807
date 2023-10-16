@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo.enterprise;
 
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -64,6 +65,12 @@ public class EnterprisePackageOrderVO {
     private Long packageExpiredTime;
     
     private Long effectiveTime;
+    
+    /**
+     * 自主续费状态 0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatus;
     
     /**
      * 云豆状态（1-未回收，2-已回收）
