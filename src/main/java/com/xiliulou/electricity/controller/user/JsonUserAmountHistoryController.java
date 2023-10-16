@@ -28,13 +28,9 @@ public class JsonUserAmountHistoryController {
 	 */
 	@Autowired
 	private UserAmountHistoryService userAmountHistoryService;
-
 	
 	
 	
-	
-
-
 	/**
 	 * 用户邀请记录
 	 */
