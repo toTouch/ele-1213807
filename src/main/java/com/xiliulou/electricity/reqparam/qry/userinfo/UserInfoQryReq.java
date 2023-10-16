@@ -27,4 +27,9 @@ public class UserInfoQryReq implements Serializable {
      * 关键字查询，手机号/真实姓名，模糊查询
      */
     private String keywords;
+    
+    /**
+     * 审核状态 0--等待审核中,1--审核被拒绝,2--审核通过
+     */
+    private Integer authStatus;
 }
