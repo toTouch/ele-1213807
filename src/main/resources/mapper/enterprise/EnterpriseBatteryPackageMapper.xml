@@ -290,6 +290,7 @@
     
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.enterprise_id as enterpriseId,
@@ -334,6 +335,7 @@
     <select id="queryPaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.enterprise_id as enterpriseId,
@@ -373,6 +375,7 @@
     <select id="queryUnpaidPackageOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO">
         select
             tecu.uid,
+            tecu.renewal_status,
             tui.name,
             tui.phone,
             tecu.create_time as createTime,
@@ -405,8 +408,13 @@
     <select id="queryExpiredPackageOrderCount" resultType="Integer">
         select
             count(1)
-        from t_enterprise_channel_user tecu, t_user_battery_member_card tubmc, t_user_info tui
+        from t_enterprise_channel_user tecu,
+        t_user_battery_member_card tubmc,
+        t_electricity_member_card_order temco,
+        t_user_info tui
         where tubmc.uid = tecu.uid
+        and tubmc.order_id = temco.order_id
+        and temco.order_type = 1
         and tecu.uid = tui.uid
         and tubmc.del_flag = 0
         
@@ -435,8 +443,13 @@
     <select id="queryPaidPackageOrderCount" resultType="Integer">
         select
             count(1)
-        from t_enterprise_channel_user tecu, t_user_battery_member_card tubmc, t_user_info tui
+        from t_enterprise_channel_user tecu,
+        t_user_battery_member_card tubmc,
+        t_electricity_member_card_order temco,
+        t_user_info tui
         where tubmc.uid = tecu.uid
+        and tubmc.order_id = temco.order_id
+        and temco.order_type = 1
         and tecu.uid = tui.uid
         and tubmc.del_flag = 0
         <if test="enterpriseId != null">

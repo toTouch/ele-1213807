@@ -186,14 +186,31 @@
     
     <!--根据电话查询已关联至企业的用户-->
     <select id="selectChannelUserByPhone" resultMap="EnterpriseChannelUserMap">
-        <include refid="selectEnterpriseChannelUser"/>
+        SELECT
+            tecu.id,
+            tecu.uid,
+            tui.phone,
+            tecu.invitation_way,
+            tecu.enterprise_id,
+            tecu.franchisee_id,
+            tecu.tenant_id,
+            tecu.renewal_status,
+            tecu.cloud_bean_status,
+            tecu.inviter_id,
+            tecu.create_time,
+            tecu.update_time,
+            tecu.remark
+        FROM
+            t_enterprise_channel_user tecu
+        left join t_user_info tui on tecu.uid = tui.uid
         <where>
             
-            <if test="phone != null">
-                and phone = #{phone}
+            <if test="phone != null ">
+                and tui.phone = #{phone}
             </if>
         
         </where>
+        limit 1
     </select>
 
     <!--根据ID 和 UID查询已关联至企业的用户-->
