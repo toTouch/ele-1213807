@@ -313,24 +313,24 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             EnterpriseInfo enterpriseInfo = this.selectByUid(userInfo.getUid());
             if (Objects.isNull(enterpriseInfo)) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found enterpriseInfo,uid={}", userInfo.getUid());
-                return Triple.of(false, "", "企业配置信息不存在");
+                return Triple.of(false, "100315", "企业配置信息不存在");
             }
             
             if (query.getTotalBeanAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 log.error("CLOUD BEAN RECHARGE ERROR!illegal totalBeanAmount,uid={},totalBeanAmount={}", userInfo.getUid(), query.getTotalBeanAmount());
-                return Triple.of(false, "", "支付金额不合法");
+                return Triple.of(false, "100314", "支付金额不合法");
             }
             
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(electricityPayParams)) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", userInfo.getUid());
-                return Triple.of(false, "", "未配置支付参数!");
+                return Triple.of(false, "100314", "未配置支付参数!");
             }
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", userInfo.getUid());
-                return Triple.of(false, "", "未找到用户的第三方授权信息!");
+                return Triple.of(false, "100314", "未找到用户的第三方授权信息!");
             }
             
             //生成充值订单
@@ -415,7 +415,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     public Triple<Boolean, String, Object> modify(EnterpriseInfoQuery enterpriseInfoQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseInfoQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
-            return Triple.of(false, "", "企业配置不存在");
+            return Triple.of(false, "100315", "企业配置不存在");
         }
         
         EnterpriseInfo enterpriseInfoOld = this.selectByUid(enterpriseInfoQuery.getUid());
@@ -465,7 +465,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     public Triple<Boolean, String, Object> rechargeForAdmin(EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
         EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(enterpriseCloudBeanRechargeQuery.getId());
         if (Objects.isNull(enterpriseInfo)) {
-            return Triple.of(false, "", "企业配置不存在");
+            return Triple.of(false, "100315", "企业配置不存在");
         }
         
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
