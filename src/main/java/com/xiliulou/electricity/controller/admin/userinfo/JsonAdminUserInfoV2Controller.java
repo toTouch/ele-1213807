@@ -319,6 +319,7 @@ public class JsonAdminUserInfoV2Controller {
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .tenantId(tenantId)
                 .keywords(userInfoQryReq.getKeywords())
+                .authStatus(userInfoQryReq.getAuthStatus())
                 .offset(Long.valueOf(userInfoQryReq.getOffset()))
                 .size(Long.valueOf(userInfoQryReq.getSize()))
                 .franchiseeIds(franchiseeIds)
