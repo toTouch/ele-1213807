@@ -373,12 +373,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(enterpriseUserId);
         if(Objects.isNull(enterpriseChannelUserVO)){
             log.error("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
-            return Triple.of(false, "","企业骑手信息不存在");
+            return Triple.of(false, "300064","企业骑手信息不存在");
         }
         
         if(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUserVO.getRenewalStatus())){
             log.error("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
-            return Triple.of(false, "", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
+            return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(enterpriseInfo.getFranchiseeId());
@@ -893,6 +893,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.error("purchase package by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
     
         //检查骑手信息是否属于当前企业
         EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
@@ -904,7 +905,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //检查骑手自主续费开关
         if(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
             log.error("purchase package by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
-            return Triple.of(false, "", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
+            return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
     
         //检查套餐是否属于当前的企业
@@ -1175,12 +1176,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
-        //设置企业关联的加盟商
-        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
+        //设置企业关联的加盟商
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         
         //检查骑手信息是否属于当前企业
         EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
@@ -1192,7 +1193,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //检查骑手自主续费开关
         if(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
             log.error("purchase package with deposit by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
-            return Triple.of(false, "", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
+            return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -1484,6 +1485,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
         }
+        //设置企业关联的加盟商
+        query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
     
         //检查骑手信息是否属于当前企业
         EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
@@ -1495,7 +1498,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //检查骑手自主续费开关
         if(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
             log.error("purchase package with deposit by enterprise user error, Not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
-            return Triple.of(false, "", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
+            return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
