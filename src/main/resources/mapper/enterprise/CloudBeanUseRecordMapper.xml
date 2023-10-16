@@ -80,6 +80,9 @@
             <if test="uid != null">
                 and uid = #{uid}
             </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
