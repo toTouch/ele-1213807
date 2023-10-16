@@ -550,13 +550,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, null, "企业配置不存在!");
+            return Triple.of(false, "100315", "企业配置不存在!");
         }
         
         List<CloudBeanUseRecord> list = cloudBeanUseRecordMapper.selectByTime(beginTime, endTime, enterpriseInfo.getId());
         if (CollectionUtils.isEmpty(list)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! list is empty,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, null, "云豆账单为空!");
+            return Triple.of(false, "100316", "云豆账单为空!");
         }
         
         List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList<>();
