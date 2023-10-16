@@ -274,7 +274,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatterV(EnterpriseChannelUserQuery query) {
-        
+        log.info("query battery v flow end, enterprise id = {}",  query.getEnterpriseId());
         //获取当前企业信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
@@ -342,10 +342,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(query.getUid());
-        if (StringUtils.isBlank(batteryType)) {
+        if (StringUtils.isEmpty(batteryType) || StringUtils.isBlank(batteryType)) {
             return Triple.of(true, "", Collections.emptyList());
         }
-        
+        log.info("query battery v flow end, batteryType = {}",  batteryType);
         return Triple.of(true, "", Collections.singletonList(batteryType));
         
     }

@@ -208,6 +208,7 @@
             </if>
         
         </where>
+        limit 1
     </select>
 
     <!--根据ID 和 UID查询已关联至企业的用户-->
