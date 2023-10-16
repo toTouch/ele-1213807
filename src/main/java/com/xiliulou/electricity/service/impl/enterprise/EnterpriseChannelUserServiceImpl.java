@@ -217,9 +217,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public EnterpriseChannelUserVO queryEnterpriseChannelUser(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
-        EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
-        BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
-        
+        EnterpriseChannelUserVO enterpriseChannelUserVO = null;
+        if(Objects.nonNull(enterpriseChannelUser)){
+            enterpriseChannelUserVO = new EnterpriseChannelUserVO();
+            BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
+        }
         return enterpriseChannelUserVO;
     }
     

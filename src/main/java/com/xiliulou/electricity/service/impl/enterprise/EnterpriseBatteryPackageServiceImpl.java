@@ -288,7 +288,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         //查询当前骑手自主续费开关是否关闭，若开启，则无法购买套餐
-        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(query.getEnterpriseId());
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(query.getUid());
         if(Objects.isNull(enterpriseChannelUserVO)){
             log.error("Not found enterprise channel user for query battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
             return Triple.of(false, "","企业骑手信息不存在");
@@ -326,6 +326,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             List<String> batteryVs = list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+            log.info("query battery v without deposit, batteryVs = {}", batteryVs);
+            if(CollectionUtils.isEmpty(batteryVs)){
+                return Triple.of(true, "", Collections.emptyList());
+            }
+            
             return Triple.of(true, "", batteryVs);
         }
         
@@ -338,6 +343,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             List<String> batteryVs = list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+            log.info("query battery v with user battery member card, batteryVs = {}", batteryVs);
+            if(CollectionUtils.isEmpty(batteryVs)){
+                return Triple.of(true, "", Collections.emptyList());
+            }
+           
             return Triple.of(true, "", batteryVs);
         }
         
