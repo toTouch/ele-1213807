@@ -319,7 +319,7 @@
             and tui.name like concat('%',#{userName},'%')
         </if>
         <if test="phone != null and phone != ''">
-            and tui.phone = #{phone}
+            and tui.phone like concat('%',#{phone},'%')
         </if>
     
         limit #{offset}, #{size}
@@ -353,7 +353,7 @@
             and tui.name like concat('%',#{userName},'%')
         </if>
         <if test="phone != null and phone != ''">
-            and tui.phone = #{phone}
+            and tui.phone like concat('%',#{phone},'%')
         </if>
     
         limit #{offset}, #{size}
@@ -382,7 +382,7 @@
                 and tui.name like concat('%',#{userName},'%')
             </if>
             <if test="phone != null and phone != ''">
-                and tui.phone = #{phone}
+                and tui.phone like concat('%',#{phone},'%')
             </if>
 
         </where>
