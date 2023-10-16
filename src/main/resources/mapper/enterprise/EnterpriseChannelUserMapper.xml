@@ -130,7 +130,9 @@
             <if test="inviterId != null">
                 inviter_id = #{inviterId},
             </if>
-
+            <if test="cloudBeanStatus != null">
+                cloud_bean_status = #{cloudBeanStatus},
+            </if>
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
