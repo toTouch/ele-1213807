@@ -2767,8 +2767,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     String userCurrentBatteryType = electricityBattery.getModel();
                     List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
                             .collect(Collectors.toList());
+                    
+                    if(CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos)){
+                        //获取用户绑定的型号
+                        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                        if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                            log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                            return Triple.of(false, "100352", "未找到用户电池型号");
+                        }
     
-                    usableBatteryCellNos = CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos) ? usableBatteryCellNos : userCurrentBatteryUsableBatteryCellNos;
+                        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType()))
+                                .collect(Collectors.toList());
+                    }else{
+                        usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
+                    }
                 } else {
                     //获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
