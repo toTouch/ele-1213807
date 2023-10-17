@@ -60,6 +60,10 @@ public class EnterpriseInfo {
      */
     private Integer renewalStatus;
     /**
+     * 删除标记
+     */
+    private Integer delFlag;
+    /**
      * 租户ID
      */
     private Integer tenantId;
@@ -75,6 +79,9 @@ public class EnterpriseInfo {
      * 备注
      */
     private String remark;
+    
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 
     //企业状态 0:开启,1:关闭
     public static final Integer STATUS_OPEN = 0;

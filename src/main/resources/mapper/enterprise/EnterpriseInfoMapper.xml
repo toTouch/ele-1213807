@@ -13,6 +13,7 @@
         <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
         <result property="recoveryMode" column="recovery_mode" jdbcType="INTEGER"/>
         <result property="totalBeanAmount" column="total_bean_amount" jdbcType="NUMERIC"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -24,14 +25,14 @@
         select
           id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
         from t_enterprise_info
-        where id = #{id}
+        where id = #{id} and del_flag=0
     </select>
 
     <select id="selectByUid" resultMap="EnterpriseInfoMap">
         select
           id, uid, business_id, name, phone, franchisee_id, status, recovery_mode, total_bean_amount, renewal_status, tenant_id, create_time, update_time, remark
         from t_enterprise_info
-        where uid = #{uid}
+        where uid = #{uid} and del_flag=0
     </select>
     
     <resultMap type="com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO" id="EnterpriseInfoPackageVO">
@@ -72,6 +73,7 @@
         tei.remark
         from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
+            tei.del_flag=0
             <if test="name != null and name != ''">
                 and tei.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
@@ -105,6 +107,7 @@
         count(1) from (
         select tei.id from t_enterprise_info tei left join t_enterprise_package tep on tei.id=tep.enterprise_id
         <where>
+        tei.del_flag=0
         <if test="name != null and name != ''">
             and tei.name = #{name}
         </if>
@@ -161,6 +164,9 @@
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},

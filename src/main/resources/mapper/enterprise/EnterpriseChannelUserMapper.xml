@@ -28,7 +28,14 @@
 
         where id = #{id}
     </select>
-
+    
+    <select id="queryNotRecycleUserCount" resultType="int">
+        select
+        count(*)
+        from t_enterprise_channel_user
+        where enterprise_id = #{enterpriseId} and cloud_bean_status=1
+    </select>
+    
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EnterpriseChannelUserMap">
         <include refid="selectEnterpriseChannelUser"/>

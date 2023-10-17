@@ -310,6 +310,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     @Override
+    public Integer queryNotRecycleUserCount(Long id) {
+        return enterpriseChannelUserMapper.queryNotRecycleUserCount(id);
+    }
+    
+    @Override
     public ElectricityUserBatteryVo queryBatteryByUid(Long uid) {
         Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
         if (!batteryTriple.getLeft()) {

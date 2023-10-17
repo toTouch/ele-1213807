@@ -108,4 +108,6 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     int deleteByEnterpriseId(Long enterpriseId);
     
     int deleteByUid(Long uid);
+    
+    Integer queryNotRecycleUserCount(@Param("enterpriseId")Long enterpriseId);
 }

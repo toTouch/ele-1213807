@@ -389,6 +389,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseInfo.setBusinessId(Long.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + RandomUtil.randomInt(1000, 9999)));
         enterpriseInfo.setRecoveryMode(EnterpriseInfo.RECOVERY_MODE_RETURN);
         enterpriseInfo.setTotalBeanAmount(BigDecimal.ZERO);
+        enterpriseInfo.setDelFlag(EnterpriseInfo.DEL_NORMAL);
         enterpriseInfo.setTenantId(TenantContextHolder.getTenantId());
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
@@ -455,8 +456,27 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> delete(Long id) {
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromCache(id);
+        if (Objects.isNull(enterpriseInfo) || !Objects.equals(TenantContextHolder.getTenantId(), enterpriseInfo.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        //校验企业用户云豆是否都已回收
+        if (enterpriseChannelUserService.queryNotRecycleUserCount(id) > 0) {
+            return Triple.of(false, null, "企业用户云豆未回收");
+        }
+        
+        if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) >= 0) {
+            return Triple.of(false, null, "企业云豆未结算");
+        }
+        
         enterpriseChannelUserService.deleteByEnterpriseId(id);
-        this.deleteById(id);
+        
+        EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+        enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+        enterpriseInfoUpdate.setDelFlag(EnterpriseInfo.DEL_DEL);
+        enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(enterpriseInfoUpdate);
         return Triple.of(true, null, null);
     }
     
@@ -503,7 +523,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(enterpriseInfo.getUid());
         cloudBeanUseRecord.setType(enterpriseCloudBeanRechargeQuery.getType());
-        cloudBeanUseRecord.setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
+        cloudBeanUseRecord
+                .setBeanAmount(Objects.isNull(enterpriseCloudBeanRechargeQuery.getTotalBeanAmount()) ? BigDecimal.ZERO : enterpriseCloudBeanRechargeQuery.getTotalBeanAmount());
         cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfoUpdate.getTotalBeanAmount());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(enterpriseCloudBeanOrder.getOrderId());
