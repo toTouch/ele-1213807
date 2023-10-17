@@ -301,10 +301,11 @@
       
     </update>
     
-    
     <delete id="deleteByEnterpriseId">
         delete from t_enterprise_channel_user where enterprise_id = #{enterpriseId}
     </delete>
     
-    
+    <delete id="deleteByUid">
+        delete from t_enterprise_channel_user where uid = #{uid}
+    </delete>
 </mapper>

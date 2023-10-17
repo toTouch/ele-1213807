@@ -81,4 +81,6 @@ public interface EnterpriseChannelUserService {
     int deleteByEnterpriseId(Long id);
     
     ElectricityUserBatteryVo queryBatteryByUid(Long uid);
+    
+    int deleteByUid(Long uid);
 }
