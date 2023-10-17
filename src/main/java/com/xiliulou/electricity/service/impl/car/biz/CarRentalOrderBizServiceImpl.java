@@ -1081,10 +1081,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             if (result.isSuccess()) {
                 return true;
             }
-            log.error("Jt808 error! controlDevice error! carSn is {}, result is {}, retryCount is {}", sn, result, i);
+            log.warn("Jt808 warn! controlDevice error! carSn is {}, result is {}, retryCount is {}", sn, result, i);
         }
-
-        log.error("Jt808 error! controlDevice error! carSn is {}", sn);
 
         return false;
     }
