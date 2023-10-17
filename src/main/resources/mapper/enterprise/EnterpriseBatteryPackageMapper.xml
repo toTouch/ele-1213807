@@ -327,7 +327,7 @@
         <if test="phone != null and phone != ''">
             and tui.phone like concat('%',#{phone},'%')
         </if>
-    
+        order by tubmc.member_card_expire_time desc
         limit #{offset}, #{size}
     
     </select>
@@ -367,7 +367,7 @@
         <if test="phone != null and phone != ''">
             and tui.phone like concat('%',#{phone},'%')
         </if>
-    
+        order by tubmc.member_card_expire_time asc
         limit #{offset}, #{size}
         
     </select>
@@ -399,7 +399,7 @@
             </if>
 
         </where>
-    
+        order by  tecu.create_time desc
         limit #{offset}, #{size}
     
     </select>

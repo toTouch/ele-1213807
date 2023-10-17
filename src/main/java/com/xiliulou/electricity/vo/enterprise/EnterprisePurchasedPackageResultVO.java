@@ -14,7 +14,7 @@ public class EnterprisePurchasedPackageResultVO {
     
     /**
      * 订单代付类型
-     * 1- 代付到期， 2-已代付， 3-未代付
+     * 1- 代付过期， 2-已代付， 3-未代付
      * @see EnterprisePaymentStatusEnum
      */
     private Integer paymentStatus;
