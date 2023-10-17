@@ -83,4 +83,11 @@ public interface EnterpriseChannelUserService {
     ElectricityUserBatteryVo queryBatteryByUid(Long uid);
     
     int deleteByUid(Long uid);
+    
+    /**
+     * 统计未企业未回收云豆人数
+     * @param id
+     * @return
+     */
+    Integer queryNotRecycleUserCount(Long id);
 }
