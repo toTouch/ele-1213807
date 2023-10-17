@@ -2736,6 +2736,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } else {
             List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
+                log.warn("EXCHANGE WARN!nou found full battery box,eid={}",eid);
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
     
@@ -2749,6 +2750,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //把本柜机加盟商的绑定电池信息拿出来
             electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+                log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}",eid);
                 return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
             }
     
@@ -2763,8 +2765,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (Objects.nonNull(electricityBattery)) {
                     //用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();
-                    usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
+                    List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType))
                             .collect(Collectors.toList());
+                    
+                    if(CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos)){
+                        //获取用户绑定的型号
+                        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                        if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                            log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                            return Triple.of(false, "100352", "未找到用户电池型号");
+                        }
+    
+                        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType()))
+                                .collect(Collectors.toList());
+                    }else{
+                        usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
+                    }
                 } else {
                     //获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
@@ -2781,7 +2797,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
                     .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
-                return Triple.of(false, "", "换电柜暂无满电电池");
+                log.warn("EXCHANGE WARN!usableBatteryCellNos is empty,eid={}",eid);
+                return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
     
             Double maxPower = usableBatteryCellNos.get(0).getPower();
@@ -2794,7 +2811,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
                     .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
             if (Objects.isNull(usableCabinetBox)) {
-                return Triple.of(false, "", "换电柜暂无满电电池");
+                log.warn("EXCHANGE WARN!nou found full battery,eid={}",eid);
+                return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
     
             return Triple.of(true, null, usableCabinetBox);

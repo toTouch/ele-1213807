@@ -251,15 +251,6 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
 
-        //判断是否有用户绑定该车辆型号
-        UserCarQuery userCarQuery = new UserCarQuery();
-        userCarQuery.setCarModel(electricityCarModel.getId().longValue());
-        userCarQuery.setDelFlag(UserCar.DEL_NORMAL);
-        List<UserCar> userCarList=userCarService.selectByQuery(userCarQuery);
-        if(!CollectionUtils.isEmpty(userCarList)){
-            return R.fail("100256", "车辆型号已绑定用户，不能操作");
-        }
-
         //删除数据库
         electricityCarModel.setId(id);
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
