@@ -88,6 +88,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(query.getUid());
         userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfo);
         
         log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
@@ -191,6 +192,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(uid);
         userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfo);
         
         return Triple.of(true, "", enterpriseChannelUser);
