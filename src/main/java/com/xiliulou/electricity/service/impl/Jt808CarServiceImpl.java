@@ -76,7 +76,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(
                 new Jt808GetInfoRequest(IdUtil.randomUUID(), carSn));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! queryDevice error! carSn is {}, result is {}", carSn, result);
+            log.warn("Jt808 warn! queryDevice error! carSn is {}, result is {}", carSn, result);
             return Pair.of(false, result.getErrMsg());
         }
 
@@ -101,7 +101,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(
                 new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! queryDevice error! carId={},result={}", carId, result);
+            log.warn("Jt808 warn! queryDevice error! carId={},result={}", carId, result);
             return Pair.of(false, result.getErrMsg());
         }
         
@@ -248,7 +248,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         R<Jt808DeviceInfoVo> result = jt808RetrofitService
                 .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! control Car Check! sn={},result={}", electricityCar.getSn(), result);
+            log.warn("Jt808 warn! control Car Check! sn={},result={}", electricityCar.getSn(), result);
             return Triple.of(true, "", "003");
         }
         
