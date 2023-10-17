@@ -1124,48 +1124,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
     
         return Triple.of(true, "", enterpriseUserPackageDetailsVO);
-    
-        //支付0元
-        /*if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-    
-            //更新保险状态
-            if(Objects.nonNull(insuranceOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300072", (String) result.getRight());
-                }
-            }
-    
-            //更新套餐购买状态
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300073", (String) result.getRight());
-                }
-        
-            }
-            
-            return Triple.of(true, null, null);
-        }
-    
-        //调起支付
-        try {
-            UnionPayOrder unionPayOrder = UnionPayOrder.builder()
-                    .jsonOrderId(JsonUtil.toJson(orderList))
-                    .jsonOrderType(JsonUtil.toJson(orderTypeList))
-                    .jsonSingleFee(JsonUtil.toJson(allPayAmount))
-                    .payAmount(integratedPaAmount)
-                    .tenantId(tenantId)
-                    .attach(UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_RENEWAL_PAYMENT)
-                    .description("企业渠道套餐续费")
-                    .uid(userInfo.getUid()).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return Triple.of(true, null, resultDTO);
-        } catch (WechatPayException e) {
-            log.error("purchase package by enterprise user error, wechat v3 order  error! uid={}", userInfo.getUid(), e);
-        }
-        
-        return Triple.of(false, "ELECTRICITY.0099", "企业渠道套餐续费失败");*/
     }
     
     @Override
@@ -1417,63 +1375,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
     
         return Triple.of(true, "", enterpriseUserPackageDetailsVO);
-    
-        //处理0元支付
-        /*if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
         
-            *//*Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
-            if (Boolean.FALSE.equals(result.getLeft())) {
-                return result;
-            }*//*
-            
-            //更新押金状态
-            if(Objects.nonNull(eleDepositOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    //return  Triple.of(false, "100349", result.getRight());
-                    throw new BizException("300071", (String) result.getRight());
-                }
-            }
-            
-            //更新保险状态
-            if(Objects.nonNull(insuranceOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300072", (String) result.getRight());
-                }
-            }
-            
-            //更新套餐购买状态
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300073", (String) result.getRight());
-                }
-              
-            }
-            
-            return Triple.of(true, "", null);
-        }
-    
-        //调起支付
-        try {
-            UnionPayOrder unionPayOrder = UnionPayOrder.builder()
-                    .jsonOrderId(JsonUtil.toJson(orderList))
-                    .jsonOrderType(JsonUtil.toJson(orderTypeList))
-                    .jsonSingleFee(JsonUtil.toJson(allPayAmount))
-                    .payAmount(integratedPaAmount)
-                    .tenantId(tenantId)
-                    .attach(UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_DEPOSIT_PAYMENT)
-                    .description("企业渠道购买套餐,押金,保险服务")
-                    .uid(user.getUid()).build();
-            WechatJsapiOrderResultDTO resultDTO =
-                    unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return Triple.of(true, null, resultDTO);
-        } catch (WechatPayException e) {
-            log.error("purchase package with deposit by enterprise user error, wechat v3 order  error! uid={}", user.getUid(), e);
-        }
-    
-        return Triple.of(false, "300073", "企业代付购买套餐支付失败");*/
     }
     
     @Override
@@ -1599,12 +1501,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
         }*/
     
-        //获取扫码柜机
-       /* ElectricityCabinet electricityCabinet = null;
-        if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
-            electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
-        }*/
-    
         //套餐订单
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = generateMemberCardOrder(userInfo, batteryMemberCard, query, null);
         if (Boolean.FALSE.equals(rentBatteryMemberCardTriple.getLeft())) {
@@ -1717,44 +1613,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
     
         return Triple.of(true, "", enterpriseUserPackageDetailsVO);
-        //处理支付0元场景
-       /* if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
-    
-            //更新保险状态
-            if(Objects.nonNull(insuranceOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300072", (String) result.getRight());
-                }
-            }
-    
-            //更新套餐购买状态
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                Pair<Boolean, Object> result = unionTradeOrderService.manageEnterpriseMemberCardOrder(electricityMemberCardOrder.getOrderId(), ElectricityMemberCardOrder.STATUS_SUCCESS);
-                if(Boolean.FALSE.equals(result.getLeft())){
-                    throw new BizException("300073", (String) result.getRight());
-                }
-            }
-            return Triple.of(true, "", null);
-        }*/
-    
-       /* try {
-            UnionPayOrder unionPayOrder = UnionPayOrder.builder()
-                    .jsonOrderId(JsonUtil.toJson(orderList))
-                    .jsonOrderType(JsonUtil.toJson(orderTypeList))
-                    .jsonSingleFee(JsonUtil.toJson(payAmountList))
-                    .payAmount(totalPayAmount)
-                    .tenantId(tenantId)
-                    .attach(UnionTradeOrder.ATTACH_ENTERPRISE_PACKAGE_WITHOUT_DEPOSIT_PAYMENT)
-                    .description("免押购买企业代付套餐")
-                    .uid(uid).build();
-            WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return Triple.of(true, null, resultDTO);
-        } catch (WechatPayException e) {
-            log.error("purchase Package with free deposit error, wechat v3 order  error! uid={}", uid, e);
-        }*/
-        //return Triple.of(false, "ELECTRICITY.0099", "下单失败");
-        
     }
     
     private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId) {
