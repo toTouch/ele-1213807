@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.enterprise;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
@@ -13,12 +15,15 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserCheckVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
@@ -43,21 +48,20 @@ import java.util.Objects;
 @Slf4j
 @Service("enterpriseChannelUserService")
 public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserService {
-    
     @Resource
     private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
-    
     @Resource
     private UserInfoService userInfoService;
-    
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
-    
     @Resource
     TenantService tenantService;
-    
     @Resource
     ElectricityBatteryService batteryService;
+    @Resource
+    ElectricityCabinetOrderService electricityCabinetOrderService;
+    @Resource
+    ElectricityCabinetService electricityCabinetService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -308,6 +312,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             throw new BizException(batteryTriple.getMiddle(), (String) batteryTriple.getRight());
         }
         ElectricityUserBatteryVo userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
+        
+        //查询换电时间及柜机信息
+        //Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityCabinetOrderVO electricityCabinetOrderVO = electricityCabinetOrderService.selectLatestOrderAndCabinetInfo(uid);
+        if(Objects.nonNull(electricityCabinetOrderVO)){
+            //ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+            userBatteryVo.setElectricityCabinetId(electricityCabinetOrderVO.getElectricityCabinetId());
+            userBatteryVo.setElectricityCabinetName(electricityCabinetOrderVO.getElectricityCabinetName());
+            userBatteryVo.setBatteryExchangeTime(electricityCabinetOrderVO.getCreateTime());
+        }
         
         return userBatteryVo;
     }

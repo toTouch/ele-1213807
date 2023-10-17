@@ -314,6 +314,20 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="selectLatestOrderAndCabinetInfo" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
+        select
+            teco.id,
+            teco.uid,
+            teco.new_electricity_battery_sn as newElectricityBatterySn,
+            teco.electricity_cabinet_id as electricityCabinetId,
+			tec.name as electricityCabinetName,
+            teco.create_time as createTime
+        from t_electricity_cabinet_order teco
+		left join t_electricity_cabinet tec on tec.id = teco.electricity_cabinet_id
+        where teco.uid=#{uid}
+        and teco.status='COMPLETE_BATTERY_TAKE_SUCCESS'
+        order by teco.id desc limit 1
+    </select>
 
 </mapper>

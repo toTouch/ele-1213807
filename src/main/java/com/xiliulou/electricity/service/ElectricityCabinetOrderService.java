@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -86,6 +87,7 @@ public interface ElectricityCabinetOrderService {
 
     List<ElectricityCabinetOrder> selectMonthExchangeOrders(Integer id, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId);
 
-
     Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName);
+    
+    ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
 }
