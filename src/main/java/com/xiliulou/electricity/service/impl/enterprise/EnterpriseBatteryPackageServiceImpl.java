@@ -282,7 +282,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "", "当前企业不存在");
         }
         List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
-        if (Objects.isNull(packageIds)) {
+        if (CollectionUtils.isEmpty(packageIds)) {
             log.info("not found enterprise package record, enterprise id = {}", query.getEnterpriseId());
             return Triple.of(false, "", "当前企业套餐不存在");
         }
@@ -327,10 +327,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             List<String> batteryVs = list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
             log.info("query battery v without deposit, batteryVs = {}", batteryVs);
-            if(CollectionUtils.isEmpty(batteryVs)){
+            if(CollectionUtils.isEmpty(batteryVs) || batteryVs.stream().allMatch(item->Objects.isNull(item))){
                 return Triple.of(true, "", Collections.emptyList());
             }
-            
+            batteryVs = batteryVs.stream().filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, "", batteryVs);
         }
         
@@ -344,10 +344,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             List<String> batteryVs = list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
             log.info("query battery v with user battery member card, batteryVs = {}", batteryVs);
-            if(CollectionUtils.isEmpty(batteryVs)){
+            if(CollectionUtils.isEmpty(batteryVs)  || batteryVs.stream().allMatch(item->Objects.isNull(item))){
                 return Triple.of(true, "", Collections.emptyList());
             }
-           
+            batteryVs = batteryVs.stream().filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, "", batteryVs);
         }
         
