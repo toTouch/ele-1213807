@@ -84,6 +84,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
         
+        // 添加用户加盟商信息
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(query.getUid());
+        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(userInfo);
+        
         log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
         
         return Triple.of(true, "", null);
@@ -171,12 +178,22 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        enterpriseChannelUser.setId(query.getId());
-        enterpriseChannelUser.setUid(query.getUid());
+        Long uid = query.getUid();
+        Long enterpriseId = query.getId();
+        enterpriseChannelUser.setId(enterpriseId);
+        enterpriseChannelUser.setUid(uid);
         enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
         enterpriseChannelUserMapper.update(enterpriseChannelUser);
+    
+        // 添加用户加盟商信息
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(uid);
+        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(userInfo);
         
         return Triple.of(true, "", enterpriseChannelUser);
     }
@@ -268,6 +285,22 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Boolean.FALSE;
         }
         
+        return Boolean.TRUE;
+    }
+    
+    /**
+     * 根据骑手UID，检查当前用户是否为自主续费状态， FALSE-企业代付， TRUE-自主续费
+     * @param uid
+     * @return
+     */
+    @Override
+    public Boolean checkRenewalStatusByUid(Long uid) {
+    
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
+        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+            return Boolean.FALSE;
+        }
+    
         return Boolean.TRUE;
     }
     

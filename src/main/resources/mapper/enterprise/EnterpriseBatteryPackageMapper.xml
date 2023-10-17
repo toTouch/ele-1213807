@@ -327,7 +327,7 @@
         <if test="phone != null and phone != ''">
             and tui.phone like concat('%',#{phone},'%')
         </if>
-    
+        order by tubmc.member_card_expire_time desc
         limit #{offset}, #{size}
     
     </select>
@@ -367,7 +367,7 @@
         <if test="phone != null and phone != ''">
             and tui.phone like concat('%',#{phone},'%')
         </if>
-    
+        order by tubmc.member_card_expire_time asc
         limit #{offset}, #{size}
         
     </select>
@@ -399,7 +399,7 @@
             </if>
 
         </where>
-    
+        order by  tecu.create_time desc
         limit #{offset}, #{size}
     
     </select>
@@ -476,6 +476,7 @@
         from t_enterprise_channel_user tecu
         left join t_user_info tui on tui.uid = tecu.uid
         <where>
+            tecu.uid is not null
             <if test="enterpriseId != null">
                 and tecu.uid not in (select uid from t_electricity_member_card_order where status = 1 and enterprise_id = #{enterpriseId})
             </if>

@@ -99,7 +99,11 @@ public class JsonUserEnterpriseInfoController extends BaseController {
             return R.fail("300074", "未找到企业信息");
         }
         
-        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder().enterpriseId(enterpriseInfo.getId()).tenantId(tenantId).build();
+        EnterprisePurchaseOrderQuery query = EnterprisePurchaseOrderQuery.builder()
+                .enterpriseId(enterpriseInfo.getId())
+                .tenantId(tenantId)
+                .currentTime(System.currentTimeMillis())
+                .build();
         
         return R.ok(enterpriseInfoService.queryPurchasedPackageCount(query));
     }

@@ -13,6 +13,7 @@ import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -175,6 +176,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -1984,6 +1988,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("FREE DEPOSIT HYBRID ERROR! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+    
+        //检查是否为自主续费状态
+        Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
+        if(!userRenewalStatus){
+            log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", uid, query.getMemberCardId());
+            return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
         }
 
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);

@@ -14,7 +14,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EnterprisePaymentStatusEnum implements BasicEnum<Integer, String> {
     
-    PAYMENT_TYPE_EXPIRED(1, "代付到期"),
+    PAYMENT_TYPE_EXPIRED(1, "代付过期"),
     
     PAYMENT_TYPE_SUCCESS(2, "已代付"),
     
