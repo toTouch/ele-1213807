@@ -72,6 +72,8 @@ public interface EnterpriseChannelUserService {
     
     Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
+    Boolean checkRenewalStatusByUid(Long uid);
+    
     List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);

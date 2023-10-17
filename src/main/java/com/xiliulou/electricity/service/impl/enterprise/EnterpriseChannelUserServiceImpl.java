@@ -271,6 +271,22 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Boolean.TRUE;
     }
     
+    /**
+     * 根据骑手UID，检查当前用户是否为自主续费状态， FALSE-企业代付， TRUE-自主续费
+     * @param uid
+     * @return
+     */
+    @Override
+    public Boolean checkRenewalStatusByUid(Long uid) {
+    
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
+        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+            return Boolean.FALSE;
+        }
+    
+        return Boolean.TRUE;
+    }
+    
     @Override
     public List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
     
