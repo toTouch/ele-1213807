@@ -84,6 +84,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
         
+        // 添加用户加盟商信息
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(query.getUid());
+        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfoService.updateByUid(userInfo);
+        
         log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
         
         return Triple.of(true, "", null);
@@ -171,12 +177,21 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        enterpriseChannelUser.setId(query.getId());
-        enterpriseChannelUser.setUid(query.getUid());
+        Long uid = query.getUid();
+        Long enterpriseId = query.getId();
+        enterpriseChannelUser.setId(enterpriseId);
+        enterpriseChannelUser.setUid(uid);
         enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
         enterpriseChannelUserMapper.update(enterpriseChannelUser);
+    
+        // 添加用户加盟商信息
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(uid);
+        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfoService.updateByUid(userInfo);
         
         return Triple.of(true, "", enterpriseChannelUser);
     }
