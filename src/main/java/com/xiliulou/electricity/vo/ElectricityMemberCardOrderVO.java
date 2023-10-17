@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
 
 import java.util.List;
@@ -66,4 +67,11 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      * 退租拒绝原因
      */
     private String rejectReason;
+    
+    /**
+     * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     * @see PackageOrderTypeEnum
+     */
+    private Integer orderType;
+    
 }

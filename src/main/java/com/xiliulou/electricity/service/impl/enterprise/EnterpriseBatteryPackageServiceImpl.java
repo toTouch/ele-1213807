@@ -1958,6 +1958,23 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, enterprisePackageOrderVOList);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> selectFranchiseeByEnterpriseId(Long enterpriseId) {
+    
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        if(Objects.isNull(enterpriseInfo)){
+            log.error("query enterprise info failed by query franchisee, enterpriseId = {}", enterpriseId);
+            return Triple.of(false, "300065", "企业信息不存在");
+        }
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(enterpriseInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "300066", "加盟商不存在");
+        }
+    
+        return Triple.of(true, null, franchisee);
+        
+    }
+    
     private void assignmentForPurchasedPackage(List<EnterprisePackageOrderVO> enterprisePackageOrderVOList){
         
         for(EnterprisePackageOrderVO enterprisePackageOrderVO : enterprisePackageOrderVOList){
