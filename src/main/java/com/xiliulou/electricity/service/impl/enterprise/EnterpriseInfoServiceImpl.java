@@ -466,7 +466,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, null, "企业用户云豆未回收");
         }
         
-        if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) >= 0) {
+        if (BigDecimal.ZERO.compareTo(enterpriseInfo.getTotalBeanAmount()) < 0) {
             return Triple.of(false, null, "企业云豆未结算");
         }
         
