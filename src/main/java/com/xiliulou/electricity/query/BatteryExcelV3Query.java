@@ -12,6 +12,8 @@ import java.util.List;
  */
 @Data
 public class BatteryExcelV3Query {
+	
 	private Long franchiseeId;
-	private List<BatteryExcelQuery> batteryExcelQueryList;
+	
+	private List<String> batterySnList;
 }

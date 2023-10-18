@@ -110,5 +110,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void export(ElectricityBatteryQuery query, HttpServletResponse response);
     
-    R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query);
+    R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid);
 }
