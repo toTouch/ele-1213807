@@ -144,7 +144,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     TenantService tenantService;
     
-    protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS_BATTERY-INSERT-POOL", 1, "bms_battery-insert-pool-thread");
+    protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
 
     /**
      * 根据电池SN码集查询
