@@ -179,8 +179,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         Long uid = query.getUid();
-        Long enterpriseId = query.getId();
-        enterpriseChannelUser.setId(enterpriseId);
+        Long channelUserId = query.getId();
+        enterpriseChannelUser.setId(channelUserId);
         enterpriseChannelUser.setUid(uid);
         enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
@@ -188,14 +188,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserMapper.update(enterpriseChannelUser);
     
         // 添加用户加盟商信息
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
-        if(Objects.isNull(enterpriseInfo)){
-            log.error("query enterprise info error for update user after QR scan, enterprise id = {}, uid = {}", enterpriseId, uid);
-            return Triple.of(false, "300065", "企业用户信息不存在");
-        }
+        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(uid);
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(uid);
-        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setFranchiseeId(channelUser.getFranchiseeId());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfo);
         
