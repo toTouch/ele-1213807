@@ -34,6 +34,12 @@ public class EnterprisePackageOrderVO {
     private BigDecimal batteryDeposit;
     
     /**
+     * 押金类型
+     *  0-缴纳押金类型, 1-免押类型
+     */
+    private Integer depositType;
+    
+    /**
      * 用户电池型号
      */
     private String userBatterySimpleType;

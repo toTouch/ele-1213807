@@ -28,6 +28,8 @@ public interface EnterpriseBatteryPackageMapper extends BaseMapper<ElectricityMe
     
     List<EnterpriseFreezePackageRecordVO> queryBatteryFreezeOrder(EnterprisePackageOrderQuery query);
     
+    List<EnterpriseFreezePackageRecordVO> queryEnableFreezeOrder(EnterprisePackageOrderQuery query);
+    
     List<EnterpriseRefundDepositOrderVO> queryBatteryDepositOrder(EnterprisePackageOrderQuery query);
     
     List<EnterprisePackageOrderVO> queryExpiredPackageOrder(EnterprisePurchaseOrderQuery query);

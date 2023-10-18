@@ -40,7 +40,7 @@ public class EnterpriseFreezePackageRecordVO {
     /**
      * 套餐冻结单号
      */
-    private Long packageFreezeOrderNo;
+    private String packageFreezeOrderNo;
     
     /**
      * 停卡状态

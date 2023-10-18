@@ -78,5 +78,11 @@ public interface EnterpriseBatteryPackageService {
      */
     public Triple<Boolean, String, Object> queryPurchasedPackageOrders(EnterprisePurchaseOrderQuery query);
     
-
+    /**
+     * 根据企业ID查询加盟商信息
+     * @param enterpriseId
+     * @return
+     */
+    public Triple<Boolean, String, Object> selectFranchiseeByEnterpriseId(Long enterpriseId);
+    
 }

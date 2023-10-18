@@ -144,6 +144,15 @@ public class JsonUserEnterprisePackageController extends BaseController {
         return returnTripleResult(enterpriseBatteryPackageService.checkUserFreeBatteryDepositStatus(uid));
     }
     
+    /**
+     * 根据企业ID查询加盟商信息
+     * @param enterpriseId
+     * @return
+     */
+    @GetMapping("/user/enterprise/franchisee/status")
+    public R franchiseeStatus(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
+        return returnTripleResult(enterpriseBatteryPackageService.selectFranchiseeByEnterpriseId(enterpriseId));
+    }
     
     /**
      * 企业代付续租购买套餐

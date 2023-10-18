@@ -107,7 +107,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.isNull(userInfo)) {
             log.error("query enterprise user by phone failed. Not found user. phone is {}, franchisee id = {} ", enterpriseChannelUserQuery.getPhone(),
                     enterpriseChannelUserQuery.getFranchiseeId());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0001", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
         }
         
         enterpriseChannelUserVO.setUid(userInfo.getUid());
@@ -179,8 +179,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         Long uid = query.getUid();
-        Long enterpriseId = query.getId();
-        enterpriseChannelUser.setId(enterpriseId);
+        Long channelUserId = query.getId();
+        enterpriseChannelUser.setId(channelUserId);
         enterpriseChannelUser.setUid(uid);
         enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
@@ -188,10 +188,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserMapper.update(enterpriseChannelUser);
     
         // 添加用户加盟商信息
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(uid);
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(uid);
-        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        userInfo.setFranchiseeId(channelUser.getFranchiseeId());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfo);
         
@@ -384,7 +384,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("add user to enterprise failed. Not found user. uid = {} ", query.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0001", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
         }
         
         // 2. 用户可用状态
@@ -396,7 +396,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 3. 用户实名认证状态
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("add user to enterprise failed. User not auth. uid = {}", query.getUid());
-            return Triple.of(false, "ELECTRICITY.0041", "用户尚未实名认证");
+            return Triple.of(false, "ELECTRICITY.0041", "该用户尚未完成实名认证，请确保用户完成实名认证");
         }
         
         //根据当前企业ID查询企业信息

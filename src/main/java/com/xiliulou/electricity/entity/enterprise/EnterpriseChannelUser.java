@@ -57,7 +57,7 @@ public class EnterpriseChannelUser {
     private Integer renewalStatus;
     
     /**
-     * 云豆状态（1-未回收，2-已回收）
+     * 云豆状态（0-初始态, 1-未回收, 2-已回收）
      * @see CloudBeanStatusEnum
      */
     private Integer cloudBeanStatus;
