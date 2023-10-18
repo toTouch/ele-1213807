@@ -208,7 +208,7 @@
         select
             dmcr.id,
             dmcr.member_card_name as packageName,
-            dmcr.status ,
+            dmcr.status,
             dmcr.uid,
             dmcr.user_name,
             dmcr.phone,
@@ -229,9 +229,10 @@
             emcr.enable_time as enablePackageTime
         from  t_ele_disable_member_card_record  dmcr
         left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
+        left join t_battery_member_card tbmc on dmcr.battery_member_card_id = tbmc.id
     
         <where>
-            dmcr.status = 1
+            dmcr.status = 1 and tbmc.business_type = 2
             <if test="uid != null">
                 and dmcr.uid = #{uid}
             </if>
@@ -245,6 +246,39 @@
             order by dmcr.create_time desc
         </where>
 
+    </select>
+    
+    <!--查询冻结套餐订单信息-->
+    <select id="queryEnableFreezeOrder" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseFreezePackageRecordVO">
+        select
+            emcr.id,
+            emcr.member_card_name as packageName,
+            emcr.uid,
+            emcr.user_name,
+            emcr.phone,
+            emcr.enable_time as enablePackageTime,
+            emcr.create_time,
+            emcr.update_time,
+            dmcr.battery_member_card_id as packageId,
+            dmcr.disable_member_card_no as packageFreezeOrderNo,
+            dmcr.disable_member_card_time as freezePackageTime,
+            tbmc.business_type
+        from t_enable_member_card_record emcr, t_ele_disable_member_card_record dmcr, t_battery_member_card tbmc
+        where dmcr.disable_member_card_no = emcr.disable_member_card_no
+          and dmcr.battery_member_card_id = tbmc.id
+          and tbmc.business_type = 2
+        <if test="uid != null">
+            and emcr.uid = #{uid}
+        </if>
+    
+        <if test="beginTime != null">
+            and emcr.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and emcr.create_time &lt;= #{endTime}
+        </if>
+        order by emcr.create_time desc
+    
     </select>
     
     <!--查询退押的订单信息-->

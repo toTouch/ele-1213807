@@ -1912,7 +1912,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostDetailsVO.setCostType(UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode());
             enterpriseUserCostDetailsVO.setPackageId(enterpriseFreezePackageRecordVO.getPackageId());
             enterpriseUserCostDetailsVO.setPackageName(enterpriseFreezePackageRecordVO.getPackageName());
-            enterpriseUserCostDetailsVO.setOperationTime(enterpriseFreezePackageRecordVO.getCreateTime());
+            enterpriseUserCostDetailsVO.setOperationTime(enterpriseFreezePackageRecordVO.getFreezePackageTime());
             enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);
         }
         
@@ -1931,6 +1931,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostDetailsVO.setPayAmount(enterpriseRefundDepositOrderVO.getPayAmount());
             enterpriseUserCostDetailsVO.setDepositAmount(enterpriseRefundDepositOrderVO.getRefundAmount());
             enterpriseUserCostDetailsVO.setOperationTime(enterpriseRefundDepositOrderVO.getCreateTime());
+            enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);
+        }
+        
+        //5. 查询骑手套餐启用记录，冻结后被启用
+        List<EnterpriseFreezePackageRecordVO> enterpriseEnableFreezePackageRecordVOList = enterpriseBatteryPackageMapper.queryEnableFreezeOrder(query);
+        for(EnterpriseFreezePackageRecordVO enterpriseFreezePackageRecordVO : enterpriseEnableFreezePackageRecordVOList){
+            
+            EnterpriseUserCostDetailsVO enterpriseUserCostDetailsVO = new EnterpriseUserCostDetailsVO();
+            enterpriseUserCostDetailsVO.setCostType(UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode());
+            enterpriseUserCostDetailsVO.setPackageId(enterpriseFreezePackageRecordVO.getPackageId());
+            enterpriseUserCostDetailsVO.setPackageName(enterpriseFreezePackageRecordVO.getPackageName());
+            enterpriseUserCostDetailsVO.setOperationTime(enterpriseFreezePackageRecordVO.getEnablePackageTime());
             enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);
         }
         

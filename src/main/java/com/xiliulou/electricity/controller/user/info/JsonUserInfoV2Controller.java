@@ -7,14 +7,17 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -58,6 +61,9 @@ public class JsonUserInfoV2Controller extends BasicController {
 
     @Resource
     private UserInfoService userInfoService;
+    
+    @Resource
+    private EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 获取名下的总滞纳金（单电、单车、车电一体）
@@ -111,6 +117,15 @@ public class JsonUserInfoV2Controller extends BasicController {
 
                 BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(batteryMemberCard.getMemberCardId());
                 batteryPackage.setRentUnit(Objects.isNull(batteryMemberCard1) ? null : batteryMemberCard1.getRentUnit());
+                
+                //设置骑手自主续费方式
+                Boolean renewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
+                if(renewalStatus){
+                    userMemberPackageVo.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode());
+                }else{
+                    userMemberPackageVo.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
+                }
+                
                 userMemberPackageVo.setBatteryPackage(batteryPackage);
             }
         }

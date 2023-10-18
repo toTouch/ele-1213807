@@ -24,6 +24,8 @@ public enum UserCostTypeEnum implements BasicEnum<Integer, String> {
     
     COST_TYPE_REFUND_DEPOSIT(5, "退押金"),
     
+    COST_TYPE_ENABLE_PACKAGE(6, "启用套餐"),
+    
     ;
     
     private final Integer code;
