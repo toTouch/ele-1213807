@@ -1030,10 +1030,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.FALSE.equals(generateInsuranceOrderResult.getLeft())) {
             return generateInsuranceOrderResult;
         }
-    
-        List<String> orderList = new ArrayList<>();
-        List<Integer> orderTypeList = new ArrayList<>();
-        List<BigDecimal> allPayAmount = new ArrayList<>();
+        
         BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
     
         ElectricityMemberCardOrder electricityMemberCardOrder = null;
@@ -1043,10 +1040,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
             electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
-        
-            orderList.add(electricityMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
-            allPayAmount.add(electricityMemberCardOrder.getPayAmount());
+            
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
         }
     
@@ -1057,10 +1051,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //设置保险关联购买订单号
             insuranceOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
             insuranceOrderService.insert(insuranceOrder);
-        
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            allPayAmount.add(insuranceOrder.getPayAmount());
+            
             integratedPaAmount = integratedPaAmount.add(insuranceOrder.getPayAmount());
         }
     
@@ -1249,10 +1240,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.FALSE.equals(generateInsuranceOrderResult.getLeft())) {
             return generateInsuranceOrderResult;
         }
-    
-        List<String> orderList = new ArrayList<>();
-        List<Integer> orderTypeList = new ArrayList<>();
-        List<BigDecimal> allPayAmount = new ArrayList<>();
+        
         BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
     
         ElectricityMemberCardOrder electricityMemberCardOrder = null;
@@ -1263,10 +1251,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
             electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
-        
-            orderList.add(electricityMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_ENTERPRISE_PACKAGE);
-            allPayAmount.add(electricityMemberCardOrder.getPayAmount());
+            
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
         }
     
@@ -1277,10 +1262,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //设置押金关联套餐购买订单号
             eleDepositOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
             eleDepositOrderService.insert(eleDepositOrder);
-        
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            allPayAmount.add(eleDepositOrder.getPayAmount());
+            
             integratedPaAmount = integratedPaAmount.add(eleDepositOrder.getPayAmount());
         }
         
@@ -1291,10 +1273,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //设置保险关联套餐购买订单号
             insuranceOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
             insuranceOrderService.insert(insuranceOrder);
-        
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            allPayAmount.add(insuranceOrder.getPayAmount());
+            
             integratedPaAmount = integratedPaAmount.add(insuranceOrder.getPayAmount());
         }
     
@@ -1368,11 +1347,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
         //查询用户保险信息
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
-        //InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
-        /*InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
-        if(Objects.nonNull(insuranceUserInfo)) {
-            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
-        }*/
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
     
         return Triple.of(true, "", enterpriseUserPackageDetailsVO);
@@ -1513,10 +1487,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
         }
-    
-        List<String> orderList = new ArrayList<>();
-        List<Integer> orderTypeList = new ArrayList<>();
-        List<BigDecimal> payAmountList = new ArrayList<>();
+        
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
     
         ElectricityMemberCardOrder electricityMemberCardOrder = null;
@@ -1526,12 +1497,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
             electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
-        
-            orderList.add(electricityMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
-            payAmountList.add(electricityMemberCardOrder.getPayAmount());
+            
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
-        
         }
     
         //保存保险订单
@@ -1540,10 +1507,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //设置保险关联购买订单号
             insuranceOrder.setSourceOrderNo(electricityMemberCardOrder.getOrderId());
             insuranceOrderService.insert(insuranceOrder);
-        
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            payAmountList.add(insuranceOrder.getPayAmount());
+            
             totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
         }
     
@@ -1610,7 +1574,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if(Objects.nonNull(insuranceUserInfo)) {
             BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
         }*/
-        
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
     
         return Triple.of(true, "", enterpriseUserPackageDetailsVO);

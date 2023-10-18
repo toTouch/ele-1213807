@@ -665,11 +665,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         //如果为企业用户，返回1给前端，代表当前用户为企业用户
-        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
+        /*EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
         if(Objects.nonNull(enterpriseChannelUserVO)){
             map.put("isEnterpriseUser", NumberConstant.ONE.toString());
             return R.ok(map);
-        }
+        }*/
 
         //是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -744,6 +744,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("rentBatteryStatus", userInfo.getBatteryRentStatus().toString());
                 map.put("depositType", Objects.isNull(userBatteryDeposit.getDepositType()) ? null
                         : String.valueOf(userBatteryDeposit.getDepositType()));
+            }
+            
+            //判断当前使用套餐的类型
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.nonNull(batteryMemberCard)){
+                    map.put("currentPackageType", batteryMemberCard.getBusinessType().toString());
+                }
             }
 
             return R.ok(map);
