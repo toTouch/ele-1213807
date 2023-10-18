@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
 import java.util.List;
