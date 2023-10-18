@@ -1765,6 +1765,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         //查询骑手续费方式
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
+        log.info("query enterprise channel user, enterprise id = {}, uid = {}", query.getEnterpriseId(),  query.getUid());
         if (Objects.isNull(enterpriseChannelUserVO)) {
             log.warn("query rider details failed, not found enterprise channel user, uid = {}", query.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
@@ -1785,7 +1786,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         //判断当前套餐是否为企业套餐
-        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.equals(batteryMemberCard.getBusinessType())){
+        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
             log.warn("query rider details failed, current package is not belong enterprise package,uid = {},mid = {}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
@@ -1991,6 +1992,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(enterprisePackageOrderVO.getUid());
             if(Objects.nonNull(userBatteryDeposit)){
                 enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+                enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
             }
         
             //设置用户电池伏数
