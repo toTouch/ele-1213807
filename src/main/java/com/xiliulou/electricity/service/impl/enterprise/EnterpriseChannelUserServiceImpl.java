@@ -322,6 +322,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setId(enterpriseChannelUserQuery.getId());
         enterpriseChannelUser.setCloudBeanStatus(enterpriseChannelUserQuery.getCloudBeanStatus());
+        enterpriseChannelUser.setPaymentStatus(enterpriseChannelUserQuery.getPaymentStatus());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
         return enterpriseChannelUserMapper.update(enterpriseChannelUser);
