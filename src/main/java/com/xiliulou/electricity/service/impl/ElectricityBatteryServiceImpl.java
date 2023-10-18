@@ -240,7 +240,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryList.size()) {
                     log.error("Save failed! Excel datas cannot exceed 2000, size:{}", batteryList.size());
-                    return R.fail("100500", "Excel模版中数据不能超过2000条，请检查修改后再操作");
+                    return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
                 }
                 
                 List<ElectricityBattery> saveList = new ArrayList<>();
@@ -252,11 +252,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     String sn = batteryExcelQuery.getSn();
                     if (Objects.isNull(sn)) {
                         log.error("Save failed! The battery's sn in Excel is empty,sn:{}", batteryExcelQuery.getSn());
-                        return R.fail("100501", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                        return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
                     }
                     if (set.contains(sn)) {
                         log.error("Save failed! The battery's sn in Excel is repeated,sn:{}", batteryExcelQuery.getSn());
-                        return R.fail("100502", "Excel模版中电池编码不能重复，请检查修改后再操作");
+                        return R.fail("100602", "Excel模版中电池编码不能重复，请检查修改后再操作");
                     }
                     set.add(sn);
                     
@@ -286,7 +286,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 //导入的数据不为空，校验之后的数据为空，
                 if (!DataUtil.collectionIsUsable(snList)) {
                     log.error("Save failed! The battery's sn in Excel is repeated or empty");
-                    return R.fail("100501", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                    return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
                 }
                 
                 // 保存到远程BMS系统中
@@ -305,6 +305,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     R r = future.get();
                     if (!r.isSuccess()) {
                         log.error("CALL BATTERY ERROR! msg={}, uid={}", r.getErrMsg(), SecurityUtils.getUid());
+                        return R.fail("100603", "Excel模版中电池编码不能为空，请检查修改后再操作");
                     }
                 } catch (InterruptedException | ExecutionException e) {
                     throw new InnerRemoteCallException(e.getMessage());
@@ -316,7 +317,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 insertBatch(saveList);
             } else {
                 log.error("Save failed! Excel data is empty");
-                return R.fail("100501", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
             }
         } finally {
             MDC.clear();
