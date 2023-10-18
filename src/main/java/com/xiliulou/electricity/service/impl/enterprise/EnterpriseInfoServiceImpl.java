@@ -876,6 +876,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setRecycleMembercard(recycleRecords.size());
             cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
+    
+
         
         //可回收订单
         List<CloudBeanUseRecord> cloudBeanUseRecords = cloudBeanUseRecordService.selectCanRecycleRecord(enterpriseInfo.getId(), System.currentTimeMillis());

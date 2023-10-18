@@ -415,7 +415,7 @@
         from t_enterprise_channel_user tecu
         left join t_user_info tui on tui.uid = tecu.uid
         <where>
-            tecu.payment_status=3
+            tecu.uid is not null and tecu.payment_status=3
             <if test="enterpriseId != null">
                 and tecu.enterprise_id = #{enterpriseId}
             </if>

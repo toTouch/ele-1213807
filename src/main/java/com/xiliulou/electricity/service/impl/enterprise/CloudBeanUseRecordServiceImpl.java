@@ -258,7 +258,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         
         //若未租退电
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
-            return totalCloudBean;
+            return result.add(totalCloudBean);
         }
         
         //每个租退电消耗的云豆数
