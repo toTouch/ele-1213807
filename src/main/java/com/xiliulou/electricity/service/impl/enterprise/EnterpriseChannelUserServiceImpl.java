@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -78,6 +79,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         BeanUtil.copyProperties(query, enterpriseChannelUser);
         enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
+        enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
         enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
         enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
