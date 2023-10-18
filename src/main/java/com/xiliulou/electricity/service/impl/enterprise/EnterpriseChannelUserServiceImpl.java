@@ -189,6 +189,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
         // 添加用户加盟商信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        if(Objects.isNull(enterpriseInfo)){
+            log.error("query enterprise info error for update user after QR scan, enterprise id = {}, uid = {}", enterpriseId, uid);
+            return Triple.of(false, "300065", "企业用户信息不存在");
+        }
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(uid);
         userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
