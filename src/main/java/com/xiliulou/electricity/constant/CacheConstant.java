@@ -378,6 +378,16 @@ public interface CacheConstant {
      */
     String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITHOUT_DEPOSIT_LOCK_KEY = "enterprise_user_purchase_package_without_deposit_lock_key:";
     
+    /**
+     * 根据手机号码添加企业渠道用户缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY = "enterprise_user_save_by_phone_lock_key:";
+    
+    /**
+     * 扫码添加企业渠道用户缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY = "enterprise_user_update_after_scan_lock_key:";
+    
     
     String ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY = "user_cloud_bean_recharge_lock_key:";
 

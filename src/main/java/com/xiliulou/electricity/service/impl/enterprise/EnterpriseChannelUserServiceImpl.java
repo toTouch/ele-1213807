@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.Tenant;
@@ -63,37 +65,53 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     ElectricityCabinetOrderService electricityCabinetOrderService;
     @Resource
     ElectricityCabinetService electricityCabinetService;
+    @Resource
+    private RedisService redisService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(EnterpriseChannelUserQuery query) {
         log.info("add new user by enterprise start, channel user = {}", JsonUtil.toJson(query));
-        //检查当前用户是否可用
-        Triple<Boolean, String, Object> result = verifyUserInfo(query);
-        if(Boolean.FALSE.equals(result.getLeft())){
-            return Triple.of(false, result.getMiddle(), result.getRight());
-        }
     
-        EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();
-        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        BeanUtil.copyProperties(query, enterpriseChannelUser);
-        enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-        enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
-        enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
-        enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
-        enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
         
-        enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
-        
-        // 添加用户加盟商信息
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUid(query.getUid());
-        userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfoService.updateByUid(userInfo);
-        
-        log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
+        try {
+            //检查当前用户是否可用
+            Triple<Boolean, String, Object> result = verifyUserInfo(query);
+            if(Boolean.FALSE.equals(result.getLeft())){
+                return Triple.of(false, result.getMiddle(), result.getRight());
+            }
+    
+            EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();
+            EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+            BeanUtil.copyProperties(query, enterpriseChannelUser);
+            enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
+            enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
+            enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
+            enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+    
+            enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
+    
+            // 添加用户加盟商信息
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUid(query.getUid());
+            userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfo);
+    
+            log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
+            
+        } catch (Exception e) {
+            log.error("add new user by phone error, uid = {}, ex = {}", query.getUid(), e);
+            throw new BizException("300067", "添加用户失败");
+            
+        } finally {
+            redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY + query.getUid());
+        }
         
         return Triple.of(true, "", null);
     }
@@ -174,30 +192,43 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!ObjectUtils.allNotNull(query.getUid(), query.getId(), query.getRenewalStatus())) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
-        
-        Triple<Boolean, String, Object> result = verifyUserInfo(query);
-        if (Boolean.FALSE.equals(result.getLeft())) {
-            return result;
+    
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        Long uid = query.getUid();
-        Long channelUserId = query.getId();
-        enterpriseChannelUser.setId(channelUserId);
-        enterpriseChannelUser.setUid(uid);
-        enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
-        enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
-        enterpriseChannelUserMapper.update(enterpriseChannelUser);
+        try{
+            Triple<Boolean, String, Object> result = verifyUserInfo(query);
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                return result;
+            }
     
-        // 添加用户加盟商信息
-        EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(uid);
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUid(uid);
-        userInfo.setFranchiseeId(channelUser.getFranchiseeId());
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfoService.updateByUid(userInfo);
-        
+            Long uid = query.getUid();
+            Long channelUserId = query.getId();
+            enterpriseChannelUser.setId(channelUserId);
+            enterpriseChannelUser.setUid(uid);
+            enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
+            enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+    
+            enterpriseChannelUserMapper.update(enterpriseChannelUser);
+    
+            // 添加用户加盟商信息
+            EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(uid);
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUid(uid);
+            userInfo.setFranchiseeId(channelUser.getFranchiseeId());
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfo);
+    
+        } catch (Exception e) {
+            log.error("add new user after QR scan error, uid = {}, ex = {}", query.getUid(), e);
+            throw new BizException("300068", "扫码添加用户失败");
+    
+        } finally {
+            redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid());
+        }
         return Triple.of(true, "", enterpriseChannelUser);
     }
     
@@ -321,7 +352,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     @Override
-    public Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
+    public Integer updateChannelUserStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setId(enterpriseChannelUserQuery.getId());
         enterpriseChannelUser.setCloudBeanStatus(enterpriseChannelUserQuery.getCloudBeanStatus());

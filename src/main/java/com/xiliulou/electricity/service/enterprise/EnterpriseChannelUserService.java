@@ -76,7 +76,7 @@ public interface EnterpriseChannelUserService {
     
     List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
-    Integer updateCloudBeanStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    Integer updateChannelUserStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
     
     int update(EnterpriseChannelUser enterpriseChannelUserUpdate);
     
