@@ -871,7 +871,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payType(EleDepositOrder.FREE_DEPOSIT_PAYMENT)
-                .storeId(Objects.nonNull(electricityCabinet)?electricityCabinet.getStoreId():userInfo.getStoreId())
+                .orderType(PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())
+                //.storeId(Objects.nonNull(electricityCabinet)?electricityCabinet.getStoreId():userInfo.getStoreId())
                 .modelType(0)
                 .mid(freeQuery.getMembercardId())
                 .batteryType(null).build();

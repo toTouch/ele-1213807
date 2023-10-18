@@ -229,7 +229,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EnterpriseRentRecordService enterpriseRentRecordService;
-
+    
     /**
      * 分页查询
      *
@@ -2461,6 +2461,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return;
+        }
+        
+        //檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
+        if(Objects.nonNull(enterpriseChannelUserVO)){
             return;
         }
 

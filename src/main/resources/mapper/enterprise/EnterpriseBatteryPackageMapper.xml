@@ -269,7 +269,7 @@
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
-            tero.status = 4
+            tero.status = 4 and tedo.order_type = 1
             <if test="uid != null">
                 and tedo.uid = #{uid}
             </if>
