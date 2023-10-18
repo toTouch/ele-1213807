@@ -414,6 +414,16 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             return R.failMsg("导入失败");
         }
     }
+    
+    /***
+     * @description 导入电池excel
+     * @date 2023/10/18 10:18:31
+     * @author HeYafeng
+     */
+    @PostMapping("/admin/battery/excel/v3")
+    public R uploadV3(@RequestBody List<BatteryExcelQuery> batteryList, @RequestParam("franchiseeId")Long franchiseeId) {
+        return electricityBatteryService.saveBatchFromExcel(batteryList, franchiseeId);
+    }
 
     @Transactional(rollbackFor = Exception.class)
     public R uploadV2WithTransaction(MultipartFile file, Long franchiseeId) throws IOException {

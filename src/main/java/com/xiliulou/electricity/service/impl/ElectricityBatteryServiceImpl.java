@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,7 +15,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.exception.InnerRemoteCallException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
@@ -28,6 +32,7 @@ import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
+import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -50,6 +55,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,6 +67,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -134,6 +143,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Autowired
     TenantService tenantService;
+    
+    protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS_BATTERY-INSERT-POOL", 1, "bms_battery-insert-pool-thread");
 
     /**
      * 根据电池SN码集查询
@@ -208,6 +219,108 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setTenantId(tenantId);
         electricitybatterymapper.insert(saveBattery);
 
+        return R.ok();
+    }
+    
+    @Transactional
+    @Override
+    public R saveBatchFromExcel(List<BatteryExcelQuery> batteryList, Long franchiseeId) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.simpleUUID());
+        //租户
+        try {
+            Integer tenantId = TenantContextHolder.getTenantId();
+            
+            TokenUser user = SecurityUtils.getUserInfo();
+            if (Objects.isNull(user)) {
+                log.error("ELE ERROR! not found user ");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+            
+            if (DataUtil.collectionIsUsable(batteryList)) {
+                
+                if (BatteryExcelQuery.EXCEL_MAX_COUNT_TWO_THOUSAND < batteryList.size()) {
+                    log.error("Save failed! Excel datas cannot exceed 2000, size:{}", batteryList.size());
+                    return R.fail("", "Excel模版中数据不能超过2000条，请检查修改后再操作");
+                }
+                
+                List<ElectricityBattery> saveList = new ArrayList<>();
+                List<String> snList = new ArrayList<>();
+                Set<String> set = new HashSet<String>();
+                
+                for (BatteryExcelQuery batteryExcelQuery : batteryList) {
+                    
+                    String sn = batteryExcelQuery.getSn();
+                    if (Objects.isNull(sn)) {
+                        log.error("Save failed! The battery's sn in Excel is empty,sn:{}", batteryExcelQuery.getSn());
+                        return R.fail("", "Excel模版中电池编码为空，请检查修改后再操作");
+                    }
+                    if (set.contains(sn)) {
+                        log.error("Save failed! The battery's sn in Excel is repeated,sn:{}", batteryExcelQuery.getSn());
+                        return R.fail("", "Excel模版中电池编码重复，请检查修改后再操作");
+                    }
+                    set.add(sn);
+                    
+                    ElectricityBattery electricityBattery = queryBySnFromDb(batteryExcelQuery.getSn());
+                    if (Objects.nonNull(electricityBattery)) {
+                        continue;
+                    }
+                    electricityBattery = new ElectricityBattery();
+                    
+                    electricityBattery.setSn(sn);
+                    electricityBattery.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
+                    electricityBattery.setVoltage(Objects.isNull(batteryExcelQuery.getVoltage()) ? 0 : batteryExcelQuery.getVoltage());
+                    electricityBattery.setCapacity(Objects.isNull(batteryExcelQuery.getCapacity()) ? 0 : batteryExcelQuery.getCapacity());
+                    electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
+                    electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
+                    electricityBattery.setCreateTime(System.currentTimeMillis());
+                    electricityBattery.setUpdateTime(System.currentTimeMillis());
+                    electricityBattery.setPower(0.0);
+                    electricityBattery.setExchangeCount(0);
+                    electricityBattery.setDelFlag(0);
+                    electricityBattery.setTenantId(tenantId);
+                    electricityBattery.setFranchiseeId(franchiseeId);
+                    
+                    snList.add(sn);
+                    saveList.add(electricityBattery);
+                }
+                //导入的数据不为空，校验之后的数据为空，
+                if (!DataUtil.collectionIsUsable(snList)) {
+                    log.error("Save failed! The battery's sn in Excel is repeated or empty");
+                    return R.fail("", "Excel模版中电池编码重复/为空，请检查修改后再操作");
+                }
+                
+                // 保存到远程BMS系统中
+                Map<String, String> headers = new HashMap<>();
+                String time = String.valueOf(System.currentTimeMillis());
+                headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+                headers.put(CommonConstant.INNER_HEADER_TIME, time);
+                headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+                headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
+                
+                BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
+                query.setJsonBatterySnList(JsonUtil.toJson(snList));
+                
+                try {
+                    Future<R> future = bmsBatteryInsertThread.submit(() -> batteryPlatRetrofitService.batchSave(headers, query));
+                    R r = future.get();
+                    if (!r.isSuccess()) {
+                        log.error("CALL BATTERY ERROR! msg={}, uid={}", r.getErrMsg(), SecurityUtils.getUid());
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new InnerRemoteCallException(e.getMessage());
+                } finally {
+                    bmsBatteryInsertThread.shutdown();
+                }
+                
+                // 保存到本地数据库
+                insertBatch(saveList);
+            } else {
+                log.error("Save failed! Excel data is empty");
+                return R.fail("", "Excel模版中数据为空，请检查修改后再操作");
+            }
+        } finally {
+            MDC.clear();
+        }
         return R.ok();
     }
 
