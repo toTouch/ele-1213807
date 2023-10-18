@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.query.BatteryExcelQuery;
+import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -110,5 +110,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void export(ElectricityBatteryQuery query, HttpServletResponse response);
     
-    R saveBatchFromExcel(List<BatteryExcelQuery> batteryList, Long franchiseeId);
+    R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query);
 }

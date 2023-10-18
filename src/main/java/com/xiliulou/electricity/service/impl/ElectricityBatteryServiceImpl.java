@@ -33,6 +33,7 @@ import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
+import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -224,7 +225,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Transactional
     @Override
-    public R saveBatchFromExcel(List<BatteryExcelQuery> batteryList, Long franchiseeId) {
+    public R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query) {
         MDC.put(CommonConstant.TRACE_ID, IdUtil.simpleUUID());
         //租户
         try {
@@ -235,6 +236,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 log.error("ELE ERROR! not found user ");
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
+            
+            if(Objects.isNull(batteryExcelV3Query)){
+                log.error("Save failed! Excel data is empty");
+                return R.fail("100604", "Excel模版中电池数据为空，请检查修改后再操作");
+            }
+            Long franchiseeId = batteryExcelV3Query.getFranchiseeId();
+            List<BatteryExcelQuery> batteryList = batteryExcelV3Query.getBatteryExcelQueryList();
             
             if (DataUtil.collectionIsUsable(batteryList)) {
                 
@@ -317,7 +325,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 insertBatch(saveList);
             } else {
                 log.error("Save failed! Excel data is empty");
-                return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                return R.fail("100604", "Excel模版中电池数据为空，请检查修改后再操作");
             }
         } finally {
             MDC.clear();

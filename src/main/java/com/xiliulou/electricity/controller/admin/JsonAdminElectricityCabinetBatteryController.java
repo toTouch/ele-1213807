@@ -1,14 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
+import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -421,8 +420,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @author HeYafeng
      */
     @PostMapping("/admin/battery/excel/v3")
-    public R uploadV3(@RequestBody List<BatteryExcelQuery> batteryList, @RequestParam("franchiseeId")Long franchiseeId) {
-        return electricityBatteryService.saveBatchFromExcel(batteryList, franchiseeId);
+    public R uploadV3(@RequestBody BatteryExcelV3Query batteryExcelV3Query) {
+        return electricityBatteryService.saveBatchFromExcel(batteryExcelV3Query);
     }
 
     @Transactional(rollbackFor = Exception.class)
