@@ -25,10 +25,10 @@
         where id = #{id}
     </select>
     
-    <select id="selectCloudBeanByUidAndType" resultType="double">
+    <select id="selectCloudBeanByEnterpriseIdAndType" resultType="double">
         select IFNULL(sum(bean_amount),0)
         from t_cloud_bean_use_record
-        where uid = #{uid} and type=#{type}
+        where enterprise_id = #{enterpriseId} and type=#{type}
     </select>
     
     <select id="selectByEnterpriseIdAndType" resultMap="CloudBeanUseRecordMap">
@@ -79,6 +79,9 @@
             </if>
             <if test="uid != null">
                 and uid = #{uid}
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
             </if>
             <if test="type != null">
                 and type = #{type}

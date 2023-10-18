@@ -44,7 +44,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
             offset = 0L;
         }
         
-        CloudBeanUseRecordQuery query = CloudBeanUseRecordQuery.builder().offset(offset).size(size).uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId())
+        CloudBeanUseRecordQuery query = CloudBeanUseRecordQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId())
                 .type(type).startTime(startTime).endTime(endTime).build();
         
         return R.ok(cloudBeanUseRecordService.selectByUserPage(query));
@@ -57,7 +57,7 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     public R cloudBeanUseStatistics(@RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "startTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         
-        CloudBeanUseRecordQuery query = CloudBeanUseRecordQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).type(type).startTime(startTime)
+        CloudBeanUseRecordQuery query = CloudBeanUseRecordQuery.builder().tenantId(TenantContextHolder.getTenantId()).type(type).startTime(startTime)
                 .endTime(endTime).build();
         
         return R.ok(cloudBeanUseRecordService.cloudBeanUseStatisticsByUid(query));
