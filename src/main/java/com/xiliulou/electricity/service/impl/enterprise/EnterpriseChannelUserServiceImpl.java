@@ -150,6 +150,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             //默认设置骑手不自主续费
             enterpriseChannelUser.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode());
             enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
             enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
