@@ -19,6 +19,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -972,7 +973,9 @@ public class UnionTradeOrderServiceImpl extends
                 userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
                 userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
                 
-                //TODO 新用户直接绑定电池
+                //新用户直接绑定电池
+                //更新用户电池型号
+                userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 
             }else{
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1008,7 +1011,9 @@ public class UnionTradeOrderServiceImpl extends
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
                     
-                    //TODO 绑定电池信息。
+                    //套餐过期后重新 绑定电池信息。
+                    //更新用户电池型号
+                    userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                     
                 } else {
                 
@@ -1054,7 +1059,7 @@ public class UnionTradeOrderServiceImpl extends
             }
         
             //更新用户电池型号
-            userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+            //userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
         
             //更新优惠券状态， 当前无优惠券业务
             /*if(CollectionUtils.isNotEmpty(userCouponIds)){
@@ -1087,6 +1092,7 @@ public class UnionTradeOrderServiceImpl extends
         enterpriseChannelUserQuery.setId(enterpriseChannelUser.getId());
         enterpriseChannelUserQuery.setUid(electricityMemberCardOrder.getUid());
         enterpriseChannelUserQuery.setCloudBeanStatus(CloudBeanStatusEnum.NOT_RECYCLE.getCode());
+        enterpriseChannelUserQuery.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_SUCCESS.getCode());
         enterpriseChannelUserService.updateCloudBeanStatus(enterpriseChannelUserQuery);
         
         return Pair.of(true, null);

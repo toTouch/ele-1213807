@@ -53,8 +53,6 @@ public interface ElectricityTradeOrderService {
      */
     Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource);
 
-    Pair<Boolean, Object> notifyPurchaseEnterprisePackageOrder(WechatJsapiOrderCallBackResource callBackResource);
-
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
 
 

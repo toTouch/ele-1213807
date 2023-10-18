@@ -183,12 +183,14 @@
             trbo.cell_no,
             trbo.type,
             trbo.status,
+            trbo.order_type,
             trbo.create_time,
             trbo.update_time
         from t_rent_battery_order trbo
         left join t_user_info tui on tui.uid = trbo.uid
         
         <where>
+            trbo.order_type = 1
             <if test="uid != null">
                 and trbo.uid = #{uid}
             </if>

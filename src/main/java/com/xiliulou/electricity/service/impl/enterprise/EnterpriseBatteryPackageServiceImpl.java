@@ -1099,8 +1099,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(integratedPaAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
@@ -1344,8 +1344,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(integratedPaAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
@@ -1582,8 +1582,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(totalPayAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
@@ -2126,105 +2126,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         return Triple.of(true, null, null);
     }
-    
-    @Transactional(rollbackFor = Exception.class)
-    public void handlerBatteryMembercardZeroPayment(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard,
-            UserInfo userInfo) {
-        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
-        //用户未绑定套餐
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
-                NumberConstant.ZERO_L)) {
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userInfo.getUid());
-            userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());
-            userBatteryMemberCardUpdate.setOrderId(memberCardOrder.getOrderId());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                    System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
-            userBatteryMemberCardUpdate.setOrderExpireTime(
-                    System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
-            userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
-            userBatteryMemberCardUpdate.setOrderRemainingNumber(memberCardOrder.getMaxUseCount());
-            userBatteryMemberCardUpdate.setRemainingNumber(memberCardOrder.getMaxUseCount());
-            userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-            userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-            userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
-            //套餐购买次数加一
-            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
-            userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
-            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
-            
-        } else {
-            //用户已绑定套餐
-            UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
-            userBatteryMemberCardPackage.setUid(userInfo.getUid());
-            userBatteryMemberCardPackage.setMemberCardId(memberCardOrder.getMemberCardId());
-            userBatteryMemberCardPackage.setOrderId(memberCardOrder.getOrderId());
-            userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
-            userBatteryMemberCardPackage.setMemberCardExpireTime(batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
-            userBatteryMemberCardPackage.setTenantId(userInfo.getTenantId());
-            userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
-            userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
-            
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userInfo.getUid());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                    userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
-            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + memberCardOrder.getMaxUseCount());
-            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
-            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-            
-            //获取用户电池型号
-            List<String> userBatteryTypes = acquireUserBatteryType(userBatteryTypeService.selectByUid(userInfo.getUid()),
-                    memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId()));
-            if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
-                //更新用户电池型号
-                userBatteryTypeService.deleteByUid(userInfo.getUid());
-                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(userBatteryTypes, userInfo));
-            }
-        }
-        
-        //暂无活动
-        /*ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setOrderNo(memberCardOrder.getOrderId());
-        activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
-        activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
-        activityProcessDTO.setTraceId(IdUtil.simpleUUID());
-        activityService.asyncProcessActivity(activityProcessDTO);*/
-        
-        //electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, memberCardOrder);
-        
-        //套餐购买次数加一
-        UserInfo userInfoUpdate = new UserInfo();
-        userInfoUpdate.setUid(userInfo.getUid());
-        
-        userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
-        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        userInfoService.updateByUid(userInfoUpdate);
-        
-        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
-        memberCardOrderUpdate.setId(memberCardOrder.getId());
-        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
-        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        memberCardOrderUpdate.setPayCount(payCount + 1);
-        
-        electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
-    
-        //保存骑手购买套餐信息，用于云豆回收业务
-        anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(memberCardOrder.getUid(), memberCardOrder.getOrderId(),memberCardOrder.getTenantId());
-    
-        //更新云豆状态为未回收状态
-        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(memberCardOrder.getUid());
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = new EnterpriseChannelUserQuery();
-        enterpriseChannelUserQuery.setId(enterpriseChannelUser.getId());
-        enterpriseChannelUserQuery.setUid(memberCardOrder.getUid());
-        enterpriseChannelUserQuery.setCloudBeanStatus(CloudBeanStatusEnum.NOT_RECYCLE.getCode());
-        enterpriseChannelUserService.updateCloudBeanStatus(enterpriseChannelUserQuery);
-    
-    }
-    
+   
     private List<String> acquireUserBatteryType(List<String> userBatteryTypeList, List<String> membercardBatteryTypeList) {
         if (CollectionUtils.isEmpty(membercardBatteryTypeList)) {
             return userBatteryTypeList;

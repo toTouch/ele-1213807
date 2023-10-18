@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query.enterprise;
 
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -74,6 +75,13 @@ public class EnterpriseChannelUserQuery {
      * @see CloudBeanStatusEnum
      */
     private Integer cloudBeanStatus;
+    
+    /**
+     * 订单代付类型
+     * 1- 代付到期， 2-已代付， 3-未代付
+     * @see EnterprisePaymentStatusEnum
+     */
+    private Integer paymentStatus;
     
     /**
      * 创建时间
