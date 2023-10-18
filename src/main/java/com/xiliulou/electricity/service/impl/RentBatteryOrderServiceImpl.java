@@ -17,9 +17,11 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -519,6 +521,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         userActiveInfoService.userActiveRecord(userInfo);
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_BATTERY, userInfo.getUid());
+        
+        //根据套餐类型, 设置当前订单类型
+        Integer orderType = BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()) ? PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode() : PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode();
 
         //生成订单
         RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
@@ -531,6 +536,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .type(RentBatteryOrder.TYPE_USER_RENT)
                 .orderSeq(RentBatteryOrder.STATUS_INIT)
                 .status(RentBatteryOrder.INIT)
+                .orderType(orderType)
                 .electricityCabinetId(electricityCabinet.getId())
                 .cellNo(Integer.valueOf(cellNo))
                 .createTime(System.currentTimeMillis())
@@ -681,6 +687,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.error("RETURNBATTERY ERROR! not rent battery,uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
+            
+            Integer orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode();
 
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
@@ -705,6 +713,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 if(Objects.isNull(batteryMemberCard)){
                     log.warn("RETURNBATTERY WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                     return R.fail( "ELECTRICITY.00121","套餐不存在");
+                }
+    
+                //根据套餐类型，设置租退订单类型
+                if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                    orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode();
                 }
 
                 //判断用户电池服务费
@@ -751,6 +764,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .batteryDeposit(userBatteryDeposit.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RETURN)
                     .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT)
+                    .orderType(orderType)
                     .electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .storeId(store.getId())

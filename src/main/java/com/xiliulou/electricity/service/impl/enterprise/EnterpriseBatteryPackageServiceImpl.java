@@ -1099,8 +1099,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(integratedPaAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
@@ -1344,8 +1344,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(integratedPaAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
@@ -1582,8 +1582,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(totalBeanAmount);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setBeanAmount(totalPayAmount);
+        cloudBeanUseRecord.setRemainingBeanAmount(totalBeanAmount);
         cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());

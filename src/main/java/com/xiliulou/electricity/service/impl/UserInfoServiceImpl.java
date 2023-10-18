@@ -21,10 +21,12 @@ import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -994,6 +996,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+        Integer orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode();
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //判断电池滞纳金
 
@@ -1017,6 +1020,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if(Objects.isNull(batteryMemberCard)){
                 log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                 return R.fail( "ELECTRICITY.00121","套餐不存在");
+            }
+            
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode();
             }
 
             //判断用户电池服务费
@@ -1080,7 +1087,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
-
+    
+        Integer finalOrderType = orderType;
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
@@ -1097,6 +1105,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
+            rentBatteryOrder.setOrderType(finalOrderType);
             rentBatteryOrderService.insert(rentBatteryOrder);
 
             //生成后台操作记录
@@ -1197,6 +1206,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBUNBIND ERROR! not found user bind battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
+    
+        Integer orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode();
 
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //判断电池滞纳金
@@ -1220,6 +1231,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if(Objects.isNull(batteryMemberCard)){
                 log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                 return R.fail( "ELECTRICITY.00121","套餐不存在");
+            }
+    
+            //根据套餐类型，设置租退订单类型
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                orderType = PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode();
             }
 
             //判断用户电池服务费
@@ -1263,6 +1279,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         rentBatteryOrder.setCreateTime(System.currentTimeMillis());
         rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+        rentBatteryOrder.setOrderType(orderType);
         rentBatteryOrderService.insert(rentBatteryOrder);
         
         //生成后台操作记录

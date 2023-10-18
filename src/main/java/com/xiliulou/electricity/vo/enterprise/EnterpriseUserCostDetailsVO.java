@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 public class EnterpriseUserCostDetailsVO {
     
     /**
-     * 消费类型： 1-购买套餐, 2-租电池, 3-还电池, 4-冻结套餐, 5-退押金
+     * 消费类型： 1-购买套餐, 2-租电池, 3-还电池, 4-冻结套餐, 5-退押金, 6-启用套餐
      * @see UserCostTypeEnum
      */
     private Integer costType;

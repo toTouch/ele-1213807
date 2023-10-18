@@ -2,6 +2,7 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -84,6 +85,12 @@ public class RentBatteryOrder {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     * @see PackageOrderTypeEnum
+     */
+    private Integer orderType;
 
     //租电池
     public static final Integer TYPE_USER_RENT = 1;
