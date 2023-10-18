@@ -2,6 +2,7 @@ package com.xiliulou.electricity.entity.enterprise;
 
 
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.AllArgsConstructor;
@@ -61,6 +62,13 @@ public class EnterpriseChannelUser {
      * @see CloudBeanStatusEnum
      */
     private Integer cloudBeanStatus;
+    
+    /**
+     * 订单代付类型
+     * 1- 代付到期， 2-已代付， 3-未代付
+     * @see EnterprisePaymentStatusEnum
+     */
+    private Integer paymentStatus;
     
     /**
      * 邀请人UID

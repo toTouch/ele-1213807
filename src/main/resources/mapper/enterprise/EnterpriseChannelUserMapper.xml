@@ -9,6 +9,7 @@
         <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="paymentStatus" column="payment_status" jdbcType="INTEGER"/>
         <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
         <result property="cloudBeanStatus" column="cloud_bean_status" jdbcType="INTEGER"/>
         <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
@@ -91,6 +92,7 @@
             enterprise_id,
             franchisee_id,
             tenant_id,
+            payment_status,
             renewal_status,
             inviter_id,
             create_time,
@@ -103,6 +105,7 @@
             #{enterpriseId},
             #{franchiseeId},
             #{tenantId},
+            #{paymentStatus},
             #{renewalStatus},
             #{inviterId},
             #{createTime},
@@ -133,7 +136,9 @@
             <if test="renewalStatus != null">
                 renewal_status = #{renewalStatus},
             </if>
-    
+            <if test="paymentStatus != null">
+                payment_status = #{paymentStatus},
+            </if>
             <if test="inviterId != null">
                 inviter_id = #{inviterId},
             </if>
