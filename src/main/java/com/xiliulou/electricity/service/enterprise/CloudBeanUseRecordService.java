@@ -46,7 +46,7 @@ public interface CloudBeanUseRecordService {
      */
     Boolean deleteById(Long id);
     
-    Double selectCloudBeanByUidAndType(Long uid, Integer type);
+    Double selectCloudBeanByEnterpriseIdAndType(Long uid, Integer type);
     
     List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query);
     

@@ -19,7 +19,7 @@ public class CloudBeanUseRecordQuery {
     private Long size;
     private Long offset;
 
-    private Long uid;
+    private Long enterpriseId;
 
     private Integer type;
 

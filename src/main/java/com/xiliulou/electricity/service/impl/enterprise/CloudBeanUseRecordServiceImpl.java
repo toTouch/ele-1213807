@@ -176,8 +176,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     }
     
     @Override
-    public Double selectCloudBeanByUidAndType(Long uid, Integer type) {
-        return this.cloudBeanUseRecordMapper.selectCloudBeanByUidAndType(uid, type);
+    public Double selectCloudBeanByEnterpriseIdAndType(Long uid, Integer type) {
+        return this.cloudBeanUseRecordMapper.selectCloudBeanByEnterpriseIdAndType(uid, type);
     }
     
     @Slave
@@ -610,6 +610,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Slave
     @Override
     public List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query) {
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+        if(Objects.isNull(enterpriseInfo)){
+            return Collections.emptyList();
+        }else {
+            query.setEnterpriseId(enterpriseInfo.getId());
+        }
+    
         List<CloudBeanUseRecord> list = this.cloudBeanUseRecordMapper.selectByUserPage(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
@@ -641,6 +648,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         CloudBeanUseRecordVO cloudBeanUseRecordVO = new CloudBeanUseRecordVO();
         cloudBeanUseRecordVO.setIncome(BigDecimal.ZERO);
         cloudBeanUseRecordVO.setExpend(BigDecimal.ZERO);
+    
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+        if(Objects.isNull(enterpriseInfo)){
+            return cloudBeanUseRecordVO;
+        }else {
+            query.setEnterpriseId(enterpriseInfo.getId());
+        }
         
         query.setSize(Long.MAX_VALUE);
         query.setOffset(NumberConstant.ZERO_L);

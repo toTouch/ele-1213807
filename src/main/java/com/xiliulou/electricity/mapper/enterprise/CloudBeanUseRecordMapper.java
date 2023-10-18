@@ -40,7 +40,7 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
      */
     int deleteById(Long id);
 
-    double selectCloudBeanByUidAndType(@Param("uid") Long uid, @Param("type") Integer type);
+    double selectCloudBeanByEnterpriseIdAndType(@Param("enterpriseId") Long enterpriseId, @Param("type") Integer type);
 
     List<CloudBeanUseRecord> selectByUserPage(CloudBeanUseRecordQuery query);
     

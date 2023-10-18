@@ -587,11 +587,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         userCloudBeanDetailVO.setTotalCloudBean(enterpriseInfo.getTotalBeanAmount());
         
         //已分配云豆数
-        Double distributableCloudBean = cloudBeanUseRecordService.selectCloudBeanByUidAndType(SecurityUtils.getUid(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
+        Double distributableCloudBean = cloudBeanUseRecordService.selectCloudBeanByEnterpriseIdAndType(enterpriseInfo.getId(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
         userCloudBeanDetailVO.setDistributableCloudBean(Objects.isNull(distributableCloudBean) ? NumberConstant.ZERO_D : distributableCloudBean);
         
         //已回收云豆数
-        Double recoveredCloudBean = cloudBeanUseRecordService.selectCloudBeanByUidAndType(SecurityUtils.getUid(), CloudBeanUseRecord.TYPE_RECYCLE);
+        Double recoveredCloudBean = cloudBeanUseRecordService.selectCloudBeanByEnterpriseIdAndType(enterpriseInfo.getId(), CloudBeanUseRecord.TYPE_RECYCLE);
         userCloudBeanDetailVO.setRecoveredCloudBean(Objects.isNull(recoveredCloudBean) ? NumberConstant.ZERO_D : recoveredCloudBean);
         
         //可回收云豆数  TODO
