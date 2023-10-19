@@ -545,7 +545,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public EnterpriseInfo selectByName(String name) {
-        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getName, name).last("limit 0,1"));
+        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag,EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
     }
     
     @Override
