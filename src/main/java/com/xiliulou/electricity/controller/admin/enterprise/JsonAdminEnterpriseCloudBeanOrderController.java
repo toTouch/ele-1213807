@@ -101,6 +101,33 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
 
         return R.ok(enterpriseCloudBeanOrderService.selectByPageCount(query));
     }
-
+    
+    @GetMapping("/admin/enterpriseCloudBeanOrder/totalCloudBean")
+    public R totalCloudBean(@RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        EnterpriseCloudBeanOrderQuery query = EnterpriseCloudBeanOrderQuery.builder()
+                .enterpriseId(enterpriseId)
+                .orderId(orderId)
+                .uid(uid)
+                .type(type)
+                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+        
+        return R.ok(enterpriseCloudBeanOrderService.selectTotalCloudBean(query));
+    }
 
 }

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanOrderQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -47,4 +48,5 @@ public interface EnterpriseCloudBeanOrderService {
 
     EnterpriseCloudBeanOrder selectByOrderId(String orderNo);
     
+    BigDecimal selectTotalCloudBean(EnterpriseCloudBeanOrderQuery query);
 }
