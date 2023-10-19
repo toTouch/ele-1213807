@@ -423,6 +423,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v3")
     public R uploadV3(@RequestBody BatteryExcelV3Query batteryExcelV3Query) {
+        
+        log.info("uploadV3=============={}", batteryExcelV3Query);
+        log.info("uploadV3==============franchiseeId={}", batteryExcelV3Query.getFranchiseeId());
+        log.info("uploadV3==============batterySnList={}", batteryExcelV3Query.getBatterySnList());
+        
+        if (Objects.isNull(batteryExcelV3Query)) {
+            return R.fail("100603", "Excel模版中数据为空，请检查修改后再操作");
+        }
+        
         if (Objects.isNull(batteryExcelV3Query)) {
             return R.fail("100602", "Excel模版中数据为空，请检查修改后再操作");
         }

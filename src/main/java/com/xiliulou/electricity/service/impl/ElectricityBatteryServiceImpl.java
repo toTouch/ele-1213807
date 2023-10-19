@@ -229,7 +229,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         List<String> batteryList = batteryExcelV3Query.getBatterySnList();
         
         if (CollectionUtils.isEmpty(batteryList)) {
-            return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
+            return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
         }
         
         if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryList.size()) {
@@ -242,7 +242,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         for (String sn : batteryList) {
             
             if (StringUtils.isEmpty(sn)) {
-                return R.fail("100601", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                return R.fail("100602", "Excel模版中电池编码不能为空，请检查修改后再操作");
             }
             
             // 判断数据库中是否已经存在该电池
