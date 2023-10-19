@@ -778,8 +778,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 cloudBeanUseRecord.setUid(userInfo.getUid());
                 cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
                 cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
-                cloudBeanUseRecord.setBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
-                cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+                cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+                cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
                 cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
                 cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
                 cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());

@@ -341,7 +341,6 @@
         where tubmc.uid = tecu.uid
           and tecu.uid = tui.uid
           and tubmc.del_flag = 0
-          and tecu.payment_status = 1
           
         <if test="tenantId != null">
             and tecu.tenant_id = #{tenantId}
