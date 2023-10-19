@@ -41,4 +41,7 @@ public interface MqProducerConstant {
 
     /** 用户优惠券公用 topic 下的所有 tag */
     String USER_COUPON_COMMON_TOPIC_TAG = "*";
+    
+    String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
+    
 }

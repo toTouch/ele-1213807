@@ -6,11 +6,12 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,9 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     @Resource
     private EnterpriseBatteryPackageService enterpriseBatteryPackageService;
+    
+    @Resource
+    private EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
     /**
      * 根据UID查询企业渠道骑手信息
@@ -164,7 +168,17 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                 .endTime(endTime)
                 .build();
         
-        return returnTripleResult(enterpriseBatteryPackageService.queryCostDetails(query));
+        //return returnTripleResult(enterpriseBatteryPackageService.queryCostDetails(query));
+    
+    
+        EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery = EnterpriseUserCostRecordQuery.builder()
+                .enterpriseId(enterpriseId)
+                .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .build();
+        
+        return R.ok(enterpriseUserCostRecordService.queryUserCostRecordList(enterpriseUserCostRecordQuery));
     }
     
     /**

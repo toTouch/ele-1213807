@@ -22,9 +22,9 @@ public enum UserCostTypeEnum implements BasicEnum<Integer, String> {
     
     COST_TYPE_FREEZE_PACKAGE(4, "冻结套餐"),
     
-    COST_TYPE_REFUND_DEPOSIT(5, "退押金"),
+    COST_TYPE_ENABLE_PACKAGE(5, "启用套餐"),
     
-    COST_TYPE_ENABLE_PACKAGE(6, "启用套餐"),
+    COST_TYPE_REFUND_DEPOSIT(6, "退押金"),
     
     ;
     
