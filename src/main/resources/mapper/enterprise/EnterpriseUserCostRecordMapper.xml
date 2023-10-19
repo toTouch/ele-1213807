@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseUserCostRecordMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseUserCostRecord" id="EnterpriseUserCostRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
+        <result property="costType" column="cost_type" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="INTEGER"/>
+        <result property="packageId" column="package_id" jdbcType="INTEGER"/>
+        <result property="packageName" column="package_name" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_user_cost_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            enterprise_id,
+            cost_type,
+            order_id,
+            package_id,
+            package_name,
+            remark,
+            tenant_id,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{enterpriseId},
+            #{costType},
+            #{orderId},
+            #{packageId},
+            #{packageName},
+            #{remark},
+            #{tenantId},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <!--根据ID查询骑手消费记录-->
+    <select id="selectById" resultMap="EnterpriseUserCostRecordMap">
+        select
+            id,
+            uid,
+            enterprise_id,
+            cost_type,
+            order_id,
+            package_id,
+            package_name,
+            remark,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time
+        from  t_enterprise_user_cost_record;
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            
+        </where>
+    
+    </select>
+    
+    <!--根据UID查询骑手消费记录-->
+    <select id="selectByUid" resultMap="EnterpriseUserCostRecordMap">
+        select
+            id,
+            uid,
+            enterprise_id,
+            cost_type,
+            order_id,
+            package_id,
+            package_name,
+            remark,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time
+        from  t_enterprise_user_cost_record;
+        <where>
+            del_flag = 0
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+        
+        </where>
+    
+    </select>
+    
+    <!--根据条件查询骑手消费记录列表-->
+    <select id="selectUserCostList" resultMap="EnterpriseUserCostRecordMap">
+        select
+            id,
+            uid,
+            enterprise_id,
+            cost_type,
+            order_id,
+            package_id,
+            package_name,
+            remark,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time
+        from  t_enterprise_user_cost_record;
+        <where>
+            del_flag = 0
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+    
+            <if test="enterpriseId != null">
+                and enterpriseId = #{uid}
+            </if>
+    
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    
+</mapper>

@@ -182,6 +182,12 @@ public class JsonUserEnterprisePackageController extends BaseController {
         
     }
     
+    /**
+     * 企业免押代付
+     * @param query
+     * @param request
+     * @return
+     */
     @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
     public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
         

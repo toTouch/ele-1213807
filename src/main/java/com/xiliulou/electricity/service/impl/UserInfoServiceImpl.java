@@ -18,6 +18,7 @@ import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
+import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -39,6 +41,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -46,6 +49,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostRecordRemarkVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -231,6 +235,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
     /**
      * 分页查询
@@ -1133,6 +1140,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBatteryService.updateBatteryUser(electricityBattery);
     
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
+            
+            //记录企业用户租电池记录
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(oldUserInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+            
             return null;
         });
         return R.ok();
@@ -1297,6 +1308,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         eleUserOperateRecordService.insert(eleUserOperateRecord);
     
         enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
+    
+        //记录企业用户还电池记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(oldUserInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+        
         return R.ok();
     }
 
