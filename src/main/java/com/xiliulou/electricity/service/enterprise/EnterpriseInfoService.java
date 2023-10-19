@@ -84,7 +84,7 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
-    void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
@@ -93,4 +93,6 @@ public interface EnterpriseInfoService {
     EnterpriseInfoVO selectDetailByUid(Long uid);
     
     Triple<Boolean, String, Object> refund(String orderId,HttpServletRequest request);
+    
+    int addCloudBean(Long id, BigDecimal add);
 }
