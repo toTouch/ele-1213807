@@ -119,8 +119,8 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
         }
         
         EnterpriseCloudBeanOrderQuery query = EnterpriseCloudBeanOrderQuery.builder()
-                .size(NumberConstant.ZERO_L)
-                .offset(Long.MAX_VALUE)
+                .size(Long.MAX_VALUE)
+                .offset(NumberConstant.ZERO_L)
                 .enterpriseId(enterpriseId)
                 .orderId(orderId)
                 .uid(uid)
