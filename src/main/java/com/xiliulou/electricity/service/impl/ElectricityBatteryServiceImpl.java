@@ -226,7 +226,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
-        List<String> batteryList = batteryExcelV3Query.getBatterySnList();
+        List<String> batteryList = batteryExcelV3Query.getBatteryList();
         
         if (CollectionUtils.isEmpty(batteryList)) {
             return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");

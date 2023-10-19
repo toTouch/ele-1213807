@@ -14,5 +14,5 @@ public class BatteryExcelV3Query {
 	
 	private Long franchiseeId;
 	
-	private List<String> batterySnList;
+	private List<String> batteryList;
 }
