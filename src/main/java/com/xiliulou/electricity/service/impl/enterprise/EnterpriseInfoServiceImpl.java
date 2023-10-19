@@ -545,7 +545,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public EnterpriseInfo selectByName(String name) {
-        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag,EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
+        return this.enterpriseInfoMapper
+                .selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag, EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
     }
     
     @Override
@@ -594,7 +595,17 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         Double recoveredCloudBean = cloudBeanUseRecordService.selectCloudBeanByEnterpriseIdAndType(enterpriseInfo.getId(), CloudBeanUseRecord.TYPE_RECYCLE);
         userCloudBeanDetailVO.setRecoveredCloudBean(Objects.isNull(recoveredCloudBean) ? NumberConstant.ZERO_D : recoveredCloudBean);
         
-        //可回收云豆数  TODO
+        //可回收云豆数
+        List<AnotherPayMembercardRecord> canRecycleList = anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
+        if (CollectionUtils.isEmpty(canRecycleList)) {
+            userCloudBeanDetailVO.setRecyclableCloudBean(BigDecimal.ZERO.doubleValue());
+        } else {
+            BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
+                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
+                userCloudBeanDetailVO.setRecyclableCloudBean(canRecycleCloudBean.doubleValue());
+            }
+        }
         
         return userCloudBeanDetailVO;
     }
@@ -878,21 +889,22 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setRecycleMembercard(recycleRecords.size());
             cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
-    
-    
+        
         //可回收订单
-        List<AnotherPayMembercardRecord> canRecycleList=anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
-        if(CollectionUtils.isEmpty(canRecycleList)){
+        List<AnotherPayMembercardRecord> canRecycleList = anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
+        if (CollectionUtils.isEmpty(canRecycleList)) {
             cloudBeanGeneralViewVO.setCanRecycleCloudBean(0D);
             cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
             cloudBeanGeneralViewVO.setCanRecycleUser(0L);
         } else {
             cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
             cloudBeanGeneralViewVO.setCanRecycleUser(canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().count());
-    
-            //可回收云豆数
-//            cloudBeanGeneralViewVO.setCanRecycleCloudBean(cloudBeanUseRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
-    
+            
+            BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
+                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
+            }
+            cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.doubleValue());
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
