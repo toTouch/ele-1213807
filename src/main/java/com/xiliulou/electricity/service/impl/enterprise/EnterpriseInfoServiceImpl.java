@@ -925,8 +925,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setCanRecycleUser(0L);
         } else {
             cloudBeanGeneralViewVO.setCanRecycleUser(canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().count());
-            cloudBeanGeneralViewVO.setCanRecycleMembercard(
-                    (int) recycleRecords.stream().filter(item -> Objects.equals(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD, item.getOrderType())).count());
+            cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
         
             BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
             for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
