@@ -243,14 +243,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             // 判断数据库中是否已经存在该电池
-            ElectricityBattery electricityBattery = queryBySnFromDb(sn);
-            if (Objects.nonNull(electricityBattery)) {
+            Integer exist = electricitybatterymapper.checkExistBySn(sn);
+            if (Objects.nonNull(exist)) {
                 continue;
             }
             snSet.add(sn);
             
             // 构建ElectricityBattery持久化对象
-            electricityBattery = new ElectricityBattery();
+            ElectricityBattery electricityBattery = new ElectricityBattery();
             
             electricityBattery.setSn(sn);
             electricityBattery.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
