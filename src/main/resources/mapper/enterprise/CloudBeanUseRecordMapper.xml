@@ -21,7 +21,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="CloudBeanUseRecordMap">
         select
-          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         where id = #{id}
     </select>
@@ -34,14 +34,14 @@
     
     <select id="selectByEnterpriseIdAndType" resultMap="CloudBeanUseRecordMap">
         select
-          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         where enterprise_id = #{enterpriseId} and type=#{type}
     </select>
     
     <select id="selectByTime" resultMap="CloudBeanUseRecordMap">
         select
-          id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         where enterprise_id = #{enterpriseId} and create_time &gt;= #{beginTime} and  create_time &lt;= #{endTime}
     </select>
