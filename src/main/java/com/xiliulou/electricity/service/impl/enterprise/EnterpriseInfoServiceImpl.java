@@ -877,18 +877,20 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
     
-
-        
+    
         //可回收订单
-        List<CloudBeanUseRecord> cloudBeanUseRecords = cloudBeanUseRecordService.selectCanRecycleRecord(enterpriseInfo.getId(), System.currentTimeMillis());
-        if (CollectionUtils.isEmpty(recycleRecords)) {
+        List<AnotherPayMembercardRecord> canRecycleList=anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
+        if(CollectionUtils.isEmpty(canRecycleList)){
             cloudBeanGeneralViewVO.setCanRecycleCloudBean(0D);
             cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
             cloudBeanGeneralViewVO.setCanRecycleUser(0L);
         } else {
-            cloudBeanGeneralViewVO.setCanRecycleCloudBean(cloudBeanUseRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
-            cloudBeanGeneralViewVO.setCanRecycleMembercard(cloudBeanUseRecords.size());
-            cloudBeanGeneralViewVO.setCanRecycleUser(cloudBeanUseRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
+            cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
+            cloudBeanGeneralViewVO.setCanRecycleUser(canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().count());
+    
+            //可回收云豆数
+//            cloudBeanGeneralViewVO.setCanRecycleCloudBean(cloudBeanUseRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
+    
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
