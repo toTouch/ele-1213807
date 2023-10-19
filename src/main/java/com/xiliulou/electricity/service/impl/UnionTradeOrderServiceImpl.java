@@ -949,7 +949,7 @@ public class UnionTradeOrderServiceImpl extends
     
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
     
-        //月卡订单
+        //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
     
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
@@ -1058,15 +1058,6 @@ public class UnionTradeOrderServiceImpl extends
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
         
-            //更新用户电池型号
-            //userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
-        
-            //更新优惠券状态， 当前无优惠券业务
-            /*if(CollectionUtils.isNotEmpty(userCouponIds)){
-                Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
-                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
-            }*/
-        
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
         
@@ -1086,14 +1077,15 @@ public class UnionTradeOrderServiceImpl extends
         //保存骑手购买套餐信息，用于云豆回收业务
         anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
         
-        //更新云豆状态为未回收状态
+        //更新云豆状态为未回收状态,同时更新代付状态为已代付
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(electricityMemberCardOrder.getUid());
+        
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = new EnterpriseChannelUserQuery();
         enterpriseChannelUserQuery.setId(enterpriseChannelUser.getId());
         enterpriseChannelUserQuery.setUid(electricityMemberCardOrder.getUid());
         enterpriseChannelUserQuery.setCloudBeanStatus(CloudBeanStatusEnum.NOT_RECYCLE.getCode());
         enterpriseChannelUserQuery.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_SUCCESS.getCode());
-        enterpriseChannelUserService.updateCloudBeanStatus(enterpriseChannelUserQuery);
+        enterpriseChannelUserService.updateChannelUserStatus(enterpriseChannelUserQuery);
         
         return Pair.of(true, null);
         
