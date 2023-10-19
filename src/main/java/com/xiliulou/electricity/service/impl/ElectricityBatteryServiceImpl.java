@@ -272,25 +272,26 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             saveList.add(electricityBattery);
         }
         
-        Map<String, String> headers = new HashMap<>();
-        String time = String.valueOf(System.currentTimeMillis());
-        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
-        headers.put(CommonConstant.INNER_HEADER_TIME, time);
-        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
-        headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
-        
-        BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
-        query.setJsonBatterySnList(JsonUtil.toJson(snSet));
-        
-        // 线程池异步执行:保存到BMS系统中
-        bmsBatteryInsertThread.execute(() -> {
-            log.warn("Executing remote insertBatch battery from excel,uid = {}, snSet = {}", uid, snSet);
-            batteryPlatRetrofitService.batchSave(headers, query);
-        });
-        
-        // 保存到本地数据库
-        insertBatch(saveList);
-        
+        if(CollectionUtils.isNotEmpty(snSet)){
+            Map<String, String> headers = new HashMap<>();
+            String time = String.valueOf(System.currentTimeMillis());
+            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+            headers.put(CommonConstant.INNER_HEADER_TIME, time);
+            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+            headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
+    
+            BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
+            query.setJsonBatterySnList(JsonUtil.toJson(snSet));
+    
+            // 线程池异步执行:保存到BMS系统中
+            bmsBatteryInsertThread.execute(() -> {
+                log.warn("Executing remote insertBatch battery from excel,uid = {}, snSet = {}", uid, snSet);
+                batteryPlatRetrofitService.batchSave(headers, query);
+            });
+    
+            // 保存到本地数据库
+            insertBatch(saveList);
+        }
         return R.ok();
     }
     
