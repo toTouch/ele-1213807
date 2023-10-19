@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * 代付记录表(AnotherPayMembercardRecord)表数据库访问层
  *
@@ -39,4 +41,6 @@ public interface AnotherPayMembercardRecordMapper extends BaseMapper<AnotherPayM
     int deleteByUid(Long uid);
     
     AnotherPayMembercardRecord selectLatestByUid(Long uid);
+    
+    List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId);
 }

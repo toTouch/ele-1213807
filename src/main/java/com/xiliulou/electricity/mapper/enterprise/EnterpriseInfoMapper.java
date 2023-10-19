@@ -5,7 +5,9 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
+import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -46,4 +48,5 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
 
     EnterpriseInfo selectByUid(Long uid);
     
+    int addCloudBean(@Param("id") Long id, @Param("totalCloudBean") BigDecimal totalCloudBean);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 import com.xiliulou.electricity.mapper.AnotherPayMembercardRecordMapper;
@@ -114,5 +115,11 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     @Override
     public int deleteByUid(Long uid) {
         return this.anotherPayMembercardRecordMapper.deleteByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId) {
+        return this.anotherPayMembercardRecordMapper.selectListByEnterpriseId(enterpriseId);
     }
 }

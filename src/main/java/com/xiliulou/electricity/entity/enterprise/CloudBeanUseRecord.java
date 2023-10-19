@@ -38,6 +38,10 @@ public class CloudBeanUseRecord {
      */
     private Integer type;
     /**
+     * 订单类型 0其它，1换电套餐，2换电押金
+     */
+    private Integer orderType;
+    /**
      * 本次使用云豆数量
      */
     private BigDecimal beanAmount;
@@ -78,5 +82,9 @@ public class CloudBeanUseRecord {
     public static final Integer TYPE_PRESENT = 3;
     public static final Integer TYPE_ADMIN_RECHARGE = 4;
     public static final Integer TYPE_ADMIN_DEDUCT = 5;
+    
+    //订单类型 0其它，1换电套餐，2换电押金
+    public static final Integer ORDER_TYPE_BATTERY_MEMBERCARD = 1;
+    public static final Integer ORDER_TYPE_BATTERY_DEPOSIT = 2;
 
 }

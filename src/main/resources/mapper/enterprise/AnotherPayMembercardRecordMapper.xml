@@ -28,6 +28,16 @@
         where uid = #{uid} order by id desc limit 1
     </select>
     
+    <select id="selectListByEnterpriseId" resultMap="AnotherPayMembercardRecordMap">
+        select
+          apmr.order_id,
+          apmr.begin_time,
+          apmr.end_time,
+          apmr.uid
+        from t_another_pay_membercard_record apmr left join t_enterprise_channel_user ecu on ecu.uid=apmr.uid
+        where ecu.enterprise_id = #{enterpriseId}
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_another_pay_membercard_record

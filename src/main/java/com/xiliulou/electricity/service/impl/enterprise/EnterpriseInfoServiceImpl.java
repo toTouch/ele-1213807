@@ -235,6 +235,18 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         return update;
     }
     
+    @Override
+    public int addCloudBean(Long id, BigDecimal totalCloudBean) {
+        int update = this.enterpriseInfoMapper.addCloudBean(id,totalCloudBean);
+    
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + id);
+            return null;
+        });
+    
+        return update;
+    }
+    
     /**
      * 通过主键删除数据
      *
@@ -545,7 +557,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public EnterpriseInfo selectByName(String name) {
-        return this.enterpriseInfoMapper.selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getName, name).last("limit 0,1"));
+        return this.enterpriseInfoMapper
+                .selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag, EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
     }
     
     @Override
@@ -594,7 +607,17 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         Double recoveredCloudBean = cloudBeanUseRecordService.selectCloudBeanByEnterpriseIdAndType(enterpriseInfo.getId(), CloudBeanUseRecord.TYPE_RECYCLE);
         userCloudBeanDetailVO.setRecoveredCloudBean(Objects.isNull(recoveredCloudBean) ? NumberConstant.ZERO_D : recoveredCloudBean);
         
-        //可回收云豆数  TODO
+        //可回收云豆数
+        List<AnotherPayMembercardRecord> canRecycleList = anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
+        if (CollectionUtils.isEmpty(canRecycleList)) {
+            userCloudBeanDetailVO.setRecyclableCloudBean(BigDecimal.ZERO.doubleValue());
+        } else {
+            BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
+                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
+                userCloudBeanDetailVO.setRecyclableCloudBean(canRecycleCloudBean.doubleValue());
+            }
+        }
         
         return userCloudBeanDetailVO;
     }
@@ -641,17 +664,25 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         //回收套餐
-        Triple<Boolean, String, Object> booleanStringObjectTriple = recycleBatteryMembercard(userInfo, enterpriseInfo);
-        if (Boolean.FALSE.equals(booleanStringObjectTriple.getLeft())) {
-            return booleanStringObjectTriple;
+        Triple<Boolean, String, Object> membercardTriple = recycleBatteryMembercard(userInfo, enterpriseInfo);
+        if (Boolean.FALSE.equals(membercardTriple.getLeft())) {
+            return membercardTriple;
         }
         
         //回收押金
-        recycleBatteryDeposit(userInfo, enterpriseInfo);
-        
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDeposit(userInfo, enterpriseInfo);
+        if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
+            return batteryDepositTriple;
+        }
+    
         //解绑用户相关信息
         unbindUserData(userInfo, enterpriseChannelUser);
-        
+    
+        BigDecimal membercardTotalCloudBean = (BigDecimal) membercardTriple.getRight();
+        BigDecimal batteryDepositTotalCloudBean = (BigDecimal) batteryDepositTriple.getRight();
+    
+        this.addCloudBean(enterpriseInfo.getId(), membercardTotalCloudBean.add(batteryDepositTotalCloudBean));
+    
         return Triple.of(true, null, null);
     }
     
@@ -746,7 +777,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
                 cloudBeanUseRecord.setUid(userInfo.getUid());
                 cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
-                cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
+                cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
+                cloudBeanUseRecord.setBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
                 cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
                 cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
                 cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
@@ -755,6 +787,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
                 cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
                 cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+                enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
                 
                 BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
                 batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
@@ -812,11 +846,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
-    public void recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
+    public Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("RECYCLE BATTERY DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
-            return;
+            return Triple.of(false,"100247","用户信息不存在");
         }
         
         //保存回收记录
@@ -824,8 +858,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
         cloudBeanUseRecord.setUid(userInfo.getUid());
         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_DEPOSIT);
         cloudBeanUseRecord.setBeanAmount(userBatteryDeposit.getBatteryDeposit());
-        cloudBeanUseRecord.setRemainingBeanAmount(BigDecimal.ZERO);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(userBatteryDeposit.getBatteryDeposit()));
         cloudBeanUseRecord.setPackageId(userBatteryDeposit.getDid());
         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
         cloudBeanUseRecord.setRef(userBatteryDeposit.getOrderId());
@@ -834,12 +869,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(userBatteryDeposit.getBatteryDeposit()));
+        
         //生成退押订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                 .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
         eleRefundOrderService.insert(eleRefundOrder);
+        
+        return Triple.of(true,null,userBatteryDeposit.getBatteryDeposit());
     }
     
     @Override
@@ -873,22 +912,26 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setRecycleUser(0L);
         } else {
             cloudBeanGeneralViewVO.setRecycleCloudBean(recycleRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
-            cloudBeanGeneralViewVO.setRecycleMembercard(recycleRecords.size());
+            cloudBeanGeneralViewVO.setRecycleMembercard(
+                    (int) recycleRecords.stream().filter(item->Objects.equals(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD , item.getOrderType())).count());
             cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
     
-
-        
         //可回收订单
-        List<CloudBeanUseRecord> cloudBeanUseRecords = cloudBeanUseRecordService.selectCanRecycleRecord(enterpriseInfo.getId(), System.currentTimeMillis());
-        if (CollectionUtils.isEmpty(recycleRecords)) {
+        List<AnotherPayMembercardRecord> canRecycleList = anotherPayMembercardRecordService.selectListByEnterpriseId(enterpriseInfo.getId());
+        if (CollectionUtils.isEmpty(canRecycleList)) {
             cloudBeanGeneralViewVO.setCanRecycleCloudBean(0D);
             cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
             cloudBeanGeneralViewVO.setCanRecycleUser(0L);
         } else {
-            cloudBeanGeneralViewVO.setCanRecycleCloudBean(cloudBeanUseRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
-            cloudBeanGeneralViewVO.setCanRecycleMembercard(cloudBeanUseRecords.size());
-            cloudBeanGeneralViewVO.setCanRecycleUser(cloudBeanUseRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
+            cloudBeanGeneralViewVO.setCanRecycleUser(canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().count());
+            cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
+        
+            BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
+                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
+            }
+            cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.doubleValue());
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);

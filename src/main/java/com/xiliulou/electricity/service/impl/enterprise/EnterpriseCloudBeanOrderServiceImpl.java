@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -127,6 +128,29 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     @Override
     public Integer selectByPageCount(EnterpriseCloudBeanOrderQuery query) {
         return this.enterpriseCloudBeanOrderMapper.selectByPageCount(query);
+    }
+    
+    @Slave
+    @Override
+    public BigDecimal selectTotalCloudBean(EnterpriseCloudBeanOrderQuery query) {
+        BigDecimal result = BigDecimal.ZERO;
+    
+        List<EnterpriseCloudBeanOrder> list = this.enterpriseCloudBeanOrderMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return result;
+        }
+    
+        for (EnterpriseCloudBeanOrder enterpriseCloudBeanOrder : list) {
+            if (Objects.equals(enterpriseCloudBeanOrder.getType(), EnterpriseCloudBeanOrder.TYPE_ADMIN_RECHARGE) || Objects
+                    .equals(enterpriseCloudBeanOrder.getType(), EnterpriseCloudBeanOrder.TYPE_PRESENT) || Objects
+                    .equals(enterpriseCloudBeanOrder.getType(), EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE)) {
+                result = result.add(enterpriseCloudBeanOrder.getBeanAmount());
+            } else if (Objects.equals(enterpriseCloudBeanOrder.getType(), EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT)) {
+                result = result.subtract(enterpriseCloudBeanOrder.getBeanAmount());
+            }
+        }
+    
+        return result;
     }
     
     @Override

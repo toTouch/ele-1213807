@@ -49,4 +49,6 @@ public interface AnotherPayMembercardRecordService {
     List<AnotherPayMembercardRecord> selectByUid(Long uid);
     
     int deleteByUid(Long uid);
+    
+    List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId);
 }
