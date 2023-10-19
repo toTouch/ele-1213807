@@ -1118,6 +1118,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
             enterpriseUserCostRecordDTO.setCostType(UserCostTypeEnum.COST_TYPE_PURCHASE_PACKAGE.getCode());
             enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+            enterpriseUserCostRecordDTO.setCreateTime(electricityMemberCardOrder.getCreateTime());
+            enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
             enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
     
             EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
@@ -1383,6 +1385,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
             enterpriseUserCostRecordDTO.setCostType(UserCostTypeEnum.COST_TYPE_PURCHASE_PACKAGE.getCode());
             enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+            enterpriseUserCostRecordDTO.setCreateTime(electricityMemberCardOrder.getCreateTime());
+            enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
             enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
     
             EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
@@ -1636,6 +1640,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
             enterpriseUserCostRecordDTO.setCostType(UserCostTypeEnum.COST_TYPE_PURCHASE_PACKAGE.getCode());
             enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+            enterpriseUserCostRecordDTO.setCreateTime(electricityMemberCardOrder.getCreateTime());
+            enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
             enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
     
             EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
