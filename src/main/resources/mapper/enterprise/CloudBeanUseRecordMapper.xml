@@ -7,6 +7,7 @@
         <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="orderType" column="order_type" jdbcType="INTEGER"/>
         <result property="beanAmount" column="bean_amount" jdbcType="NUMERIC"/>
         <result property="remainingBeanAmount" column="remaining_bean_amount" jdbcType="NUMERIC"/>
         <result property="packageId" column="package_id" jdbcType="INTEGER"/>
@@ -68,7 +69,7 @@
     
     <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
         select
-        id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
         from t_cloud_bean_use_record
         <where>
             <if test="startTime != null">

@@ -33,6 +33,10 @@ public class CloudBeanUseRecordVO {
      */
     private Integer type;
     /**
+     * 订单类型 0其它，1换电套餐，2换电押金
+     */
+    private Integer orderType;
+    /**
      * 本次使用云豆数量
      */
     private BigDecimal beanAmount;
