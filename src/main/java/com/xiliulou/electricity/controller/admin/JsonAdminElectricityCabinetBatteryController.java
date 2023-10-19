@@ -5,7 +5,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
@@ -423,19 +422,17 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v3")
     public R uploadV3(@RequestBody BatteryExcelV3Query batteryExcelV3Query) {
-        
         if (Objects.isNull(batteryExcelV3Query)) {
             return R.fail("100603", "Excel模版中数据为空，请检查修改后再操作");
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
-        Long uid = user.getUid();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user! uid = {}", uid);
+            log.error("ELE ERROR! not found user!");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return electricityBatteryService.saveBatchFromExcel(batteryExcelV3Query, uid);
+        return electricityBatteryService.saveBatchFromExcel(batteryExcelV3Query, user.getUid());
     }
     
     @Transactional(rollbackFor = Exception.class)

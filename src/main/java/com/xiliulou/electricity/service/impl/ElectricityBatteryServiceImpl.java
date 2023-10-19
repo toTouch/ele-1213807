@@ -218,16 +218,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid) {
-        
         Long franchiseeId = batteryExcelV3Query.getFranchiseeId();
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
-            log.error("Franchisee id is invalid! franchisee id = {}", franchiseeId);
+            log.error("Franchisee id is invalid!");
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
         List<String> batteryList = batteryExcelV3Query.getBatteryList();
-        
         if (CollectionUtils.isEmpty(batteryList)) {
             return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
         }
@@ -240,9 +238,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Set<String> snSet = new HashSet<>();
         
         for (String sn : batteryList) {
-            
             if (StringUtils.isEmpty(sn)) {
-                return R.fail("100602", "Excel模版中电池编码不能为空，请检查修改后再操作");
+                continue;
             }
             
             // 判断数据库中是否已经存在该电池
@@ -267,34 +264,38 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             electricityBattery.setExchangeCount(0);
             electricityBattery.setChargeStatus(0);
             electricityBattery.setHealthStatus(0);
-            electricityBattery.setDelFlag(0);
-            electricityBattery.setStatus(0);
+            electricityBattery.setDelFlag(ElectricityBattery.DEL_NORMAL);
+            electricityBattery.setStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE);
             electricityBattery.setTenantId(TenantContextHolder.getTenantId());
             electricityBattery.setFranchiseeId(franchiseeId);
             
             saveList.add(electricityBattery);
         }
         
-        if(CollectionUtils.isNotEmpty(snSet)){
-            Map<String, String> headers = new HashMap<>();
-            String time = String.valueOf(System.currentTimeMillis());
-            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
-            headers.put(CommonConstant.INNER_HEADER_TIME, time);
-            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
-            headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
-    
-            BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
-            query.setJsonBatterySnList(JsonUtil.toJson(snSet));
-    
-            // 线程池异步执行:保存到BMS系统中
-            bmsBatteryInsertThread.execute(() -> {
-                log.warn("Executing remote insertBatch battery from excel,uid = {}, snSet = {}", uid, snSet);
-                batteryPlatRetrofitService.batchSave(headers, query);
-            });
-    
-            // 保存到本地数据库
-            insertBatch(saveList);
+        if(CollectionUtils.isEmpty(snSet)){
+            return R.fail("100602", "Excel模版中电池编码数据为空，请检查修改后再操作");
         }
+        
+        Map<String, String> headers = new HashMap<>();
+        String time = String.valueOf(System.currentTimeMillis());
+        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+        headers.put(CommonConstant.INNER_HEADER_TIME, time);
+        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+        headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
+    
+        BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
+        query.setJsonBatterySnList(JsonUtil.toJson(snSet));
+    
+        // 线程池异步执行:保存到BMS系统中
+        bmsBatteryInsertThread.execute(() -> {
+            R r = batteryPlatRetrofitService.batchSave(headers, query);
+            if (!r.isSuccess()) {
+                log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), uid);
+            }
+        });
+    
+        // 保存到本地数据库
+        insertBatch(saveList);
         return R.ok();
     }
     
