@@ -273,8 +273,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             saveList.add(electricityBattery);
         }
     
-        if (DataUtil.collectionIsUsable(batteryList) && !DataUtil.collectionIsUsable(snSet)) {
-            throw new CustomBusinessException("电池编码重复/为空，请检查修改后再操作");
+        if(CollectionUtils.isEmpty(snSet)){
+            return R.fail("100603", "Excel模版中所有电池数据均已存在，请勿重复导入");
         }
         
         Map<String, String> headers = new HashMap<>();
