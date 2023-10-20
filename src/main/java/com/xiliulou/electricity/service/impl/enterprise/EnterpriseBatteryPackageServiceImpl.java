@@ -1243,11 +1243,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
     
             //检查当前套餐是否属于企业关联套餐
-            EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
+           /* EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
             if(Objects.isNull(enterprisePackage)){
                 log.warn("purchase package with deposit by enterprise user warn, not found enterprise package,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "当前套餐不是企业套餐");
-            }
+            }*/
     
             /*if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
                 log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
@@ -1530,11 +1530,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
     
             //检查当前套餐是否属于企业关联套餐
-            EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
+            /*EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
             if(Objects.isNull(enterprisePackage)){
                 log.warn("purchase package with deposit by enterprise user warn, not found enterprise package,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "当前套餐不是企业套餐");
-            }
+            }*/
     
             //是否有正在进行中的退押
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
