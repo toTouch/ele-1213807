@@ -755,7 +755,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         String orderType = null;
         switch (type) {
             case 0:
-                orderType = "套餐分配";
+                orderType = "套餐代付";
                 break;
             case 1:
                 orderType = "套餐回收";
