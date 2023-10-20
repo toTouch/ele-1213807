@@ -68,7 +68,7 @@
 				and tenant_id = #{tenantId}
 			</if>
 		</where>
-		order by id desc
+		order by uid desc
 		limit #{offset}, #{size}
 	</select>
 
