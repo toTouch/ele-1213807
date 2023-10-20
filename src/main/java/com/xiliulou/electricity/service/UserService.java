@@ -111,5 +111,5 @@ public interface UserService {
 
     Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery);
     
-    User search(UserInfoQuery query);
+    List<User> search(UserInfoQuery query);
 }

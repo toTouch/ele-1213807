@@ -418,8 +418,13 @@ public class UserServiceImpl implements UserService {
     
     @Slave
     @Override
-    public User search(UserInfoQuery query) {
-        return this.userMapper.search(query);
+    public List<User> search(UserInfoQuery query) {
+        List<User> userList = this.userMapper.search(query);
+        if (CollectionUtils.isEmpty(userList)) {
+            return Collections.emptyList();
+        }
+    
+        return userList;
     }
     
     @Override

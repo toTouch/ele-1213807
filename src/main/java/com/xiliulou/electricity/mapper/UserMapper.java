@@ -35,5 +35,5 @@ public interface UserMapper extends BaseMapper<User> {
 
     User queryByUserName(@Param("username") String username);
     
-    User search(UserInfoQuery query);
+    List<User> search(UserInfoQuery query);
 }
