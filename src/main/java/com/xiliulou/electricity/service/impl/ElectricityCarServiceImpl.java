@@ -941,7 +941,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         R<Jt808DeviceInfoVo> result = jt808RetrofitService
                 .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! controlDevice error! carSn={},result={}", sn, result);
+            log.warn("Jt808 warn! controlDevice error! carSn={},result={}", sn, result);
             return false;
         }
     
@@ -1033,10 +1033,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             if (result.isSuccess()) {
                 return true;
             }
-            log.error("Jt808 error! controlDevice error! carSn={},result={}, retryCount={}", sn, result, i);
+            log.warn("Jt808 warn! controlDevice error! carSn={},result={}, retryCount={}", sn, result, i);
         }
         
-        log.error("Jt808 error! controlDevice error! carSn={}", sn);
         return false;
     }
 }

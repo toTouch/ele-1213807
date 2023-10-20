@@ -3,8 +3,6 @@ package com.xiliulou.electricity.query;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @Auther: benyun
  * @Date: 2019/11/8 10:30
