@@ -86,6 +86,6 @@ public interface EleDepositOrderService {
 
     Triple<Boolean, String, Object> queryDepositAndInsuranceDetail(String orderId);
     
-    EleDepositOrderVO queryBySourceOrderNo(Long uid, String sourceOrderNo);
+    EleDepositOrderVO queryByUidAndSourceOrderNo(Long uid, String sourceOrderNo);
     
 }

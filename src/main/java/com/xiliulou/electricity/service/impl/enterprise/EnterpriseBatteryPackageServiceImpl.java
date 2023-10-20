@@ -1956,7 +1956,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             //查询购买订单关联押金金额
-            EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryBySourceOrderNo(channelUserId, enterprisePackageOrderVO.getOrderNo());
+            EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(channelUserId, enterprisePackageOrderVO.getOrderNo());
             if(Objects.nonNull(eleDepositOrderVO)){
                 enterpriseUserCostDetailsVO.setDepositAmount(eleDepositOrderVO.getPayAmount());
             }
@@ -2093,9 +2093,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterprisePackageOrderVO.setPackageExpiredTime(null);
                 enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
                 
-                //TODO 押金信息需要获取什么时候的值
+                //获取关联押金信息
+                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), enterprisePackageOrderVO.getOrderNo());
+                if(Objects.nonNull(eleDepositOrderVO)){
+                    enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+                }
                 
-                //TODO 绑定电池也就无法获取
+                //此时无绑定电池
                 
                 
             }else{

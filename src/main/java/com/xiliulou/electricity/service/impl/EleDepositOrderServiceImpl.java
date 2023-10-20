@@ -816,7 +816,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
     
     @Override
-    public EleDepositOrderVO queryBySourceOrderNo(Long uid, String sourceOrderNo) {
+    public EleDepositOrderVO queryByUidAndSourceOrderNo(Long uid, String sourceOrderNo) {
     
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.queryByUidAndSourceOrderNo(uid, sourceOrderNo);
         EleDepositOrderVO eleDepositOrderVO = new EleDepositOrderVO();

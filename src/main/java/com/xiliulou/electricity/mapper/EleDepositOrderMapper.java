@@ -62,4 +62,5 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
                                                                          @Param("franchiseeIds")List<Long> finalFranchiseeIds);
     
     EleDepositOrder queryByUidAndSourceOrderNo(@Param("uid") Long uid, @Param("sourceOrderNo") String sourceOrderNo);
+    
 }
