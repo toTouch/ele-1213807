@@ -7,6 +7,7 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
         <result property="costType" column="cost_type" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="orderId" column="order_id" jdbcType="INTEGER"/>
         <result property="packageId" column="package_id" jdbcType="INTEGER"/>
         <result property="packageName" column="package_name" jdbcType="VARCHAR"/>
@@ -25,6 +26,7 @@
             uid,
             enterprise_id,
             cost_type,
+            type,
             order_id,
             package_id,
             package_name,
@@ -37,6 +39,7 @@
             #{uid},
             #{enterpriseId},
             #{costType},
+            #{type},
             #{orderId},
             #{packageId},
             #{packageName},
@@ -105,6 +108,7 @@
             id,
             uid,
             enterprise_id,
+            type,
             cost_type,
             order_id,
             package_id,

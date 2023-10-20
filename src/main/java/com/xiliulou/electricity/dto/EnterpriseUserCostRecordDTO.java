@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.dto;
 
+import com.xiliulou.electricity.enums.enterprise.EnterpriseUserCostRecordTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,12 @@ public class EnterpriseUserCostRecordDTO {
      * 消费订单编号
      */
     private String orderId;
+    
+    /**
+     * 类型(1-企业渠道电池订单, 2-企业渠道租车订单)
+     * @see EnterpriseUserCostRecordTypeEnum
+     */
+    private Integer type;
     
     /**
      * 套餐ID
