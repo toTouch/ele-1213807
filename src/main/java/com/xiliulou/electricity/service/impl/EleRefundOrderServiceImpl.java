@@ -11,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.*;
@@ -1029,6 +1030,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(eleDepositOrder)) {
             log.error("REFUND ORDER ERROR! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        //企业渠道订单暂不支持退押
+        if(PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode().equals(eleDepositOrder.getOrderType())){
+            log.error("REFUND ORDER ERROR! deposit order is enterprise channel, can't refund deposit, uid={}, orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100032", "企业渠道订单暂不支持退押,请联系企业负责人");
         }
 
         Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());

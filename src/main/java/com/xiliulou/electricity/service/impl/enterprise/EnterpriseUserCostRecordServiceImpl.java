@@ -10,7 +10,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseUserCostRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterpriseUserCostRecordTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseUserCostRecordMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -19,7 +19,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordServi
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostRecordRemarkVO;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -52,7 +51,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     EnterpriseChannelUserService enterpriseChannelUserService;
     
     @Resource
-    private RocketMqService rocketMqService;
+    EnterpriseUserCostRecordProducer enterpriseUserCostRecordProducer;
     
     @Override
     public List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery) {
@@ -132,7 +131,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         //MQ处理企业代付订单信息
         //enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
         log.info("Async save enterprise user cost record.send async message, message is {}", message);
-        rocketMqService.sendAsyncMsg(MqProducerConstant.ENTERPRISE_USER_COST_RECORD_TOPIC, message);
+        enterpriseUserCostRecordProducer.sendAsyncMessage(message);
     
     }
     

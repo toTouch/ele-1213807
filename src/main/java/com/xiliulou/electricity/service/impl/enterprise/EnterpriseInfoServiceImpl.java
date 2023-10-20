@@ -35,6 +35,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
@@ -66,6 +67,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderServi
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -184,6 +186,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Autowired
     private EnterpriseRentRecordService enterpriseRentRecordService;
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
     
     /**
@@ -877,6 +881,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).build();
         eleRefundOrderService.insert(eleRefundOrder);
+    
+        //记录企业用户退押记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), eleRefundOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder.getCreateTime());
         
         return Triple.of(true,null,userBatteryDeposit.getBatteryDeposit());
     }
