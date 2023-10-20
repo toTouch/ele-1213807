@@ -37,6 +37,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
                   @RequestParam(value = "orderId", required = false) String orderId,
                   @RequestParam(value = "uid", required = false) Long uid,
+                  @RequestParam(value = "operateUid", required = false) Long operateUid,
                   @RequestParam(value = "type", required = false) Integer type,
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                   @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
@@ -63,6 +64,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
                 .enterpriseId(enterpriseId)
                 .orderId(orderId)
                 .uid(uid)
+                .operateUid(operateUid)
                 .type(type)
                 .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -76,6 +78,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
      */
     @GetMapping("/admin/enterpriseCloudBeanOrder/count")
     public R pageCount(@RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "operateUid", required = false) Long operateUid,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -93,6 +96,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
         EnterpriseCloudBeanOrderQuery query = EnterpriseCloudBeanOrderQuery.builder()
                 .enterpriseId(enterpriseId)
                 .orderId(orderId)
+                .operateUid(operateUid)
                 .uid(uid)
                 .type(type)
                 .franchiseeId(franchiseeId)
