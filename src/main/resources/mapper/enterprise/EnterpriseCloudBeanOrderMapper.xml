@@ -45,6 +45,9 @@
             <if test="uid != null">
                 and uid = #{uid}
             </if>
+            <if test="operateUid != null">
+                and operate_uid = #{operateUid}
+            </if>
             <if test="type != null">
                 and type = #{type}
             </if>
@@ -72,6 +75,9 @@
             </if>
             <if test="uid != null">
                 and uid = #{uid}
+            </if>
+            <if test="operateUid != null">
+                and operate_uid = #{operateUid}
             </if>
             <if test="type != null">
                 and type = #{type}

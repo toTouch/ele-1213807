@@ -35,6 +35,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.CityService;
@@ -62,6 +63,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
+import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -414,7 +416,18 @@ public class UserServiceImpl implements UserService {
 
         return Pair.of(true, userList);
     }
-
+    
+    @Slave
+    @Override
+    public List<UserSearchVO> search(UserInfoQuery query) {
+        List<UserSearchVO> userList = this.userMapper.search(query);
+        if (CollectionUtils.isEmpty(userList)) {
+            return Collections.emptyList();
+        }
+    
+        return userList;
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {

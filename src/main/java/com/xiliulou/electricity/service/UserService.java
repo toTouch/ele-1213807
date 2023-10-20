@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.UserInfoVO;
+import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -110,4 +111,6 @@ public interface UserService {
     List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery);
 
     Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery);
+    
+    List<UserSearchVO> search(UserInfoQuery query);
 }

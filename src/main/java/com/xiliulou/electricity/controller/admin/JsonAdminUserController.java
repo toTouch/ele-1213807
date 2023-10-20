@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -22,7 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +60,22 @@ public class JsonAdminUserController extends BaseController {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
         }
         return returnTripleResult(userService.addAdminUser(adminUserQuery));
+    }
+    
+    @GetMapping("/user/search")
+    public R search(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        UserInfoQuery query = UserInfoQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(userService.search(query));
     }
 
     @GetMapping("/user/list")

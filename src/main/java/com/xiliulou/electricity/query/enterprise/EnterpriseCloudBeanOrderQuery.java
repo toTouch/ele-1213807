@@ -22,6 +22,8 @@ public class EnterpriseCloudBeanOrderQuery {
      * 企业用户id
      */
     private Long uid;
+    
+    private Long operateUid;
 
     private Long enterpriseId;
     /**
