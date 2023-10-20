@@ -335,33 +335,31 @@
             tubmc.create_time as createTime,
             tubmc.member_card_expire_time as packageExpiredTime,
             tubmc.order_effective_time as effectiveTime
-        from t_enterprise_channel_user tecu,
-             t_user_battery_member_card tubmc,
-             t_user_info tui
-        where tubmc.uid = tecu.uid
-          and tecu.uid = tui.uid
-          and tubmc.del_flag = 0
-          
-        <if test="tenantId != null">
-            and tecu.tenant_id = #{tenantId}
-        </if>
+        from t_enterprise_channel_user tecu
+        left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
+        left join t_user_info tui on tecu.uid = tui.uid
+        where
+            tecu.payment_status = 1
+            <if test="tenantId != null">
+                and tecu.tenant_id = #{tenantId}
+            </if>
+            
+            <if test="enterpriseId != null">
+                and tecu.enterprise_id = #{enterpriseId}
+            </if>
+            
+            <if test="currentTime != null">
+                and tubmc.member_card_expire_time &lt;= #{currentTime}
+            </if>
         
-        <if test="enterpriseId != null">
-            and tecu.enterprise_id = #{enterpriseId}
-        </if>
-        
-        <if test="currentTime != null">
-            and tubmc.member_card_expire_time &lt;= #{currentTime}
-        </if>
-    
-        <if test="userName != null and userName != ''">
-            and tui.name like concat('%',#{userName},'%')
-        </if>
-        <if test="phone != null and phone != ''">
-            and tui.phone like concat('%',#{phone},'%')
-        </if>
-        order by tubmc.member_card_expire_time desc
-        limit #{offset}, #{size}
+            <if test="userName != null and userName != ''">
+                and tui.name like concat('%',#{userName},'%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone like concat('%',#{phone},'%')
+            </if>
+            order by tubmc.member_card_expire_time desc
+            limit #{offset}, #{size}
     
     </select>
     
@@ -377,13 +375,13 @@
             tubmc.create_time as createTime,
             tubmc.member_card_expire_time as packageExpiredTime,
             tubmc.order_effective_time as effectiveTime
-        from t_enterprise_channel_user tecu,
-             t_user_battery_member_card tubmc,
-             t_user_info tui
-        where tubmc.uid = tecu.uid
-        and tecu.uid = tui.uid
-        and tecu.payment_status = 2
-        and tubmc.del_flag = 0
+        from t_enterprise_channel_user tecu
+        left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
+        left join t_battery_member_card tbmc on tbmc.id = tubmc.member_card_id
+        left join t_user_info tui on tecu.uid = tui.uid
+        where
+        tecu.payment_status = 2
+          and tbmc.business_type = 2
         <if test="enterpriseId != null">
             and tecu.enterprise_id = #{enterpriseId}
         </if>
@@ -414,7 +412,8 @@
         from t_enterprise_channel_user tecu
         left join t_user_info tui on tui.uid = tecu.uid
         <where>
-            tecu.uid is not null and tecu.payment_status=3
+            tecu.uid is not null
+            and tecu.payment_status=3
             <if test="enterpriseId != null">
                 and tecu.enterprise_id = #{enterpriseId}
             </if>
@@ -434,13 +433,11 @@
     <select id="queryExpiredPackageOrderCount" resultType="Integer">
         select
             count(1)
-        from t_enterprise_channel_user tecu,
-        t_user_battery_member_card tubmc,
-        t_user_info tui
-        where tubmc.uid = tecu.uid
-        and tecu.uid = tui.uid
-        and tubmc.del_flag = 0
-        
+        from t_enterprise_channel_user tecu
+        left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
+        left join t_user_info tui on tecu.uid = tui.uid
+        where
+        tecu.payment_status = 1
         <if test="tenantId != null">
             and tecu.tenant_id = #{tenantId}
         </if>
@@ -466,13 +463,13 @@
     <select id="queryPaidPackageOrderCount" resultType="Integer">
         select
             count(1)
-        from t_enterprise_channel_user tecu,
-        t_user_battery_member_card tubmc,
-        t_user_info tui
-        where tubmc.uid = tecu.uid
-        and tecu.uid = tui.uid
-        and tecu.payment_status = 2
-        and tubmc.del_flag = 0
+        from t_enterprise_channel_user tecu
+        left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
+        left join t_battery_member_card tbmc on tbmc.id = tubmc.member_card_id
+        left join t_user_info tui on tecu.uid = tui.uid
+        where
+        tecu.payment_status = 2
+        and tbmc.business_type = 2
         <if test="enterpriseId != null">
             and tecu.enterprise_id = #{enterpriseId}
         </if>
@@ -518,6 +515,27 @@
     
     </select>
     
-    
+    <select id="selectLatestEnterpriseOrderByUid"   resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+            id,
+            pay_amount,
+            valid_days,
+            uid,
+            order_id,
+            status,
+            member_card_id,
+            max_use_count,
+            card_name,
+            pay_type,
+            order_type,
+            create_time,
+            update_time
+        from t_electricity_member_card_order
+        where uid=#{uid}
+          and status=1
+          and order_type = 1
+        ORDER BY id DESC
+        limit 1
+    </select>
     
 </mapper>

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -95,4 +96,10 @@ public class EleDepositOrderVO {
      * 车辆名称
      */
     private String carModel;
+    
+    /**
+     * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     * @see PackageOrderTypeEnum
+     */
+    private Integer orderType;
 }

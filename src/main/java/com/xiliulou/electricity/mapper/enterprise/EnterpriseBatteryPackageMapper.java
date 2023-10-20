@@ -44,4 +44,6 @@ public interface EnterpriseBatteryPackageMapper extends BaseMapper<ElectricityMe
     
     Integer queryUnpaidPackageOrderCount(EnterprisePurchaseOrderQuery query);
     
+    ElectricityMemberCardOrder selectLatestEnterpriseOrderByUid(@Param("uid") Long uid);
+    
 }

@@ -8,7 +8,7 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
-        edo.deposit_type,edo.pay_type, s.name as store_name
+        edo.deposit_type,edo.pay_type, edo.order_type, s.name as store_name
         from t_ele_deposit_order edo
         left join t_franchisee f on f.id = edo.franchisee_id
         left join t_store s on edo.store_id= s.id
@@ -71,7 +71,7 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel,
-        edo.deposit_type,edo.pay_type
+        edo.deposit_type, edo.order_type, edo.pay_type
         from t_ele_deposit_order edo
         left join t_store ts on edo.store_id=ts.id
         left join t_electricity_car_model tecm on edo.car_model_id=tecm.id
