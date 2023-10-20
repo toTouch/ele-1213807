@@ -339,7 +339,7 @@
         left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
         left join t_user_info tui on tecu.uid = tui.uid
         where
-            tecu.payment_status = 1
+            tecu.payment_status = 2
             <if test="tenantId != null">
                 and tecu.tenant_id = #{tenantId}
             </if>
