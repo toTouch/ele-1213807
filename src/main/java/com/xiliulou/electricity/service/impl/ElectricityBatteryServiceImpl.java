@@ -16,6 +16,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
@@ -271,9 +272,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             saveList.add(electricityBattery);
         }
-        
-        if(CollectionUtils.isEmpty(snSet)){
-            return R.fail("100602", "Excel模版中电池编码数据为空，请检查修改后再操作");
+    
+        if (DataUtil.collectionIsUsable(batteryList) && !DataUtil.collectionIsUsable(snSet)) {
+            throw new CustomBusinessException("电池编码重复/为空，请检查修改后再操作");
         }
         
         Map<String, String> headers = new HashMap<>();
