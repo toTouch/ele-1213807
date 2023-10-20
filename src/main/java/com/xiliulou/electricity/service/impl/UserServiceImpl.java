@@ -63,6 +63,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
+import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -418,8 +419,8 @@ public class UserServiceImpl implements UserService {
     
     @Slave
     @Override
-    public List<User> search(UserInfoQuery query) {
-        List<User> userList = this.userMapper.search(query);
+    public List<UserSearchVO> search(UserInfoQuery query) {
+        List<UserSearchVO> userList = this.userMapper.search(query);
         if (CollectionUtils.isEmpty(userList)) {
             return Collections.emptyList();
         }

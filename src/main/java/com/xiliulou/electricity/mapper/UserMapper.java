@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -35,5 +36,5 @@ public interface UserMapper extends BaseMapper<User> {
 
     User queryByUserName(@Param("username") String username);
     
-    List<User> search(UserInfoQuery query);
+    List<UserSearchVO> search(UserInfoQuery query);
 }

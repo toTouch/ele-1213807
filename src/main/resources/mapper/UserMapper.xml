@@ -53,7 +53,7 @@
 		where uid = #{uid}
 	</update>
 	
-	<select id="search" resultType="com.xiliulou.electricity.entity.User">
+	<select id="search" resultType="com.xiliulou.electricity.vo.UserSearchVO">
 		select uid, name
 		from t_user
 		<where>
