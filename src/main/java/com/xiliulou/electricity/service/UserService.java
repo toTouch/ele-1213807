@@ -110,4 +110,6 @@ public interface UserService {
     List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery);
 
     Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery);
+    
+    User search(UserInfoQuery query);
 }
