@@ -227,19 +227,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
     
-        List<BatteryExcelV3DTO> batteryList = batteryExcelV3Query.getBatteryExcelV3DTOList();
-        if(CollectionUtils.isEmpty(batteryList)){
+        List<BatteryExcelV3DTO> batteryV3List = batteryExcelV3Query.getBatteryList();
+        if(CollectionUtils.isEmpty(batteryV3List)){
             return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
         }
         
-        if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryList.size()) {
+        if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryV3List.size()) {
             return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
         }
         
         List<ElectricityBattery> saveList = new ArrayList<>();
         Set<String> snSet = new HashSet<>();
         
-        for (BatteryExcelV3DTO batteryExcelV3DTO : batteryList) {
+        for (BatteryExcelV3DTO batteryExcelV3DTO : batteryV3List) {
             if(ObjectUtils.isEmpty(batteryExcelV3DTO)){
                 continue;
             }

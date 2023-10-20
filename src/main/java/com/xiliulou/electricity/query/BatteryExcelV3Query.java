@@ -15,7 +15,7 @@ public class BatteryExcelV3Query {
     
     private Long franchiseeId;
 
-    private List<BatteryExcelV3DTO> batteryExcelV3DTOList;
+    private List<BatteryExcelV3DTO> batteryList;
 }
 
 

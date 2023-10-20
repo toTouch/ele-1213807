@@ -22,7 +22,7 @@ public class BatteryExcelV3DTO {
     /**
      * 容量
      */
-    Integer c;
+    private Integer c;
 }
 
 
