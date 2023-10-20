@@ -5,6 +5,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -422,7 +424,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v3")
     public R uploadV3(@RequestBody BatteryExcelV3Query batteryExcelV3Query) {
-        if (Objects.isNull(batteryExcelV3Query)) {
+        if (ObjectUtils.isEmpty(batteryExcelV3Query)) {
             return R.fail("100602", "Excel模版中数据为空，请检查修改后再操作");
         }
         

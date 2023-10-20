@@ -26,6 +26,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
@@ -225,9 +226,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             log.error("Franchisee id is invalid!");
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
-        List<String> batteryList = batteryExcelV3Query.getBatteryList();
-        if (CollectionUtils.isEmpty(batteryList)) {
+    
+        List<BatteryExcelV3DTO> batteryList = batteryExcelV3Query.getBatteryExcelV3DTOList();
+        if(CollectionUtils.isEmpty(batteryList)){
             return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
         }
         
@@ -238,7 +239,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         List<ElectricityBattery> saveList = new ArrayList<>();
         Set<String> snSet = new HashSet<>();
         
-        for (String sn : batteryList) {
+        for (BatteryExcelV3DTO batteryExcelV3DTO : batteryList) {
+            if(ObjectUtils.isEmpty(batteryExcelV3DTO)){
+                continue;
+            }
+            
+            String sn = batteryExcelV3DTO.getSn();
             if (StringUtils.isEmpty(sn)) {
                 continue;
             }
@@ -255,8 +261,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             electricityBattery.setSn(sn);
             electricityBattery.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
-            electricityBattery.setVoltage(0);
-            electricityBattery.setCapacity(0);
+            electricityBattery.setVoltage(ObjectUtils.isEmpty(batteryExcelV3DTO.getV()) ? 0 : batteryExcelV3DTO.getV());
+            electricityBattery.setCapacity(ObjectUtils.isEmpty(batteryExcelV3DTO.getC()) ? 0 : batteryExcelV3DTO.getC());
             electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
             electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             electricityBattery.setCreateTime(System.currentTimeMillis());
