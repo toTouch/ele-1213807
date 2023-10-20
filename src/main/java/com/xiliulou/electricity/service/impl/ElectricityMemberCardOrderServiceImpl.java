@@ -3015,6 +3015,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
                     eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
                 }
+    
+                //记录企业用户冻结后启用套餐记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), enableMemberCardRecordInsert.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode(), enableMemberCardRecordInsert.getEnableTime());
+    
             });
 
             offset += size;

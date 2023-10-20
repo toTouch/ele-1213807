@@ -7,22 +7,22 @@ import lombok.Getter;
 /**
  * @author BaoYu
  * @description:
- * @date 2023/9/25 11:14
+ * @date 2023/10/20 8:55
  */
 
 @Getter
 @AllArgsConstructor
-public enum PackageOrderTypeEnum implements BasicEnum<Integer, String> {
-
-    PACKAGE_ORDER_TYPE_NORMAL(0, "普通换电订单"),
-
-    PACKAGE_ORDER_TYPE_ENTERPRISE(1, "企业渠道换电订单"),
-
+public enum EnterpriseUserCostRecordTypeEnum implements BasicEnum<Integer, String> {
+    
+    USER_COST_TYPE_BATTERY(1, "企业渠道电池订单"),
+    
+    USER_COST_TYPE_CAR_RENTAL(2, "企业渠道租车订单"),
+    
     ;
-
+    
     private final Integer code;
-
+    
     private final String desc;
-
-
+    
+    
 }

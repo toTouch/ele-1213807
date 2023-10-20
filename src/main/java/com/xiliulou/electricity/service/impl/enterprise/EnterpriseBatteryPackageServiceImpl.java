@@ -1125,7 +1125,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
             enterpriseUserCostRecordRemarkVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
             //enterpriseUserCostRecordRemarkVO.setDepositAmount(eleDepositOrder.getPayAmount());
-            if(Objects.nonNull(insuranceOrder)){
+            if (Objects.nonNull(insuranceOrder)) {
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));

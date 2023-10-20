@@ -89,6 +89,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 购买套餐时，查询骑手套餐信息和押金信息
+     *
      * @param uid
      * @return
      */
@@ -96,39 +97,33 @@ public class JsonUserEnterprisePackageController extends BaseController {
     public R queryRiderPackageInfo(@RequestParam(value = "uid", required = true) Long uid) {
         
         return returnTripleResult(enterpriseBatteryPackageService.queryRiderDepositAndPackage(uid));
-    
+        
     }
     
     /**
      * 查询指定骑手的押金信息
+     *
      * @param uid
      * @return
      */
     @GetMapping(value = "/user/enterprise/queryBatteryDeposit")
     public R queryBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid) {
-    
+        
         return returnTripleResult(enterpriseBatteryPackageService.queryUserBatteryDeposit(uid));
     }
     
     /**
      * 生成骑手免押二维码信息
+     *
      * @param uid
      * @return
      */
     @GetMapping(value = "/user/enterprise/freeBatteryDeposit")
-    public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid,
-                                @RequestParam(value = "realName", required = true) String realName,
-                                @RequestParam(value = "idCard", required = true) String idCard,
-                                @RequestParam(value = "phone", required = true) String phone,
-                                @RequestParam(value = "packageId", required = true) Long packageId) {
-    
-        EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder()
-                .uid(uid)
-                .realName(realName)
-                .idCard(idCard)
-                .phoneNumber(phone)
-                .membercardId(packageId)
-                .build();
+    public R freeBatteryDeposit(@RequestParam(value = "uid", required = true) Long uid, @RequestParam(value = "realName", required = true) String realName,
+            @RequestParam(value = "idCard", required = true) String idCard, @RequestParam(value = "phone", required = true) String phone,
+            @RequestParam(value = "packageId", required = true) Long packageId) {
+        
+        EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder().uid(uid).realName(realName).idCard(idCard).phoneNumber(phone).membercardId(packageId).build();
         
         return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDeposit(freeQuery));
     }
@@ -136,6 +131,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 查询电池免押是否成功
+     *
      * @return
      */
     @GetMapping("/user/enterprise/freeDeposit/status")
@@ -146,6 +142,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 根据企业ID查询加盟商信息
+     *
      * @param enterpriseId
      * @return
      */
@@ -184,6 +181,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 企业免押代付
+     *
      * @param query
      * @param request
      * @return
