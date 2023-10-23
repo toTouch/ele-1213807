@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
 
@@ -27,5 +28,7 @@ public interface EnterpriseUserCostRecordService {
     void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime);
     
     //void asyncSaveUserCostRecordForFreezeBattery(Long uid, String orderId, Integer costType);
+    
+    void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder);
     
 }

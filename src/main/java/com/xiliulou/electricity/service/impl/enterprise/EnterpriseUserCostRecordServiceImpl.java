@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseUserCostRecord;
@@ -135,5 +136,55 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     }
     
-   
+    @Override
+    public void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder) {
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if (Objects.isNull(enterpriseChannelUser)) {
+            return;
+        }
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return;
+        }
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return;
+        }
+    
+        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+            return;
+        }
+    
+        //记录企业代付订单信息
+        EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+        enterpriseUserCostRecordDTO.setUid(uid);
+        enterpriseUserCostRecordDTO.setEnterpriseId(enterpriseChannelUser.getEnterpriseId());
+        enterpriseUserCostRecordDTO.setOrderId(eleRefundOrder.getRefundOrderNo());
+        enterpriseUserCostRecordDTO.setPackageId(batteryMemberCard.getId());
+        enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
+        enterpriseUserCostRecordDTO.setCostType(costType);
+        enterpriseUserCostRecordDTO.setType(EnterpriseUserCostRecordTypeEnum.USER_COST_TYPE_BATTERY.getCode());
+        enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+        enterpriseUserCostRecordDTO.setCreateTime(eleRefundOrder.getCreateTime());
+        enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
+        enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+    
+        EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
+        enterpriseUserCostRecordRemarkVO.setPayAmount(eleRefundOrder.getPayAmount());
+        enterpriseUserCostRecordRemarkVO.setDepositAmount(eleRefundOrder.getRefundAmount());
+        enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+    
+        String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+    
+        //MQ处理企业代付订单信息
+        log.info("Async save enterprise user cost record for refund deposit. send async message, message is {}", message);
+        enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+    
+    }
+    
+    
 }

@@ -883,7 +883,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         eleRefundOrderService.insert(eleRefundOrder);
     
         //记录企业用户退押记录
-        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), eleRefundOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder.getCreateTime());
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForRefundDeposit(userInfo.getUid(),  UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder);
         
         return Triple.of(true,null,userBatteryDeposit.getBatteryDeposit());
     }
