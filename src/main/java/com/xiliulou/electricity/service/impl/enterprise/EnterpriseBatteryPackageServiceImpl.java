@@ -2094,13 +2094,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 }
     
                 BatteryMemberCard batteryPackage = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+                enterprisePackageOrderVO.setOrderNo(electricityMemberCardOrder.getOrderId());
                 enterprisePackageOrderVO.setPackageId(batteryPackage.getId());
                 enterprisePackageOrderVO.setPackageName(batteryPackage.getName());
                 enterprisePackageOrderVO.setPackageExpiredTime(null);
                 enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
     
                 //获取关联押金信息
-                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), enterprisePackageOrderVO.getOrderNo());
+                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
                 if(Objects.nonNull(eleDepositOrderVO)){
                     enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
                     enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
