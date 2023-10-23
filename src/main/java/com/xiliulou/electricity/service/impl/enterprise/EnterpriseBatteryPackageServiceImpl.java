@@ -710,10 +710,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             userInfoService.updateByUid(userInfoUpdate);
         
             //绑定电池型号
-            List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+           /* List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
             if (org.apache.commons.collections.CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
-            }
+            }*/
         }
     
         freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
