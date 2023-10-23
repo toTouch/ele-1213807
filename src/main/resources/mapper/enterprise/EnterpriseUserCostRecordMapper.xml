@@ -8,7 +8,7 @@
         <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
         <result property="costType" column="cost_type" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="orderId" column="order_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="packageId" column="package_id" jdbcType="INTEGER"/>
         <result property="packageName" column="package_name" jdbcType="VARCHAR"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>

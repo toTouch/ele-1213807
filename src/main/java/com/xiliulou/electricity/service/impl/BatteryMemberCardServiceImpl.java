@@ -610,7 +610,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            return Triple.of(false, "", "加盟商不存在");
+            return Triple.of(false, "100106", "加盟商不存在");
         }
 
         Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
@@ -631,7 +631,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }else if(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())){
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
         }else{
-            return Triple.of(false, "", "业务类型参数不正确");
+            return Triple.of(false, "100107", "业务类型参数不正确");
         }
 
         this.batteryMemberCardMapper.insert(batteryMemberCard);

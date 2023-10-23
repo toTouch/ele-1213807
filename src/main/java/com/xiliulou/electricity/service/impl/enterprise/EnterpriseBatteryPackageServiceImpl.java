@@ -933,7 +933,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
             if (Objects.isNull(packageIds) || !packageIds.contains(query.getPackageId())) {
                 log.warn("purchase package by enterprise user warn, not found packages from packages, uid = {}, package id = {}", user.getUid(), query.getPackageId());
-                return Triple.of(false, "ELECTRICITY.0087", "套餐在企业中不存在");
+                return Triple.of(false, "300069", "当前企业套餐不存在");
             }
     
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -1241,13 +1241,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
-    
-            //检查当前套餐是否属于企业关联套餐
-           /* EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
-            if(Objects.isNull(enterprisePackage)){
-                log.warn("purchase package with deposit by enterprise user warn, not found enterprise package,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "100275", "当前套餐不是企业套餐");
-            }*/
+            
+            //检查套餐是否属于当前的企业
+            List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
+            if (Objects.isNull(packageIds) || !packageIds.contains(query.getPackageId())) {
+                log.warn("purchase package by enterprise user warn, not found packages from packages, uid = {}, package id = {}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300069", "当前企业套餐不存在");
+            }
     
             /*if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
                 log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
@@ -1529,12 +1529,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
     
-            //检查当前套餐是否属于企业关联套餐
-            /*EnterprisePackage enterprisePackage = enterprisePackageService.selectByPackageId(query.getPackageId());
-            if(Objects.isNull(enterprisePackage)){
-                log.warn("purchase package with deposit by enterprise user warn, not found enterprise package,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "100275", "当前套餐不是企业套餐");
-            }*/
+            //检查套餐是否属于当前的企业
+            List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
+            if (Objects.isNull(packageIds) || !packageIds.contains(query.getPackageId())) {
+                log.warn("purchase package by enterprise user warn, not found packages from packages, uid = {}, package id = {}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300069", "当前企业套餐不存在");
+            }
     
             //是否有正在进行中的退押
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);

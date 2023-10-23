@@ -453,7 +453,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         // 6. 当前用户不能属于其他企业
-        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectUsedChannelUser(uid, null);
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser)) {
             log.info("The user already belongs to another enterprise, enterprise id = {}", enterpriseChannelUser.getEnterpriseId());
             return Triple.of(false, "300061", "当前用户已加入其他企业, 无法重复添加");
