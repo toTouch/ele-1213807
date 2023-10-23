@@ -1008,7 +1008,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+                log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
             }
     
@@ -1130,8 +1130,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for renewal package. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
     
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -1148,7 +1151,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
             
         } catch (BizException e) {
-            log.error("purchase package without deposit by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("renewal package by enterprise user error, uid = {}, ex = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY + uid);
@@ -1404,8 +1407,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for purchase package with deposit. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
     
             //构造前端页面套餐购买成功后显示信息
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
@@ -1666,8 +1672,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for purchase package with free deposit. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
            
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -2076,32 +2084,37 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         for(EnterprisePackageOrderVO enterprisePackageOrderVO : enterprisePackageOrderVOList){
             //查询在用套餐信息
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(enterprisePackageOrderVO.getPackageId());
-            if(Objects.isNull(batteryMemberCard)){
-                continue;
-            }
-            if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
-                //当前在用套餐不是企业代付套餐，则查询之前使用的最近的企业套餐信息
-                //重新获取套餐信息，并设置套餐过期时间为空
+            //如果当前用户绑定的套餐被解绑或者当前套餐不是企业套餐，则获取最近一笔的企业套餐购买订单
+            //重新获取套餐信息，并设置套餐过期时间为空
+            if(Long.valueOf(0).equals(enterprisePackageOrderVO.getPackageId())
+                    || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
                 ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
                 if(Objects.isNull(electricityMemberCardOrder)){
                     continue;
                 }
     
                 BatteryMemberCard batteryPackage = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+                enterprisePackageOrderVO.setOrderNo(electricityMemberCardOrder.getOrderId());
                 enterprisePackageOrderVO.setPackageId(batteryPackage.getId());
                 enterprisePackageOrderVO.setPackageName(batteryPackage.getName());
                 enterprisePackageOrderVO.setPackageExpiredTime(null);
                 enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
-                
+    
                 //获取关联押金信息
-                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), enterprisePackageOrderVO.getOrderNo());
+                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
                 if(Objects.nonNull(eleDepositOrderVO)){
                     enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+                }else{
+                    //免押，则设置为0
+                    enterprisePackageOrderVO.setBatteryDeposit(BigDecimal.ZERO);
+                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
                 }
                 
-                //此时无绑定电池
+                //设置企业代付时间
+                enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
                 
-                
+                //此时用户无绑定电池信息
             }else{
                 enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
                 enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
@@ -2113,6 +2126,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
                 }
     
+                //设置套餐购买后企业代付时间
+                ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
+                if(Objects.nonNull(electricityMemberCardOrder)){
+                    enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
+                }
+    
                 //设置用户电池伏数
                 enterprisePackageOrderVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(enterprisePackageOrderVO.getUid()));
     
@@ -2122,12 +2141,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     enterprisePackageOrderVO.setBatterySn(electricityBattery.getSn());
                 }
                 
-            }
-    
-            //设置套餐购买后企业代付时间
-            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
             }
     
             //设置可回收云豆信息
@@ -2175,16 +2188,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(enterprisePackageOrderVO.getUid());
             if(Objects.nonNull(enterpriseChannelUser)){
                 enterprisePackageOrderVO.setCloudBeanStatus(enterpriseChannelUser.getCloudBeanStatus());
-                
-                /*if(CloudBeanStatusEnum.NOT_RECYCLE.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
-                    BigDecimal canRecycleCloudBean = cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(enterprisePackageOrderVO.getUid());
-                    enterprisePackageOrderVO.setCanRecycleBeanAmount(canRecycleCloudBean);
-        
-                }else if(CloudBeanStatusEnum.RECOVERED.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
-                    //设置已回收云豆信息
-                    BigDecimal recycledCloudBean = cloudBeanUseRecordService.acquireUserRecycledCloudBean(enterprisePackageOrderVO.getUid());
-                    enterprisePackageOrderVO.setRecycledBeanAmount(recycledCloudBean);
-                }*/
             }
         }
     }

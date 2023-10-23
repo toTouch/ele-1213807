@@ -339,7 +339,7 @@
         left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
         left join t_user_info tui on tecu.uid = tui.uid
         where
-            tecu.payment_status = 2
+            tecu.payment_status = 1
             <if test="tenantId != null">
                 and tecu.tenant_id = #{tenantId}
             </if>
@@ -437,7 +437,7 @@
         left join t_user_battery_member_card tubmc on tubmc.uid = tecu.uid
         left join t_user_info tui on tecu.uid = tui.uid
         where
-        tecu.payment_status = 2
+        tecu.payment_status = 1
         <if test="tenantId != null">
             and tecu.tenant_id = #{tenantId}
         </if>
@@ -446,9 +446,9 @@
             and tecu.enterprise_id = #{enterpriseId}
         </if>
         
-        <if test="currentTime != null">
+      <!--  <if test="currentTime != null">
             and tubmc.member_card_expire_time &lt;= #{currentTime}
-        </if>
+        </if>-->
         
         <if test="userName != null and userName != ''">
             and tui.name like concat('%',#{userName},'%')
