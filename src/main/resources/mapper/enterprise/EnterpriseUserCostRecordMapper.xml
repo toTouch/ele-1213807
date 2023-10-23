@@ -118,7 +118,7 @@
             del_flag,
             create_time,
             update_time
-        from  t_enterprise_user_cost_record;
+        from  t_enterprise_user_cost_record
         <where>
             del_flag = 0
             <if test="uid != null">
