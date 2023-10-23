@@ -2103,10 +2103,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), enterprisePackageOrderVO.getOrderNo());
                 if(Objects.nonNull(eleDepositOrderVO)){
                     enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+                }else{
+                    //免押，则设置为0
+                    enterprisePackageOrderVO.setBatteryDeposit(BigDecimal.ZERO);
+                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
                 }
+                
+                //设置企业代付时间
+                enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
+                
                 //此时用户无绑定电池信息
             }else{
-                
                 enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
                 enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
     
@@ -2115,6 +2123,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 if(Objects.nonNull(userBatteryDeposit)){
                     enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                     enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
+                }
+    
+                //设置套餐购买后企业代付时间
+                ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
+                if(Objects.nonNull(electricityMemberCardOrder)){
+                    enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
                 }
     
                 //设置用户电池伏数
@@ -2126,12 +2140,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     enterprisePackageOrderVO.setBatterySn(electricityBattery.getSn());
                 }
                 
-            }
-    
-            //设置套餐购买后企业代付时间
-            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
-            if(Objects.nonNull(electricityMemberCardOrder)){
-                enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
             }
     
             //设置可回收云豆信息
