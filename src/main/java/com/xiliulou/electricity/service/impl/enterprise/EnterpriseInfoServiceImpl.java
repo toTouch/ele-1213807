@@ -701,6 +701,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EnterpriseChannelUser enterpriseChannelUserUpdate = new EnterpriseChannelUser();
         enterpriseChannelUserUpdate.setId(enterpriseChannelUser.getId());
         enterpriseChannelUserUpdate.setCloudBeanStatus(CloudBeanStatusEnum.RECOVERED.getCode());
+        enterpriseChannelUserUpdate.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         enterpriseChannelUserService.update(enterpriseChannelUserUpdate);
         
