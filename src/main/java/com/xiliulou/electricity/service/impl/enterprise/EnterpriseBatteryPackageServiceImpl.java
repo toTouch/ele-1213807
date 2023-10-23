@@ -976,27 +976,21 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
     
             //是否有正在进行中的退押
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            /*Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
                 return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
-            }
+            }*/
     
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
             if (Objects.isNull(batteryMemberCard) || Objects.equals(batteryMemberCard.getStatus(), BatteryMemberCard.STATUS_DOWN)) {
-                log.warn("purchase package by enterprise user error, not found batteryMemberCard, uid = {}, package id = {}", user.getUid(), query.getPackageId());
+                log.warn("purchase package by enterprise user error, not found batteryMemberCard, uid = {}, package id = {}", uid, query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
             }
     
             if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
                 log.warn("purchase package by enterprise user error, batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "电池套餐不可用");
-            }
-    
-            List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
-            if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
-                log.warn("purchase package by enterprise user error, battery membercard refund review,uid={}", userInfo.getUid());
-                return Triple.of(false,"100018", "套餐租金退款审核中");
             }
     
            /* if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
@@ -1493,11 +1487,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
     
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+           /* ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
             if (Objects.isNull(electricityPayParams)) {
                 log.error("purchase Package with free deposit error, not found electricityPayParams,uid={}", uid);
                 return Triple.of(false, "100234", "未配置支付参数!");
-            }
+            }*/
     
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
@@ -1543,18 +1537,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
     
             //是否有正在进行中的退押
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            /*Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase Package with free deposit warning, have refunding order,uid={}", userInfo.getUid());
                 return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
-            }
-    
-            List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
-            if(CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
-                log.warn("purchase Package with free deposit warning, battery membercard refund review,uid={}", userInfo.getUid());
-                return Triple.of(false,"100018", "套餐租金退款审核中");
-            }
-    
+            }*/
+            
             //判断是否存在滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
