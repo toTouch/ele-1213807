@@ -1008,7 +1008,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                log.warn("\"purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
+                log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false,"ELECTRICITY.100000", "存在滞纳金，请先缴纳");
             }
     
@@ -1130,8 +1130,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for renewal package. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
     
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -1148,7 +1151,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
             
         } catch (BizException e) {
-            log.error("purchase package without deposit by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("renewal package by enterprise user error, uid = {}, ex = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY + uid);
@@ -1404,8 +1407,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for purchase package with deposit. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
     
             //构造前端页面套餐购买成功后显示信息
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
@@ -1666,8 +1672,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
             //MQ处理企业代付订单信息
-            enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+            log.info("Async save enterprise user cost record for purchase package with free deposit. send async message, message is {}", message);
+            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
            
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
