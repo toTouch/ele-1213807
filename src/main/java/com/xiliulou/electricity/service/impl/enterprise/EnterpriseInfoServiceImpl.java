@@ -1073,14 +1073,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Pair.of(Lists.newArrayList(), Lists.newArrayList());
         }
         
-        List<String> list = Lists.newArrayList();
+        List<String> nameList = Lists.newArrayList();
+        List<Long> idList = Lists.newArrayList();
         membercardIds.forEach(e -> {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(e);
-            if (Objects.nonNull(batteryMemberCard)) {
-                list.add(batteryMemberCard.getName());
+            if (Objects.nonNull(batteryMemberCard) && Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
+                nameList.add(batteryMemberCard.getName());
+                idList.add(batteryMemberCard.getId());
             }
         });
         
-        return Pair.of(membercardIds, list);
+        return Pair.of(idList, nameList);
     }
 }
