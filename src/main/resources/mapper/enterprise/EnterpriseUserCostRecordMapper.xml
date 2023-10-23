@@ -126,7 +126,7 @@
             </if>
     
             <if test="enterpriseId != null">
-                and enterpriseId = #{uid}
+                and enterprise_id = #{enterpriseId}
             </if>
     
             <if test="beginTime != null">
