@@ -2179,16 +2179,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(enterprisePackageOrderVO.getUid());
             if(Objects.nonNull(enterpriseChannelUser)){
                 enterprisePackageOrderVO.setCloudBeanStatus(enterpriseChannelUser.getCloudBeanStatus());
-                
-                /*if(CloudBeanStatusEnum.NOT_RECYCLE.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
-                    BigDecimal canRecycleCloudBean = cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(enterprisePackageOrderVO.getUid());
-                    enterprisePackageOrderVO.setCanRecycleBeanAmount(canRecycleCloudBean);
-        
-                }else if(CloudBeanStatusEnum.RECOVERED.getCode().equals(enterpriseChannelUser.getCloudBeanStatus())){
-                    //设置已回收云豆信息
-                    BigDecimal recycledCloudBean = cloudBeanUseRecordService.acquireUserRecycledCloudBean(enterprisePackageOrderVO.getUid());
-                    enterprisePackageOrderVO.setRecycledBeanAmount(recycledCloudBean);
-                }*/
             }
         }
     }
