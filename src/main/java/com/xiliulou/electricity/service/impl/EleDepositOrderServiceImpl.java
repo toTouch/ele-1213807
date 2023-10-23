@@ -820,7 +820,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.queryByUidAndSourceOrderNo(uid, sourceOrderNo);
         EleDepositOrderVO eleDepositOrderVO = new EleDepositOrderVO();
-        if(Objects.nonNull(eleDepositOrderVO)){
+        if(Objects.nonNull(eleDepositOrder)){
             BeanUtils.copyProperties(eleDepositOrder, eleDepositOrderVO);
         }
         
