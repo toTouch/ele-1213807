@@ -918,11 +918,6 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "未找到订单!");
         }
     
-        //处理用户端取消支付的问题
-        if(Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())){
-            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        }
-    
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
             log.error("notify member card order error, electricityMemberCardOrder status is not init, orderNo={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");

@@ -1457,7 +1457,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Override
     public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query, HttpServletRequest request) {
-        
         Integer tenantId = TenantContextHolder.getTenantId();
         Long enterpriseId = query.getEnterpriseId();
         Long uid = query.getUid();
