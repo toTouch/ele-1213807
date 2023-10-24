@@ -294,10 +294,8 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         
         String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
         //MQ处理企业代付订单信息
-        //enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
         log.info("Async save enterprise user cost record.send async message, message is {}", message);
         enterpriseUserCostRecordProducer.sendAsyncMessage(message);
-        
     }
     
     @Override
@@ -345,7 +343,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         
         //MQ处理企业代付订单信息
         log.info("Async save enterprise user cost record for refund deposit. send async message, message is {}", message);
-        enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
+        enterpriseUserCostRecordProducer.sendAsyncMessage(message);
         
     }
     
