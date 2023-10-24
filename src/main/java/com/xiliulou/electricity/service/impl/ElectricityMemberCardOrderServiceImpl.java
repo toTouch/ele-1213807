@@ -4007,9 +4007,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
                 if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
                     userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                            userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) < 0 ? 0L
-                                    : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+                    Long tempTime = (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) < 0 ? 0L
+                            : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
                 }
             }
         }
