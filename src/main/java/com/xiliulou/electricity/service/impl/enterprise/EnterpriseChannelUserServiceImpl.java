@@ -393,11 +393,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public ElectricityUserBatteryVo queryBatteryByUid(Long uid) {
         Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
+        ElectricityUserBatteryVo userBatteryVo = new ElectricityUserBatteryVo();
         if (!batteryTriple.getLeft()) {
             log.error("query battery for enterprise channel user error, uid = {}", uid);
             throw new BizException(batteryTriple.getMiddle(), (String) batteryTriple.getRight());
         }
-        ElectricityUserBatteryVo userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
+        
+        if(Objects.nonNull(batteryTriple.getRight())){
+            userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
+        }
         
         //查询换电时间及柜机信息
         //Integer tenantId = TenantContextHolder.getTenantId();
