@@ -27,6 +27,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -45,6 +46,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
@@ -150,6 +152,9 @@ public class EleOperateQueueHandler {
     
     @Autowired
     EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Autowired
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
 
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
@@ -663,6 +668,8 @@ public class EleOperateQueueHandler {
             handleExpireMemberCard(rentBatteryOrder);
 
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
+            //记录企业用户租电池记录
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
         }
 
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
@@ -670,6 +677,8 @@ public class EleOperateQueueHandler {
             checkReturnBatteryDoor(rentBatteryOrder);
 
             enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
+            //记录企业用户还电池记录
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
         }
     }
 

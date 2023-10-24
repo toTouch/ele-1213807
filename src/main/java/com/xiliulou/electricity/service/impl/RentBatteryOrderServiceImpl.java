@@ -32,7 +32,6 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -140,9 +139,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
-    
-    @Resource
-    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
     /**
      * 新增数据
@@ -552,9 +548,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
     
-        //记录企业用户租电池记录
-        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
-    
         //发送开门命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cellNo", cellNo);
@@ -780,9 +773,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .franchiseeId(store.getFranchiseeId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
-    
-            //记录企业用户还电池记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
     
             //发送开门命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
