@@ -197,6 +197,14 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                                 @RequestParam(value = "userName", required = false) String userName,
                                 @RequestParam(value = "phone", required = false) String phone) {
     
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterprisePurchaseOrderQuery enterprisePurchaseOrderQuery = EnterprisePurchaseOrderQuery.builder()
                 .enterpriseId(enterpriseId)

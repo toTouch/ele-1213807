@@ -11,6 +11,7 @@ import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -980,11 +981,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             //是否有正在进行中的退押
-            /*Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
                 return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
-            }*/
+            }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
             if (Objects.isNull(batteryMemberCard) || Objects.equals(batteryMemberCard.getStatus(), BatteryMemberCard.STATUS_DOWN)) {
@@ -1221,12 +1222,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, user is rent deposit,uid={} ", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
-    
-            /*ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-            if (Objects.isNull(electricityPayParams)) {
-                log.warn("purchase package with deposit by enterprise user warn, not found pay params,uid={}", userInfo.getUid());
-                return Triple.of(false, "100307", "未配置支付参数!");
-            }*/
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
@@ -1543,11 +1538,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             //是否有正在进行中的退押
-            /*Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase Package with free deposit warning, have refunding order,uid={}", userInfo.getUid());
                 return Triple.of(false,"ELECTRICITY.0047", "电池押金退款中");
-            }*/
+            }
             
             //判断是否存在滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -1919,13 +1914,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
             }
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-            
-            //查询当前用户是否存在最新的冻结订单信息
-            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(SecurityUtils.getUid(),
-                    TenantContextHolder.getTenantId());
-            if (Objects.nonNull(eleDisableMemberCardRecord) && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())) {
-                enterpriseUserPackageDetailsVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
-            }
+           
         }
         
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
@@ -2030,16 +2019,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
         
-        //查询当前用户是否存在最新的冻结订单信息
-        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(SecurityUtils.getUid(),
-                TenantContextHolder.getTenantId());
-        if (Objects.nonNull(eleDisableMemberCardRecord) && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())) {
-            enterpriseUserPackageDetailsVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
-        }
-        
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
     }
     
+    @Deprecated
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryCostDetails(EnterprisePackageOrderQuery query) {

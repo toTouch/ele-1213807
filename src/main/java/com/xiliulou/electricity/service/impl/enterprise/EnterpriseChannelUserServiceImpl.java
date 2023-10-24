@@ -419,26 +419,26 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 0. 添加的骑手不能是企业站长
         EnterpriseInfo enterpriseData = enterpriseInfoService.selectByUid(query.getUid());
         if (Objects.nonNull(enterpriseData)) {
-            log.error("add user to enterprise failed. current user is enterprise director. uid = {}, enterprise director uid ", query.getUid(), SecurityUtils.getUid());
+            log.warn("add user to enterprise failed. current user is enterprise director. uid = {}, enterprise director uid ", query.getUid(), SecurityUtils.getUid());
             return Triple.of(false, "300062", "待添加用户为企业负责人，无法添加");
         }
         
         // 1. 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("add user to enterprise failed. Not found user. uid = {} ", query.getUid());
+            log.warn("add user to enterprise failed. Not found user. uid = {} ", query.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未查询到该用户，请确保用户已登录小程序并完成实名认证");
         }
         
         // 2. 用户可用状态
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("add user to enterprise failed. User is unUsable. uid = {} ", query.getUid());
+            log.warn("add user to enterprise failed. User is unUsable. uid = {} ", query.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         // 3. 用户实名认证状态
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("add user to enterprise failed. User not auth. uid = {}", query.getUid());
+            log.warn("add user to enterprise failed. User not auth. uid = {}", query.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "该用户尚未完成实名认证，请确保用户完成实名认证");
         }
         
@@ -447,7 +447,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         
-        // 4. 检查当前用户是否隶属于企业渠道所属加盟商
+        // 4. 检查当前用户是否隶属于企业渠道所属加盟商,新用户暂无加盟商
         /*if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !userInfo.getFranchiseeId().equals(enterpriseInfo.getFranchiseeId())) {
             log.error("add user to enterprise failed. add new user's franchiseeId = {}. enterprise franchiseeId = {}", userInfo.getFranchiseeId(),
                     enterpriseInfo.getFranchiseeId());
@@ -456,14 +456,14 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 5. 检查用户是否购买过线上套餐(包含换电, 租车, 车电一体套餐)
         if (userInfo.getPayCount() > 0) {
-            log.info("Exist package pay count for current user, uid = {}", userInfo.getUid());
+            log.warn("Exist package pay count for current user, uid = {}", userInfo.getUid());
             return Triple.of(false, "300060", "当前用户已购买过线上套餐");
         }
         
         // 6. 当前用户不能属于其他企业
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser)) {
-            log.info("The user already belongs to another enterprise, enterprise id = {}", enterpriseChannelUser.getEnterpriseId());
+            log.warn("The user already belongs to another enterprise, enterprise id = {}", enterpriseChannelUser.getEnterpriseId());
             return Triple.of(false, "300061", "当前用户已加入其他企业, 无法重复添加");
         }
         
@@ -471,7 +471,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.nonNull(query.getPhone())) {
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone());
             if (Objects.nonNull(channelUser)) {
-                log.info("The user already used in current enterprise, enterprise id = {}, phone = {}", channelUser.getEnterpriseId(), query.getPhone());
+                log.warn("The user already used in current enterprise, enterprise id = {}, phone = {}", channelUser.getEnterpriseId(), query.getPhone());
                 return Triple.of(false, "300061", "当前用户手机号已存在, 无法重复添加");
             }
         }
