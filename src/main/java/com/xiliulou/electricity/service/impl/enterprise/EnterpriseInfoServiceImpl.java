@@ -795,24 +795,24 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
                 enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
                 
-                BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
-                batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
-                batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
-                batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-                batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
-                batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
-                batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-                batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
-                batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
-                batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
-                batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
-                batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
-                batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
-                batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
-                batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-                batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
-                batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
-                batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
+//                BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+//                batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+//                batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+//                batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+//                batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+//                batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+//                batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+//                batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
+//                batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
+//                batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
+//                batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+//                batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+//                batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+//                batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+//                batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+//                batteryMembercardRefundOrderInsert.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+//                batteryMembercardRefundOrderInsert.setRemainingTime(electricityMemberCardOrder.getValidDays().longValue());
+//                batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
             }
             return Triple.of(true, null, totalCloudBean);
         }
