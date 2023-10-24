@@ -1692,7 +1692,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
             enterpriseUserCostRecordRemarkVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
-            //enterpriseUserCostRecordRemarkVO.setDepositAmount(eleDepositOrder.getPayAmount());
+            enterpriseUserCostRecordRemarkVO.setDepositAmount(batteryMemberCard.getDeposit());
             if (Objects.nonNull(insuranceOrder)) {
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
