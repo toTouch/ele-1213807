@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
-import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
@@ -151,7 +150,8 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                 .orderNo(orderNo)
                 .build();
         
-        return returnTripleResult(enterpriseBatteryPackageService.queryRiderDetails(query));
+       // return returnTripleResult(enterpriseBatteryPackageService.queryRiderDetails(query));
+        return returnTripleResult(enterpriseUserCostRecordService.queryRiderDetails(query));
     }
     
     /**
@@ -167,16 +167,14 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
                                    @RequestParam(value = "beginTime", required = false) Long beginTime,
                                    @RequestParam(value = "endTime", required = false) Long endTime) {
         
-        EnterprisePackageOrderQuery query = EnterprisePackageOrderQuery.builder()
+        /*EnterprisePackageOrderQuery query = EnterprisePackageOrderQuery.builder()
                 .enterpriseId(enterpriseId)
                 .uid(uid)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .build();
-        
+                .build();*/
         //return returnTripleResult(enterpriseBatteryPackageService.queryCostDetails(query));
-    
-    
+        
         EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery = EnterpriseUserCostRecordQuery.builder()
                 .enterpriseId(enterpriseId)
                 .uid(uid)

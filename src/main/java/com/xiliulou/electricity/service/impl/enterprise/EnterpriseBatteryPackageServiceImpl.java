@@ -2208,7 +2208,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(enterprisePackageOrderVO.getPackageId());
             //如果当前用户绑定的套餐被解绑或者当前套餐不是企业套餐，则获取最近一笔的企业套餐购买订单
             //重新获取套餐信息，并设置套餐过期时间为空
-            if (Long.valueOf(0).equals(enterprisePackageOrderVO.getPackageId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
+            if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
                     .equals(batteryMemberCard.getBusinessType())) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
                 if (Objects.isNull(electricityMemberCardOrder)) {
@@ -2228,7 +2228,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 if (Objects.nonNull(eleDepositOrderVO)) {
                     enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
                 } else {
-                    //免押，则设置为0
+                    //免押，页面显示为0
                     enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
                 }
                 

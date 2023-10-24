@@ -2,25 +2,47 @@ package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseUserCostRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterpriseUserCostRecordTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseUserCostRecordMapper;
 import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
+import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostRecordRemarkVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseUserPackageDetailsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
@@ -53,6 +75,146 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     @Resource
     EnterpriseUserCostRecordProducer enterpriseUserCostRecordProducer;
+    
+    @Resource
+    EleDepositOrderService eleDepositOrderService;
+    
+    @Resource
+    UserInfoService userInfoService;
+    
+    @Resource
+    FranchiseeService franchiseeService;
+    
+    @Resource
+    UserBatteryDepositService userBatteryDepositService;
+    
+    @Resource
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Resource
+    UserBatteryTypeService userBatteryTypeService;
+    
+    @Resource
+    InsuranceUserInfoService insuranceUserInfoService;
+    
+    @Override
+    public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query) {
+        EnterpriseUserPackageDetailsVO enterpriseUserPackageDetailsVO = new EnterpriseUserPackageDetailsVO();
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("query rider details info, not found userInfo,uid = {}", query.getUid());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+    
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+    
+        enterpriseUserPackageDetailsVO.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
+        enterpriseUserPackageDetailsVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
+        enterpriseUserPackageDetailsVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+        enterpriseUserPackageDetailsVO.setFranchiseeId(userInfo.getFranchiseeId());
+        enterpriseUserPackageDetailsVO.setStoreId(userInfo.getStoreId());
+        enterpriseUserPackageDetailsVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
+    
+        //设置骑手个人信息
+        enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
+        enterpriseUserPackageDetailsVO.setName(userInfo.getName());
+        enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
+        enterpriseUserPackageDetailsVO.setIdNumber(userInfo.getIdNumber());
+    
+        //查询骑手续费方式
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
+        log.info("query enterprise channel user, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
+        if (Objects.isNull(enterpriseChannelUserVO)) {
+            log.warn("query rider details info, not found enterprise channel user, uid = {}", query.getUid());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+        enterpriseUserPackageDetailsVO.setRenewalStatus(enterpriseChannelUserVO.getRenewalStatus());
+    
+        //判断是否存在orderNo参数，若不存在，则仅查看未代付用户记录信息
+        if(StringUtils.isEmpty(query.getOrderNo())){
+            log.warn("query rider details info, order no is null");
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+    
+        //根据orderNo查询套餐购买记录信息
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(query.getOrderNo());
+        if(Objects.isNull(electricityMemberCardOrder)){
+            log.warn("query rider details info, query order info by order no, but order is null, order no = {}", query.getOrderNo());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+        
+        //根据套餐ID查询套餐详细信息
+        BatteryMemberCard batteryPackage = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+    
+        enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
+        enterpriseUserPackageDetailsVO.setMemberCardExpireTime(null);
+        enterpriseUserPackageDetailsVO.setMemberCardId(batteryPackage.getId());
+        enterpriseUserPackageDetailsVO.setMemberCardName(batteryPackage.getName());
+        enterpriseUserPackageDetailsVO.setRentUnit(batteryPackage.getRentUnit());
+        enterpriseUserPackageDetailsVO.setLimitCount(batteryPackage.getLimitCount());
+        enterpriseUserPackageDetailsVO.setBatteryMembercardPayAmount(electricityMemberCardOrder.getPayAmount());
+        enterpriseUserPackageDetailsVO.setMemberCardPayTime(electricityMemberCardOrder.getCreateTime());
+    
+        //获取关联押金信息
+        EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(query.getUid(), electricityMemberCardOrder.getOrderId());
+        if (Objects.nonNull(eleDepositOrderVO)) {
+            enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+            enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+        } else {
+            //免押设置
+            // enterprisePackageOrderVO.setBatteryDeposit(BigDecimal.ZERO);
+            enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
+        }
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
+                NumberConstant.ZERO_L)) {
+            log.warn("query rider details failed, not found userBatteryMemberCard,uid = {}", userInfo.getUid());
+            return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        }
+    
+        //判断当前查询订单号关联套餐，是否和会员表中的套餐ID一致，若一致，则代表当前套餐为正在使用中的套餐
+        if(userBatteryMemberCard.getMemberCardId().equals(electricityMemberCardOrder.getMemberCardId())){
+            enterpriseUserPackageDetailsVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.YES);
+            enterpriseUserPackageDetailsVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+            enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+            enterpriseUserPackageDetailsVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+            enterpriseUserPackageDetailsVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
+    
+            if (Objects.equals(batteryPackage.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY)) {
+                enterpriseUserPackageDetailsVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil(
+                        (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000.0) : 0);
+            } else {
+                enterpriseUserPackageDetailsVO.setValidDays(userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis() ? (int) Math.ceil(
+                        (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000.0) : 0);
+            }
+    
+            //查询用户当前押金状况
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit) || org.apache.commons.lang3.StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
+                log.warn("query rider details failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
+                return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+            }
+    
+            enterpriseUserPackageDetailsVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+            enterpriseUserPackageDetailsVO.setDepositType(userBatteryDeposit.getDepositType());
+    
+            //用户电池型号
+            enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
+    
+            //查询用户保险信息
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+            InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+            if (Objects.nonNull(insuranceUserInfo)) {
+                BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+            }
+            enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+        }
+        
+        return Triple.of(true, null, enterpriseUserPackageDetailsVO);
+        
+    }
     
     @Override
     public List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery) {
