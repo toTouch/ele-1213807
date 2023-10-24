@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -18,7 +17,6 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -41,7 +39,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderServi
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
-import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
@@ -250,20 +247,21 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 continue;
             }
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
+            log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
         }
-        
+    
         Long currentTime = System.currentTimeMillis();
         //租退电记录
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUidAndTime(userInfo.getUid(), currentTime);
-        
+    
         //若未租退电
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
             return result.add(totalCloudBean);
         }
-        
+    
         //每个租退电消耗的云豆数
         BigDecimal totalUsedCloudBean = BigDecimal.ZERO;
-        
+    
         //若存在租退电
         for (EnterpriseRentRecord enterpriseRentRecord : enterpriseRentRecords) {
             //完整的租退
@@ -271,32 +269,40 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 //租退电时间包含的套餐消耗的云豆
                 BigDecimal containMembercardUsedCloudBean = getContainMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(containMembercardUsedCloudBean);
-                
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", containMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
+            
                 //租电时间所在的套餐消耗的云豆
                 BigDecimal rentBatteryMembercardUsedCloudBean = getRentBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
-                
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", rentBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
+            
                 //退电时间所在的套餐消耗的云豆
                 BigDecimal returnBatteryMembercardUsedCloudBean = getReturnBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord,
                         anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
-            }
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", returnBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
             
+            }
+        
             //有租没有退
             if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.isNull(enterpriseRentRecord.getReturnTime())) {
                 //租退电时间包含的套餐消耗的云豆
                 BigDecimal containMembercardUsedCloudBean = getContainMembercardUsedCloudBeanV2(enterpriseRentRecord, anotherPayMembercardRecords, currentTime);
                 totalUsedCloudBean = totalUsedCloudBean.add(containMembercardUsedCloudBean);
-                
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", containMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
+            
                 //租电时间所在的套餐消耗的云豆
                 BigDecimal rentBatteryMembercardUsedCloudBean = getRentBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
-                
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", rentBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
+            
                 //退电时间所在的套餐消耗的云豆
                 BigDecimal returnBatteryMembercardUsedCloudBean = getReturnBatteryMembercardUsedCloudBeanV2(enterpriseRentRecord, currentTime);
                 totalUsedCloudBean = totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
-            }
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!returnBatteryMembercardUsedCloudBean={},uid={}", returnBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
             
+            }
+        
             //有退没有租
             if (Objects.isNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
                 log.error("RECYCLE BATTERY MEMBERCARD ERROR! illegal enterpriseRentRecord,uid={},id={}", userInfo.getUid(), enterpriseRentRecord.getId());
