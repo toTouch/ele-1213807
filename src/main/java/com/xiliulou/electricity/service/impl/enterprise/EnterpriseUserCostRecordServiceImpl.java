@@ -96,23 +96,23 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {
-            log.warn("enterpriseChannelUser is null, uid={}", uid);
+            log.warn("enterprise channel user is null, uid = {}", uid);
             return;
         }
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("userBatteryMemberCard is null, uid={}", uid);
+            log.warn("user battery memberCard is null, uid = {}", uid);
             return;
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.warn("batteryMemberCard is null, memberCardId={}, uid={}", userBatteryMemberCard.getMemberCardId(), uid);
+            log.warn("battery memberCard is null, memberCardId = {}, uid = {}", userBatteryMemberCard.getMemberCardId(), uid);
             return;
         }
         
         if (!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
-            log.warn("the current package is not a enterprise package, memberCardId={}, uid={}", userBatteryMemberCard.getMemberCardId(), uid);
+            log.warn("the current package is not a enterprise package, memberCardId = {}, uid = {}", userBatteryMemberCard.getMemberCardId(), uid);
             return;
         }
         
