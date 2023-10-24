@@ -254,6 +254,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     @Override
     public void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime) {
+        log.info("save user cost record flow for battery, uid = {}, order no = {}, cost type = {}", uid, orderId, costType);
         Integer tenantId = TenantContextHolder.getTenantId();
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
