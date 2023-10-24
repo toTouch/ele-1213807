@@ -118,5 +118,7 @@ public class EnterpriseMemberCardQuery {
     private List<Long> packageIds;
 
     private Long enterpriseId;
+    
+    private String orderNo;
 
 }
