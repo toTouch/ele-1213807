@@ -64,6 +64,13 @@ public interface EnterpriseBatteryPackageService {
      * @return
      */
     public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query);
+    
+    /**
+     * 查询骑手当前押金状态
+     * @param query
+     * @return
+     */
+    public Triple<Boolean, String, Object> queryDepositInfo(EnterpriseMemberCardQuery query);
 
     /**
      * 查询骑手消费详情信息

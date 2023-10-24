@@ -5,8 +5,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
@@ -34,8 +32,8 @@ import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -51,20 +49,28 @@ import java.util.Objects;
 @Slf4j
 @Service("enterpriseChannelUserService")
 public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserService {
-    @Resource
-    private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
-    @Resource
-    private UserInfoService userInfoService;
-    @Resource
-    private EnterpriseInfoService enterpriseInfoService;
+    
     @Resource
     TenantService tenantService;
+    
     @Resource
     ElectricityBatteryService batteryService;
+    
     @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
+    
     @Resource
     ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
+    
+    @Resource
+    private UserInfoService userInfoService;
+    
+    @Resource
+    private EnterpriseInfoService enterpriseInfoService;
+    
     @Resource
     private RedisService redisService;
     
@@ -72,7 +78,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(EnterpriseChannelUserQuery query) {
         log.info("add new user by enterprise start, channel user = {}", JsonUtil.toJson(query));
-    
+        
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -80,10 +86,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         try {
             //检查当前用户是否可用
             Triple<Boolean, String, Object> result = verifyUserInfo(query);
-            if(Boolean.FALSE.equals(result.getLeft())){
+            if (Boolean.FALSE.equals(result.getLeft())) {
                 return Triple.of(false, result.getMiddle(), result.getRight());
             }
-    
+            
             EnterpriseInfo enterpriseInfo = (EnterpriseInfo) result.getRight();
             EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
             BeanUtil.copyProperties(query, enterpriseChannelUser);
@@ -93,16 +99,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
-    
+            
             enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
-    
+            
             // 添加用户加盟商信息
             UserInfo userInfo = new UserInfo();
             userInfo.setUid(query.getUid());
             userInfo.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
-    
+            
             log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
             
         } catch (Exception e) {
@@ -145,9 +151,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
         log.info("generate channel user start, enterprise channel info = {}", query.getEnterpriseId());
-    
+        
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
-        if(Objects.isNull(enterpriseInfo)){
+        if (Objects.isNull(enterpriseInfo)) {
             log.info("The enterprise info is not exist, enterprise id = {}", query.getEnterpriseId());
             return Triple.of(false, "", "企业信息不存在");
         }
@@ -155,13 +161,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         log.info("query tenant info by tenant id, tenant info  = {}", tenant);
-    
+        
         EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
         //先查找库中是否存在已经创建好的基础用户数据，如果存在，则使用已存在的数据，若不存在，则创建新的。
         EnterpriseChannelUser existEnterpriseChannelRecord = enterpriseChannelUserMapper.selectUnusedChannelUser(query.getEnterpriseId(), tenantId.longValue());
         if (Objects.nonNull(existEnterpriseChannelRecord)) {
             BeanUtil.copyProperties(existEnterpriseChannelRecord, enterpriseChannelUserVO);
-        }else{
+        } else {
             EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
             enterpriseChannelUser.setEnterpriseId(query.getEnterpriseId());
             enterpriseChannelUser.setInvitationWay(InvitationWayEnum.INVITATION_WAY_FACE_TO_FACE.getCode());
@@ -177,7 +183,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.info("generate channel user end, channel user info = {}", JsonUtil.toJson(enterpriseChannelUser));
             BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
         }
-    
+        
         if (Objects.nonNull(tenant)) {
             enterpriseChannelUserVO.setTenantCode(tenant.getCode());
         }
@@ -192,28 +198,28 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!ObjectUtils.allNotNull(query.getUid(), query.getId(), query.getRenewalStatus())) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
-    
+        
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         
-        try{
+        try {
             Triple<Boolean, String, Object> result = verifyUserInfo(query);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }
-    
+            
             Long uid = query.getUid();
             Long channelUserId = query.getId();
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
             enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
-    
+            
             enterpriseChannelUserMapper.update(enterpriseChannelUser);
-    
+            
             // 添加用户加盟商信息
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(uid);
             UserInfo userInfo = new UserInfo();
@@ -221,11 +227,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             userInfo.setFranchiseeId(channelUser.getFranchiseeId());
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
-    
+            
         } catch (Exception e) {
             log.error("add new user after QR scan error, uid = {}, ex = {}", query.getUid(), e);
             throw new BizException("300068", "扫码添加用户失败");
-    
+            
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid());
         }
@@ -256,7 +262,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByEnterpriseIdAndUid(enterpriseId, uid);
         EnterpriseChannelUserVO enterpriseChannelUserVO = new EnterpriseChannelUserVO();
-        if(Objects.nonNull(enterpriseChannelUser)){
+        if (Objects.nonNull(enterpriseChannelUser)) {
             BeanUtils.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
         }
         return enterpriseChannelUserVO;
@@ -273,7 +279,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     public EnterpriseChannelUserVO queryEnterpriseChannelUser(Long uid) {
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
         EnterpriseChannelUserVO enterpriseChannelUserVO = null;
-        if(Objects.nonNull(enterpriseChannelUser)){
+        if (Objects.nonNull(enterpriseChannelUser)) {
             enterpriseChannelUserVO = new EnterpriseChannelUserVO();
             BeanUtil.copyProperties(enterpriseChannelUser, enterpriseChannelUserVO);
         }
@@ -283,7 +289,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Slave
     @Override
     public EnterpriseChannelUserVO queryUserRelatedEnterprise(Long uid) {
-    
+        
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserMapper.selectUserRelatedEnterprise(uid);
         
         return enterpriseChannelUserVO;
@@ -307,15 +313,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     /**
      * 检查骑手是否为自主续费，true 则为自主续费， false 则为非自主续费
+     *
      * @param enterpriseChannelUserQuery
      * @return
      */
     @Slave
     @Override
     public Boolean checkUserRenewalStatus(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
-    
+        
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(enterpriseChannelUserQuery.getUid());
-        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+        if (Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())) {
             return Boolean.FALSE;
         }
         
@@ -324,28 +331,29 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     /**
      * 根据骑手UID，检查当前用户是否为自主续费状态， FALSE-企业代付， TRUE-自主续费
+     *
      * @param uid
      * @return
      */
     @Override
     public Boolean checkRenewalStatusByUid(Long uid) {
-    
+        
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectByUid(uid);
-        if(Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())){
+        if (Objects.nonNull(enterpriseChannelUser) && RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())) {
             return Boolean.FALSE;
         }
-    
+        
         return Boolean.TRUE;
     }
     
     @Override
     public List<EnterpriseChannelUser> queryChannelUserList(EnterpriseChannelUserQuery enterpriseChannelUserQuery) {
-    
+        
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         enterpriseChannelUser.setEnterpriseId(enterpriseChannelUserQuery.getEnterpriseId());
         enterpriseChannelUser.setTenantId(enterpriseChannelUserQuery.getTenantId());
         enterpriseChannelUser.setRenewalStatus(enterpriseChannelUserQuery.getRenewalStatus());
-    
+        
         List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         
         return enterpriseChannelUserList;
@@ -394,7 +402,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         //查询换电时间及柜机信息
         //Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityCabinetOrderVO electricityCabinetOrderVO = electricityCabinetOrderService.selectLatestOrderAndCabinetInfo(uid);
-        if(Objects.nonNull(electricityCabinetOrderVO)){
+        if (Objects.nonNull(electricityCabinetOrderVO)) {
             //ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
             userBatteryVo.setElectricityCabinetId(electricityCabinetOrderVO.getElectricityCabinetId());
             userBatteryVo.setElectricityCabinetName(electricityCabinetOrderVO.getElectricityCabinetName());
@@ -410,7 +418,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 0. 添加的骑手不能是企业站长
         EnterpriseInfo enterpriseData = enterpriseInfoService.selectByUid(query.getUid());
-        if(Objects.nonNull(enterpriseData)){
+        if (Objects.nonNull(enterpriseData)) {
             log.error("add user to enterprise failed. current user is enterprise director. uid = {}, enterprise director uid ", query.getUid(), SecurityUtils.getUid());
             return Triple.of(false, "300062", "待添加用户为企业负责人，无法添加");
         }
@@ -460,9 +468,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         //7. 骑手手机号不能重复添加
-        if(Objects.nonNull(query.getPhone())){
+        if (Objects.nonNull(query.getPhone())) {
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone());
-            if(Objects.nonNull(channelUser)){
+            if (Objects.nonNull(channelUser)) {
                 log.info("The user already used in current enterprise, enterprise id = {}, phone = {}", channelUser.getEnterpriseId(), query.getPhone());
                 return Triple.of(false, "300061", "当前用户手机号已存在, 无法重复添加");
             }

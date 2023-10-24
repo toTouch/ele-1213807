@@ -128,7 +128,6 @@ public class JsonUserEnterprisePackageController extends BaseController {
         return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDeposit(freeQuery));
     }
     
-    
     /**
      * 查询电池免押是否成功
      *
@@ -149,6 +148,21 @@ public class JsonUserEnterprisePackageController extends BaseController {
     @GetMapping("/user/enterprise/franchisee/status")
     public R franchiseeStatus(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId) {
         return returnTripleResult(enterpriseBatteryPackageService.selectFranchiseeByEnterpriseId(enterpriseId));
+    }
+    
+    /**
+     * 购买套餐前，查询骑手押金状态信息
+     *
+     * @param enterpriseId
+     * @param uid
+     * @return
+     */
+    @GetMapping("/user/enterprise/queryUserDeposit")
+    public R queryUserDeposit(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid) {
+        
+        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder().enterpriseId(enterpriseId).uid(uid).build();
+        
+        return returnTripleResult(enterpriseBatteryPackageService.queryDepositInfo(query));
     }
     
     /**

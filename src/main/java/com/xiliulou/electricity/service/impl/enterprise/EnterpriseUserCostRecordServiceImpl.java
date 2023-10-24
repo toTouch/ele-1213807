@@ -56,14 +56,13 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     @Override
     public List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery) {
-    
         List<EnterpriseUserCostDetailsVO> enterpriseUserCostDetailsVOList = Lists.newArrayList();
         List<EnterpriseUserCostRecord> enterpriseUserCostRecordList = enterpriseUserCostRecordMapper.selectUserCostList(enterpriseUserCostRecordQuery);
         
-        for (EnterpriseUserCostRecord enterpriseUserCostRecord : enterpriseUserCostRecordList){
-    
+        for (EnterpriseUserCostRecord enterpriseUserCostRecord : enterpriseUserCostRecordList) {
+            
             EnterpriseUserCostDetailsVO enterpriseUserCostDetailsVO = new EnterpriseUserCostDetailsVO();
-    
+            
             enterpriseUserCostDetailsVO.setPackageId(enterpriseUserCostRecord.getPackageId());
             enterpriseUserCostDetailsVO.setPackageName(enterpriseUserCostRecord.getPackageName());
             enterpriseUserCostDetailsVO.setEnterpriseId(enterpriseUserCostRecord.getEnterpriseId());
@@ -71,15 +70,15 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
             enterpriseUserCostDetailsVO.setOrderNo(enterpriseUserCostRecord.getOrderId());
             enterpriseUserCostDetailsVO.setCostType(enterpriseUserCostRecord.getCostType());
             enterpriseUserCostDetailsVO.setOperationTime(enterpriseUserCostRecord.getCreateTime());
-    
+            
             String remark = enterpriseUserCostRecord.getRemark();
-            if(StringUtils.isNotEmpty(remark)){
+            if (StringUtils.isNotEmpty(remark)) {
                 EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = JsonUtil.fromJson(remark, EnterpriseUserCostRecordRemarkVO.class);
                 enterpriseUserCostDetailsVO.setPayAmount(enterpriseUserCostRecordRemarkVO.getPayAmount());
                 enterpriseUserCostDetailsVO.setDepositAmount(enterpriseUserCostRecordRemarkVO.getDepositAmount());
                 enterpriseUserCostDetailsVO.setInsuranceAmount(enterpriseUserCostRecordRemarkVO.getInsuranceAmount());
             }
-    
+            
             enterpriseUserCostDetailsVOList.add(enterpriseUserCostDetailsVO);
         }
         
@@ -93,7 +92,6 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     @Override
     public void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime) {
-    
         Integer tenantId = TenantContextHolder.getTenantId();
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
@@ -110,10 +108,10 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
             return;
         }
         
-        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+        if (!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
             return;
         }
-    
+        
         //记录企业代付订单信息
         EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
         enterpriseUserCostRecordDTO.setUid(uid);
@@ -133,14 +131,13 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         //enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
         log.info("Async save enterprise user cost record.send async message, message is {}", message);
         enterpriseUserCostRecordProducer.sendAsyncMessage(message);
-    
+        
     }
     
     @Override
     public void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder) {
-    
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+        
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {
             return;
@@ -149,16 +146,16 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         if (Objects.isNull(userBatteryMemberCard)) {
             return;
         }
-    
+        
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             return;
         }
-    
-        if(!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+        
+        if (!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
             return;
         }
-    
+        
         //记录企业代付订单信息
         EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
         enterpriseUserCostRecordDTO.setUid(uid);
@@ -172,18 +169,18 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         enterpriseUserCostRecordDTO.setCreateTime(eleRefundOrder.getCreateTime());
         enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
         enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-    
+        
         EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
         enterpriseUserCostRecordRemarkVO.setPayAmount(eleRefundOrder.getPayAmount());
         enterpriseUserCostRecordRemarkVO.setDepositAmount(eleRefundOrder.getRefundAmount());
         enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
-    
+        
         String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
-    
+        
         //MQ处理企业代付订单信息
         log.info("Async save enterprise user cost record for refund deposit. send async message, message is {}", message);
         enterpriseUserCostRecordProducer.sendAsyncMessage(JsonUtil.toJson(enterpriseUserCostRecordDTO));
-    
+        
     }
     
     
