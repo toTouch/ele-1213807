@@ -143,9 +143,13 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     @GetMapping("/user/enterprise/queryRiderDetails")
     public R queryRiderDetails(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId,
                                @RequestParam(value = "uid", required = true) Long uid,
-                               @RequestParam(value = "orderNo", required = false) Long orderNo) {
+                               @RequestParam(value = "orderNo", required = false) String orderNo) {
         
-        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder().enterpriseId(enterpriseId).uid(uid).build();
+        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder()
+                .enterpriseId(enterpriseId)
+                .uid(uid)
+                .orderNo(orderNo)
+                .build();
         
         return returnTripleResult(enterpriseBatteryPackageService.queryRiderDetails(query));
     }
