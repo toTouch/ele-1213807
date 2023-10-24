@@ -1271,14 +1271,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 return Triple.of(false, "ELECTRICITY.100000", "存在滞纳金，请先缴纳");
             }
     
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "用户套餐已冻结");
-            }
+            if(Objects.nonNull(userBatteryMemberCard)){
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300070", "用户套餐已冻结");
+                }
     
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300071", "套餐冻结审核中");
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300071", "套餐冻结审核中");
+                }
             }
             
             //是否开启购买保险（是进入）
@@ -1571,15 +1573,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.100000", "存在滞纳金，请先缴纳");
             }
+            
+            //如果会员表存在信息，则用户并非第一次购买套餐，需要检查是否存在冻结的状况
+            if(Objects.nonNull(userBatteryMemberCard)){
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300070", "用户套餐已冻结");
+                }
     
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "用户套餐已冻结");
-            }
-    
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300071", "套餐冻结审核中");
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300071", "套餐冻结审核中");
+                }
             }
             
             //是否开启购买保险（是进入）
@@ -1831,7 +1836,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo)) {
-            log.warn("query rider details failed, not found userInfo,uid = {}", query.getUid());
+            log.warn("query rider details info, not found userInfo,uid = {}", query.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
         
@@ -1854,7 +1859,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
         log.info("query enterprise channel user, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
         if (Objects.isNull(enterpriseChannelUserVO)) {
-            log.warn("query rider details failed, not found enterprise channel user, uid = {}", query.getUid());
+            log.warn("query rider details info, not found enterprise channel user, uid = {}", query.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
         enterpriseUserPackageDetailsVO.setRenewalStatus(enterpriseChannelUserVO.getRenewalStatus());
@@ -1872,7 +1877,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
         
-        if (Long.valueOf(0).equals(userBatteryMemberCard.getMemberCardId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
+        if (NumberConstant.ZERO_L.equals(userBatteryMemberCard.getMemberCardId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
                 .equals(batteryMemberCard.getBusinessType())) {
             ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(query.getUid());
             if (Objects.isNull(electricityMemberCardOrder)) {
