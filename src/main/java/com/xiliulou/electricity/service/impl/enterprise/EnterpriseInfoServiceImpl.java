@@ -10,7 +10,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -617,8 +616,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             userCloudBeanDetailVO.setRecyclableCloudBean(BigDecimal.ZERO.doubleValue());
         } else {
             BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
-            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
-                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
+            List<Long> uidList = canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().collect(Collectors.toList());
+            for (Long uid : uidList) {
+                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(uid));
                 userCloudBeanDetailVO.setRecyclableCloudBean(canRecycleCloudBean.doubleValue());
             }
         }
