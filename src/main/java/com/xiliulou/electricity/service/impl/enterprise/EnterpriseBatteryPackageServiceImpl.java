@@ -2187,15 +2187,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterprisePackageOrderVO.setPackageName(batteryPackage.getName());
                 enterprisePackageOrderVO.setPackageExpiredTime(null);
                 enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
+                enterprisePackageOrderVO.setBatteryDeposit(batteryPackage.getDeposit());
                 
-                //获取关联押金信息
+                //获取关联押金订单信息
                 EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
                 if (Objects.nonNull(eleDepositOrderVO)) {
-                    enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
                     enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
                 } else {
                     //免押，则设置为0
-                    enterprisePackageOrderVO.setBatteryDeposit(BigDecimal.ZERO);
                     enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
                 }
                 
