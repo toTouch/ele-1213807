@@ -1,13 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 
 /**
@@ -199,6 +191,14 @@ public class EleRefundOrderVO {
 
     public void setPayType(Integer payType) {
         this.payType = payType;
+    }
+    
+    public Integer getOrderType() {
+        return orderType;
+    }
+    
+    public void setOrderType(Integer orderType) {
+        this.orderType = orderType;
     }
     
     //    public Integer getRefundOrderType() {
