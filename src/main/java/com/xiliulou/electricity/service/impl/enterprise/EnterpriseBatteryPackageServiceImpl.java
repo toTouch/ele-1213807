@@ -1011,6 +1011,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.100000", "存在滞纳金，请先缴纳");
             }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300070", "用户套餐已冻结");
+            }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300071", "套餐冻结审核中");
+            }
             
             //续租操作时，已经有了电池信息，查询用户当前关联的电池型号
             String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
@@ -1259,6 +1269,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.100000", "存在滞纳金，请先缴纳");
+            }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300070", "用户套餐已冻结");
+            }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300071", "套餐冻结审核中");
             }
             
             //是否开启购买保险（是进入）
@@ -1551,6 +1571,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.100000", "存在滞纳金，请先缴纳");
+            }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300070", "用户套餐已冻结");
+            }
+    
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                return Triple.of(false, "300071", "套餐冻结审核中");
             }
             
             //是否开启购买保险（是进入）
