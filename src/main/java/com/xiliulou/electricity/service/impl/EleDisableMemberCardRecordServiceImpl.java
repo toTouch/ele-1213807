@@ -192,9 +192,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
             updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
-
+           
             //用户是否绑定电池
             if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+                //记录企业用户冻结套餐记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
                 return R.ok();
             }
 
