@@ -67,7 +67,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EnterpriseRentRecord enterpriseRentRecord) {
-        return this.enterpriseRentRecordMapper.update(enterpriseRentRecord);
+        return this.enterpriseRentRecordMapper.updateById(enterpriseRentRecord);
     }
     
     /**
@@ -140,14 +140,13 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
             log.error("SAVE RENT RECORD WARN!not found enterpriseReturnRecord,uid={}", uid);
             return;
         }
-        
+
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
-        enterpriseReturnRecordUpdate.setUid(uid);
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setTenantId(userBatteryMemberCard.getTenantId());
-        this.enterpriseRentRecordMapper.insert(enterpriseReturnRecordUpdate);
+        this.enterpriseRentRecordMapper.updateById(enterpriseReturnRecordUpdate);
     }
 }

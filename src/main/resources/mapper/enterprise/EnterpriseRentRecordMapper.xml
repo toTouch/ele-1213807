@@ -44,32 +44,6 @@
         where uid = #{uid} and return_time is null order by id desc limit 1
     </select>
     
-    <!--通过主键修改数据-->
-    <update id="update">
-        update t_enterprise_rent_record
-        <set>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="rentTime != null">
-                rent_time = #{rentTime},
-            </if>
-            <if test="returnTime != null">
-                return_time = #{returnTime},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
-    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_enterprise_rent_record where id = #{id}
