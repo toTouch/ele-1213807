@@ -143,9 +143,11 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
+        enterpriseReturnRecordUpdate.setUid(uid);
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        enterpriseReturnRecordUpdate.setTenantId(userBatteryMemberCard.getTenantId());
         this.enterpriseRentRecordMapper.insert(enterpriseReturnRecordUpdate);
     }
 }
