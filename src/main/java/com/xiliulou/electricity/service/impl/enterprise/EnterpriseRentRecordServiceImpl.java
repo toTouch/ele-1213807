@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.enterprise;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
@@ -83,18 +84,14 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     }
     
     @Override
-    public List<EnterpriseRentRecord> selectByUidAndTime(Long uid, long startTime) {
-        return this.enterpriseRentRecordMapper.selectByUidAndTime(uid, startTime);
-    }
-    
-    @Override
     public int deleteByUid(Long uid) {
         return this.enterpriseRentRecordMapper.deleteByUid(uid);
     }
     
+    @Slave
     @Override
     public List<EnterpriseRentRecord> selectByUid(Long uid) {
-        return this.enterpriseRentRecordMapper.selectList(new LambdaQueryWrapper<EnterpriseRentRecord>().eq(EnterpriseRentRecord::getUid, uid));
+        return this.enterpriseRentRecordMapper.selectByUid(uid);
     }
     
     @Override

@@ -48,8 +48,6 @@ public interface EnterpriseRentRecordService {
     
     void saveEnterpriseReturnRecord(Long uid);
     
-    List<EnterpriseRentRecord> selectByUidAndTime(Long uid, long startTime);
-    
     int deleteByUid(Long uid);
     
     List<EnterpriseRentRecord> selectByUid(Long uid);

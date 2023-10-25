@@ -33,7 +33,7 @@ public interface EnterpriseRentRecordMapper extends BaseMapper<EnterpriseRentRec
     
     EnterpriseRentRecord selectLatestRentRecord(Long uid);
     
-    List<EnterpriseRentRecord> selectByUidAndTime(@Param("uid") Long uid, @Param("startTime") long startTime);
-    
     int deleteByUid(Long uid);
+    
+    List<EnterpriseRentRecord> selectByUid(@Param("uid") Long uid);
 }

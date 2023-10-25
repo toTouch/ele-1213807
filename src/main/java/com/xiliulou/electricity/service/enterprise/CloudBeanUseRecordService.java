@@ -81,6 +81,6 @@ public interface CloudBeanUseRecordService {
     BigDecimal getRentBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
     
-    BigDecimal getContainMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
+    BigDecimal getBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
 }
