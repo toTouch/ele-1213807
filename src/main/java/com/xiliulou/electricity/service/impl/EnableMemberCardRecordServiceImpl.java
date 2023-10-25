@@ -1,34 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
-import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.mapper.EnableMemberCardRecordMapper;
-import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EnableMemberCardRecordVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
