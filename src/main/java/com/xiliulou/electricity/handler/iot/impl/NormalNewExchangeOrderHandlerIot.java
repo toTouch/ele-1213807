@@ -185,6 +185,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS);
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_FAIL);
         warnStateList.add(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT);
+        warnStateList.add(ElectricityCabinetOrder.INIT_DEVICE_USING);
         
         if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
             // 通过订单的 UID 获取用户信息
