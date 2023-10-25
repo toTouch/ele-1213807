@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -159,7 +160,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
         //获取关联押金信息
         EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(query.getUid(), electricityMemberCardOrder.getOrderId());
-        if (Objects.nonNull(eleDepositOrderVO)) {
+        if (Objects.nonNull(eleDepositOrderVO) && !EleDepositOrder.FREE_DEPOSIT_PAYMENT.equals(eleDepositOrderVO.getPayType())) {
             enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
             enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         } else {
@@ -171,7 +172,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
                 NumberConstant.ZERO_L)) {
-            log.warn("query rider details failed, not found userBatteryMemberCard,uid = {}", userInfo.getUid());
+            log.warn("query rider details warn, not found userBatteryMemberCard,uid = {}", userInfo.getUid());
             return Triple.of(true, null, enterpriseUserPackageDetailsVO);
         }
     

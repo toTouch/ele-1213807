@@ -198,7 +198,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             //用户是否绑定电池
             if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
                 //记录企业用户冻结套餐记录
-                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
                 return R.ok();
             }
 
@@ -234,7 +234,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
     
             //记录企业用户冻结套餐记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
         }
 
         return R.ok();
