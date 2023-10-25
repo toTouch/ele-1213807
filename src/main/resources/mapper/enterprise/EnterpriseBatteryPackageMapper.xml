@@ -386,9 +386,9 @@
             and tecu.enterprise_id = #{enterpriseId}
         </if>
     
-        <if test="currentTime != null">
+      <!--  <if test="currentTime != null">
             and tubmc.member_card_expire_time &gt; #{currentTime}
-        </if>
+        </if>-->
     
         <if test="userName != null and userName != ''">
             and tui.name like concat('%',#{userName},'%')
@@ -474,9 +474,9 @@
             and tecu.enterprise_id = #{enterpriseId}
         </if>
         
-        <if test="currentTime != null">
+        <!--<if test="currentTime != null">
             and tubmc.member_card_expire_time &gt; #{currentTime}
-        </if>
+        </if>-->
         
         <if test="userName != null and userName != ''">
             and tui.name like concat('%',#{userName},'%')
