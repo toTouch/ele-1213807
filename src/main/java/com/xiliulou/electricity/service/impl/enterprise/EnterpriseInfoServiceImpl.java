@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
@@ -747,7 +748,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     public Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
         BigDecimal result = BigDecimal.ZERO;
-        
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryMemberCard)){
+            return Triple.of(true, null, result);
+        }
+    
         List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(anotherPayMembercardRecords)) {
             return Triple.of(true, null, result);
@@ -798,16 +804,32 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(true, null, totalCloudBean);
         }
         
-        //每个租退电消耗的云豆数
+        //租退电消耗的云豆数
         BigDecimal totalUsedCloudBean = BigDecimal.ZERO;
-        
-        //若存在租退电
         for (EnterpriseRentRecord enterpriseRentRecord : enterpriseRentRecords) {
             if (Objects.nonNull(enterpriseRentRecord.getRentTime())&& Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
                 BigDecimal membercardUsedCloudBean = cloudBeanUseRecordService.getBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
                 totalUsedCloudBean = totalUsedCloudBean.add(membercardUsedCloudBean);
             }
         }
+        
+        //保存回收记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
+        cloudBeanUseRecord.setBeanAmount(result);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(result));
+        cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(userBatteryMemberCard.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+    
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(result.add(totalCloudBean.subtract(totalUsedCloudBean))));
         
         //待回收云豆=总的支付的云豆-总消耗的云豆
         return Triple.of(true, null, result.add(totalCloudBean.subtract(totalUsedCloudBean)));

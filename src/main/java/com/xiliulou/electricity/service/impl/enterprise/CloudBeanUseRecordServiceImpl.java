@@ -433,27 +433,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         long useDays = DateUtils.diffDay(enterpriseRentRecord.getRentTime(), enterpriseRentRecord.getReturnTime());
         
         //总共消耗的云豆
-        result=BigDecimal.valueOf(useDays).multiply(rentPrice);
-    
-        //保存回收记录
-        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
-        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
-        cloudBeanUseRecord.setUid(userInfo.getUid());
-        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
-        cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
-        cloudBeanUseRecord.setBeanAmount(result);
-        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(result));
-        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
-        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
-        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
-        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
-        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
-        this.insert(cloudBeanUseRecord);
-    
-        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
-        
-        return result;
+        return BigDecimal.valueOf(useDays).multiply(rentPrice);
     }
     
     private BigDecimal getContainMembercardUsedCloudBeanV2(EnterpriseRentRecord enterpriseRentRecord, List<AnotherPayMembercardRecord> anotherPayMembercardRecords,
