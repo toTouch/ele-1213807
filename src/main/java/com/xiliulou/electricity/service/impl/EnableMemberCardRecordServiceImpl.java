@@ -74,7 +74,7 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
             if(Objects.isNull(enableMemberCardRecord)){
                 continue;
             }
-            BeanUtils.copyProperties(enableMemberCardRecordVO, enableMemberCardRecord);
+            BeanUtils.copyProperties(enableMemberCardRecord, enableMemberCardRecordVO);
             Long packageId = enableMemberCardRecord.getMemberCardId();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
             
