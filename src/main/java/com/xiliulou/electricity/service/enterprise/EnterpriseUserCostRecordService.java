@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.enterprise;
 
-import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
@@ -30,12 +30,28 @@ public interface EnterpriseUserCostRecordService {
      */
     List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery);
     
-    EnterpriseUserCostRecordDTO buildUserCostRecordForPurchasePackage(Long uid, String orderId, Long enterpriseId, Long packageId, Integer costType);
-    
+    /**
+     * 企业套餐冻结及启用时，记录骑手消费详情信息
+     * @param uid
+     * @param orderId
+     * @param costType
+     * @param createTime
+     */
     void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime);
     
-    //void asyncSaveUserCostRecordForFreezeBattery(Long uid, String orderId, Integer costType);
-    
+    /**
+     * 企业套餐回收云豆，即退押时，记录骑手消费详情信息
+     * @param uid
+     * @param costType
+     * @param eleRefundOrder
+     */
     void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder);
+    
+    /**
+     * 企业套餐租，退电池时，记录骑手消费详情信息
+     * @param costType
+     * @param rentBatteryOrder
+     */
+    void asyncSaveUserCostRecordForRentalAndReturnBattery(Integer costType, RentBatteryOrder rentBatteryOrder);
     
 }

@@ -669,7 +669,7 @@ public class EleOperateQueueHandler {
 
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
             //记录企业用户租电池记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
         }
 
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(
@@ -678,7 +678,7 @@ public class EleOperateQueueHandler {
 
             enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
             //记录企业用户还电池记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         }
     }
 

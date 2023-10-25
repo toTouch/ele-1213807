@@ -1143,7 +1143,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
             
             //记录企业用户租电池记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(oldUserInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
             return null;
         });
@@ -1311,7 +1311,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
     
         //记录企业用户还电池记录
-        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(oldUserInfo.getUid(), rentBatteryOrder.getOrderId(), UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder.getCreateTime());
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         
         return R.ok();
     }

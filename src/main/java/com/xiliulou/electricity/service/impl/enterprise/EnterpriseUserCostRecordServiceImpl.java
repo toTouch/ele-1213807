@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -248,11 +249,6 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     }
     
     @Override
-    public EnterpriseUserCostRecordDTO buildUserCostRecordForPurchasePackage(Long uid, String orderId, Long enterpriseId, Long packageId, Integer costType) {
-        return null;
-    }
-    
-    @Override
     public void asyncSaveUserCostRecordForBattery(Long uid, String orderId, Integer costType, Long createTime) {
         log.info("save user cost record flow for battery, uid = {}, order no = {}, cost type = {}", uid, orderId, costType);
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -301,6 +297,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
     @Override
     public void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder) {
+        log.info("save user cost record flow for refund deposit, uid = {}, order no = {}, cost type = {}", uid, eleRefundOrder.getOrderId(), costType);
         Integer tenantId = TenantContextHolder.getTenantId();
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
@@ -344,6 +341,49 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         
         //MQ处理企业代付订单信息
         log.info("Async save enterprise user cost record for refund deposit. send async message, message is {}", message);
+        enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+        
+    }
+    
+    @Override
+    public void asyncSaveUserCostRecordForRentalAndReturnBattery(Integer costType, RentBatteryOrder rentBatteryOrder) {
+        log.info("save user cost record flow for rental and return battery, uid = {}, order no = {}, cost type = {}", rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId(), costType);
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(rentBatteryOrder.getUid());
+        if (Objects.isNull(enterpriseChannelUser)) {
+            return;
+        }
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return;
+        }
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return;
+        }
+    
+        if (!BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
+            return;
+        }
+    
+        //记录企业代付订单信息
+        EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+        enterpriseUserCostRecordDTO.setUid(rentBatteryOrder.getUid());
+        enterpriseUserCostRecordDTO.setEnterpriseId(enterpriseChannelUser.getEnterpriseId());
+        enterpriseUserCostRecordDTO.setOrderId(rentBatteryOrder.getOrderId());
+        enterpriseUserCostRecordDTO.setPackageId(batteryMemberCard.getId());
+        enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
+        enterpriseUserCostRecordDTO.setCostType(costType);
+        enterpriseUserCostRecordDTO.setType(EnterpriseUserCostRecordTypeEnum.USER_COST_TYPE_BATTERY.getCode());
+        enterpriseUserCostRecordDTO.setTenantId(rentBatteryOrder.getTenantId().longValue());
+        enterpriseUserCostRecordDTO.setCreateTime(rentBatteryOrder.getCreateTime());
+        enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
+        enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+    
+        String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+    
+        //MQ处理企业代付订单信息
+        log.info("Async save enterprise user cost record for rental and return battery. send async message, message is {}", message);
         enterpriseUserCostRecordProducer.sendAsyncMessage(message);
         
     }
