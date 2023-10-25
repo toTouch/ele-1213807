@@ -58,6 +58,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否开启低电量换电 (0--关闭，1--开启)
      */
     private Integer isLowBatteryExchange;
+    
+    /**
+     * 是否开启选仓换电 (0--关闭，1--开启)
+     */
+    private Integer isSelectionExchange;
 
     /**
      * 低电量换电配置模式
