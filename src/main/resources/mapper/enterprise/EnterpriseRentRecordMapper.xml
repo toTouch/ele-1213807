@@ -26,7 +26,7 @@
         select
           id, uid, rent_membercard_order_id,return_membercard_order_id, rent_time, return_time, create_time, update_time, tenant_id
         from t_enterprise_rent_record
-        where uid = #{uid} and create_time &gt; #{startTime}
+        where uid = #{uid} and create_time &lt; #{startTime}
     </select>
     
     <select id="selectLatestRentRecord" resultMap="EnterpriseRentRecordMap">
