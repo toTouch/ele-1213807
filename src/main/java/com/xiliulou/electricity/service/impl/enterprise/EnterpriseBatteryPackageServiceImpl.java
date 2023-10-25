@@ -2319,34 +2319,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (Objects.nonNull(enterpriseChannelUser)) {
                 enterprisePackageOrderVO.setCloudBeanStatus(enterpriseChannelUser.getCloudBeanStatus());
             }
-        }
-    }
     
-    private Triple<Boolean, String, Object> handlerFirstBuyBatteryMemberCard(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, UserInfo userInfo) {
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-            log.warn("purchase package by enterprise user, not allow buy this package, uid = {}", userInfo.getUid());
-            return Triple.of(false, "100274", "赠送套餐不允许续费");
+            //查询当前用户是否已租电池
+            UserInfo userInfo = userInfoService.queryByUidFromCache(enterprisePackageOrderVO.getUid());
+            if(Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())){
+                enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
+            }else{
+                enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+            }
         }
-        
-        if (!(Objects.equals(BatteryMemberCard.RENT_TYPE_NEW, batteryMemberCard.getRentType()) || Objects.equals(BatteryMemberCard.RENT_TYPE_UNLIMIT,
-                batteryMemberCard.getRentType()))) {
-            log.warn("purchase package by enterprise user, new batteryMemberCard not available,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
-            return Triple.of(false, "100275", "换电套餐不可用");
-        }
-        
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.warn("purchase package by enterprise user, not found userBatteryDeposit,uid={}", userInfo.getUid());
-            return Triple.of(false, "100247", "用户信息不存在");
-        }
-        
-        boolean flag = batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) == 0;
-        if (!flag) {
-            log.warn("purchase package by enterprise user, batteryMemberCard deposit not equals user battery deposit,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
-            return Triple.of(false, "100277", "换电套餐押金不一致");
-        }
-        
-        return Triple.of(true, null, null);
     }
     
     private Triple<Boolean, String, Object> handlerNonFirstBuyBatteryMemberCard(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, UserInfo userInfo,
