@@ -114,8 +114,6 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         EnterpriseRentRecord enterpriseRentRecord = new EnterpriseRentRecord();
         enterpriseRentRecord.setUid(uid);
         enterpriseRentRecord.setRentMembercardOrderId(userBatteryMemberCard.getOrderId());
-        //        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
-        //        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         enterpriseRentRecord.setRentTime(System.currentTimeMillis());
         enterpriseRentRecord.setCreateTime(System.currentTimeMillis());
         enterpriseRentRecord.setUpdateTime(System.currentTimeMillis());
@@ -146,9 +144,8 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
-        //        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(enterpriseReturnRecordUpdate);
+        this.enterpriseRentRecordMapper.insert(enterpriseReturnRecordUpdate);
     }
 }

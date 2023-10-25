@@ -24,9 +24,17 @@
     
     <select id="selectByUidAndTime" resultMap="EnterpriseRentRecordMap">
         select
-          id, uid, rent_membercard_order_id,return_membercard_order_id, rent_time, return_time, create_time, update_time, tenant_id
+          any_value ( id ) id,
+          any_value ( uid ) uid,
+          any_value ( rent_membercard_order_id ) rent_membercard_order_id,
+          any_value ( return_membercard_order_id ) return_membercard_order_id,
+          any_value ( rent_time ) rent_time,
+          any_value ( return_time ) return_time,
+          any_value ( create_time ) create_time,
+          any_value ( update_time ) update_time,
+          any_value ( tenant_id ) tenant_id
         from t_enterprise_rent_record
-        where uid = #{uid} and create_time &lt; #{startTime}
+        where uid = #{uid} and create_time &lt; #{startTime} GROUP BY FROM_UNIXTIME(create_time / 1000, '%Y-%m-%d' );
     </select>
     
     <select id="selectLatestRentRecord" resultMap="EnterpriseRentRecordMap">
