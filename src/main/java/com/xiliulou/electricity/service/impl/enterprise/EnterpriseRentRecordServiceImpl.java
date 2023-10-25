@@ -67,7 +67,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EnterpriseRentRecord enterpriseRentRecord) {
-        return this.enterpriseRentRecordMapper.update(enterpriseRentRecord);
+        return this.enterpriseRentRecordMapper.updateById(enterpriseRentRecord);
     }
     
     /**
@@ -114,8 +114,6 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         EnterpriseRentRecord enterpriseRentRecord = new EnterpriseRentRecord();
         enterpriseRentRecord.setUid(uid);
         enterpriseRentRecord.setRentMembercardOrderId(userBatteryMemberCard.getOrderId());
-        //        enterpriseRentRecord.setRentMid(userBatteryMemberCard.getMemberCardId());
-        //        enterpriseRentRecord.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         enterpriseRentRecord.setRentTime(System.currentTimeMillis());
         enterpriseRentRecord.setCreateTime(System.currentTimeMillis());
         enterpriseRentRecord.setUpdateTime(System.currentTimeMillis());
@@ -142,13 +140,13 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
             log.error("SAVE RENT RECORD WARN!not found enterpriseReturnRecord,uid={}", uid);
             return;
         }
-        
+
         EnterpriseRentRecord enterpriseReturnRecordUpdate = new EnterpriseRentRecord();
         enterpriseReturnRecordUpdate.setId(enterpriseReturnRecord.getId());
         enterpriseReturnRecordUpdate.setReturnMembercardOrderId(userBatteryMemberCard.getOrderId());
-        //        enterpriseReturnRecordUpdate.setReturnMid(userBatteryMemberCard.getId());
         enterpriseReturnRecordUpdate.setReturnTime(System.currentTimeMillis());
         enterpriseReturnRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(enterpriseReturnRecordUpdate);
+        enterpriseReturnRecordUpdate.setTenantId(userBatteryMemberCard.getTenantId());
+        this.enterpriseRentRecordMapper.updateById(enterpriseReturnRecordUpdate);
     }
 }

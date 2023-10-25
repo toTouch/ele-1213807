@@ -24,14 +24,6 @@ public interface EnterpriseRentRecordMapper extends BaseMapper<EnterpriseRentRec
     EnterpriseRentRecord queryById(Long id);
     
     /**
-     * 修改数据
-     *
-     * @param enterpriseRentRecord 实例对象
-     * @return 影响行数
-     */
-    int update(EnterpriseRentRecord enterpriseRentRecord);
-    
-    /**
      * 通过主键删除数据
      *
      * @param id 主键
