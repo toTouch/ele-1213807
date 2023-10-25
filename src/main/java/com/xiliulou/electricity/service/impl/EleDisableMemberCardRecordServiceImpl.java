@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
@@ -89,7 +90,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getBatteryMemberCardId());
             item.setRentUnit(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getRentUnit());
-
+            item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
+            
         });
 
         return R.ok(eleDisableMemberCardRecordVOS);
