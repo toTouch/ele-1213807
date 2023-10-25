@@ -427,7 +427,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
         
         //套餐单价
-        BigDecimal rentPrice=batteryMemberCard.getRentPrice().divide(BigDecimal.valueOf(batteryMemberCard.getUseCount()),2, RoundingMode.HALF_UP);
+        BigDecimal rentPrice=batteryMemberCard.getRentPrice().divide(BigDecimal.valueOf(batteryMemberCard.getValidDays()),2, RoundingMode.HALF_UP);
         
         //租退电天数
         long useDays = DateUtils.diffDay(enterpriseRentRecord.getRentTime(), enterpriseRentRecord.getReturnTime());
