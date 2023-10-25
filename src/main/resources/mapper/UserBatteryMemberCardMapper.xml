@@ -168,7 +168,7 @@
     </update>
 
     <update id="plusCount">
-        update t_user_battery_member_card set remaining_number=remaining_number+1 where uid=#{uid} and del_flag=0
+        update t_user_battery_member_card set remaining_number=remaining_number+1 , order_remaining_number=order_remaining_number+1 where uid=#{uid} and del_flag=0
     </update>
 
     <update id="updateByUidForDisableCard">
