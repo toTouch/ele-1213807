@@ -39,6 +39,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderServi
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
@@ -249,64 +250,24 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
             log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
         }
-    
-        Long currentTime = System.currentTimeMillis();
+
         //租退电记录
-        List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUidAndTime(userInfo.getUid(), currentTime);
+        List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
     
         //若未租退电
         if (CollectionUtils.isEmpty(enterpriseRentRecords)) {
             return result.add(totalCloudBean);
         }
     
-        //每个租退电消耗的云豆数
+        //租退电消耗的云豆数
         BigDecimal totalUsedCloudBean = BigDecimal.ZERO;
-    
-        //若存在租退电
+        
         for (EnterpriseRentRecord enterpriseRentRecord : enterpriseRentRecords) {
-            //完整的租退
-            if (StringUtils.isNotBlank(enterpriseRentRecord.getRentMembercardOrderId()) && StringUtils.isNotBlank(enterpriseRentRecord.getReturnMembercardOrderId())) {
+            if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
                 //租退电时间包含的套餐消耗的云豆
-                BigDecimal containMembercardUsedCloudBean = getContainMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
-                totalUsedCloudBean = totalUsedCloudBean.add(containMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", containMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-                //租电时间所在的套餐消耗的云豆
-                BigDecimal rentBatteryMembercardUsedCloudBean = getRentBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
-                totalUsedCloudBean = totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", rentBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-                //退电时间所在的套餐消耗的云豆
-                BigDecimal returnBatteryMembercardUsedCloudBean = getReturnBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord,
-                        anotherPayMembercardRecords);
-                totalUsedCloudBean = totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", returnBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-            }
-        
-            //有租没有退
-            if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.isNull(enterpriseRentRecord.getReturnTime())) {
-                //租退电时间包含的套餐消耗的云豆
-                BigDecimal containMembercardUsedCloudBean = getContainMembercardUsedCloudBeanV2(enterpriseRentRecord, anotherPayMembercardRecords, currentTime);
-                totalUsedCloudBean = totalUsedCloudBean.add(containMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", containMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-                //租电时间所在的套餐消耗的云豆
-                BigDecimal rentBatteryMembercardUsedCloudBean = getRentBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
-                totalUsedCloudBean = totalUsedCloudBean.add(rentBatteryMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!containMembercardUsedCloudBean={},uid={}", rentBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-                //退电时间所在的套餐消耗的云豆
-                BigDecimal returnBatteryMembercardUsedCloudBean = getReturnBatteryMembercardUsedCloudBeanV2(enterpriseRentRecord, currentTime);
-                totalUsedCloudBean = totalUsedCloudBean.add(returnBatteryMembercardUsedCloudBean);
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!returnBatteryMembercardUsedCloudBean={},uid={}", returnBatteryMembercardUsedCloudBean.doubleValue(), userInfo.getUid());
-            
-            }
-        
-            //有退没有租
-            if (Objects.isNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
-                log.error("RECYCLE BATTERY MEMBERCARD ERROR! illegal enterpriseRentRecord,uid={},id={}", userInfo.getUid(), enterpriseRentRecord.getId());
-                continue;
+                BigDecimal membercardUsedCloudBean = getBatteryMembercardUsedCloudBean(userInfo, enterpriseInfo, enterpriseRentRecord, anotherPayMembercardRecords);
+                totalUsedCloudBean = totalUsedCloudBean.add(membercardUsedCloudBean);
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!membercardUsedCloudBean={},uid={}", membercardUsedCloudBean.doubleValue(), userInfo.getUid());
             }
         }
         
@@ -362,25 +323,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         this.insert(cloudBeanUseRecord);
     
         enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(remainingCloudBean));
-        
-//        BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
-//        batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
-//        batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
-//        batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-//        batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
-//        batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
-//        batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-//        batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
-//        batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
-//        batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
-//        batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
-//        batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
-//        batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
-//        batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
-//        batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-//        batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
-//        batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
-//        batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
         
         return useCloudBean;
     }
@@ -459,87 +401,57 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
         enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(remainingCloudBean));
         
-//        BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
-//        batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
-//        batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
-//        batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-//        batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
-//        batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
-//        batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-//        batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
-//        batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
-//        batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
-//        batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
-//        batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
-//        batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
-//        batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
-//        batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-//        batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
-//        batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
-//        batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
-        
         return useCloudBean;
     }
     
     @Override
-    public BigDecimal getContainMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
+    public BigDecimal getBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords) {
         BigDecimal result = BigDecimal.ZERO;
         
-        for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
-            //套餐是否在租退电时间内
-            if (((enterpriseRentRecord.getRentTime() - anotherPayMembercardRecord.getBeginTime()) <= 0) && (
-                    (anotherPayMembercardRecord.getEndTime() - enterpriseRentRecord.getReturnTime()) <= 0)
-                    || ((enterpriseRentRecord.getReturnTime() - anotherPayMembercardRecord.getBeginTime()) >= 0) && (
-                    (enterpriseRentRecord.getRentTime() - anotherPayMembercardRecord.getEndTime()) <= 0)) {
-                
-                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
-                if (Objects.isNull(electricityMemberCardOrder)) {
-                    log.warn("GET CONTAIN MEMBERCARD USED CLOUD BEAN WARN! electricityMemberCardOrder is null,uid={},orderId={}", enterpriseRentRecord.getUid(),
-                            anotherPayMembercardRecord.getOrderId());
-                    continue;
-                }
-                
-                //保存回收记录
-                CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
-                cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
-                cloudBeanUseRecord.setUid(userInfo.getUid());
-                cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
-                cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
-                cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
-                cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
-                cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
-                cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-                cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
-                cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
-                cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
-                cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
-                this.insert(cloudBeanUseRecord);
-                
-                enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
-                
-//                BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
-//                batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
-//                batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
-//                batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-//                batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
-//                batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
-//                batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-//                batteryMembercardRefundOrderInsert.setRefundAmount(electricityMemberCardOrder.getPayAmount());
-//                batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
-//                batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_AUDIT);
-//                batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
-//                batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
-//                batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
-//                batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
-//                batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-//                batteryMembercardRefundOrderInsert.setRemainingNumber(NumberConstant.ZERO_L);
-//                batteryMembercardRefundOrderInsert.setRemainingTime(NumberConstant.ZERO_L);
-//                batteryMembercardRefundOrderService.insert(batteryMembercardRefundOrderInsert);
-                
-                result = result.add(electricityMemberCardOrder.getPayAmount());
-            }
+        if(StringUtils.isBlank(enterpriseRentRecord.getReturnMembercardOrderId())){
+            log.warn("GET MEMBERCARD USED CLOUD BEAN WARN! ReturnMembercardOrderId is null,uid={}", enterpriseRentRecord.getUid());
+            return result;
         }
+    
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("GET MEMBERCARD USED CLOUD BEAN WARN! electricityMemberCardOrder is null,uid={},orderId={}", enterpriseRentRecord.getUid(), enterpriseRentRecord.getReturnMembercardOrderId());
+            return result;
+        }
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.warn("GET MEMBERCARD USED CLOUD BEAN WARN! batteryMemberCard is null,uid={},mid={}", enterpriseRentRecord.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return result;
+        }
+        
+        //套餐单价
+        BigDecimal rentPrice=batteryMemberCard.getRentPrice().divide(BigDecimal.valueOf(batteryMemberCard.getValidDays()),2, RoundingMode.HALF_UP);
+        
+        //租退电天数
+        long useDays = DateUtils.diffDay(enterpriseRentRecord.getRentTime(), enterpriseRentRecord.getReturnTime());
+        
+        //总共消耗的云豆
+        result=BigDecimal.valueOf(useDays).multiply(rentPrice);
+    
+        //保存回收记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
+        cloudBeanUseRecord.setBeanAmount(result);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(result));
+        cloudBeanUseRecord.setPackageId(electricityMemberCardOrder.getMemberCardId());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(electricityMemberCardOrder.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        this.insert(cloudBeanUseRecord);
+    
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
         
         return result;
     }
