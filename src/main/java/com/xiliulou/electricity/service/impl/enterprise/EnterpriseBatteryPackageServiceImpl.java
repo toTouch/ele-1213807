@@ -2269,6 +2269,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (Objects.nonNull(enterpriseChannelUser)) {
                 enterprisePackageOrderVO.setCloudBeanStatus(enterpriseChannelUser.getCloudBeanStatus());
             }
+            
+            //查询当前用户是否已租电池
+            UserInfo userInfo = userInfoService.queryByUidFromCache(enterprisePackageOrderVO.getUid());
+            if(Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())){
+                enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
+            }else{
+                enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
+            }
+            
         }
     }
     

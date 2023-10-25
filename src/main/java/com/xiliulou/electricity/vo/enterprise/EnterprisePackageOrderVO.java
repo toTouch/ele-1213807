@@ -84,6 +84,11 @@ public class EnterprisePackageOrderVO {
      */
     private Integer cloudBeanStatus;
     
+    /**
+     * 电池租赁状态 0--未租电池，1--已租电池
+     */
+    private Integer batteryRentStatus;
+    
     //private BigDecimal canRecycleBeanAmount;
     
     //private BigDecimal recycledBeanAmount;
