@@ -100,4 +100,9 @@ public class EleDepositOrderVO {
      * 车辆名称
      */
     private String carModel;
+    
+    /**
+     * 可退标识 true:可退 false:不可退
+     */
+    private boolean refundFlag;
 }

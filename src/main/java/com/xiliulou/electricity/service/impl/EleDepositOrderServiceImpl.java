@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -602,6 +604,48 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         List<EleDepositOrderVO> eleDepositOrderVOS = null;
         if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
             eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+    
+            eleDepositOrderVOS.stream().filter(Objects::nonNull).map(eleDepositOrderVO -> {
+                EleDepositOrderVO eleDepositOrderNew = new EleDepositOrderVO();
+                BeanUtils.copyProperties(eleDepositOrderVO, eleDepositOrderNew);
+    
+                eleDepositOrderNew.setRefundFlag(true);
+                
+                // 判断押金是否可退
+                //订单ID是否存在
+                if(StringUtils.isEmpty(eleDepositOrderVO.getOrderId())){
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 押金订单不存在
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(eleDepositOrderVO.getUid());
+                if (Objects.isNull(userBatteryDeposit)) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 押金订单不存在
+                EleDepositOrder eleDepositOrder = this.queryByOrderId(eleDepositOrderVO.getOrderId());
+                if (Objects.isNull(eleDepositOrder) || !Objects.equals(eleDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 未找到用户
+                UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
+                if (Objects.isNull(userInfo)) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 用户已被禁用
+                if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 未缴纳押金
+                if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                // 订单已退押金
+                if (!CollectionUtils.isEmpty(eleRefundOrderService.selectByOrderId(eleDepositOrderVO.getOrderId()))) {
+                    eleDepositOrderNew.setRefundFlag(false);
+                }
+                
+                return eleDepositOrderNew;
+            }).collect(Collectors.toList());
         } else {
             eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
         }
