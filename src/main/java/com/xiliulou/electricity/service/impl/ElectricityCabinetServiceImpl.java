@@ -4662,7 +4662,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //满电数量
                 long fullBatteryNumber = cabinetBoxList.stream().filter(this::isFullBattery).count();
                 //可换电数量
-                long exchangeableNumber = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).count();
+                List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(exchangeableList)) {
+                    assignExchangeableBatteyType(exchangeableList, item);
+                }
+                long exchangeableNumber = exchangeableList.size();
 
                 item.setNoElectricityBattery((int) emptyCellNumber);
                 item.setFullyElectricityBattery((int) exchangeableNumber);//兼容2.0小程序首页显示问题
