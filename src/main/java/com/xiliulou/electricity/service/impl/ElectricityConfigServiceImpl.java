@@ -186,9 +186,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         Integer selectionExchangeDB = electricityConfig.getIsSelectionExchange();
         Integer selectionExchangeUpdate = electricityConfigAddAndUpdateQuery.getIsSelectionExchange();
         if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
-            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG, CommonConstant.SELECTION_EXCHANGE_UPDATE);
+            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG + TenantContextHolder.getTenantId(), CommonConstant.SELECTION_EXCHANGE_UPDATE);
         } else {
-            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG, CommonConstant.SELECTION_EXCHANGE_NOT_UPDATE);
+            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG + TenantContextHolder.getTenantId(), CommonConstant.SELECTION_EXCHANGE_NOT_UPDATE);
         }
 
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
