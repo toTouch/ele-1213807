@@ -609,7 +609,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 EleDepositOrderVO eleDepositOrderNew = new EleDepositOrderVO();
                 BeanUtils.copyProperties(eleDepositOrderVO, eleDepositOrderNew);
     
-                eleDepositOrderNew.setRefundFlag(true);
+                /*eleDepositOrderNew.setRefundFlag(true);
                 
                 // 判断押金是否可退
                 //订单ID是否存在
@@ -642,7 +642,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 // 订单已退押金
                 if (!CollectionUtils.isEmpty(eleRefundOrderService.selectByOrderId(eleDepositOrderVO.getOrderId()))) {
                     eleDepositOrderNew.setRefundFlag(false);
-                }
+                }*/
                 
                 return eleDepositOrderNew;
             }).collect(Collectors.toList());
