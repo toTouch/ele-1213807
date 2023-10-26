@@ -1001,8 +1001,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
             //有电池仓门
             long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+            
             //可换电数量
-            long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).count();
+            List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(exchangeableList)) {
+                assignExchangeableBatteyType(exchangeableList, e);
+            }
+            long exchangeableNumber = exchangeableList.size();
+            
             //满电电池数量
             long fullyElectricityBattery = cabinetBoxList.stream().filter(this::isFullBattery).count();
 
@@ -1024,6 +1030,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance))
                 .collect(Collectors.toList()));
+    }
+    
+    private void assignExchangeableBatteyType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
+        HashMap<String, Integer> batteryTypeMap = new HashMap<>();
+        exchangeableList.forEach(electricityCabinetBox -> {
+            String batteryType = electricityCabinetBox.getBatteryType();
+            if (StringUtils.isNotBlank(batteryType)) {
+                String key = subStringButteryType(batteryType);
+                //统计可换电电池型号
+                if (batteryTypeMap.containsKey(key)) {
+                    Integer count = batteryTypeMap.get(key);
+                    batteryTypeMap.put(key, count + 1);
+                } else {
+                    batteryTypeMap.put(key, 1);
+                }
+            }
+        });
+        e.setExchangebleMapes(batteryTypeMap);
     }
 
     private void assignBatteryTypes(List<ElectricityCabinetBox> cabinetBoxList, ElectricityCabinetVO e) {

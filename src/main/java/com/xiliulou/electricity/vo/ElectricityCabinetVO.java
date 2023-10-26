@@ -189,7 +189,11 @@ public class ElectricityCabinetVO {
      * 柜机中电池型号统计
      */
     private Map<String, Long> batteryTypeMapes;
-
+    
+    /**
+     * 柜机中可换电电池型号统计
+     */
+    private Map<String,Integer> exchangebleMapes;
 
     //全天
     public static final String ALL_DAY = "-1";
