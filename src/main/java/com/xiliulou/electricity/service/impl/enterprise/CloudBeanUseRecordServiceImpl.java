@@ -610,37 +610,60 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }
-            
+    
             userBatteryMemberCardList.forEach(item -> {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
                 if (Objects.isNull(userInfo)) {
                     return;
                 }
-                
+        
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                     return;
                 }
-                
+        
+                if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("RECYCLE TASK WARN! user's member card is stop,uid={}", item.getUid());
+                    return;
+                }
+        
+                if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
+                    return;
+                }
+        
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("RECYCLE TASK WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), item.getMemberCardId());
+                    return;
+                }
+        
+                Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                        .acquireUserBatteryServiceFee(userInfo, item, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("RECYCLE TASK WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    return;
+                }
+        
                 EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
                 if (Objects.isNull(enterpriseChannelUser)) {
                     return;
                 }
-                
+        
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
-                    log.error("RECYCLE CLOUD BEAN ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
                     return;
                 }
-                
+        
                 //回收套餐
                 Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
                 if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
                     return;
                 }
-                
+        
                 //回收押金
                 enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
-                
+        
                 //解绑用户数据
                 enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
             });
