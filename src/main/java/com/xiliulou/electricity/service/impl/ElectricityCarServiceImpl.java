@@ -234,7 +234,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -292,7 +291,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -458,7 +456,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -483,7 +480,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityCar electricityCar = selectByUid(tenantId, user.getUid());
         if (ObjectUtils.isEmpty(electricityCar)) {
-            log.error("attrList, not found t_electricity_car. uid is {}", user.getUid());
             throw new BizException("100015", "用户未绑定车辆");
         }
 
