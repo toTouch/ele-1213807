@@ -54,4 +54,6 @@ public interface VersionNotificationService {
     VersionNotification selectNotSendMailOne();
 
     void handleVersionNotificationSendEmail();
+    
+    R acquireVersionNotificationFileSign();
 }
