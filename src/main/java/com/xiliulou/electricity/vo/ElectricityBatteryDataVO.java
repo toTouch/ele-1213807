@@ -50,8 +50,22 @@ public class ElectricityBatteryDataVO {
     private Long borrowExpireTime;
 
     private Integer delFlag;
-
-
+    
+    /**
+     * 异常交换的电池用户id
+     */
+    private Long guessUid;
+    
+    /**
+     * 异常交换的电池用户名称
+     */
+    private String guessUserName;
+    
+    /**
+     * 异常交换的电池用户手机号
+     */
+    private String guessUserPhone;
+    
     /**
      * 0：正常 1：故障
      */

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
+import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -53,16 +55,51 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Autowired
     BatteryModelService batteryModelService;
     
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
+    
     @Override
     @Slave
     public R selectAllBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
+        
+        //获取sn列表
+        List<String> snList = electricityBatteries.parallelStream().map(ElectricityBatteryDataVO::getSn).collect(Collectors.toList());
+        List<BatteryOtherProperties> otherPropertiesList = null;
+        Map<String, Double> otherPropertiesMap = null;
+        if (!CollectionUtils.isNotEmpty(snList)) {
+            //根据获取的sn列表查询
+            otherPropertiesList = batteryOtherPropertiesService.listBatteryOtherPropertiesBySn(snList);
+            if (CollectionUtils.isNotEmpty(otherPropertiesList)) {
+                otherPropertiesMap = otherPropertiesList.stream()
+                        .collect(Collectors.toMap(BatteryOtherProperties::getBatteryName, BatteryOtherProperties::getBatteryV, (value1, value2) -> value1));
+            }
+        }
+        
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
+        
         electricityBatteries.parallelStream().forEach(item -> {
+            //设置电压
+            if (Objects.nonNull(finalOtherPropertiesMap) && finalOtherPropertiesMap.containsKey(item.getSn())) {
+                item.setBoxVoltage(finalOtherPropertiesMap.get(item.getSn()).intValue());
+            }
+            
+            //设置异常交换用户
+            Long guessUid = item.getGuessUid();
+            if (Objects.nonNull(guessUid)) {
+                UserInfo guessUserInfo = userInfoService.queryByUidFromCache(guessUid);
+                if (Objects.nonNull(guessUserInfo)) {
+                    item.setGuessUserName(guessUserInfo.getName());
+                    item.setGuessUserPhone(guessUserInfo.getPhone());
+                }
+            }
+            
             Long userId = item.getUid();
             Long fid = item.getFranchiseeId();
             if (Objects.nonNull(userId)) {
@@ -99,8 +136,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectInCabinetBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -142,8 +179,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectPendingRentalBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -185,8 +222,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectLeasedBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -228,8 +265,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectStrayBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryStrayBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryStrayBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -271,8 +308,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectOverdueBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryOverdueBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryOverdueBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -314,8 +351,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R selectOverdueCarBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper
-                .queryOverdueCarBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryOverdueCarBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -417,8 +454,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Slave
     public R queryStockBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.
-                queryStockBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(), electricityBatteryQuery.getSize());
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryStockBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
+                electricityBatteryQuery.getSize());
         
         return R.ok(buildEleBatteryDataVOList(electricityBatteries, electricityBatteryQuery.getTenant()));
     }
@@ -430,8 +467,6 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         
         return R.ok(electricitybatterymapper.queryStockBatteryCount(electricityBatteryQuery));
     }
-    
-
     
     
     // 组装EleBatteryDataVO
