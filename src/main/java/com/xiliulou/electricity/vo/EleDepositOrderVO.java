@@ -104,5 +104,5 @@ public class EleDepositOrderVO {
     /**
      * 可退标识 true:可退 false:不可退
      */
-    private boolean refundFlag;
+    private Boolean refundFlag;
 }

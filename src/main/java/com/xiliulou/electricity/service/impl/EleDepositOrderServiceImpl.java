@@ -601,27 +601,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        List<EleDepositOrderVO> eleDepositOrderVOS = null;
+        List<EleDepositOrderVO> eleDepositOrderVOS;
         if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
             eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
             eleDepositOrderVOS.stream().filter(Objects::nonNull).map(eleDepositOrderVO -> {
-                EleDepositOrderVO eleDepositOrderNew = new EleDepositOrderVO();
-                BeanUtils.copyProperties(eleDepositOrderVO, eleDepositOrderNew);
     
-                eleDepositOrderNew.setRefundFlag(true);
-    
+                eleDepositOrderVO.setRefundFlag(true);
                 // 订单已退押或正在退押中
                 List<Integer> statusList = new ArrayList<>();
                 statusList.add(EleRefundOrder.STATUS_SUCCESS);
                 statusList.add(EleRefundOrder.STATUS_REFUND);
                 Integer exist = eleRefundOrderService.existByOrderIdAndStatus(eleDepositOrderVO.getOrderId(), statusList);
                 if (Objects.isNull(exist)) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                    return eleDepositOrderNew;
+                    eleDepositOrderVO.setRefundFlag(false);
                 }
-                
-                return eleDepositOrderNew;
+                return eleDepositOrderVO;
             }).collect(Collectors.toList());
         } else {
             eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
