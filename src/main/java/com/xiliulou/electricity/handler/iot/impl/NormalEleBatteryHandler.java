@@ -299,10 +299,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         //获取电池型号
-        if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
+      //  if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
             String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
             electricityCabinetBox.setBatteryType(batteryModel);
-        }
+      //  }
 
         return electricityCabinetBox;
     }
