@@ -86,10 +86,22 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        String updateFlag = redisService.get(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG + TenantContextHolder.getTenantId());
-        if (StringUtils.equals(CommonConstant.SELECTION_EXCHANGE_UPDATE, updateFlag)) {
+        String saasUpdateTime = redisService.get(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_TIME + TenantContextHolder.getTenantId());
+        try {
+            Long updateTime = Long.valueOf(saasUpdateTime);
+            ElectricityAppConfig electricityAppConfig = queryFromCacheByUid(userInfo.getUid());
+            if (Objects.nonNull(electricityAppConfig) && updateTime > electricityAppConfig.getUpdateTime() && Objects.equals(
+                    SelectionExchageEunm.ENABLE_SELECTION_EXCHANGE.getCode(), electricityAppConfig.getIsSelectionExchange())) {
+                //更新
+                electricityAppConfig.setIsSelectionExchange(SelectionExchageEunm.DISABLE_SELECTION_EXCHANGE.getCode());
+                this.updateByUid(electricityAppConfig);
+                return R.ok();
+            }
+        } catch (Exception e) {
+            log.error("selection exchange saas update time is error");
             return R.ok();
         }
+        
         return R.ok(queryFromCacheByUid(userInfo.getUid()));
     }
     

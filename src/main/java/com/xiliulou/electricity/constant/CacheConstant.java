@@ -217,7 +217,7 @@ public interface CacheConstant {
     /**
      * saas选仓换电开关是否有更新
      */
-    String CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG = "ele_selection_exchange_update_flag:";
+    String CACHE_ELE_SELECTION_EXCHANGE_UPDATE_TIME = "ele_selection_exchange_update_time:";
     
     String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
     String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_battery_member_card_expired_last_time:";
