@@ -440,7 +440,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},requestId={},orderId={}",
+            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}",
                     electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
         }
@@ -497,7 +497,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",
+            log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",
                     exchangeOrderRsp.getOrderId());
             return;
         }
