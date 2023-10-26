@@ -605,7 +605,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
             eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
-            eleDepositOrderVOS.stream().filter(Objects::nonNull).map(eleDepositOrderVO -> {
+            eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
     
                 eleDepositOrderVO.setRefundFlag(true);
                 // 订单已退押或正在退押中
