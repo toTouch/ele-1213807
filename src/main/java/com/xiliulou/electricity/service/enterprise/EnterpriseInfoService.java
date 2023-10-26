@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -82,7 +83,7 @@ public interface EnterpriseInfoService {
     
     void unbindUserData(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser);
     
-    Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard userBatteryMemberCard);
     
     Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
