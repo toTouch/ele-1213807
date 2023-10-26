@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityAppConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityAppConfig" id="ElectricityAppConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="isSelectionExchange" column="is_selection_exchange" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_electricity_app_config
+        <set>
+            <if test="isSelectionExchange != null">
+                is_selection_exchange = #{isSelectionExchange},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <delete id="deleteByUid">
+        delete from t_electricity_app_config where uid = #{uid}
+    </delete>
+    
+    <delete id="deleteByTenantId">
+        delete from t_electricity_app_config where tenant_id = #{tenantId}
+    </delete>
+    
+    <select id="selectElectricityAppConfig" resultMap="ElectricityAppConfigMap">
+        select id, uid, tenant_id, is_selection_exchange, create_time, update_time
+        from t_electricity_app_config where uid = #{uid} and tenant_id = #{tenantId}
+    </select>
+</mapper>

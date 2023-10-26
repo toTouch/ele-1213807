@@ -473,7 +473,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
                 return Triple.of(true, "", "");
             }
 
@@ -651,7 +651,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
                 return Triple.of(true, "", "");
             }
 
@@ -1366,7 +1366,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", uid);
+            log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
 
@@ -1625,7 +1625,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", uid);
+            log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
 
@@ -2409,7 +2409,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             //用户已绑定电池
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", uid);
+                log.info("FREE DEPOSIT INFO! not found userBatteryDeposit! uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
             }
 

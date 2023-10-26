@@ -115,6 +115,13 @@ public class ElectricityCabinetOrder {
      * 换电过程放入没电电池检测失败 1.1
      */
     public static final String INIT_CHECK_FAIL = "INIT_CHECK_FAIL";
+    
+    /**
+     * 换电过程柜机正在使用 1.2
+     */
+    public static final Double STATUS_INIT_DEVICE_USING = 1.3;
+    public static final String INIT_DEVICE_USING = "INIT_DEVICE_USING";
+    
     /**
      * 换电柜放入没电电池开门发现有电池存在 2.1
      */

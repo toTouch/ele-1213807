@@ -281,5 +281,16 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	public R memberCardDetail() {
 		return userService.memberCardDetail();
 	}
+	
+	/**
+	 * 选仓换电查询格挡信息
+	 *
+	 * @param electricityCabinetId
+	 * @return
+	 */
+	@GetMapping("/user/selectionExchangeable/electricityCabinetBoxInfo/{electricityCabinetId}")
+	public R queryElectricityCabinetBoxInfoByCabinetId(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
+		return returnTripleResult(electricityCabinetService.queryElectricityCabinetBoxInfoByCabinetId(electricityCabinetId));
+	}
 
 }

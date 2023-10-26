@@ -59,6 +59,11 @@ public class TenantConfigVO {
      * 低电量换电模式
      */
     private String lowBatteryExchangeModel;
+    
+    /**
+     * 是否开启选仓换电 （0--开启 1--关闭）
+     */
+    private Integer isSelectionExchange;
 
     /**
      * 是否可以自主开仓
