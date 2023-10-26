@@ -1607,7 +1607,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
 
-        log.info("HOME INFO!acquire user status info! uid={},result={}", userInfo.getUid(), JsonUtil.toJson(userInfoResult));
         return Triple.of(true, "", userInfoResult);
     }
 
