@@ -322,7 +322,7 @@
     <select id="existByOrderIdAndStatus" resultType="java.lang.Integer">
         select 1 from t_ele_refund_order
         <where>
-            order_id = #{order_id} and status in
+            order_id = #{orderId} and status in
             <foreach collection="statusList" item="status" open="(" close=")" separator=",">
                 #{status}
             </foreach>
