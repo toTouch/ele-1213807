@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityAppConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,24 +86,8 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // 如果后台关闭选仓换电，则小程序端不显示配置项
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
-        
-        if (Objects.isNull(electricityConfig.getIsSelectionExchange())) {
-            return R.ok();
-        }
-        
-        // 查询小程序的配置
-        ElectricityAppConfig electricityAppConfig = queryFromCacheByUid(userInfo.getUid());
-        
-        if (Objects.equals(electricityConfig.getIsSelectionExchange(), SelectionExchageEunm.DISABLE_SELECTION_EXCHANGE.getCode())) {
-            //如果后台关闭选仓换电，小程序配置不为空 此时需要将用户小程序的开关关闭。
-            if (Objects.nonNull(electricityAppConfig) && Objects.equals(electricityAppConfig.getIsSelectionExchange(), SelectionExchageEunm.ENABLE_SELECTION_EXCHANGE.getCode())) {
-                //设置修改的配置对象
-                electricityAppConfig.setUpdateTime(System.currentTimeMillis());
-                electricityAppConfig.setIsSelectionExchange(SelectionExchageEunm.DISABLE_SELECTION_EXCHANGE.getCode());
-                updateByUid(electricityAppConfig);
-            }
+        String updateFlag = redisService.get(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG);
+        if (StringUtils.equals(CommonConstant.SELECTION_EXCHANGE_UPDATE, updateFlag)) {
             return R.ok();
         }
         return R.ok(queryFromCacheByUid(userInfo.getUid()));

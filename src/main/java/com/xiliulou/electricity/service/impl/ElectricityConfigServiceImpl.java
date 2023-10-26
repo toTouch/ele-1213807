@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
@@ -179,6 +180,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
+        }
+        
+        //如果选仓换电的配置有更新，则需要更新redis缓存
+        Integer selectionExchangeDB = electricityConfig.getIsSelectionExchange();
+        Integer selectionExchangeUpdate = electricityConfigAddAndUpdateQuery.getIsSelectionExchange();
+        if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
+            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG, CommonConstant.SELECTION_EXCHANGE_UPDATE);
+        } else {
+            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG, CommonConstant.SELECTION_EXCHANGE_NOT_UPDATE);
         }
 
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());

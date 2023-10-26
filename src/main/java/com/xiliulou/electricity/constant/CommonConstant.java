@@ -71,4 +71,9 @@ public interface CommonConstant {
      */
     Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
     
+    /***
+     * saas后台选仓换电开关与上次开关状态相比是否修改后  0-修改  1-已修改
+     */
+    String SELECTION_EXCHANGE_NOT_UPDATE = "0";
+    String SELECTION_EXCHANGE_UPDATE = "1";
 }
