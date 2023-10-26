@@ -86,7 +86,7 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        String updateFlag = redisService.get(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG);
+        String updateFlag = redisService.get(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_FLAG + TenantContextHolder.getTenantId());
         if (StringUtils.equals(CommonConstant.SELECTION_EXCHANGE_UPDATE, updateFlag)) {
             return R.ok();
         }
