@@ -28,7 +28,7 @@
         where id = #{id}
     </select>
 
-    <select id="selectByPage" resultMap="EnterpriseCloudBeanOrderMap">
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder">
         select
           id, enterprise_id, uid, operate_uid ,pay_amount, order_id, status, pay_type, type, bean_amount, franchisee_id, tenant_id, create_time, update_time, remark
         from t_enterprise_cloud_bean_order
