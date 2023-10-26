@@ -318,5 +318,15 @@
         where order_id = #{paymentOrderNo}
         ORDER BY id DESC limit 1
     </select>
+    
+    <select id="existByOrderIdAndStatus" resultType="java.lang.Integer">
+        select 1 from t_ele_refund_order
+        <where>
+            order_id = #{order_id} and status in
+            <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+        </where>
+    </select>
 
 </mapper>

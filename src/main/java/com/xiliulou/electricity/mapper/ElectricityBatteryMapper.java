@@ -128,5 +128,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer queryStockBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
     
     
-    Integer checkExistBySn(String sn);
+    Integer existBySn(String sn);
 }

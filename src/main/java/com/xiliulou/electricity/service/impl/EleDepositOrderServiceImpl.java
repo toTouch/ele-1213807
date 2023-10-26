@@ -609,40 +609,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 EleDepositOrderVO eleDepositOrderNew = new EleDepositOrderVO();
                 BeanUtils.copyProperties(eleDepositOrderVO, eleDepositOrderNew);
     
-                /*eleDepositOrderNew.setRefundFlag(true);
-                
-                // 判断押金是否可退
-                //订单ID是否存在
-                if(StringUtils.isEmpty(eleDepositOrderVO.getOrderId())){
+                eleDepositOrderNew.setRefundFlag(true);
+    
+                // 订单已退押或正在退押中
+                List<Integer> statusList = new ArrayList<>();
+                statusList.add(EleRefundOrder.STATUS_SUCCESS);
+                statusList.add(EleRefundOrder.STATUS_REFUND);
+                Integer exist = eleRefundOrderService.existByOrderIdAndStatus(eleDepositOrderVO.getOrderId(), statusList);
+                if (Objects.isNull(exist)) {
                     eleDepositOrderNew.setRefundFlag(false);
+                    return eleDepositOrderNew;
                 }
-                // 押金订单不存在
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(eleDepositOrderVO.getUid());
-                if (Objects.isNull(userBatteryDeposit)) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }
-                // 押金订单不存在
-                EleDepositOrder eleDepositOrder = this.queryByOrderId(eleDepositOrderVO.getOrderId());
-                if (Objects.isNull(eleDepositOrder) || !Objects.equals(eleDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }
-                // 未找到用户
-                UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
-                if (Objects.isNull(userInfo)) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }
-                // 用户已被禁用
-                if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }
-                // 未缴纳押金
-                if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }
-                // 订单已退押金
-                if (!CollectionUtils.isEmpty(eleRefundOrderService.selectByOrderId(eleDepositOrderVO.getOrderId()))) {
-                    eleDepositOrderNew.setRefundFlag(false);
-                }*/
                 
                 return eleDepositOrderNew;
             }).collect(Collectors.toList());

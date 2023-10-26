@@ -2120,4 +2120,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public EleRefundOrder selectLatestRefundDepositOrder(String paymentOrderNo) {
         return eleRefundOrderMapper.selectLatestRefundDepositOrder(paymentOrderNo);
     }
+    
+    @Override
+    public Integer existByOrderIdAndStatus(String orderId, List<Integer> statusList) {
+        return eleRefundOrderMapper.existByOrderIdAndStatus(orderId, statusList);
+    }
 }

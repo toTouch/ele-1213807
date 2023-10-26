@@ -223,7 +223,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long franchiseeId = batteryExcelV3Query.getFranchiseeId();
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
-            log.error("Franchisee id is invalid!");
+            log.error("Franchisee id is invalid! uid = {}", uid);
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
     
@@ -250,7 +250,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             // 判断数据库中是否已经存在该电池
-            Integer exist = electricitybatterymapper.checkExistBySn(sn);
+            Integer exist = electricitybatterymapper.existBySn(sn);
             if (Objects.nonNull(exist)) {
                 continue;
             }
