@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.enterprise;
 
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
@@ -29,6 +32,11 @@ public interface EnterpriseUserCostRecordService {
      * @return
      */
     List<EnterpriseUserCostDetailsVO> queryUserCostRecordList(EnterpriseUserCostRecordQuery enterpriseUserCostRecordQuery);
+    
+    /**
+     * 购买套餐时，记录骑手消费详情信息
+     */
+    void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder);
     
     /**
      * 企业套餐冻结及启用时，记录骑手消费详情信息

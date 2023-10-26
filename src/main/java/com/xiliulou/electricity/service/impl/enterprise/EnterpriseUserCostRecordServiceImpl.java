@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseUserCostRecord;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterpriseUserCostRecordTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseUserCostRecordMapper;
 import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
@@ -161,11 +163,12 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         //获取关联押金信息
         EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(query.getUid(), electricityMemberCardOrder.getOrderId());
         if (Objects.nonNull(eleDepositOrderVO) && !EleDepositOrder.FREE_DEPOSIT_PAYMENT.equals(eleDepositOrderVO.getPayType())) {
-            enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+            //enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrderVO.getPayAmount());
+            enterpriseUserPackageDetailsVO.setBatteryDeposit(batteryPackage.getDeposit());
             enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         } else {
             //免押设置
-            // enterprisePackageOrderVO.setBatteryDeposit(BigDecimal.ZERO);
+            enterpriseUserPackageDetailsVO.setBatteryDeposit(batteryPackage.getDeposit());
             enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
         }
     
@@ -198,7 +201,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
                 log.warn("query rider details failed, not found userBatteryDeposit,uid = {}", userInfo.getUid());
                 return Triple.of(true, null, enterpriseUserPackageDetailsVO);
             }
-    
+            
             enterpriseUserPackageDetailsVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
             enterpriseUserPackageDetailsVO.setDepositType(userBatteryDeposit.getDepositType());
     
@@ -247,6 +250,43 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         }
         
         return enterpriseUserCostDetailsVOList;
+    }
+    
+    @Override
+    public void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder) {
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("battery memberCard is null, memberCardId = {}, uid = {}", electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getUid());
+            return;
+        }
+       
+        //记录企业代付订单信息
+        EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+        enterpriseUserCostRecordDTO.setUid(electricityMemberCardOrder.getUid());
+        enterpriseUserCostRecordDTO.setEnterpriseId(electricityMemberCardOrder.getEnterpriseId());
+        enterpriseUserCostRecordDTO.setOrderId(electricityMemberCardOrder.getOrderId());
+        enterpriseUserCostRecordDTO.setPackageId(batteryMemberCard.getId());
+        enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
+        enterpriseUserCostRecordDTO.setCostType(UserCostTypeEnum.COST_TYPE_PURCHASE_PACKAGE.getCode());
+        enterpriseUserCostRecordDTO.setTenantId(electricityMemberCardOrder.getTenantId().longValue());
+        enterpriseUserCostRecordDTO.setCreateTime(electricityMemberCardOrder.getCreateTime());
+        enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
+        enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+    
+        EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
+        enterpriseUserCostRecordRemarkVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
+        enterpriseUserCostRecordRemarkVO.setDepositAmount(eleDepositOrder.getPayAmount());
+        if (Objects.nonNull(insuranceOrder)) {
+            enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
+        }
+        enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
+        String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+    
+        //MQ处理企业代付订单信息
+        log.info("Async save enterprise user cost record for purchase package with deposit. send async message, message is {}", message);
+        enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+        
     }
     
     @Override
