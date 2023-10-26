@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -36,7 +37,7 @@ public interface EnterpriseUserCostRecordService {
     /**
      * 购买套餐时，记录骑手消费详情信息
      */
-    void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder);
+    void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal depositAmount, BigDecimal insuranceAmount);
     
     /**
      * 企业套餐冻结及启用时，记录骑手消费详情信息

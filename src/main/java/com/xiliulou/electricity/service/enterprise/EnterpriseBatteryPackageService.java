@@ -46,17 +46,21 @@ public interface EnterpriseBatteryPackageService {
      * @param query
      * @return
      */
-    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
+    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query);
     
     /**
-     * 企业站长代付 套餐 + 押金
+     * 企业站长代付 套餐 + 押金 + 保险
      * @param query
-     * @param request
      * @return
      */
-    public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request);
+    public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query);
     
-    public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query, HttpServletRequest request);
+    /**
+     * 企业站长代付 免押 套餐+保险
+     * @param query
+     * @return
+     */
+    public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query);
 
     /**
      * 查询骑手当前套餐详情信息

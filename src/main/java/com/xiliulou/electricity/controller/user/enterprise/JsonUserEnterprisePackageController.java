@@ -173,9 +173,9 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @return
      */
     @PostMapping("/user/enterprise/purchaseRenewalPackage")
-    public R purchaseRenewalPackage(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public R purchaseRenewalPackage(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
-        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageByEnterpriseUser(query, request));
+        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageByEnterpriseUser(query));
         
     }
     
@@ -187,9 +187,9 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @return
      */
     @PostMapping("/user/enterprise/purchasePackageWithDeposit")
-    public R purchasePackageWithDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public R purchasePackageWithDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
-        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query, request));
+        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithDepositByEnterpriseUser(query));
         
     }
     
@@ -201,9 +201,9 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @return
      */
     @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
-    public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public R purchasePackageWithFreeDeposit(@RequestBody @Validated(CreateGroup.class) EnterprisePackageOrderQuery query) {
         
-        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithFreeDeposit(query, request));
+        return returnTripleResult(enterpriseBatteryPackageService.purchasePackageWithFreeDeposit(query));
         
     }
     

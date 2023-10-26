@@ -1005,7 +1005,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             renewalStatus = RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode();
         }
         
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().enterpriseId(enterpriseInfoQuery.getId()).renewalStatus(renewalStatus)
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().enterpriseId(enterpriseInfo.getId()).renewalStatus(renewalStatus)
                 .tenantId(tenantId.longValue()).build();
         
         List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.queryChannelUserList(enterpriseChannelUserQuery);

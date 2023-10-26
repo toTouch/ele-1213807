@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -253,11 +254,11 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     }
     
     @Override
-    public void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder) {
+    public void asyncSaveUserCostRecordForPurchasePackage(ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal depositAmount, BigDecimal insuranceAmount) {
     
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.warn("battery memberCard is null, memberCardId = {}, uid = {}", electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getUid());
+            log.warn("battery memberCard is null for purchase package with deposit , memberCardId = {}, uid = {}", electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getUid());
             return;
         }
        
@@ -276,9 +277,12 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
         EnterpriseUserCostRecordRemarkVO enterpriseUserCostRecordRemarkVO = new EnterpriseUserCostRecordRemarkVO();
         enterpriseUserCostRecordRemarkVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
-        enterpriseUserCostRecordRemarkVO.setDepositAmount(eleDepositOrder.getPayAmount());
-        if (Objects.nonNull(insuranceOrder)) {
-            enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
+        if(Objects.nonNull(depositAmount)){
+            enterpriseUserCostRecordRemarkVO.setDepositAmount(depositAmount);
+        }
+        
+        if (Objects.nonNull(insuranceAmount)) {
+            enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceAmount);
         }
         enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
         String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);

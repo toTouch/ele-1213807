@@ -894,7 +894,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> purchasePackageByEnterpriseUser(EnterprisePackageOrderQuery query) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         //TokenUser user = SecurityUtils.getUserInfo();
@@ -1173,7 +1173,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> purchasePackageWithDepositByEnterpriseUser(EnterprisePackageOrderQuery query) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long enterpriseId = query.getEnterpriseId();
         Long uid = query.getUid();
@@ -1458,7 +1458,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     }
     
     @Override
-    public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> purchasePackageWithFreeDeposit(EnterprisePackageOrderQuery query) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long enterpriseId = query.getEnterpriseId();
         Long uid = query.getUid();
