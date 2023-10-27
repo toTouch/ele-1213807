@@ -280,14 +280,16 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             
                 List<String> membercardList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getOrderId).collect(Collectors.toList());
                 //租退电包含的套餐订单
-                List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()) + 1,
-                        membercardList.indexOf(enterpriseRentRecord.getReturnMembercardOrderId()));
-                if (CollectionUtils.isNotEmpty(containMembercardList) && containMembercardList.size() > 1) {
-                    for (String orderId : containMembercardList) {
-                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-                        if (Objects.nonNull(electricityMemberCardOrder)) {
-                            totalUsedCloudBean = totalUsedCloudBean.add(electricityMemberCardOrder.getPayAmount());
-                            log.info("RECYCLE BATTERY MEMBERCARD INFO!containUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+                if (CollectionUtils.isNotEmpty(membercardList) && membercardList.size() > 1) {
+                    List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()) + 1,
+                            membercardList.indexOf(enterpriseRentRecord.getReturnMembercardOrderId()));
+                    if (CollectionUtils.isNotEmpty(containMembercardList)) {
+                        for (String orderId : containMembercardList) {
+                            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+                            if (Objects.nonNull(electricityMemberCardOrder)) {
+                                totalUsedCloudBean = totalUsedCloudBean.add(electricityMemberCardOrder.getPayAmount());
+                                log.info("RECYCLE BATTERY MEMBERCARD INFO!containUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+                            }
                         }
                     }
                 }
