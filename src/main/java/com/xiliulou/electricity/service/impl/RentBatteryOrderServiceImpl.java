@@ -762,18 +762,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
+            List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
+            
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
             } else {
                 dataMap.put("model_type", true);
                 if (Objects.nonNull(electricityBattery)) {
                     dataMap.put("multiBatteryModelName", electricityBattery.getModel());
-                    dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
+                    dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 } else {
                     ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
                     dataMap.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                     //获取用户绑定的电池型号
-                    List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 }
             }
