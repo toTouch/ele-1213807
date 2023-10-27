@@ -92,4 +92,6 @@ public interface EnterpriseChannelUserService {
      * @return
      */
     Integer queryNotRecycleUserCount(Long id);
+    
+    Triple<Boolean, String, Object> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
 }

@@ -4,9 +4,12 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -14,12 +17,21 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,6 +45,11 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
 
     @Autowired
     private EnterpriseInfoService enterpriseInfoService;
+    
+    @Autowired
+    private EnterpriseChannelUserService enterpriseChannelUserService;
+    @Autowired
+    private UserDataScopeService userDataScopeService;
 
     /**
      * 分页列表
@@ -197,7 +214,46 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
     
     @Autowired
     CloudBeanUseRecordService cloudBeanUseRecordService;
-    @GetMapping("/admin/enterpriseInfo/download")
-    public R download() {
-        return returnTripleResult(cloudBeanUseRecordService.cloudBeanOrderDownload(1691517600000L, 1699466400000L));    }
+    
+    /**
+     * 企业渠道用户搜索
+     * @return
+     */
+    @PostMapping("/admin/enterpriseInfo/queryByKeywords")
+    public R queryByKeywords(@RequestBody EnterpriseChannelUserQuery query) {
+        if (Objects.isNull(query.getSize()) || query.getSize() < 0 || query.getSize() > 50) {
+            query.setSize(10);
+        }
+    
+        if (Objects.isNull(query.getOffset()) || query.getOffset() < 0) {
+            query.setOffset(0);
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                query.setStoreIds(storeIds);
+            }
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                query.setFranchiseeIds(franchiseeIds);
+            }
+        }
+        
+        return returnTripleResult(enterpriseChannelUserService.enterpriseChannelUserSearch(query));
+    }
 }

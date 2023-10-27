@@ -26,6 +26,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserCheckVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
@@ -35,8 +36,10 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -388,6 +391,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public Integer queryNotRecycleUserCount(Long id) {
         return enterpriseChannelUserMapper.queryNotRecycleUserCount(id);
+    }
+    
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query) {
+        List<UserInfoSearchVo> list = enterpriseChannelUserMapper.enterpriseChannelUserSearch(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Triple.of(true, null, Collections.emptyList());
+        }
+    
+        return Triple.of(true, null, list);
     }
     
     @Override
