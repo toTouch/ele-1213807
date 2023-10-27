@@ -122,4 +122,9 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
     public List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId) {
         return this.anotherPayMembercardRecordMapper.selectListByEnterpriseId(enterpriseId);
     }
+    
+    @Override
+    public AnotherPayMembercardRecord selectByOrderId(String orderId) {
+        return this.anotherPayMembercardRecordMapper.selectOne(new LambdaQueryWrapper<AnotherPayMembercardRecord>().eq(AnotherPayMembercardRecord::getOrderId,orderId));
+    }
 }
