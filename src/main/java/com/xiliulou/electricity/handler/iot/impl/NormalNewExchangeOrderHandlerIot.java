@@ -184,6 +184,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS);
         warnStateList.add(ElectricityCabinetOrder.INIT_CHECK_FAIL);
         warnStateList.add(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT);
+        warnStateList.add(ElectricityCabinetOrder.INIT_DEVICE_USING);
         
         if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
             // 通过订单的 UID 获取用户信息
@@ -435,8 +436,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
+            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}",
+                    electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
         }
         
@@ -489,7 +490,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", exchangeOrderRsp.getOrderId());
+            log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",
+                    exchangeOrderRsp.getOrderId());
             return;
         }
         

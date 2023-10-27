@@ -364,7 +364,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELECTRICITY  ERROR! not auth! uid={} ", user.getUid());
+            log.warn("ELECTRICITY WARN! not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
@@ -407,7 +407,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELECTRICITY  ERROR! not auth! uid={} ", user.getUid());
+            log.warn("ELECTRICITY WARN! not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 

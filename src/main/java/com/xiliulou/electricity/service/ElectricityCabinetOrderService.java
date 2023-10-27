@@ -75,7 +75,9 @@ public interface ElectricityCabinetOrderService {
     R checkOpenSessionId(String sessionId);
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
-
+    
+    Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery orderQuery);
+    
     Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);

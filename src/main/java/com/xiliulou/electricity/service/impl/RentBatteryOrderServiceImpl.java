@@ -156,6 +156,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
     
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
     /**
      * 新增数据
      *
@@ -463,6 +466,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 && userBatteryMemberCard.getRemainingNumber() <= 0)) {
             log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
+        }
+        
+        //校验是否有退租审核中的订单
+        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
+        if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
+            return Triple.of(false, "100282", "租金退款审核中，请等待审核确认后操作");
         }
         
         //判断该换电柜加盟商和用户加盟商是否一致
@@ -1117,10 +1126,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
             picture = 1;
         }
-        
+
         //error
-        if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL) || rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
-            
+        if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
+                || ElectricityCabinetOrder.STATUS_INIT_DEVICE_USING.equals(rentBatteryOrder.getOrderSeq())
+                || rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+
             picture = 3;
         }
         
@@ -1488,7 +1499,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (CollectionUtils.isEmpty(eleCabinetUsedRecords)) {
             return Collections.emptyList();
         }
-        
+
         List<EleCabinetUsedRecordVO> cabinetUsedRecordVOList = new ArrayList<>();
         for (EleCabinetUsedRecord eleCabinetUsedRecord : eleCabinetUsedRecords) {
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();

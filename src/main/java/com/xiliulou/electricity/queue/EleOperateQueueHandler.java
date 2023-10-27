@@ -251,7 +251,7 @@ public class EleOperateQueueHandler {
         }
 
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", eleOpenDTO.getOrderId());
+            log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", eleOpenDTO.getOrderId());
             return;
         }
 
@@ -778,7 +778,7 @@ public class EleOperateQueueHandler {
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(rentBatteryOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.error("EXCHANGE ORDER ERROR! userBatteryMemberCard is null!uid={},orderId={}",
+            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},orderId={}",
                     rentBatteryOrder.getUid(), rentBatteryOrder.getOrderId());
             return;
         }

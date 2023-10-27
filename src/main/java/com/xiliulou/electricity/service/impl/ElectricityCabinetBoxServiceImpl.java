@@ -279,7 +279,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         //获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
-            log.error("ELE ERROR! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
+            log.warn("ELE WARN! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
 
