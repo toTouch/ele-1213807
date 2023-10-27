@@ -65,6 +65,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
                 electricityBatteryQuery.getSize());
         
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        
         //获取sn列表
         List<String> snList = electricityBatteries.parallelStream().map(ElectricityBatteryDataVO::getSn).collect(Collectors.toList());
         List<BatteryOtherProperties> otherPropertiesList = null;
@@ -78,16 +82,15 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             }
         }
         
-        if (CollectionUtils.isEmpty(electricityBatteries)) {
-            return R.ok(new ArrayList<EleBatteryDataVO>());
-        }
-        
         Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
         
         electricityBatteries.parallelStream().forEach(item -> {
             //设置电压
             if (Objects.nonNull(finalOtherPropertiesMap) && finalOtherPropertiesMap.containsKey(item.getSn())) {
-                item.setBoxVoltage(finalOtherPropertiesMap.get(item.getSn()).intValue());
+                Double boxVoltage = finalOtherPropertiesMap.get(item.getSn());
+                if (Objects.nonNull(boxVoltage)) {
+                    item.setBoxVoltage(boxVoltage.intValue());
+                }
             }
             
             //设置异常交换用户
@@ -130,6 +133,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     public R selectAllBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery) {
         
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
+    }
+    
+    @Override
+    public R updateGuessUserInfo(Long id) {
+        return R.ok(electricitybatterymapper.updateGuessUidById(id));
     }
     
     @Override

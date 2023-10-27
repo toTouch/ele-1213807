@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
@@ -18,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -111,6 +113,17 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
                 .franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).uid(uid).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL)
                 .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
         return electricityBatteryDataService.selectAllBatteryDataCount(electricityBatteryQuery);
+    }
+    
+    /**
+     * 清除异常交换电池用户
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "/admin/batteryData/guessUser/clear")
+    @Log(title = "清除异常交换电池用户")
+    public R clearGuessUser(@RequestParam("id") Long id) {
+        return electricityBatteryDataService.updateGuessUserInfo(id);
     }
     
     /**

@@ -814,6 +814,10 @@
             </foreach>
         </if>
     </select>
+    
+    <update id="updateGuessUidById">
+        update t_electricity_battery set guess_uid =null where id=#{id}
+    </update>
 
     <select id="queryStrayBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
