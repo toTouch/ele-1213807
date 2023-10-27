@@ -109,6 +109,8 @@ public class EnterpriseChannelUserQuery {
      */
     private String keywords;
     
+    private String name;
+    
     private List<Long> franchiseeIds;
     private List<Long> storeIds;
 }

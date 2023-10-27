@@ -17,4 +17,6 @@ public class UserInfoSearchVo {
     private String name;
     
     private String phone;
+    
+    private String nameAndPhone;
 }
