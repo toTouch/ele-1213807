@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author BaoYu
@@ -169,7 +168,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * 企业代付续租购买套餐
      *
      * @param query
-     * @param request
+     * @param
      * @return
      */
     @PostMapping("/user/enterprise/purchaseRenewalPackage")
@@ -183,7 +182,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * 企业代付购买套餐+押金+保险
      *
      * @param query
-     * @param request
+     * @param
      * @return
      */
     @PostMapping("/user/enterprise/purchasePackageWithDeposit")
@@ -197,7 +196,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * 企业免押代付
      *
      * @param query
-     * @param request
+     * @param
      * @return
      */
     @PostMapping("/user/enterprise/purchasePackageWithFreeDeposit")
