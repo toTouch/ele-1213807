@@ -236,8 +236,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         Long returnBindTime = oldElectricityBattery.getBindTime();
         
         //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
-        if (Objects.isNull(returnBindTime) || returnBindTime < System.currentTimeMillis()) {
-            inWarehouseElectricityBattery.setBindTime(System.currentTimeMillis());
+        if (Objects.isNull(returnBindTime) || returnBindTime < offlineEleOrderVo.getEndTime()) {
+            inWarehouseElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
             electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
         }
         
@@ -263,8 +263,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.nonNull(electricityBattery)) {
             bindTime = electricityBattery.getBindTime();
         }
-        if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
-            newElectricityBattery.setBindTime(System.currentTimeMillis());
+        if (Objects.isNull(bindTime) || bindTime < offlineEleOrderVo.getEndTime()) {
+            newElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
             electricityBatteryService.updateBatteryUser(usingElectricityBattery);
         }
     }
