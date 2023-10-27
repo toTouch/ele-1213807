@@ -766,7 +766,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 dataMap.put("model_type", false);
             } else {
                 dataMap.put("model_type", true);
-                // dataMap.put("multiBatteryModelName", Objects.isNull(electricityBattery) ? "UNKNOW" : electricityBattery.getModel());
+                dataMap.put("multiBatteryModelName", Objects.isNull(electricityBattery) ? "UNKNOW" : electricityBattery.getModel());
                 if (Objects.nonNull(electricityBattery)) {
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
                 } else {

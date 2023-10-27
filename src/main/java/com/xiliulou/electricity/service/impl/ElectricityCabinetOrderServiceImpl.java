@@ -142,7 +142,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-
+    
     /**
      * 修改数据
      *
@@ -290,7 +290,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 dataMap.put("model_type", true);
                 dataMap.put("multiBatteryModelName", electricityBattery.getModel());
             }
-
+            
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR)
@@ -317,7 +317,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId());
         return R.ok();
     }
-
+    
     @Slave
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
@@ -1158,7 +1158,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //校验选择的仓门是否可用
-        Triple<Boolean, String, Object> exchangeStatus = isExchangeStatus(electricityCabinet, selectBox, userInfo, franchisee);
+        
+        List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
+        
+        Triple<Boolean, String, Object> exchangeStatus = isExchangeStatus(electricityCabinet, selectBox, userInfo, franchisee, userBatteryTypeList);
         if (Boolean.FALSE.equals(exchangeStatus.getLeft())) {
             return exchangeStatus;
         }
@@ -1176,14 +1179,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //处理单电
             rentBatteryResult = handlerSelectionExchangeSingleBattery(userInfo, store, electricityCabinet, franchisee, selectBox, usableEmptyCellNo, electricityConfig,
-                    electricityBattery);
+                    electricityBattery, userBatteryTypeList);
             if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                 return rentBatteryResult;
             }
         } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             //处理车电一体
             rentBatteryResult = handlerSelectionExchangeBatteryCar(userInfo, store, electricityCabinet, franchisee, selectBox, usableEmptyCellNo, electricityConfig,
-                    electricityBattery);
+                    electricityBattery, userBatteryTypeList);
             if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                 return rentBatteryResult;
             }
@@ -1195,7 +1198,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Triple<Boolean, String, Object> handlerSelectionExchangeSingleBattery(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, Franchisee franchisee,
-            ElectricityCabinetBox selectBox, Pair<Boolean, Integer> usableEmptyCellNo, ElectricityConfig electricityConfig, ElectricityBattery electricityBattery) {
+            ElectricityCabinetBox selectBox, Pair<Boolean, Integer> usableEmptyCellNo, ElectricityConfig electricityConfig, ElectricityBattery electricityBattery,
+            List<String> userBatteryTypeList) {
         
         //判断用户押金
         Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
@@ -1292,9 +1296,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
             } else {
                 ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
             }
         }
         
@@ -1310,7 +1316,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Triple<Boolean, String, Object> handlerSelectionExchangeBatteryCar(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, Franchisee franchisee,
-            ElectricityCabinetBox selectBox, Pair<Boolean, Integer> usableEmptyCellNo, ElectricityConfig electricityConfig, ElectricityBattery electricityBattery) {
+            ElectricityCabinetBox selectBox, Pair<Boolean, Integer> usableEmptyCellNo, ElectricityConfig electricityConfig, ElectricityBattery electricityBattery,
+            List<String> batteryTypeList) {
         
         //判断车电一体套餐状态
         if (carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())) {
@@ -1352,9 +1359,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
             } else {
                 ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
             }
         }
         
@@ -1369,7 +1378,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, electricityCabinetOrder.getOrderId());
     }
     
-    private Triple<Boolean, String, Object> isExchangeStatus(ElectricityCabinet electricityCabinet, ElectricityCabinetBox selectBox, UserInfo userInfo, Franchisee franchisee) {
+    private Triple<Boolean, String, Object> isExchangeStatus(ElectricityCabinet electricityCabinet, ElectricityCabinetBox selectBox, UserInfo userInfo, Franchisee franchisee,
+            List<String> userBatteryTypeList) {
         Double fullyCharged = electricityCabinet.getFullyCharged();
         
         //判断仓门中是否为空仓
@@ -1389,8 +1399,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     userInfo.getUid());
             return Triple.of(false, "100554", "选中仓门的电池未达到可换电标准");
         }
+        
         // 换电、车电一体套餐类型判断
-        List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && !userBatteryTypeList.contains(selectBox.getBatteryType())) {
             log.warn("SELECTION EXCHANGE ORDER WARN! user battery type not equals memberCard battery type! electricityCabinetId={},uid={}", electricityCabinet.getId(),
                     userInfo.getUid());
@@ -1446,8 +1456,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         return Triple.of(true, null, null);
     }
-
-    private Triple<Boolean, String, Object> handlerExchangeBatteryCarV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet,OrderQueryV2 orderQuery) {
+    
+    private Triple<Boolean, String, Object> handlerExchangeBatteryCarV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV2 orderQuery) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("EXCHANGE WARN! not found franchisee,uid={}", userInfo.getUid());
@@ -1631,12 +1641,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
-                //commandData.put("multiBatteryModelName", electricityBattery.getModel());
+                commandData.put("multiBatteryModelName", electricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
             } else {
-                // ElectricityBattery lastElectricityBattery=  selectLastExchangeOrderBattery(userInfo);
+                ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
-                // commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
+                commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
             }
         }
         
@@ -1770,11 +1780,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
-                //commandData.put("multiBatteryModelName", electricityBattery.getModel());
+                commandData.put("multiBatteryModelName", electricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
             } else {
-                //ElectricityBattery lastElectricityBattery=  selectLastExchangeOrderBattery(userInfo);
-                // commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
+                ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
+                commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
             }
         }
@@ -2063,9 +2073,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private boolean isExceptionOrder(String status) {
-        return status.equals(ElectricityCabinetOrder.ORDER_CANCEL)
-                || ElectricityCabinetOrder.INIT_DEVICE_USING.equals(status)
-                || status.equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
+        return status.equals(ElectricityCabinetOrder.ORDER_CANCEL) || ElectricityCabinetOrder.INIT_DEVICE_USING.equals(status) || status.equals(
+                ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
     }
     
     private boolean isTakeBatteryAllStatus(String status) {
