@@ -1809,7 +1809,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityBatteryService.queryBySnFromDb(lastElectricityCabinetOrder.getNewElectricityBatterySn());
     }
     
-    private ElectricityCabinetOrder selectLatestByUidV2(Long uid) {
+    @Override
+    public ElectricityCabinetOrder selectLatestByUidV2(Long uid) {
         return electricityCabinetOrderMapper.selectLatestByUidV2(uid);
     }
     

@@ -766,10 +766,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 dataMap.put("model_type", false);
             } else {
                 dataMap.put("model_type", true);
-                dataMap.put("multiBatteryModelName", Objects.isNull(electricityBattery) ? "UNKNOW" : electricityBattery.getModel());
                 if (Objects.nonNull(electricityBattery)) {
+                    dataMap.put("multiBatteryModelName", electricityBattery.getModel());
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(Lists.newArrayList(electricityBattery.getModel())));
                 } else {
+                    ElectricityBattery lastElectricityBattery = selectLastExchangeOrderBattery(userInfo);
+                    dataMap.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                     //获取用户绑定的电池型号
                     List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
@@ -790,6 +792,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         return R.ok();
     }
+    
+    private ElectricityBattery selectLastExchangeOrderBattery(UserInfo userInfo) {
+        ElectricityCabinetOrder lastElectricityCabinetOrder = electricityCabinetOrderService.selectLatestByUidV2(userInfo.getUid());
+        if (Objects.isNull(lastElectricityCabinetOrder) || StringUtils.isBlank(lastElectricityCabinetOrder.getNewElectricityBatterySn())) {
+            return null;
+        }
+        
+        return electricityBatteryService.queryBySnFromDb(lastElectricityCabinetOrder.getNewElectricityBatterySn());
+    }
+    
     
     @Override
     public void update(RentBatteryOrder rentBatteryOrder) {
