@@ -282,6 +282,11 @@
         where uid = #{uid} order by id limit 1
     </select>
     
+    <select id="selectAllByEnterpriseId" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        where enterprise_id = #{enterpriseId}
+    </select>
+    
     <select id="selectUserRelatedEnterprise" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO">
         select
             tecu.id,

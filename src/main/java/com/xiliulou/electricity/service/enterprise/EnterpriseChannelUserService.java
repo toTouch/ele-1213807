@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
-import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -22,7 +21,7 @@ public interface EnterpriseChannelUserService {
      * @return
      */
     public Triple<Boolean, String, Object> save(EnterpriseChannelUserQuery query);
-
+    
     /**
      * 根据手机号码，及运营商信息查询用户
      * @param enterpriseChannelUserQuery

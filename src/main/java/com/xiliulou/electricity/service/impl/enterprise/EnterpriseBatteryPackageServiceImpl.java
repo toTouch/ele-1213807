@@ -84,6 +84,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageServi
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -264,6 +265,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
+    
+    @Resource
+    private EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
     @Deprecated
     @Override
@@ -1829,6 +1833,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
+    @Deprecated
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryRiderDetails(EnterpriseMemberCardQuery query) {

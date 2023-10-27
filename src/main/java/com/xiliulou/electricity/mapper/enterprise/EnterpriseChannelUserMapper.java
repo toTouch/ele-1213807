@@ -114,4 +114,6 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     Integer queryNotRecycleUserCount(@Param("enterpriseId")Long enterpriseId);
     
     List<UserInfoSearchVo> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
+    
+    List<EnterpriseChannelUser> selectAllByEnterpriseId(Long enterpriseId);
 }
