@@ -249,8 +249,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 continue;
             }
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
-            log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
         }
+        log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
     
         //租退电记录
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
