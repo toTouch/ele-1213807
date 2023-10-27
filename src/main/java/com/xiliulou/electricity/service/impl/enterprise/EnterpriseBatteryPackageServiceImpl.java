@@ -1146,8 +1146,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //MQ处理企业代付订单信息
             log.info("Async save enterprise user cost record for renewal package. order no = {}, package id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
-    
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, null, insuranceOrder.getPayAmount());
+            BigDecimal insuranceAmount = null;
+            if(Objects.nonNull(insuranceOrder)){
+                insuranceAmount = insuranceOrder.getPayAmount();
+            }
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, null, insuranceAmount);
             
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -1431,8 +1434,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //MQ处理企业代付订单信息
             log.info("Async save enterprise user cost record for purchase package with deposit. order id = {}", electricityMemberCardOrder.getOrderId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+            BigDecimal insuranceAmount = null;
+            if(Objects.nonNull(insuranceOrder)){
+                insuranceAmount = insuranceOrder.getPayAmount();
+            }
     
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, eleDepositOrder.getPayAmount(), insuranceOrder.getPayAmount());
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, eleDepositOrder.getPayAmount(), insuranceAmount);
             
             //构造前端页面套餐购买成功后显示信息
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
@@ -1705,7 +1712,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //MQ处理企业代付订单信息
             log.info("Async save enterprise user cost record for purchase package with free deposit. order no = {}, member card id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, batteryMemberCard.getDeposit(), insuranceOrder.getPayAmount());
+    
+            BigDecimal insuranceAmount = null;
+            if(Objects.nonNull(insuranceOrder)){
+                insuranceAmount = insuranceOrder.getPayAmount();
+            }
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, batteryMemberCard.getDeposit(), insuranceAmount);
             
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
