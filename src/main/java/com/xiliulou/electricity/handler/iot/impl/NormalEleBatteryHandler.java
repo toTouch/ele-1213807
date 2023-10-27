@@ -263,6 +263,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
+        battery.setGuessUid(null);
         battery.setHealthStatus(eleBatteryVO.getHealth());
         battery.setChargeStatus(eleBatteryVO.getChargeStatus());
 
@@ -271,10 +272,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         //获取电池型号
-        if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
+        //if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
             String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
             battery.setModel(batteryModel);
-        }
+       // }
 
         return battery;
     }
@@ -299,10 +300,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         //获取电池型号
-        if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
+      //  if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
             String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
             electricityCabinetBox.setBatteryType(batteryModel);
-        }
+      //  }
 
         return electricityCabinetBox;
     }
@@ -446,8 +447,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
          * 1.如果柜机模式为 MULTI_V，不管nacos是否开启电量变化检测，都不进行电量变化太大检测
          */
         if (StringUtils.isNotBlank(applicationMode) && ANCHI_BATTERY_PROTOCOL.equals(applicationMode)) {
-            log.info("ELE BATTERY REPORT INFO! applicationMode:MULTI_V,report power={},sessionId={}",
-                    eleBatteryVO.getPower(), sessionId);
             return power;
         }
 

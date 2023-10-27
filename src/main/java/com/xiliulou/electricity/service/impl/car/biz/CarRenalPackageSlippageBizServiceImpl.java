@@ -92,24 +92,22 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
 
         if (Objects.isNull(userInfo)) {
-            log.error("clearSlippage failed. not found user. uid is {}", uid);
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("clearSlippage failed. user is disable. uid is {}", uid);
             throw new BizException( "ELECTRICITY.0024", "用户已被禁用");
         }
 
         // 查询名下当前所有类型的未支付、支付失败的逾期订单
         List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
         if (ObjectUtils.isEmpty(slippageEntityList)) {
-            log.info("clearSlippage, not found t_car_rental_package_order_slippage. uid is {}", uid);
+            log.warn("clearSlippage, not found t_car_rental_package_order_slippage. uid is {}", uid);
             return true;
         }
         // 查询会员详情
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
+            log.warn("clearSlippage, not found t_car_rental_package_member_term or status is wrong. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
 
@@ -120,7 +118,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             CarRentalPackageOrderFreezePo freezeEntity = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
 
             if (ObjectUtils.isEmpty(freezeEntity)) {
-                log.error("clearSlippage, not found t_car_rental_package_order_freeze. uid is {}", uid);
+                log.warn("clearSlippage, not found t_car_rental_package_order_freeze. uid is {}", uid);
                 throw new BizException("300000", "数据有误");
             }
             saveClearSlippageTx(slippageEntityList, freezeEntity, optUid, memberTermEntity);

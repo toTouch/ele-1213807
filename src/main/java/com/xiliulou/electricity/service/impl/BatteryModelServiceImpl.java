@@ -544,7 +544,6 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             //如果电池编码对应的材质不存在，返回空
             String materialName = materialMap.get(String.valueOf(material));
             if (StringUtils.isBlank(materialName)) {
-                log.error("ELE ERROR!battery type analysis fail,materialName is blank,batteryName={}", batteryName);
                 return type;
             }
             

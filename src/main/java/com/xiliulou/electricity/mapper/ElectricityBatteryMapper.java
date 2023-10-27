@@ -97,7 +97,9 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBatteryDataVO> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                                     @Param("offset") Long offset, @Param("size") Long size);
     Integer queryBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
-
+    
+    Integer updateGuessUidById(@Param("id") Long id);
+    
     List<ElectricityBatteryDataVO> queryStrayBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                                     @Param("offset") Long offset, @Param("size") Long size);
     Integer queryStrayBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);

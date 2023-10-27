@@ -159,6 +159,8 @@ public interface ElectricityCabinetService {
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
+    
+    Triple<Boolean, String, Object> queryElectricityCabinetBoxInfoByCabinetId(Integer electricityCabinetId);
 
     List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
 
