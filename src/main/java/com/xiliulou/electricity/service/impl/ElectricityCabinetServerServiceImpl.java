@@ -295,9 +295,9 @@ public class ElectricityCabinetServerServiceImpl
     @Override
     public Integer logicalDeleteByEid(Integer id) {
         ElectricityCabinetServer electricityCabinetServer = new ElectricityCabinetServer();
-        electricityCabinetServer.setId(id.longValue());
+        electricityCabinetServer.setElectricityCabinetId(id);
         electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_DEL);
         electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
-        return this.electricityCabinetServerMapper.update(electricityCabinetServer);
+        return this.electricityCabinetServerMapper.updateByEid(electricityCabinetServer);
     }
 }
