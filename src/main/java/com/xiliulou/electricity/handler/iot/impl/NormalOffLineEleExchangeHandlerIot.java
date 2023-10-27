@@ -206,7 +206,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 newElectricityBattery.setUid(null);
                 
                 //设置用户绑定的电池的guessId为归还电池的用户Id
-                if (Objects.nonNull(oldElectricityBattery) && Objects.nonNull(oldElectricityBattery.getUid())) {
+                if (Objects.nonNull(oldElectricityBattery) && Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(),
+                        electricityBattery.getUid())) {
                     newElectricityBattery.setGuessUid(oldElectricityBattery.getUid());
                 }
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -232,7 +233,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         inWarehouseElectricityBattery.setGuessUid(null);
         inWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
         inWarehouseElectricityBattery.setBorrowExpireTime(null);
-        electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
+        Long returnBindTime = oldElectricityBattery.getBindTime();
+        
+        //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+        if (Objects.isNull(returnBindTime) || returnBindTime < System.currentTimeMillis()) {
+            inWarehouseElectricityBattery.setBindTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
+        }
         
         //更新新电池为在用
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getNewElectricityBatterySn());
@@ -251,13 +258,15 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         usingElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         
         //设置电池的绑定时间 1.必须为在租用户 2.要更新的电池的绑定时间为空或者小于上报订单的结束时间
-        Long bindTime = newElectricityBattery.getBindTime();
-        if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(),
-                YesNoEnum.YES.getCode())) && (Objects.isNull(bindTime) || bindTime < offlineEleOrderVo.getEndTime())) {
-            usingElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
+        //设置电池的绑定时间
+        Long bindTime = null;
+        if (Objects.nonNull(electricityBattery)) {
+            bindTime = electricityBattery.getBindTime();
         }
-        
-        electricityBatteryService.updateBatteryUser(usingElectricityBattery);
+        if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+            newElectricityBattery.setBindTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryUser(usingElectricityBattery);
+        }
     }
     
     private void handleBatteryTrackRecord(ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet, UserInfo userInfo) {

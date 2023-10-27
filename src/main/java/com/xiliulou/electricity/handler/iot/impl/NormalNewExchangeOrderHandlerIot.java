@@ -254,7 +254,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setElectricityCabinetName(null);
                 
                 //如果放入的电池和用户绑定的电池不一样且放入的电池不为空
-                if (Objects.nonNull(placeBattery) && Objects.nonNull(placeBattery.getUid())) {
+                if (Objects.nonNull(placeBattery) && Objects.nonNull(placeBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid())) {
                     newElectricityBattery.setGuessUid(placeBattery.getUid());
                 }
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
@@ -266,11 +266,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     updateBattery.setUid(null);
                     updateBattery.setGuessUid(null);
                     updateBattery.setBorrowExpireTime(null);
-                    updateBattery.setBindTime(null);
                     updateBattery.setElectricityCabinetId(null);
                     updateBattery.setElectricityCabinetName(null);
                     updateBattery.setUpdateTime(System.currentTimeMillis());
-                    electricityBatteryService.updateBatteryUser(updateBattery);
+                    Long bindTime = placeBattery.getBindTime();
+                    
+                    //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+                    if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+                        updateBattery.setBindTime(System.currentTimeMillis());
+                        electricityBatteryService.updateBatteryUser(updateBattery);
+                    }
                 }
                 
             } else {
@@ -283,7 +288,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                
+                Long bindTime = oldElectricityBattery.getBindTime();
+                //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+                if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+                    newElectricityBattery.setBindTime(System.currentTimeMillis());
+                    electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                }
             }
         }
         
@@ -301,8 +312,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
             
             //设置电池的绑定时间
-            newElectricityBattery.setBindTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            Long bindTime = electricityBattery.getBindTime();
+            if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+                newElectricityBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            } 
             
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
@@ -314,11 +328,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     exchangeOrderRsp.getOrderId());
         }
         
-        BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
+        BatteryTrackRecord placeatteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
+                .setEName(electricityCabinet.getName()).setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
+                .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId());
+        batteryTrackRecordService.putBatteryTrackQueue(placeatteryTrackRecord);
+        
+        BatteryTrackRecord takeBatteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
-        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
     }
     
     private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
@@ -389,10 +408,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }*/
         
-        BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
-                .setEName(electricityCabinet.getName()).setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
-                .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId());
-        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
     
     
@@ -436,8 +451,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}",
-                    electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
+            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
+                    exchangeOrderRsp.getOrderId());
             return;
         }
         
@@ -490,8 +505,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
-            log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",
-                    exchangeOrderRsp.getOrderId());
+            log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", exchangeOrderRsp.getOrderId());
             return;
         }
         
