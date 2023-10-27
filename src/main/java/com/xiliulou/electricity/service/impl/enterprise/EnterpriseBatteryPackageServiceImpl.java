@@ -7,7 +7,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -101,7 +100,6 @@ import com.xiliulou.electricity.vo.enterprise.EnterprisePackageOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseRefundDepositOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseRentBatteryOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostDetailsVO;
-import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostRecordRemarkVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseUserPackageDetailsVO;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
@@ -121,7 +119,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,7 +128,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -1126,7 +1122,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             //记录企业代付订单信息
-            EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+            /*EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
             enterpriseUserCostRecordDTO.setUid(userInfo.getUid());
             enterpriseUserCostRecordDTO.setEnterpriseId(enterpriseId);
             enterpriseUserCostRecordDTO.setOrderId(electricityMemberCardOrder.getOrderId());
@@ -1145,11 +1141,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
-            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);*/
             
             //MQ处理企业代付订单信息
-            log.info("Async save enterprise user cost record for renewal package. send async message, message is {}", message);
-            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+            log.info("Async save enterprise user cost record for renewal package. order no = {}, package id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+            //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+    
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, null, insuranceOrder.getPayAmount());
             
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());
@@ -1409,7 +1407,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             //记录企业代付订单信息
-            EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+           /* EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
             enterpriseUserCostRecordDTO.setUid(userInfo.getUid());
             enterpriseUserCostRecordDTO.setEnterpriseId(enterpriseId);
             enterpriseUserCostRecordDTO.setOrderId(electricityMemberCardOrder.getOrderId());
@@ -1428,11 +1426,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
-            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);*/
             
             //MQ处理企业代付订单信息
-            log.info("Async save enterprise user cost record for purchase package with deposit. send async message, message is {}", message);
-            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+            log.info("Async save enterprise user cost record for purchase package with deposit. order id = {}", electricityMemberCardOrder.getOrderId());
+            //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+    
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, eleDepositOrder.getPayAmount(), insuranceOrder.getPayAmount());
             
             //构造前端页面套餐购买成功后显示信息
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
@@ -1682,7 +1682,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             //记录企业代付订单信息
-            EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
+            /*EnterpriseUserCostRecordDTO enterpriseUserCostRecordDTO = new EnterpriseUserCostRecordDTO();
             enterpriseUserCostRecordDTO.setUid(userInfo.getUid());
             enterpriseUserCostRecordDTO.setEnterpriseId(enterpriseId);
             enterpriseUserCostRecordDTO.setOrderId(electricityMemberCardOrder.getOrderId());
@@ -1701,10 +1701,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterpriseUserCostRecordRemarkVO.setInsuranceAmount(insuranceOrder.getPayAmount());
             }
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
-            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
+            String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);*/
             //MQ处理企业代付订单信息
-            log.info("Async save enterprise user cost record for purchase package with free deposit. send async message, message is {}", message);
-            enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+            log.info("Async save enterprise user cost record for purchase package with free deposit. order no = {}, member card id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+            //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, batteryMemberCard.getDeposit(), insuranceOrder.getPayAmount());
             
             enterpriseUserPackageDetailsVO.setUid(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setName(userInfo.getName());

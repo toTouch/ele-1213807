@@ -10,7 +10,6 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
