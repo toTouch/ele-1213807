@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author BaoYu
@@ -91,6 +92,25 @@ public class EnterpriseChannelUserQuery {
      * 修改时间
      */
     private Long updateTime;
-
-
+    
+    
+    /**
+     * 偏移量
+     */
+    private Integer offset = 0;
+    
+    /**
+     * 取值数量
+     */
+    private Integer size = 10;
+    
+    /**
+     * 关键字查询，手机号/真实姓名，模糊查询
+     */
+    private String keywords;
+    
+    private String name;
+    
+    private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }

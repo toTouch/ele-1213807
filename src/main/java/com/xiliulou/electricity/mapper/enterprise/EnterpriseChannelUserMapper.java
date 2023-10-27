@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import java.util.List;
 
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -110,6 +112,8 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     int deleteByUid(Long uid);
     
     Integer queryNotRecycleUserCount(@Param("enterpriseId")Long enterpriseId);
+    
+    List<UserInfoSearchVo> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
     
     List<EnterpriseChannelUser> selectAllByEnterpriseId(Long enterpriseId);
 }
