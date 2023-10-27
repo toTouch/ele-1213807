@@ -43,7 +43,7 @@
         <if test="tenantId != null">
             and tui.tenant_id = #{tenantId}
         </if>
-        <if test="name != null and name != ''">
+        <if test="keywords != null and keywords != ''">
             and tui.name like concat('%', #{keywords}, '%')  or tui.phone LIKE CONCAT('%', #{keywords}, '%'))
         </if>
         <if test=" franchiseeIds != null">
