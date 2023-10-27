@@ -258,7 +258,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.warn("battery memberCard is null for purchase package with deposit , memberCardId = {}, uid = {}", electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getUid());
+            log.warn("battery memberCard is null for async save user cost record, memberCardId = {}, uid = {}", electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getUid());
             return;
         }
        
@@ -288,7 +288,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);
     
         //MQ处理企业代付订单信息
-        log.info("Async save enterprise user cost record for purchase package with deposit. send async message, message is {}", message);
+        log.info("Async save enterprise user cost record for purchase package. send async message, message is {}", message);
         enterpriseUserCostRecordProducer.sendAsyncMessage(message);
         
     }
