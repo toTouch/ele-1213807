@@ -862,7 +862,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
                         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
     
-                        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(price.multiply(BigDecimal.valueOf(useDays))));
+                        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays)))));
                     }
                 }else{
                     //租电套餐消耗的云豆

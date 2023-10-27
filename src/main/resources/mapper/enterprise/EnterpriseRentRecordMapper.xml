@@ -34,7 +34,7 @@
           any_value ( update_time ) update_time,
           any_value ( tenant_id ) tenant_id
         from t_enterprise_rent_record
-        where uid = #{uid} and rent_time is not null and return_time is not null GROUP BY FROM_UNIXTIME(create_time / 1000, '%Y-%m-%d' );
+        where uid = #{uid} and rent_time is not null and return_time is not null GROUP BY FROM_UNIXTIME(update_time / 1000, '%Y-%m-%d' );
     </select>
     
     <select id="selectLatestRentRecord" resultMap="EnterpriseRentRecordMap">
