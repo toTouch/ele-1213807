@@ -253,6 +253,8 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
                 query.setFranchiseeIds(franchiseeIds);
             }
         }
+    
+        query.setTenantId(TenantContextHolder.getTenantId().longValue());
         
         return returnTripleResult(enterpriseChannelUserService.enterpriseChannelUserSearch(query));
     }

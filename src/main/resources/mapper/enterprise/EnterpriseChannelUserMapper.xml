@@ -37,9 +37,12 @@
         where enterprise_id = #{enterpriseId} and cloud_bean_status=1
     </select>
     
-    <select id="enterpriseChannelUserSearch" resultType="int">
+    <select id="enterpriseChannelUserSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
         select tui.id, tui.uid, tui.name, tui.phone FROM t_user_info tui left join t_enterprise_channel_user tecu on tecu.uid=tui.uid
-        WHERE tui.del_flag = 0 and tui.auth_status=2 and tecu.uid is null and tui.tenant_id = #{tenantId}
+        WHERE tui.del_flag = 0 and tui.auth_status=2 and tecu.uid is null
+        <if test="tenantId != null">
+            and tui.tenant_id = #{tenantId}
+        </if>
         <if test="name != null and name != ''">
             and tui.name like concat('%', #{keywords}, '%')  or tui.phone LIKE CONCAT('%', #{keywords}, '%'))
         </if>
