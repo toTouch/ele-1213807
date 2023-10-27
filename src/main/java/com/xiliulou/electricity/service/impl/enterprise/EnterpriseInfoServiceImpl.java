@@ -933,8 +933,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     }
     
                     //退电消耗的云豆
-                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getRentMembercardOrderId());
-                    ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
+                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getReturnMembercardOrderId());
+                    ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
                     if (Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnElectricityMemberCardOrder)) {
                         //单价
                         BigDecimal price = returnElectricityMemberCardOrder.getPayAmount()

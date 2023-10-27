@@ -309,9 +309,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
                     //退电消耗的云豆
                     AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService
-                            .selectByOrderId(enterpriseRentRecord.getRentMembercardOrderId());
+                            .selectByOrderId(enterpriseRentRecord.getReturnMembercardOrderId());
                     ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService
-                            .selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
+                            .selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
                     if (Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnElectricityMemberCardOrder)) {
                         //单价
                         BigDecimal price = returnElectricityMemberCardOrder.getPayAmount()
