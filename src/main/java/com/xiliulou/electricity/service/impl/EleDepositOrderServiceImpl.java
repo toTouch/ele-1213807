@@ -601,26 +601,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        List<EleDepositOrderVO> eleDepositOrderVOS;
-        if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
-            eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        List<EleDepositOrderVO> eleDepositOrderVOS  = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
-            eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
-    
-                eleDepositOrderVO.setRefundFlag(true);
-                // 订单已退押或正在退押中
-                List<Integer> statusList = new ArrayList<>();
-                statusList.add(EleRefundOrder.STATUS_SUCCESS);
-                statusList.add(EleRefundOrder.STATUS_REFUND);
-                Integer exist = eleRefundOrderService.existByOrderIdAndStatus(eleDepositOrderVO.getOrderId(), statusList);
-                if (Objects.isNull(exist)) {
-                    eleDepositOrderVO.setRefundFlag(false);
-                }
-                return eleDepositOrderVO;
-            }).collect(Collectors.toList());
-        } else {
-            eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
-        }
+        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+            // 订单已退押或正在退押中
+            List<Integer> statusList = new ArrayList<>();
+            statusList.add(EleRefundOrder.STATUS_SUCCESS);
+            statusList.add(EleRefundOrder.STATUS_REFUND);
+            Integer exist = eleRefundOrderService.existByOrderIdAndStatus(eleDepositOrderVO.getOrderId(), statusList);
+            if (Objects.isNull(exist)) {
+                eleDepositOrderVO.setRefundFlag(false);
+            }
+            return eleDepositOrderVO;
+        }).collect(Collectors.toList());
+        
         return R.ok(eleDepositOrderVOS);
     }
 

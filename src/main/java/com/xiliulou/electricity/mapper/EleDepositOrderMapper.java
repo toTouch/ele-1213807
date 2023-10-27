@@ -29,6 +29,7 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
      */
     List<EleDepositOrderVO> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
+    @Deprecated
     List<EleDepositOrderVO> queryListForRentCar(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
     Integer queryCount(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
