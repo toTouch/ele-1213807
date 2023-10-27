@@ -212,27 +212,27 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
         return returnTripleResult(enterpriseInfoService.refund(orderId,request));
     }
     
-    @Autowired
-    CloudBeanUseRecordService cloudBeanUseRecordService;
-    
     /**
      * 企业渠道用户搜索
      * @return
      */
-    @PostMapping("/admin/enterpriseInfo/queryByKeywords")
-    public R queryByKeywords(@RequestBody EnterpriseChannelUserQuery query) {
-        if (Objects.isNull(query.getSize()) || query.getSize() < 0 || query.getSize() > 50) {
-            query.setSize(10);
+    @GetMapping("/admin/enterpriseInfo/queryByKeywords")
+    public R queryByKeywords(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset,
+            @RequestParam(value = "keywords", required = false) String keywords) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10;
         }
     
-        if (Objects.isNull(query.getOffset()) || query.getOffset() < 0) {
-            query.setOffset(0);
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0;
         }
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        EnterpriseChannelUserQuery query = new EnterpriseChannelUserQuery();
     
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
@@ -254,6 +254,9 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
             }
         }
     
+        query.setSize(size);
+        query.setOffset(offset);
+        query.setKeywords(keywords);
         query.setTenantId(TenantContextHolder.getTenantId().longValue());
         
         return returnTripleResult(enterpriseChannelUserService.enterpriseChannelUserSearch(query));
