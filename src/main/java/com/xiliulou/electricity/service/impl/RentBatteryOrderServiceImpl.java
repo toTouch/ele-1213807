@@ -158,7 +158,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-
+    
     /**
      * 新增数据
      *
@@ -1139,12 +1139,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
             picture = 1;
         }
-
+        
         //error
-        if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
-                || ElectricityCabinetOrder.STATUS_INIT_DEVICE_USING.equals(rentBatteryOrder.getOrderSeq())
+        if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL) || ElectricityCabinetOrder.STATUS_INIT_DEVICE_USING.equals(rentBatteryOrder.getOrderSeq())
                 || rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
-
+            
             picture = 3;
         }
         
@@ -1255,7 +1254,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(usableCabinetBox)) {
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
-        
+        log.info("rent cabinetId={},BoxCell={}", electricityCabinet.getId(), usableCabinetBox.getCellNo());
         return Triple.of(true, null, usableCabinetBox);
     }
     
@@ -1512,7 +1511,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (CollectionUtils.isEmpty(eleCabinetUsedRecords)) {
             return Collections.emptyList();
         }
-
+        
         List<EleCabinetUsedRecordVO> cabinetUsedRecordVOList = new ArrayList<>();
         for (EleCabinetUsedRecord eleCabinetUsedRecord : eleCabinetUsedRecords) {
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();

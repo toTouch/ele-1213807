@@ -92,6 +92,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
+    @Autowired
+    private ElectricityBatteryDataService electricityBatteryDataService;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
     
@@ -238,12 +241,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+        
+        //更新放入电池的状态
+        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getPlaceBatteryName());
+        
         if (Objects.nonNull(oldElectricityBattery)) {
             //如果放入的电池与用户绑定的电池不一致
             if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
-                //更新放入电池的状态
-                ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getPlaceBatteryName());
-                
                 //更新用户绑定的电池状态
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
@@ -255,6 +259,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 
                 //如果放入的电池和用户绑定的电池不一样且放入的电池不为空
                 if (Objects.nonNull(placeBattery) && Objects.nonNull(placeBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid())) {
+                    log.info("on placeBatteryUid={},oldElectricityBattery uid={}", placeBattery.getUid(), oldElectricityBattery.getUid());
                     newElectricityBattery.setGuessUid(placeBattery.getUid());
                 }
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
@@ -271,6 +276,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     updateBattery.setUpdateTime(System.currentTimeMillis());
                     Long bindTime = placeBattery.getBindTime();
                     
+                    log.info("on1 bindTime={},current time={}", bindTime, System.currentTimeMillis());
                     //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
                     if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                         updateBattery.setBindTime(System.currentTimeMillis());
@@ -291,11 +297,18 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 
                 Long bindTime = oldElectricityBattery.getBindTime();
                 //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+                log.info("on2 bindTime={},current time={}", bindTime, System.currentTimeMillis());
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 }
             }
+        }
+        
+        //如果放入的电池的uid为空，则需要清除guessId
+        if (Objects.isNull(placeBattery.getUid()) && Objects.nonNull(placeBattery.getGuessUid())) {
+            placeBattery.setGuessUid(null);
+            electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
         }
         
         //电池改为在用
@@ -313,10 +326,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //设置电池的绑定时间
             Long bindTime = electricityBattery.getBindTime();
+            log.info("on3 bindTime={},current time={}", bindTime, System.currentTimeMillis());
             if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                 newElectricityBattery.setBindTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
-            } 
+            }
             
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
