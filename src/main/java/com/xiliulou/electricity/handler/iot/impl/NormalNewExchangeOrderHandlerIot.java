@@ -271,12 +271,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             } else {
                 returnBattery(oldElectricityBattery);
             }
-        }else{
+        } else {
             //异常交换如果放入的电池的uid为空，则需要清除guessId
-            if (Objects.isNull(placeBattery.getUid())) {
-                returnBattery(placeBattery);
-                electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
-            }
+            returnBattery(placeBattery);
+            electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
         }
         
         //电池改为在用
@@ -322,12 +320,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
     }
     
-    private void returnBattery(ElectricityBattery placeBattery){
+    private void returnBattery(ElectricityBattery placeBattery) {
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(placeBattery.getId());
         newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
         newElectricityBattery.setUid(null);
-        newElectricityBattery.setGuessUid(null);
         newElectricityBattery.setGuessUid(null);
         newElectricityBattery.setBorrowExpireTime(null);
         newElectricityBattery.setElectricityCabinetId(null);

@@ -1254,7 +1254,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(usableCabinetBox)) {
             return Triple.of(false, "", "换电柜暂无满电电池");
         }
-        log.info("rent cabinetId={},BoxCell={}", electricityCabinet.getId(), usableCabinetBox.getCellNo());
         return Triple.of(true, null, usableCabinetBox);
     }
     
