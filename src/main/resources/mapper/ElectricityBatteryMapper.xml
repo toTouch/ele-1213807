@@ -414,9 +414,6 @@
         <if test="borrowExpireTime != null">
             borrow_expire_time=#{borrowExpireTime},
         </if>
-        <if test="guessUid != null">
-            guess_uid=#{guessUid},
-        </if>
         <if test="bindTime != null">
             bind_time=#{bindTime},
         </if>
@@ -424,6 +421,7 @@
         electricity_cabinet_id=#{electricityCabinetId},
         uid=#{uid},
         update_time=#{updateTime}
+        guess_uid=#{guessUid},
         where id=#{id}
     </update>
 
