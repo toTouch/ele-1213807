@@ -274,7 +274,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         } else {
             //异常交换如果放入的电池的uid为空，则需要清除guessId
             returnBattery(placeBattery);
-            electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
         }
         
         //电池改为在用
