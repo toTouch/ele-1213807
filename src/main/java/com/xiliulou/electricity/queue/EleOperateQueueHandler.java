@@ -717,6 +717,7 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setBorrowExpireTime(null);
                 
                 Long bindTime = oldElectricityBattery.getBindTime();
+                log.info("return bindTime={},currentTime={}",bindTime,System.currentTimeMillis());
                 //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());

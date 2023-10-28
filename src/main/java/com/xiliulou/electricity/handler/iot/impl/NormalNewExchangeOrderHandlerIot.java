@@ -327,9 +327,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityBattery.setId(placeBattery.getId());
         newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
         newElectricityBattery.setUid(null);
-        if(Objects.nonNull(placeBattery.getGuessUid())){
-            newElectricityBattery.setGuessUid(null);
-        }
+        newElectricityBattery.setGuessUid(null);
         newElectricityBattery.setGuessUid(null);
         newElectricityBattery.setBorrowExpireTime(null);
         newElectricityBattery.setElectricityCabinetId(null);
