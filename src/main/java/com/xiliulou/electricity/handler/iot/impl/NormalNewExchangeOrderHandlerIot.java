@@ -303,12 +303,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 }
             }
-        }
-        
-        //如果放入的电池的uid为空，则需要清除guessId
-        if (Objects.isNull(placeBattery.getUid()) && Objects.nonNull(placeBattery.getGuessUid())) {
-            placeBattery.setGuessUid(null);
-            electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
+        }else{
+            //异常交换如果放入的电池的uid为空，则需要清除guessId
+            if (Objects.isNull(placeBattery.getUid()) && Objects.nonNull(placeBattery.getGuessUid())) {
+                returnBattery(placeBattery);
+                electricityBatteryDataService.updateGuessUserInfo(placeBattery.getId());
+            }
         }
         
         //电池改为在用
@@ -352,6 +352,26 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
+    }
+    
+    private void returnBattery(ElectricityBattery palceBattery){
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(palceBattery.getId());
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+        newElectricityBattery.setUid(null);
+        newElectricityBattery.setGuessUid(null);
+        newElectricityBattery.setBorrowExpireTime(null);
+        newElectricityBattery.setElectricityCabinetId(null);
+        newElectricityBattery.setElectricityCabinetName(null);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        
+        Long bindTime = palceBattery.getBindTime();
+        //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+        log.info("on4 bindTime={},current time={}", bindTime, System.currentTimeMillis());
+        if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+            newElectricityBattery.setBindTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
+        }
     }
     
     private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
