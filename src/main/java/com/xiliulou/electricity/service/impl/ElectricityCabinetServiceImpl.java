@@ -3301,6 +3301,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                 }
                 
+                //如果电池类型为空,则返回null
+                if (StringUtils.isBlank(electricityCabinetBoxVO.getBatteryType())) {
+                    electricityCabinetBoxVO.setBatteryType(null);
+                }
+                
                 if (StringUtils.isNotBlank(item.getBatteryType())) {
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(item.getBatteryType()));
