@@ -96,9 +96,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -1054,11 +1057,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
             cloudBeanGeneralViewVO.setCanRecycleUser(0L);
         } else {
-            cloudBeanGeneralViewVO.setCanRecycleUser(canRecycleList.stream().map(AnotherPayMembercardRecord::getUid).distinct().count());
+    
+            List<AnotherPayMembercardRecord> recycleList = canRecycleList.stream().collect(
+                    Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparingLong(AnotherPayMembercardRecord::getUid))), ArrayList::new));
+    
+            cloudBeanGeneralViewVO.setCanRecycleUser(recycleList.size());
             cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
-        
+            
             BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
-            for (AnotherPayMembercardRecord anotherPayMembercardRecord : canRecycleList) {
+            for (AnotherPayMembercardRecord anotherPayMembercardRecord : recycleList) {
                 canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
             }
             cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.doubleValue());
