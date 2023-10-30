@@ -601,21 +601,23 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        List<EleDepositOrderVO> eleDepositOrderVOS  = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
     
         eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
+        
+            List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
-            List<Integer> statusList = new ArrayList<>();
-            statusList.add(EleRefundOrder.STATUS_SUCCESS);
-            statusList.add(EleRefundOrder.STATUS_REFUND);
-            Integer exist = eleRefundOrderService.existByOrderIdAndStatus(eleDepositOrderVO.getOrderId(), statusList);
-            if (Objects.isNull(exist)) {
-                eleDepositOrderVO.setRefundFlag(false);
+            if (!CollectionUtils.isEmpty(eleRefundOrders)) {
+                for (EleRefundOrder e : eleRefundOrders) {
+                    if (EleRefundOrder.STATUS_SUCCESS.equals(e.getStatus()) || EleRefundOrder.STATUS_REFUND.equals(e.getStatus())) {
+                        eleDepositOrderVO.setRefundFlag(false);
+                    }
+                }
             }
             return eleDepositOrderVO;
         }).collect(Collectors.toList());
-        
+    
         return R.ok(eleDepositOrderVOS);
     }
 
