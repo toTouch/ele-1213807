@@ -76,6 +76,11 @@ public class ElectricityConfig {
      * 是否开启低电量换电 （0--是 1--否）
      */
     private Integer isLowBatteryExchange;
+    
+    /**
+     * 是否开启选仓换电 （0--开启 1--关闭）
+     */
+    private Integer isSelectionExchange;
 
     /**
      * 低电量换电模式

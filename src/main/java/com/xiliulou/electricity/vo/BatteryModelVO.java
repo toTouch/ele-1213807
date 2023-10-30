@@ -9,18 +9,22 @@ import lombok.Data;
  */
 @Data
 public class BatteryModelVO {
+
     /**
      * 电池型号
      */
     private Integer batteryModel;
+
     /**
      * 电池型号
      */
     private String batteryType;
+
     /**
      * 电池电压
      */
     private Double batteryV;
+
     /**
      * 电池短型号
      */

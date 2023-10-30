@@ -16,33 +16,33 @@ import javax.annotation.Resource;
 @Slf4j
 @Component
 public class InsureProducer {
-
+    
     @Resource
     private RocketMqService rocketMqService;
-
-
+    
+    
     public void sendAsyncMessage(String topic, String tag, String message) {
         rocketMqService.sendAsyncMsg(topic, message, tag);
     }
-
+    
     public void sendAsyncMessage(String topic, String message) {
         rocketMqService.sendAsyncMsg(topic, message);
     }
-
+    
     public void sendAsyncMessage(String message) {
         rocketMqService.sendAsyncMsg(MqProducerConstant.INSURE_COMMON_TOPIC, message);
     }
-
+    
     public void sendSyncMessage(String topic, String tag, String message) {
         rocketMqService.sendSyncMsg(topic, message, tag);
     }
-
+    
     public void sendSyncMessage(String topic, String message) {
         rocketMqService.sendSyncMsg(topic, message);
     }
-
+    
     public void sendSyncMessage(String message) {
         rocketMqService.sendSyncMsg(MqProducerConstant.INSURE_COMMON_TOPIC, message);
     }
-
+    
 }

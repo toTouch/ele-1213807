@@ -451,8 +451,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
             if (Objects.nonNull(userBatteryDeposit)) {
-                query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                    query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
+                } else {
+                    query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                }
             }
+
 
         } else {
             //续费

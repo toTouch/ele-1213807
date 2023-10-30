@@ -839,20 +839,20 @@ public class UserServiceImpl implements UserService {
         if (!Objects.equals(tenantId, user.getTenantId())) {
             return Triple.of(true, null, null);
         }
+        
+        Integer checkBatteryResult = electricityBatteryService.isUserBindBattery(uid, user.getTenantId());
+        if (!Objects.isNull(checkBatteryResult)) {
+            return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还电池");
+        }
+        
+        Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
+        if (!Objects.isNull(checkCarResult)) {
+            return Triple.of(false, "100253", "用户已租车辆，请先退还车辆");
+        }
 
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
             delUserOauthBindAndClearToken(userOauthBinds);
-        }
-
-        Integer checkBatteryResult = electricityBatteryService.isUserBindBattery(uid, user.getTenantId());
-        if (!Objects.isNull(checkBatteryResult)) {
-            return Triple.of(false, "ELECTRICITY.0045", "用户已绑定电池");
-        }
-
-        Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
-        if (!Objects.isNull(checkCarResult)) {
-            return Triple.of(false, "100253", "用户已绑定车辆");
         }
         
         //判断用户是否为企业用户
@@ -869,7 +869,7 @@ public class UserServiceImpl implements UserService {
     
         //删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
-
+        
         //删除用户
         deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);

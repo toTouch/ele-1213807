@@ -1653,6 +1653,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 } else {
                     userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
                     userCarDetail.setMemberCardExpireTime(carRentalPackageMemberTermPo.getDueTimeTotal());
+                    userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
                     if (carRentalPackageMemberTermPo.getDueTimeTotal() <= System.currentTimeMillis()) {
                         userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
                     }
@@ -1672,7 +1673,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
 
-        log.info("HOME INFO!acquire user status info! uid={},result={}", userInfo.getUid(), JsonUtil.toJson(userInfoResult));
         return Triple.of(true, "", userInfoResult);
     }
 

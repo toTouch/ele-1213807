@@ -1458,6 +1458,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //退押金解绑用户所属加盟商
         userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+    
+        //更新用户套餐订单为已失效
+        electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+    
+        userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+        
+        //删除用户电池套餐资源包
+        userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+    
+        //删除用户电池型号
+        userBatteryTypeService.deleteByUid(userInfo.getUid());
+    
+        //删除用户电池服务费
+        serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
 
         return Triple.of(true, "", null);
     }

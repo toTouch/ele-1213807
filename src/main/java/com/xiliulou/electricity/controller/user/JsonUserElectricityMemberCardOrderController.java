@@ -13,6 +13,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,8 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     @PostMapping("user/memberCard/payMemberCard")
     public R payMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
 //        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
-        return returnTripleResult(electricityMemberCardOrderService.buyBatteryMemberCard(electricityMemberCardOrderQuery, request));
+//        return returnTripleResult(electricityMemberCardOrderService.buyBatteryMemberCard(electricityMemberCardOrderQuery, request));
+        return R.fail("000001","小程序版本过低，请升级小程序");
     }
 
     @GetMapping("user/battery/membercard/info")

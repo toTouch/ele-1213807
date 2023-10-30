@@ -100,35 +100,32 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
 
         Boolean oldUserFlag = false;
-        BigDecimal deposit = null;
+        BigDecimal rentalPackageDeposit = null;
         List<String> batteryModelTypeList = new ArrayList<>();
         Integer confine = null;
 
         // 0. 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("queryCanPurchasePackage failed. Not found user. uid is {} ", uid);
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
         // 0.1 用户可用状态
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("queryCanPurchasePackage failed. User is unUsable. uid is {} ", uid);
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
         }
 
         // 0.2 用户实名认证状态
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("queryCanPurchasePackage failed. User not auth. uid is {}", uid);
             throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
         }
 
         if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId() != 0L && !franchiseeId.equals(userInfo.getFranchiseeId().intValue())) {
-            log.error("queryCanPurchasePackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), qryReq.getFranchiseeId());
+            log.warn("queryCanPurchasePackage failed. userInfo's franchiseeId is {}. params franchiseeId is {}", userInfo.getFranchiseeId(), qryReq.getFranchiseeId());
             throw new BizException("300036", "所属机构不匹配");
         }
         if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId() != 0L && !storeId.equals(userInfo.getStoreId().intValue())) {
-            log.error("queryCanPurchasePackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), qryReq.getStoreId());
+            log.warn("queryCanPurchasePackage failed. userInfo's storeId is {}. params storeId is {}", userInfo.getStoreId(), qryReq.getStoreId());
             throw new BizException("300036", "所属机构不匹配");
         }
 
@@ -145,7 +142,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
                 // 所属机构不匹配
                 if (!memberTermEntity.getFranchiseeId().equals(franchiseeId) || !memberTermEntity.getStoreId().equals(storeId)) {
-                    log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's organization does not match. return empty list.");
+                    log.warn("CarRentalPackageBizService.queryCanPurchasePackage, The user's organization does not match. return empty list.");
                     return Collections.emptyList();
                 }
 
@@ -158,7 +155,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
                     // 车辆型号不匹配
                     if (!packageEntity.getCarModelId().equals(carModelId)) {
-                        log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's carModel does not match. return empty list.");
+                        log.warn("CarRentalPackageBizService.queryCanPurchasePackage, The user's carModel does not match. return empty list.");
                         return Collections.emptyList();
                     }
                     oldUserFlag = true;
@@ -174,7 +171,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
                 }
 
-                deposit = memberTermEntity.getDeposit();
+                rentalPackageDeposit = memberTermEntity.getRentalPackageDeposit();
                 rentalPackageType = memberTermEntity.getRentalPackageType();
                 confine = memberTermEntity.getRentalPackageConfine();
             }
@@ -197,7 +194,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setFranchiseeId(franchiseeId);
         qryModel.setStoreId(storeId);
         qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
-        qryModel.setDeposit(deposit);
+        qryModel.setDeposit(rentalPackageDeposit);
         qryModel.setType(rentalPackageType);
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
@@ -291,7 +288,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
         // 检测唯一
         if (carRentalPackageService.uqByTenantIdAndName(tenantId, name)) {
-            log.info("CarRentalPackageBizService.insertPackage, Package name already exists.");
             throw new BizException("300022", "套餐名称已存在");
         }
 
@@ -310,7 +306,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(Long.valueOf(optModel.getFranchiseeId()));
             if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType()) && CollectionUtils.isEmpty(batteryModelTypes)) {
-                log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
+                log.warn("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
         }
@@ -401,7 +397,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
-        List<Long> couponIds = couponIdList.stream().map(s -> Long.valueOf(s)).collect(Collectors.toList());
+        List<Long> couponIds = couponIdList.stream().map(Long::valueOf).collect(Collectors.toList());
 
         // 查询优惠券信息
         CouponQuery couponQuery = CouponQuery.builder().ids(couponIds).build();

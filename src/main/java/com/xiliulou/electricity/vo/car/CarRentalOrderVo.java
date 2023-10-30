@@ -27,6 +27,7 @@ public class CarRentalOrderVo implements Serializable {
      *     1-租借
      *     2-归还
      * </pre>
+     *
      * @see RentalTypeEnum
      */
     private Integer type;
@@ -43,6 +44,7 @@ public class CarRentalOrderVo implements Serializable {
      *     2-成功
      *     3-审核拒绝
      * </pre>
+     *
      * @see CarRentalStateEnum
      */
     private Integer rentalState;

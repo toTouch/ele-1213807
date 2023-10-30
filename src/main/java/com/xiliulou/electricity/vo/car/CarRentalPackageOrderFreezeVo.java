@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
-import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -29,6 +29,7 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
@@ -45,6 +46,7 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      *     1-天
      *     0-分钟
      * </pre>
+     *
      * @see RentalUnitEnum
      */
     private Integer residueUnit;
@@ -60,6 +62,7 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      *     6-撤回申请
      *     7-已失效
      * </pre>
+     *
      * @see RentalPackageOrderFreezeStatusEnum
      */
     private Integer status;
@@ -108,7 +111,6 @@ public class CarRentalPackageOrderFreezeVo implements Serializable {
      * 申请原因
      */
     private String applyReason;
-
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

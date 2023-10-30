@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class HomepageBatteryVo {
 
-   private Integer count;
+    private Integer count;
 
-   private List<HomepageBatteryFrequencyVo> homepageBatteryFrequencyVos;
+    private List<HomepageBatteryFrequencyVo> homepageBatteryFrequencyVos;
 }

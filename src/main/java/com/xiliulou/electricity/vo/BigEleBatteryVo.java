@@ -9,12 +9,14 @@ import lombok.Data;
  */
 @Data
 public class BigEleBatteryVo {
-	//电量
-	private Double power;
-	/**
-	 * 仓门号
-	 */
-	private String cellNo;
+
+    //电量
+    private Double power;
+
+    /**
+     * 仓门号
+     */
+    private String cellNo;
 
 
 }

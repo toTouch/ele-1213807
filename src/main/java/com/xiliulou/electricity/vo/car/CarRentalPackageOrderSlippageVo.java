@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -34,6 +34,7 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
@@ -44,8 +45,8 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      *     1-过期
      *     2-冻结
      * </pre>
-     * @see SlippageTypeEnum
      *
+     * @see SlippageTypeEnum
      */
     private Integer type;
 
@@ -102,6 +103,7 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      *     3-支付失败
      *     5-已清除
      * </pre>
+     *
      * @see PayStateEnum
      */
     private Integer payState;
@@ -115,7 +117,6 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      * 支付时间
      */
     private Long payTime;
-
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

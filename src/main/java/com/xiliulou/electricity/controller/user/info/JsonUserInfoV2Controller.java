@@ -75,7 +75,6 @@ public class JsonUserInfoV2Controller extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -93,7 +92,6 @@ public class JsonUserInfoV2Controller extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -170,7 +168,6 @@ public class JsonUserInfoV2Controller extends BasicController {
         // 用户拦截
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 

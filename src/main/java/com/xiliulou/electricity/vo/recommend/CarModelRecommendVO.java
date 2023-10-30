@@ -16,6 +16,11 @@ public class CarModelRecommendVO implements Serializable {
     private static final long serialVersionUID = -4196356263744952946L;
 
     /**
+     * 车辆型号标签
+     */
+    List<String> carModelTagNames;
+
+    /**
      * 车辆型号ID
      */
     private Integer carModelId;
@@ -39,11 +44,6 @@ public class CarModelRecommendVO implements Serializable {
      * 车辆型号图片地址
      */
     private String carModelPictureOSSUrl;
-
-    /**
-     * 车辆型号标签
-     */
-    List<String> carModelTagNames;
 
     /**
      * 门店ID

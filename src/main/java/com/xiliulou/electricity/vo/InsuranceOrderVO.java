@@ -19,45 +19,45 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class InsuranceOrderVO {
-
+    
     private String orderId;
-
+    
     private String franchiseeName;
-
+    
     private String insuranceName;
-
+    
     private Integer insuranceType;
-
+    
     private Long uid;
-
+    
     private String userName;
-
+    
     private String idCard;
-
+    
     private String phone;
-
+    
     private Integer cid;
-
+    
     private Long insuranceExpireTime;
-
+    
     private BigDecimal insuranceAmount;
-
+    
     private Long createTime;
-
+    
     private Long updateTime;
-
+    
     private Integer validDays;
-
+    
     private String cityName;
-
+    
     private Integer status;
-
+    
     private BigDecimal forehead;
-
+    
     private Integer isUse;
-
+    
     private Integer payType;
-
+    
     /**
      * 来源订单编码
      */

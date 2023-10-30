@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -15,12 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +51,7 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                        @RequestParam(value = "isUse", required = false) Integer isUse,
-                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "userName", required = false) String userName,
@@ -102,7 +97,8 @@ public class JsonAdminInsuranceOrderController {
                 .endTime(endTime)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
-                .franchiseeName(franchiseeName)
+                //.franchiseeName(franchiseeName)
+                .franchiseeId(franchiseeId)
                 .tenantId(tenantId)
                 .phone(phone)
                 .status(status)
@@ -125,7 +121,7 @@ public class JsonAdminInsuranceOrderController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                         @RequestParam(value = "isUse", required = false) Integer isUse,
-                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "userName", required = false) String userName,
@@ -165,7 +161,8 @@ public class JsonAdminInsuranceOrderController {
                 .isUse(isUse)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
-                .franchiseeName(franchiseeName)
+                //.franchiseeName(franchiseeName)
+                .franchiseeId(franchiseeId)
                 .tenantId(tenantId)
                 .phone(phone)
                 .userName(userName)

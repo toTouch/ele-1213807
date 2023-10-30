@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
@@ -163,6 +164,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsBatteryReview(electricityConfigAddAndUpdateQuery.getIsBatteryReview());
             electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
             electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
+            electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
             electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
@@ -179,6 +181,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
+        
+        //如果选仓换电的配置有更新，则需要更新redis缓存
+        Integer selectionExchangeDB = electricityConfig.getIsSelectionExchange();
+        Integer selectionExchangeUpdate = electricityConfigAddAndUpdateQuery.getIsSelectionExchange();
+        if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
+            redisService.set(CacheConstant.CACHE_ELE_SELECTION_EXCHANGE_UPDATE_TIME + TenantContextHolder.getTenantId(), String.valueOf(System.currentTimeMillis()));
+        }
 
         electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
@@ -191,6 +200,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
         electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
         electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
+        electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
         electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());

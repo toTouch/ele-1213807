@@ -16,7 +16,9 @@ public class ElePowerVo {
     private Long createTime;
 
     private Double sumPower;
+
     private Double hourPower;
+
     /**
      * 每小时电费
      */

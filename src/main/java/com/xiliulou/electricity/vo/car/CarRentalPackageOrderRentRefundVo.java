@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.vo.car;
 
-import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -32,6 +36,7 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      *     1-单车
      *     2-车电一体
      * </pre>
+     *
      * @see RentalPackageTypeEnum
      */
     private Integer rentalPackageType;
@@ -47,6 +52,7 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      *     1-天
      *     0-分钟
      * </pre>
+     *
      * @see RentalUnitEnum
      */
     private Integer tenancyResidueUnit;
@@ -57,6 +63,7 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      *     0-不限制
      *     1-次数
      * </pre>
+     *
      * @see RenalPackageConfineEnum
      */
     private Integer confine;
@@ -81,6 +88,7 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      *     5-退款成功
      *     6-退款失败
      * </pre>
+     *
      * @see RefundStateEnum
      */
     private Integer refundState;
@@ -101,6 +109,7 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      *     1-线上
      *     2-线下
      * </pre>
+     *
      * @see PayTypeEnum
      */
     private Integer payType;
@@ -119,7 +128,6 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      * 更新时间
      */
     private Long updateTime;
-
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

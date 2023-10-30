@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
+import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -43,7 +44,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
 	public R orderV2(@RequestBody @Validated OrderQueryV2 orderQuery) {
 		return returnTripleResult(electricityCabinetOrderService.orderV2(orderQuery));
 	}
-
+	
+	/**
+	 * 选仓换电
+	 * @param exchangeQuery
+	 * @return
+	 */
+	@PostMapping("/user/electricityCabinetOrder/order/selectionExchange/v2")
+	public R orderSelectionExchange(@RequestBody @Validated OrderSelectionExchangeQuery exchangeQuery) {
+		return returnTripleResult(electricityCabinetOrderService.orderSelectionExchange(exchangeQuery));
+	}
+	
 	//换电柜再次开门
 	@Deprecated
 	@PostMapping("/user/electricityCabinetOrder/openDoor")

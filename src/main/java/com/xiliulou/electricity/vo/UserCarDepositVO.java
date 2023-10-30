@@ -17,44 +17,60 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class UserCarDepositVO {
+    
+    public static final Integer HAS_CAR_STATUS_YES = 1;
+    
+    public static final Integer HAS_CAR_STATUS_NO = 2;
+    
     /**
      * 用户Id
      */
     private Long uid;
+    
     /**
      * 订单Id
      */
     private String orderId;
+    
     /**
      * 用户名
      */
     private String name;
+    
     /**
      * 手机号
      */
     private String phone;
+    
     /**
      * 加盟商id
      */
     private Long franchiseeId;
+    
     /**
      * 支付金额
      */
     private BigDecimal payAmount;
+    
     /**
      * 状态（0、未支付,1、支付成功,2、支付失败）
      */
     private Integer status;
+    
     /**
      * 门店id
      */
     private Long storeId;
+    
     private String storeName;
+    
     /**
      * 车辆型号Id
      */
     private Long carModelId;
+    
     private String carModelName;
+    
     /**
      * 交易方式 0--线上 1--线下
      */
@@ -79,8 +95,4 @@ public class UserCarDepositVO {
      * 缴纳时间
      */
     private Long payTime;
-    
-    public static final Integer HAS_CAR_STATUS_YES = 1;
-    
-    public static final Integer HAS_CAR_STATUS_NO = 2;
 }

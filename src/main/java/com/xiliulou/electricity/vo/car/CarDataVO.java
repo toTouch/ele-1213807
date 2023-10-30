@@ -12,20 +12,35 @@ import java.util.List;
  */
 @Data
 public class CarDataVO {
+
     private Long uid;
+
     private String carSn;  // 车辆序列号
+
     private String model;  // 车辆型号
+
     private String franchiseeName;  // 加盟商名称
+
     private String storeName;  // 门店名称
+
     private String userName;  // 用户名称
+
     private String phone;  // 用户电话
+
     private String carStatus;  // 车辆状态
+
     private String batterySn;  // 电池序列号
+
     private double power;  // 电池电量
+
     private double voltage;  // 电池电压
+
     private Long updateTime;  // 更新时间
+
     private Long createTime;  // 创建时间
+
     private Long dueTime; // 套餐到期时间
+
     /**
      * 经度
      */
@@ -57,12 +72,12 @@ public class CarDataVO {
         return carDataVO;
     }
 
-    public static List<CarDataVO>  carDataEntityListToCarDataVOList(List<CarDataEntity> carDataEntityList){
-        if(CollectionUtils.isEmpty(carDataEntityList)){
+    public static List<CarDataVO> carDataEntityListToCarDataVOList(List<CarDataEntity> carDataEntityList) {
+        if (CollectionUtils.isEmpty(carDataEntityList)) {
             return Lists.newArrayList();
         }
         List<CarDataVO> carDataVOList = Lists.newArrayList();
-        for(CarDataEntity carDataEntity : carDataEntityList){
+        for (CarDataEntity carDataEntity : carDataEntityList) {
             carDataVOList.add(carDataEntityToCarDataVO(carDataEntity));
         }
         return carDataVOList;

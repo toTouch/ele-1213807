@@ -65,4 +65,10 @@ public interface CommonConstant {
 
     /** 飞书预警机器人地址 */
     String FEISHU_WARNING_ROBOT_WEB_HOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/5f47012b-b311-444e-b7c4-c433b1c100f3";
+    
+    /***
+     * 最大导入数据不能超过2000
+     */
+    Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
+    
 }

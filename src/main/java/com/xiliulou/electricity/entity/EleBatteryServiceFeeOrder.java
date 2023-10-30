@@ -104,6 +104,11 @@ public class EleBatteryServiceFeeOrder {
      */
     private Integer source;
 
+    /**
+     * 支付时间
+     */
+    private Long payTime;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

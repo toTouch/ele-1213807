@@ -25,8 +25,6 @@ public class JsonUserAmountController {
 	@Resource
 	private UserAmountService userAmountService;
 
-
-
 	/**
 	 * 用户余额
 	 */

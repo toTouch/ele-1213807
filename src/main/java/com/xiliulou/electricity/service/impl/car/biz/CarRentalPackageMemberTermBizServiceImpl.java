@@ -151,12 +151,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
 
         if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("substractResidue, not found t_car_rental_package_member_term. uid is {}", uid);
+            log.warn("substractResidue, not found t_car_rental_package_member_term. uid is {}", uid);
             throw new BizException("300000", "数据有误");
         }
 
         if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            log.error("substractResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            log.warn("substractResidue. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
             throw new BizException("300002", "租车会员状态异常");
         }
 

@@ -5,9 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 
 @Data
 @AllArgsConstructor
@@ -24,6 +21,7 @@ public class UserEleInfoVO {
      * 手机号
      */
     private String phone;
+
     /**
      * 邀请人
      */
@@ -49,10 +47,12 @@ public class UserEleInfoVO {
      * 电池押金状态
      */
     private Integer batteryDepositStatus;
+
     /**
      * 套餐id
      */
     private Long memberCardId;
+
     /**
      * 换电套餐名称
      */
@@ -94,14 +94,17 @@ public class UserEleInfoVO {
     private Integer tenantId;
 
     private Long userInfoId;
+
     /**
      * 加盟商id
      */
     private Long franchiseeId;
+
     /**
      * 加盟商id
      */
     private Long uid;
+
     private String franchiseeName;
 
     /**
@@ -118,6 +121,7 @@ public class UserEleInfoVO {
      * 0:不限制,1:限制
      */
     private Integer limitCount;
+
     /**
      * 使用次数
      */

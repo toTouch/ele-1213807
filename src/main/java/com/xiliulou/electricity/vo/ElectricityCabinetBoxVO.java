@@ -82,6 +82,10 @@ public class ElectricityCabinetBoxVO {
      */
     private String batteryShortType;
     /**
+     * 电池型号短类型
+     */
+    private String batteryModelShortType;
+    /**
      * 电池电压
      */
     private Double batteryV;

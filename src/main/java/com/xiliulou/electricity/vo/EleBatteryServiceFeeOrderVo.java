@@ -1,8 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -115,6 +112,11 @@ public class EleBatteryServiceFeeOrderVo {
      * 电池服务费来源
      */
     private Integer source;
+
+    /**
+     * 支付时间
+     */
+    private Long payTime;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

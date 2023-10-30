@@ -10,8 +10,12 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class CarGpsVo {
+
     private String devId;
+
     private Double longitude;
+
     private Double latitude;
+
     private Long createTime;
 }

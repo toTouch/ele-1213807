@@ -18,6 +18,9 @@
             <if test="batteryServiceFeeEndTime != null">
                 battery_service_fee_end_time = #{batteryServiceFeeEndTime},
             </if>
+            <if test="payTime != null">
+                `pay_time` = #{payTime},
+            </if>
         </set>
         where order_id = #{orderId}
     </update>
@@ -36,7 +39,7 @@
 
 
     <select id="queryListForAdmin" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
-        SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status,
+        SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status, te.`pay_time`,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,te.source,te.battery_service_fee_end_time,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
@@ -64,7 +67,7 @@
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
-        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time
+        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`
         FROM     t_ele_battery_service_fee_order
         <where>
             <if test="status != null">
@@ -84,7 +87,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
-        te.status,te.source,te.phone,te.name ,te.uid, te.status,
+        te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
@@ -128,6 +131,7 @@
                     #{id}
                 </foreach>
             </if>
+            <if test=" query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
             order by te.id desc
             limit #{query.offset},#{query.size}
         </where>
@@ -176,6 +180,7 @@
                     #{id}
                 </foreach>
             </if>
+            <if test=" query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
         </where>
     </select>
 

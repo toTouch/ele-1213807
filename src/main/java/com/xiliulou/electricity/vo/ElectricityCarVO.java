@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * 换电柜电池表(ElectricityCar)实体类
  *
@@ -26,6 +24,7 @@ public class ElectricityCarVO {
      * sn码
      */
     private String sn;
+
     /**
      * 车辆型号
      */

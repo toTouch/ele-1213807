@@ -79,7 +79,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -101,7 +100,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -122,7 +120,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -143,7 +140,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -164,7 +160,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -185,7 +180,6 @@ public class JsonAdminUserInfoV2Controller {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

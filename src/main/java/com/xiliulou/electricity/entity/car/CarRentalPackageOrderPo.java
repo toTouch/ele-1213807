@@ -121,7 +121,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     private Long rentRebateEndTime;
 
     /**
-     * 押金
+     * 实缴押金
      */
     private BigDecimal deposit;
 
@@ -183,5 +183,10 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      * 开始使用时间
      */
     private Long useBeginTime;
+
+    /**
+     * 套餐押金
+     */
+    private BigDecimal rentalPackageDeposit;
 
 }

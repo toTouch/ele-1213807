@@ -22,6 +22,7 @@ public class CouponActivityVO {
      * 优惠券名称
      */
     private String name;
+
     /**
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
@@ -36,6 +37,7 @@ public class CouponActivityVO {
      * 折扣
      */
     private BigDecimal discount;
+
     /**
      * 天数劵
      */
@@ -45,6 +47,7 @@ public class CouponActivityVO {
      * 有效天数
      */
     private String validDays;
+
     /**
      * 优惠券描述
      */
@@ -54,12 +57,14 @@ public class CouponActivityVO {
      * 优惠券状态，分为 1--上架，2--下架
      */
     private Integer status;
+
     /**
      * 加盟商Id
      */
     private Long franchiseeId;
 
     private List<Long> franchiseeIds;
+
     /**
      * 适用类型  1--邀请活动优惠券  2--普通活动优惠券
      */
@@ -85,6 +90,7 @@ public class CouponActivityVO {
 
     /**
      * 是否指定套餐使用 1-指定套餐, 2-不指定套餐,适用于所有套餐
+     *
      * @see SpecificPackagesEnum
      */
     private Integer specificPackages;
@@ -93,6 +99,7 @@ public class CouponActivityVO {
      * 创建人uid
      */
     private Long uid;
+
     /**
      * 创建人用户名
      */
@@ -101,6 +108,7 @@ public class CouponActivityVO {
     private Long createTime;
 
     private Long updateTime;
+
     /**
      * 0--正常 1--删除
      */
