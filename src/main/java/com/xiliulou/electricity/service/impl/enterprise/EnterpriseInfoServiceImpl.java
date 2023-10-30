@@ -926,8 +926,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                                     cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
                                     cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
                                     cloudBeanUseRecordService.insert(cloudBeanUseRecord);
-                    
-                                    enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
                                 }
                             }
                         }
