@@ -189,6 +189,12 @@ public class EleOperateQueueHandler {
                 return;
             }
             
+            if (rentBatteryOrder.getOrderSeq() > finalOpenDTO.getOrderSeq()) {
+                log.warn("RENT ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
+                        rentBatteryOrder.getUid());
+                return;
+            }
+            
             //换电柜异常
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(rentBatteryOrder.getTenantId());
             if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
