@@ -4797,14 +4797,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService
                 .queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
+            log.warn("ELE BATTERY REPORT WARN! not found maintenanceUserNotifyConfig,tenantId={}",
                     electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
 
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
+            log.warn("ELE BATTERY REPORT WARN! phones is empty,tenantId={}", electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
 
