@@ -2058,7 +2058,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .pauseOrderNo("")
                 .expireOrderNo("")
                 .franchiseeId(userInfo.getFranchiseeId())
-                .serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime())
+                .serviceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime())
                 .tenantId(eleDisableMemberCardRecord.getTenantId())
                 .uid(uid)
                 .updateTime(System.currentTimeMillis()).build();
