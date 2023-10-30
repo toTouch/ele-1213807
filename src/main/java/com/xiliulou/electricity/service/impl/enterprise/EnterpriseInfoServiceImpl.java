@@ -841,14 +841,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //同一个套餐内租退电记录ids
         List<Long> ids = Lists.newArrayList();
-        
-        Iterator<EnterpriseRentRecord> iterator = enterpriseRentRecords.iterator();
-        while (iterator.hasNext()) {
-            EnterpriseRentRecord enterpriseRentRecord = iterator.next();
+    
+        for (EnterpriseRentRecord enterpriseRentRecord : enterpriseRentRecords) {
             
             //移除同一个套餐内租退电记录
             if (ids.contains(enterpriseRentRecord.getId())) {
-                iterator.remove();
+                continue;
             }
             
             if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
