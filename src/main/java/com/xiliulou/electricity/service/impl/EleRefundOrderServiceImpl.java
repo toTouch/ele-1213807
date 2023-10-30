@@ -2115,7 +2115,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public List<EleRefundOrder> selectByOrderId(String orderId) {
         return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
     }
-
+    
+    public List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId) {
+        return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId));
+    }
+    
     @Override
     public EleRefundOrder selectLatestRefundDepositOrder(String paymentOrderNo) {
         return eleRefundOrderMapper.selectLatestRefundDepositOrder(paymentOrderNo);

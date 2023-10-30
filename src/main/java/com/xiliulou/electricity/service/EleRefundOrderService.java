@@ -119,4 +119,6 @@ public interface EleRefundOrderService {
     EleRefundOrder selectLatestRefundDepositOrder(String paymentOrderNo);
     
     Integer existByOrderIdAndStatus(String orderId, List<Integer> statusList);
+    
+    List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId);
 }
