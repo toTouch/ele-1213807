@@ -784,7 +784,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (CollectionUtils.isEmpty(anotherPayMembercardRecords)) {
             return Triple.of(true, null, result);
         }
-        
+    
         //套餐总的云豆数
         BigDecimal totalCloudBean = BigDecimal.ZERO;
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
@@ -795,8 +795,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
         
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
-            log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
         }
+        log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
     
         //租退电记录
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
@@ -845,7 +845,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        
+                        log.info("RECYCLE BATTERY MEMBERCARD INFO!innerUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+    
                         //回收记录
                         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
                         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
@@ -901,7 +902,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
                     if (!CollectionUtils.isEmpty(membercardList) && membercardList.size() > 1) {
                         //租退电包含的套餐订单
-                        List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()),
+                        List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()) + 1,
                                 membercardList.indexOf(enterpriseRentRecord.getReturnMembercardOrderId()));
                         if (!CollectionUtils.isEmpty(containMembercardList)) {
                             for (String orderId : containMembercardList) {
