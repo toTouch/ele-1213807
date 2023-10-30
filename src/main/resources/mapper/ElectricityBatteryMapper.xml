@@ -420,7 +420,7 @@
         electricity_cabinet_name=#{electricityCabinetName},
         electricity_cabinet_id=#{electricityCabinetId},
         uid=#{uid},
-        update_time=#{updateTime}
+        update_time=#{updateTime},
         guess_uid=#{guessUid},
         where id=#{id}
     </update>
