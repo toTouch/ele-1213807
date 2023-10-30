@@ -895,7 +895,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
                         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
-                        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(price.multiply(BigDecimal.valueOf(useDays))));
+                        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(rentElectricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays)))));
                     }
     
                     List<String> membercardList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getOrderId).collect(Collectors.toList());
