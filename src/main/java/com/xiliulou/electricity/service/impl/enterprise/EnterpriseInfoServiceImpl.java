@@ -784,7 +784,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (CollectionUtils.isEmpty(anotherPayMembercardRecords)) {
             return Triple.of(true, null, result);
         }
-        
+    
         //套餐总的云豆数
         BigDecimal totalCloudBean = BigDecimal.ZERO;
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
@@ -795,8 +795,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             }
         
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
-            log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
         }
+        log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
     
         //租退电记录
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
@@ -845,7 +845,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        
+                        log.info("RECYCLE BATTERY MEMBERCARD INFO!innerUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+    
                         //回收记录
                         CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
                         cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
@@ -853,7 +854,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
                         cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
                         cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays))));
-                        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(price.multiply(BigDecimal.valueOf(useDays))));
+                        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays)))));
                         cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
                         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
                         cloudBeanUseRecord.setRef(userBatteryMemberCard.getOrderId());
@@ -885,7 +886,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
                         cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
                         cloudBeanUseRecord.setBeanAmount(rentElectricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays))));
-                        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(price.multiply(BigDecimal.valueOf(useDays))));
+                        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(rentElectricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays)))));
                         cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
                         cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
                         cloudBeanUseRecord.setRef(userBatteryMemberCard.getOrderId());
@@ -901,7 +902,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
                     if (!CollectionUtils.isEmpty(membercardList) && membercardList.size() > 1) {
                         //租退电包含的套餐订单
-                        List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()),
+                        List<String> containMembercardList = membercardList.subList(membercardList.indexOf(enterpriseRentRecord.getRentMembercardOrderId()) + 1,
                                 membercardList.indexOf(enterpriseRentRecord.getReturnMembercardOrderId()));
                         if (!CollectionUtils.isEmpty(containMembercardList)) {
                             for (String orderId : containMembercardList) {
@@ -917,7 +918,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                                     cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
                                     cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
                                     cloudBeanUseRecord.setBeanAmount(electricityMemberCardOrder.getPayAmount());
-                                    cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
+                                    cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
                                     cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
                                     cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
                                     cloudBeanUseRecord.setRef(userBatteryMemberCard.getOrderId());
@@ -933,8 +934,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     }
     
                     //退电消耗的云豆
-                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getRentMembercardOrderId());
-                    ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
+                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getReturnMembercardOrderId());
+                    ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
                     if (Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnElectricityMemberCardOrder)) {
                         //单价
                         BigDecimal price = returnElectricityMemberCardOrder.getPayAmount()
@@ -951,7 +952,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         cloudBeanUseRecord.setUid(userInfo.getUid());
                         cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
                         cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD);
-                        cloudBeanUseRecord.setBeanAmount(price.multiply(BigDecimal.valueOf(useDays)));
+                        cloudBeanUseRecord.setBeanAmount(returnElectricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays))));
                         cloudBeanUseRecord.setRemainingBeanAmount(
                                 enterpriseInfo.getTotalBeanAmount().add(returnElectricityMemberCardOrder.getPayAmount().subtract(price.multiply(BigDecimal.valueOf(useDays)))));
                         cloudBeanUseRecord.setPackageId(userBatteryMemberCard.getMemberCardId());
