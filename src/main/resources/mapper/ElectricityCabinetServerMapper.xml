@@ -112,6 +112,38 @@
         </set>
         where id = #{id}
     </update>
+    
+    
+    <update id="updateByEid">
+        update t_electricity_cabinet_server
+        <set>
+            <if test="productKey != null and productKey != ''">
+                product_key = #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="serverBeginTime != null">
+                server_begin_time = #{serverBeginTime},
+            </if>
+            <if test="serverEndTime != null">
+                server_end_time = #{serverEndTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where electricity_cabinet_id = #{electricityCabinetId}
+    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">
