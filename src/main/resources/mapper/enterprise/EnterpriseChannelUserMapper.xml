@@ -334,6 +334,46 @@
         where uid = #{uid}
     </update>
     
+    <update id="updateChannelUserByUid">
+        update t_enterprise_channel_user
+        <set>
+            <if test="invitationWay != null">
+                invitation_way = #{invitationWay},
+            </if>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+            <if test="paymentStatus != null">
+                payment_status = #{paymentStatus},
+            </if>
+            <if test="inviterId != null">
+                inviter_id = #{inviterId},
+            </if>
+            <if test="cloudBeanStatus != null">
+                cloud_bean_status = #{cloudBeanStatus},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where uid = #{uid}
+    </update>
+    
     <update id="batchUpdateRenewStatus">
         update t_enterprise_channel_user set renewal_status = #{renewalStatus}, update_time = UNIX_TIMESTAMP()*1000
         where id in

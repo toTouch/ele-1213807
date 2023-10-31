@@ -116,4 +116,7 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     List<UserInfoSearchVo> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
     
     List<EnterpriseChannelUser> selectAllByEnterpriseId(Long enterpriseId);
+    
+    int updateChannelUserByUid(EnterpriseChannelUser enterpriseChannelUser);
+    
 }

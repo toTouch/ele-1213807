@@ -408,6 +408,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     @Override
+    public int updatePaymentStatusByUid(Long uid, Integer paymentStatus) {
+        log.info("update payment status by uid, uid = {}, payment status = {}", uid, paymentStatus);
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+        enterpriseChannelUser.setUid(uid);
+        enterpriseChannelUser.setPaymentStatus(paymentStatus);
+        enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+        
+        return enterpriseChannelUserMapper.updateChannelUserByUid(enterpriseChannelUser);
+    }
+    
+    @Override
     public ElectricityUserBatteryVo queryBatteryByUid(Long uid) {
         Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
         ElectricityUserBatteryVo userBatteryVo = new ElectricityUserBatteryVo();

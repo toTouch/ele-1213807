@@ -93,4 +93,6 @@ public interface EnterpriseChannelUserService {
     Integer queryNotRecycleUserCount(Long id);
     
     Triple<Boolean, String, Object> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
+    
+    int updatePaymentStatusByUid(Long uid, Integer paymentStatus);
 }
