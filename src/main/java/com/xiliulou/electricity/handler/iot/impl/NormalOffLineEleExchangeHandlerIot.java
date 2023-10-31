@@ -244,6 +244,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //判断用户是已租赁电池状态
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_NO)) {
             log.warn("OFFLINE EXCHANGE ERROR! user not rent battery! userId={}", user.getUid());
+            return;
         }
         
         //更新新电池为在用
