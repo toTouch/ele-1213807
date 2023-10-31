@@ -24,6 +24,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
 @Slf4j
@@ -266,16 +268,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 log.info("exchange:333333333333333333333");
                 if (Objects.nonNull(placeBattery)) {
-                    returnBattery(placeBattery);
+                    returnBattery(placeBattery, electricityCabinetOrder.getUid());
                 }
                 
             } else {
-                returnBattery(oldElectricityBattery);
+                returnBattery(oldElectricityBattery, electricityCabinetOrder.getUid());
             }
         } else {
             log.info("exchange:444444444444444444444");
             //异常交换如果放入的电池的uid为空，则需要清除guessId
-            returnBattery(placeBattery);
+            returnBattery(placeBattery, electricityCabinetOrder.getUid());
         }
         
         //电池改为在用
@@ -321,7 +323,14 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
     }
     
-    private void returnBattery(ElectricityBattery placeBattery) {
+    private void returnBattery(ElectricityBattery placeBattery, Long uid) {
+        //通过guessUid获取电池信息; 如果有电池的guessUid为当前换电用户 ,则将此电池更新为放入电池的Uid
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.listBatteryByGuessUid(uid);
+        if (CollectionUtils.isNotEmpty(electricityBatteries) && !Objects.equals(placeBattery.getUid(), uid)) {
+            List<Long> batteryIdList = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+            electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, uid);
+        }
+        
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(placeBattery.getId());
         newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
@@ -334,7 +343,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         Long bindTime = placeBattery.getBindTime();
         //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
-        log.info("/{},current time={}", bindTime, System.currentTimeMillis());
+        log.info("bindTime={},current time={}", bindTime, System.currentTimeMillis());
         if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
