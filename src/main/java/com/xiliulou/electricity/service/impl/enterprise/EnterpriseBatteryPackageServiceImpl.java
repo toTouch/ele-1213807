@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -1032,9 +1033,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType, userInfo.getTenantId());
                 long now = System.currentTimeMillis();
                 if (Objects.nonNull(franchiseeInsurance) && Objects.equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
-                    //保险ID是否有传入
-                    if (Objects.isNull(query.getInsuranceId())) {
-                        return Triple.of(false, "100309", "请先选择购买保险");
+                    //先判断当前用户是否已经购买保险, 用户是否没有保险信息或已过期（是进入）
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                    if (Objects.isNull(insuranceUserInfo)
+                            || Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                            || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                        log.error("purchase package by enterprise user error! not pay insurance! uid={} ", userInfo.getUid());
+                        return  Triple.of(false,"100309", "未购买保险或保险已过期");
                     }
                 }
             }
