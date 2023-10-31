@@ -128,12 +128,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
-        //判断用户是否有缴纳押金
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(),
-                YesNoEnum.YES.getCode())) {
-            log.warn("OFFLINE EXCHANGE ERROR! user not pay deposit! userId={}", user.getUid());
-        }
-        
         //如果用户不是送的套餐
         //判断用户套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -245,6 +239,11 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.isNull(returnBindTime) || returnBindTime < offlineEleOrderVo.getEndTime()) {
             inWarehouseElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
             electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
+        }
+        
+        //判断用户是已租赁电池状态
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_NO)) {
+            log.warn("OFFLINE EXCHANGE ERROR! user not rent battery! userId={}", user.getUid());
         }
         
         //更新新电池为在用
