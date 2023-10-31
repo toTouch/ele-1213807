@@ -254,7 +254,7 @@
     
     <select id="selectExpireList" resultMap="UserBatteryMemberCardMap">
         <include refid="selectUserBatteryMemberCard"/>
-        where uid = #{uid} and member_card_expire_time &lt;= #{memberCardExpireTime}
+        where member_card_expire_time &lt;= #{memberCardExpireTime}
         limit #{offset},#{size}
     </select>
 
