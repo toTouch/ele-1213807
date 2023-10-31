@@ -191,33 +191,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             userBatteryMemberCardService.minCountForOffLineEle(userBatteryMemberCard);
         }
         
-        //用户绑定电池和还入电池是否一致，不一致绑定的电池更新为游离态
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        
         //查询当前归还的电池信息
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
-        
-        if (Objects.nonNull(electricityBattery)) {
-            if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
-                ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                newElectricityBattery.setId(electricityBattery.getId());
-                //                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
-                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-                newElectricityBattery.setUid(null);
-                
-                //设置用户绑定的电池的guessId为归还电池的用户Id
-                if (Objects.nonNull(oldElectricityBattery) && Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(),
-                        electricityBattery.getUid())) {
-                    newElectricityBattery.setGuessUid(oldElectricityBattery.getUid());
-                }
-                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                newElectricityBattery.setElectricityCabinetId(null);
-                newElectricityBattery.setElectricityCabinetName(null);
-                newElectricityBattery.setBorrowExpireTime(null);
-                electricityBatteryService.updateBatteryUser(newElectricityBattery);
-            }
-        }
-        
         //更新旧电池为在仓
         if (Objects.isNull(oldElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
@@ -239,6 +214,36 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.isNull(returnBindTime) || returnBindTime < offlineEleOrderVo.getEndTime()) {
             inWarehouseElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
             electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
+        }
+        
+        //用户绑定电池和还入电池是否一致，不一致绑定的电池更新为游离态
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.nonNull(electricityBattery)) {
+            //如果用户绑定的电池与放入的电池不一致 并且绑定的电池的uid和放入的电池的uid相同（离线换电会发生这种情况）
+            if (!Objects.equals(electricityBattery.getSn(), oldElectricityBattery.getSn()) && Objects.equals(electricityBattery.getUid(), oldElectricityBattery.getUid())
+                    && Objects.nonNull(electricityBattery.getBindTime()) && electricityBattery.getBindTime() > offlineEleOrderVo.getEndTime()) {
+                log.warn("OFFLINE EXCHANGE ERROR! user binding battery! userId={},return batterySn={},binding batterySn={}", user.getUid(), oldElectricityBattery.getSn(),
+                        electricityBattery.getSn());
+                return;
+            }
+            
+            if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(electricityBattery.getId());
+                //                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+                newElectricityBattery.setUid(null);
+                
+                //设置用户绑定的电池的guessId为归还电池的用户Id
+                if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), electricityBattery.getUid())) {
+                    newElectricityBattery.setGuessUid(oldElectricityBattery.getUid());
+                }
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
+                newElectricityBattery.setBorrowExpireTime(null);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            }
         }
         
         //判断用户是已租赁电池状态
