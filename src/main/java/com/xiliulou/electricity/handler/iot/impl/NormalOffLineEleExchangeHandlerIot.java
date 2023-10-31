@@ -267,7 +267,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //设置电池的绑定时间
         Long bindTime = null;
         if (Objects.nonNull(electricityBattery)) {
-            bindTime = electricityBattery.getBindTime();
+            bindTime = newElectricityBattery.getBindTime();
         }
         if (Objects.isNull(bindTime) || bindTime < offlineEleOrderVo.getEndTime()) {
             newElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
