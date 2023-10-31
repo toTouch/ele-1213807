@@ -342,7 +342,6 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
     @Override
     public void asyncSaveUserCostRecordForRefundDeposit(Long uid, Integer costType, EleRefundOrder eleRefundOrder) {
         log.info("save user cost record flow for refund deposit, uid = {}, order no = {}, cost type = {}", uid, eleRefundOrder.getOrderId(), costType);
-        Integer tenantId = TenantContextHolder.getTenantId();
         
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.isNull(enterpriseChannelUser)) {
@@ -371,7 +370,7 @@ public class EnterpriseUserCostRecordServiceImpl implements EnterpriseUserCostRe
         enterpriseUserCostRecordDTO.setPackageName(batteryMemberCard.getName());
         enterpriseUserCostRecordDTO.setCostType(costType);
         enterpriseUserCostRecordDTO.setType(EnterpriseUserCostRecordTypeEnum.USER_COST_TYPE_BATTERY.getCode());
-        enterpriseUserCostRecordDTO.setTenantId(tenantId.longValue());
+        enterpriseUserCostRecordDTO.setTenantId(batteryMemberCard.getTenantId().longValue());
         enterpriseUserCostRecordDTO.setCreateTime(eleRefundOrder.getCreateTime());
         enterpriseUserCostRecordDTO.setUpdateTime(System.currentTimeMillis());
         enterpriseUserCostRecordDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
