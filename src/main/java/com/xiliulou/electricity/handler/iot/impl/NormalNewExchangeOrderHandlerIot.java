@@ -328,7 +328,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.listBatteryByGuessUid(uid);
         if (CollectionUtils.isNotEmpty(electricityBatteries) && !Objects.equals(placeBattery.getUid(), uid)) {
             List<Long> batteryIdList = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-            electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, uid);
+            electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, placeBattery.getUid());
         }
         
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
