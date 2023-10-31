@@ -261,7 +261,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setElectricityCabinetName(null);
                 log.info("exchange:333333333333333333333");
                 //如果放入的电池和用户绑定的电池不一样且放入的电池不为空
-                if (Objects.nonNull(placeBattery) && Objects.nonNull(placeBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid())) {
+                if (Objects.nonNull(placeBattery) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid())) {
                     log.info("on placeBatteryUid={},oldElectricityBattery uid={}", placeBattery.getUid(), oldElectricityBattery.getUid());
                     newElectricityBattery.setGuessUid(placeBattery.getUid());
                 }
