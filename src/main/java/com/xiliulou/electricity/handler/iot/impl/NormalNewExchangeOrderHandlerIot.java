@@ -260,11 +260,25 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 log.info("exchange:333333333333333333333");
-                //如果放入的电池和用户绑定的电池不一样且放入的电池不为空
-                if (Objects.nonNull(placeBattery) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid())) {
+                
+                //如果放入的电池和用户绑定的电池不一样且放入的电池uid不为空
+                if (Objects.nonNull(placeBattery) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid()) && Objects.nonNull(placeBattery.getUid())) {
                     log.info("on placeBatteryUid={},oldElectricityBattery uid={}", placeBattery.getUid(), oldElectricityBattery.getUid());
                     newElectricityBattery.setGuessUid(placeBattery.getUid());
                 }
+                
+                //如果放入的电池和用户绑定的电池不一样且放入的电池uid为空,guessUid不为空
+                if (Objects.nonNull(placeBattery) && Objects.isNull(placeBattery.getUid()) && Objects.nonNull(placeBattery.getGuessUid())) {
+                    log.info("on placeBatteryUid is null,oldElectricityBattery uid={},placeBatteryGuessUid={}", oldElectricityBattery.getUid(), placeBattery.getGuessUid());
+                    newElectricityBattery.setGuessUid(placeBattery.getGuessUid());
+                }
+                
+                //如果放入的电池和用户绑定的电池不一样且放入的电池uid为空,guessUid不为空
+                if (Objects.nonNull(placeBattery) && Objects.isNull(placeBattery.getUid()) && Objects.isNull(placeBattery.getGuessUid())) {
+                    log.info("on placeBatteryUid is null,placeBatteryGuessUid is null");
+                    newElectricityBattery.setGuessUid(null);
+                }
+                
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 log.info("exchange:333333333333333333333");
                 if (Objects.nonNull(placeBattery)) {

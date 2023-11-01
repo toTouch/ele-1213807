@@ -238,6 +238,17 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), electricityBattery.getUid())) {
                     newElectricityBattery.setGuessUid(oldElectricityBattery.getUid());
                 }
+                
+                //设置用户绑定的电池的guessId为归还电池的guessUId
+                if (Objects.isNull(oldElectricityBattery.getUid()) && Objects.nonNull(oldElectricityBattery.getGuessUid())) {
+                    newElectricityBattery.setGuessUid(oldElectricityBattery.getGuessUid());
+                }
+                
+                //设置用户绑定的电池的guessId为归还电池的guessUId
+                if (Objects.isNull(oldElectricityBattery.getUid()) && Objects.isNull(oldElectricityBattery.getGuessUid())) {
+                    newElectricityBattery.setGuessUid(null);
+                }
+                
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
