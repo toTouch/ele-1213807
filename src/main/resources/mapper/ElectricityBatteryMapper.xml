@@ -378,6 +378,7 @@
                business_status,
                create_time,
                update_time,
+               bind_time,
                electricity_cabinet_id,
                franchisee_id,
                uid
