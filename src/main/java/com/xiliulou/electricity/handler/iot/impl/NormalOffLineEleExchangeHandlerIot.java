@@ -18,6 +18,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: HRP
@@ -198,6 +200,18 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
             return;
         }
+        
+        //通过guessUid获取电池信息; 如果有电池的guessUid为当前换电用户 ,则将此电池更新为放入电池的Uid
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.listBatteryByGuessUid(userInfo.getUid());
+        if (CollectionUtils.isNotEmpty(electricityBatteries) && !Objects.equals(oldElectricityBattery.getUid(), userInfo.getUid())) {
+            List<Long> batteryIdList = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+            if (Objects.nonNull(oldElectricityBattery.getUid())) {
+                electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, oldElectricityBattery.getUid());
+            } else {
+                electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, oldElectricityBattery.getGuessUid());
+            }
+        }
+        
         ElectricityBattery inWarehouseElectricityBattery = new ElectricityBattery();
         inWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
         //        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -223,7 +237,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //如果已租电池的时间小于用户当前绑定电池的时间  则不需要更新
         if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getBindTime()) && Objects.nonNull(newElectricityBattery.getBindTime())
                 && electricityBattery.getBindTime() > offlineEleOrderVo.getEndTime()) {
-            log.warn("OFFLINE EXCHANGE ERROR! electricityBattery bindTime less than new electricityBattery bindTime,electricityBattery bindTime={},new electricityBattery bindTime={}",
+            log.warn(
+                    "OFFLINE EXCHANGE ERROR! electricityBattery bindTime less than new electricityBattery bindTime,electricityBattery bindTime={},new electricityBattery bindTime={}",
                     electricityBattery.getBindTime(), newElectricityBattery.getBindTime());
             return;
         }
