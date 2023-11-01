@@ -304,7 +304,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         log.info("off bindTime={},end time={},batterySn={}", bindTime, offlineEleOrderVo.getEndTime(), newElectricityBattery.getSn());
         if (Objects.isNull(bindTime) || bindTime < offlineEleOrderVo.getEndTime()) {
-            newElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
+            usingElectricityBattery.setBindTime(offlineEleOrderVo.getEndTime());
             electricityBatteryService.updateBatteryUser(usingElectricityBattery);
         }
     }
