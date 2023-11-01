@@ -271,9 +271,16 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
+        //后续日志代码需要删除
+        if (Objects.nonNull(electricityBattery)) {
+            log.info("currentUserId={},electricityBatterySn={},electricityBatteryBindTime={},newElectricityBatterySn={},newElectricityBatteryBindTime={},offerOrderEndTime={}",
+                    user.getUid(), electricityBattery.getSn(), electricityBattery.getBindTime(), newElectricityBattery.getSn(), newElectricityBattery.getBindTime(),
+                    offlineEleOrderVo.getEndTime());
+        }
+        
         //如果已租电池的时间小于用户当前绑定电池的时间  则不需要更新
         if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getBindTime()) && Objects.nonNull(newElectricityBattery.getBindTime())
-                && electricityBattery.getBindTime() > newElectricityBattery.getBindTime()) {
+                && electricityBattery.getBindTime() > offlineEleOrderVo.getEndTime()) {
             log.warn("OFFLINE EXCHANGE ERROR! electricityBattery bindTime less than new electricityBattery bindTime,electricityBattery bindTime={},new electricityBattery bindTime={}",
                     electricityBattery.getBindTime(), newElectricityBattery.getBindTime());
             return;
