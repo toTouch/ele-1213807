@@ -1077,7 +1077,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         CloudBeanGeneralViewVO cloudBeanGeneralViewVO = new CloudBeanGeneralViewVO();
-        cloudBeanGeneralViewVO.setCanAllocationCloudBean(enterpriseInfo.getTotalBeanAmount().longValue());
+        cloudBeanGeneralViewVO.setCanAllocationCloudBean(enterpriseInfo.getTotalBeanAmount().doubleValue());
         
         //代付订单
         List<CloudBeanUseRecord> payRecords = cloudBeanUseRecordService.selectByEnterpriseIdAndType(enterpriseInfo.getId(), CloudBeanUseRecord.TYPE_PAY_MEMBERCARD);
