@@ -1867,7 +1867,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.error("ORDER ERROR! store's fId  is not equal franchieseeId uid={} , store's fid={} ,fid={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
+            log.error("ORDER ERROR! storeId  is not equal franchieseeId uid={} , store's fid={} ,fid={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }
         

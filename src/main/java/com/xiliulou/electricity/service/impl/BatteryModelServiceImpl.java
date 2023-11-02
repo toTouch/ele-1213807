@@ -525,7 +525,6 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             }
             
             if (StringUtils.isBlank(batteryName) || batteryName.length() < 11) {
-                log.error("ELE ERROR!battery type analysis fail,batteryName is illegal,batteryName={}", batteryName);
                 return type;
             }
             

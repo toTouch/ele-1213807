@@ -3301,6 +3301,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                 }
                 
+                //如果电池类型为空,则返回null
+                if (StringUtils.isBlank(electricityCabinetBoxVO.getBatteryType())) {
+                    electricityCabinetBoxVO.setBatteryType(null);
+                }
+                
                 if (StringUtils.isNotBlank(item.getBatteryType())) {
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(item.getBatteryType()));
@@ -4792,14 +4797,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService
                 .queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
+            log.warn("ELE BATTERY REPORT WARN! not found maintenanceUserNotifyConfig,tenantId={}",
                     electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
 
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
+            log.warn("ELE BATTERY REPORT WARN! phones is empty,tenantId={}", electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
 
