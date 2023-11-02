@@ -81,6 +81,8 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
+    
+    ElectricityCabinetOrder selectLatestByUidV2(Long uid);
 
     ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId);
 
