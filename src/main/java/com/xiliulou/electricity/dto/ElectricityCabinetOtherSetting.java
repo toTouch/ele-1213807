@@ -147,4 +147,24 @@ public class ElectricityCabinetOtherSetting {
      * 充电器保护
      */
     private Integer defaultChargeStorageProtect;
+    
+    /**
+     * 检测满电电流（1 关闭 0开启）
+     */
+    private Integer isChargeCheckA;
+    
+    /**
+     * 反向供电检测（1 关闭 0开启）
+     */
+    private Integer isBackupPower;
+    
+    /**
+     * 电池激活电压
+     */
+    private Float chargeActivationV;
+    
+    /**
+     * 电池激活电流
+     */
+    private Integer chargeActivationA;
 }
