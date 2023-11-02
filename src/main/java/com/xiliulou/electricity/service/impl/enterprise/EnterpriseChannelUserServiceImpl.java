@@ -220,6 +220,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
             enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
+            enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             
             enterpriseChannelUserMapper.update(enterpriseChannelUser);
