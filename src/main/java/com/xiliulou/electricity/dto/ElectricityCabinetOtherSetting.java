@@ -151,7 +151,7 @@ public class ElectricityCabinetOtherSetting {
     /**
      * 检测满电电流（1 关闭 0开启）
      */
-    private Integer isChargeCheckA;
+    private Integer isCheckChargeA;
     
     /**
      * 反向供电检测（1 关闭 0开启）
