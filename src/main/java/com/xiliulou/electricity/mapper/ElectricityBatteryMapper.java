@@ -30,6 +30,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
     
+    List<ElectricityBattery> selectListBatteryByGuessUid(@Param("guessUid") Long guessUid);
+    
+    Integer batchUpdateBatteryGuessUid(@Param("batteryIdList") List<Long> IdList, @Param("guessUid") Long guessUid);
+    
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
     
     //    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);
@@ -97,7 +101,9 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBatteryDataVO> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                                     @Param("offset") Long offset, @Param("size") Long size);
     Integer queryBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
-
+    
+    Integer updateGuessUidById(@Param("id") Long id);
+    
     List<ElectricityBatteryDataVO> queryStrayBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                                     @Param("offset") Long offset, @Param("size") Long size);
     Integer queryStrayBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
