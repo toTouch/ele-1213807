@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.YesNoEnum;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -70,6 +72,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
+    
+    @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
 
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
@@ -467,6 +472,11 @@ log.error("============111");
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R insertUserBatteryInsurance(InsuranceUserInfoQuery query) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -551,13 +561,32 @@ log.error("============111");
         insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
         */
         this.saveUserInsurance(insuranceUserOrder);
-
+        
+        //新增操作记录
+        EleUserOperateRecord record = EleUserOperateRecord.builder()
+                .operateModel(UserOperateRecordConstant.BATTERY_INSURANCE)
+                .operateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT)
+                .operateUid(user.getUid())
+                .uid(userInfo.getUid())
+                .name(user.getUsername())
+                .newBatteryInsuranceStatus(InsuranceOrder.NOT_USE)
+                .newBatteryInsuranceExpireTime(query.getInsuranceExpireTime())
+                .tenantId(TenantContextHolder.getTenantId())
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         return R.ok();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R editUserInsuranceInfo(InsuranceUserInfoQuery query){
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -588,6 +617,21 @@ log.error("============111");
         insuranceOrderUpdate.setIsUse(query.getIsUse());
         insuranceOrderUpdate.setTenantId(TenantContextHolder.getTenantId());
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
+        
+        //新增操作记录
+        EleUserOperateRecord record = EleUserOperateRecord.builder()
+                .operateModel(UserOperateRecordConstant.BATTERY_INSURANCE)
+                .operateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT)
+                .operateUid(user.getUid())
+                .uid(userInfo.getUid())
+                .name(user.getUsername())
+                .newBatteryInsuranceStatus(query.getIsUse())
+                .newBatteryInsuranceExpireTime(query.getInsuranceExpireTime())
+                .tenantId(TenantContextHolder.getTenantId())
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
 
         return R.ok();
     }

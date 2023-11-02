@@ -104,7 +104,7 @@ public interface CarRentalPackageOrderBizService {
      * @param optUid 操作人ID
      * @return true(成功)、false(失败)
      */
-    Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid);
+    Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid, String userName);
 
     /**
      * 撤销用户冻结订单申请
@@ -126,7 +126,7 @@ public interface CarRentalPackageOrderBizService {
      * @param optUid 操作人ID
      * @return
      */
-    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid);
+    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid,String userName);
 
     /**
      * 根据用户ID及订单编码，退租购买的订单申请

@@ -82,7 +82,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageMemberTermBizService.updateCurrPackage(tenantId, optReq, user.getUid()));
+        return R.ok(carRentalPackageMemberTermBizService.updateCurrPackage(tenantId, optReq, user.getUid(), user.getUsername()));
 
     }
 
@@ -163,7 +163,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, uid, packageOrderNo, user.getUid(),user.getUsername()));
     }
 
     /**
@@ -184,8 +184,7 @@ public class JsonAdminUserInfoV2Controller {
         }
 
         Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getPackageOrderNo(), freezeRentOrderoptReq.getApplyTerm(),
-                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid());
-
+                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid(), user.getUsername());
         return R.ok(freezeFlag);
 
     }

@@ -73,7 +73,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid()));
+        return R.ok(carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid(), user.getUsername()));
     }
 
     /**
@@ -118,7 +118,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         }
 
         Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, user.getUid(), freezeRentOrderoptReq.getPackageOrderNo(), freezeRentOrderoptReq.getApplyTerm(),
-                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.WX_APPLET, user.getUid());
+                freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.WX_APPLET, user.getUid(), user.getUsername());
 
         return R.ok(freezeFlag);
 

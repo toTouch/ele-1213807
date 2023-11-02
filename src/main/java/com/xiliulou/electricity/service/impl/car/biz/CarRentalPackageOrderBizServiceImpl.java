@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -196,6 +197,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Autowired
+    private EleUserOperateRecordService eleUserOperateRecordService;
     
     
     public static final Integer ELE = 0;
@@ -1382,7 +1386,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return true(成功)、false(失败)
      */
     @Override
-    public Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
+    public Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid, String userName) {
         if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1434,6 +1438,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 事务处理
         enableFreezeRentOrderTx(uid, packageOrderNo, false, optUid, memberTermUpdateEntity, null);
+        
+        // 添加操作记录
+        EleUserOperateRecord record = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.MEMBER_CARD_DISABLE).operateUid(optUid).uid(userInfo.getUid()).name(userName)
+                .memberCardDisableStatus(UserOperateRecordConstant.CAR_MEMBER_CARD_ENABLE).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         
         return true;
     }
@@ -1530,8 +1541,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum,
-            Long optUid) {
+    public Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid,
+            String userName) {
         if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, applyTerm, systemDefinitionEnum)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1600,6 +1611,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // TX 事务
         saveFreezeInfoTx(freezeEntity, tenantId, uid, optUid, systemDefinitionEnum);
         
+        // 添加操作记录
+        EleUserOperateRecord record = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.MEMBER_CARD_DISABLE).operateUid(optUid).uid(userInfo.getUid()).name(userName)
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).memberCardDisableStatus(UserOperateRecordConstant.CAR_MEMBER_CARD_DISABLE).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         return true;
     }
     

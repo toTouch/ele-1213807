@@ -45,7 +45,7 @@ public interface CarRentalPackageMemberTermBizService {
      * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid);
+    boolean updateCurrPackage(Integer tenantId, MemberCurrPackageOptReq optReq, Long optUid, String userName);
 
 
     /**
