@@ -246,10 +246,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         //更新放入电池的状态
         ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getPlaceBatteryName());
-        log.info("exchange:111111111111");
         if (Objects.nonNull(oldElectricityBattery)) {
             //如果放入的电池与用户绑定的电池不一致
-            log.info("exchange:22222222222222222");
             if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
                 //更新用户绑定的电池状态
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -259,7 +257,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
-                log.info("exchange:333333333333333333333");
                 
                 //如果放入的电池和用户绑定的电池不一样且放入的电池uid不为空
                 if (Objects.nonNull(placeBattery) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid()) && Objects.nonNull(placeBattery.getUid())) {
@@ -280,7 +277,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 }
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
-                log.info("exchange:333333333333333333333");
                 if (Objects.nonNull(placeBattery)) {
                     returnBattery(placeBattery, electricityCabinetOrder.getUid());
                 }
@@ -289,7 +285,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 returnBattery(oldElectricityBattery, electricityCabinetOrder.getUid());
             }
         } else {
-            log.info("exchange:444444444444444444444");
             //异常交换如果放入的电池的uid为空，则需要清除guessId
             returnBattery(placeBattery, electricityCabinetOrder.getUid());
         }
