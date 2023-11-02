@@ -778,7 +778,7 @@
             <if test="carBatteryDepositStatus != null">
                 `car_battery_deposit_status` = #{carBatteryDepositStatus},
             </if>
-            <if test="payCount != null">
+            <if test="payCount != null and payCount != '0'.toString()">
                 `pay_count` = #{payCount},
             </if>
         </set>
