@@ -414,11 +414,9 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         if (memberTermEntity.getDueTime() <= now
                 || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && memberTermEntity.getResidue() <= 0L)) {
             // 懒加载
-            log.info("bindingCarByQR, member expired and in use. ");
             // 根据用户ID查询第一条未使用的支付成功的订单信息
             CarRentalPackageOrderPo packageOrderEntityUnUse = carRentalPackageOrderService.selectFirstUnUsedAndPaySuccessByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
             if (ObjectUtils.isNotEmpty(packageOrderEntityUnUse)) {
-                log.info("bindingCarByQR, Lazy loading of orders.");
                 // 二次保底确认
                 CarRentalPackageMemberTermPo oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getId());
                 if (ObjectUtils.isEmpty(oriMemberTermEntity)) {
