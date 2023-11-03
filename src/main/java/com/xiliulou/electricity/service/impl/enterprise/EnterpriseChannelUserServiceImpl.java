@@ -206,7 +206,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
-        
+    
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         try {
             Triple<Boolean, String, Object> result = verifyUserInfo(query);
             if (Boolean.FALSE.equals(result.getLeft())) {
@@ -227,8 +228,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 log.error("user already exist after QR scan,  uid = {}, channel user record id", uid, channelUserId);
                 return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
             }
-    
-            EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+           
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
             enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
