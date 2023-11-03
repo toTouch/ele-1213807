@@ -207,8 +207,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
-        
         try {
             Triple<Boolean, String, Object> result = verifyUserInfo(query);
             if (Boolean.FALSE.equals(result.getLeft())) {
@@ -217,6 +215,20 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             Long uid = query.getUid();
             Long channelUserId = query.getId();
+    
+            //检查是否已经有用户被关联至当前企业
+            EnterpriseChannelUser channelUserEntity = enterpriseChannelUserMapper.queryById(channelUserId);
+            if(Objects.isNull(channelUserEntity)){
+                log.error("query enterprise channel record failed after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+                return Triple.of(false, "300082", "企业信息不存在, 添加失败");
+            }
+            
+            if(Objects.nonNull(channelUserEntity.getUid())){
+                log.error("user already exist after QR scan,  uid = {}, channel user record id", uid, channelUserId);
+                return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
+            }
+    
+            EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
             enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
@@ -252,7 +264,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }*/
         //uid 默认不传，根据id来查找刚添加成功的用户
-        log.info("check user is exist after QR scan, id = {}, uid = {}", id, uid);
+        log.info("check user is exist after QR scan start, id = {}, uid = {}", id, uid);
         EnterpriseChannelUserCheckVO enterpriseChannelUserVO = new EnterpriseChannelUserCheckVO();
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByIdAndUid(id, uid);
         if (Objects.isNull(enterpriseChannelUser) || Objects.isNull(enterpriseChannelUser.getUid())) {
@@ -262,6 +274,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserVO.setIsExist(Boolean.TRUE);
         enterpriseChannelUserVO.setUid(enterpriseChannelUser.getUid());
         
+        log.info("check user is exist after QR scan end, id = {}, uid = {}, isExist = {}", id, enterpriseChannelUser.getUid(), enterpriseChannelUserVO.getIsExist());
         return Triple.of(true, "", enterpriseChannelUserVO);
     }
     
