@@ -20,17 +20,17 @@ public interface UserOperateRecordConstant {
     /**
      * 续费电池保险
      */
-    Integer RENEWAL_BATTERY_INSURANCE_CONTENT = 13;
+    Integer RENEWAL_BATTERY_INSURANCE_CONTENT = 14;
     
     /**
      * 编辑车辆保险
      */
-    Integer EDIT_CAR_INSURANCE_CONTENT = 14;
+    Integer EDIT_CAR_INSURANCE_CONTENT = 15;
     
     /**
      * 续费车辆保险
      */
-    Integer RENEWAL_CAR_INSURANCE_CONTENT = 15;
+    Integer RENEWAL_CAR_INSURANCE_CONTENT = 16;
     
     /**
      * 0--正常  1--暂停
