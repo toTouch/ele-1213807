@@ -8,6 +8,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,7 +67,7 @@ public class JsonOuterElectricityConfigController {
      * @author HeYafeng
      */
     @PostMapping(value = "/outer/weiChat/approve/in/cache")
-    public R weChatApproveInCache(@RequestParam("msg") String msg) {
+    public R weChatApproveInCache(@RequestBody String msg) {
         redisService.set(CacheConstant.CACHE_WECHAT_APPROVE, msg);
         return R.ok();
     }
@@ -74,7 +75,7 @@ public class JsonOuterElectricityConfigController {
     /**
      * @description 微信小程序过审配合
      * @date 2023/11/3 17:18:22
-     * @author HeYafeng
+     * @author HeYafen
      */
     @GetMapping("/outer/weiChat/approve/out/cache")
     public R weChatApproveOutCache(){
