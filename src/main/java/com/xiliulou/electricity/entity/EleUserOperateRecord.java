@@ -94,6 +94,16 @@ public class EleUserOperateRecord {
     private Integer newBatteryInsuranceStatus;
     
     /**
+     * 操作前电池保险状态
+     */
+    private Integer oldCarInsuranceStatus;
+    
+    /**
+     * 操作后电池保险状态
+     */
+    private Integer newCarInsuranceStatus;
+    
+    /**
      * 操作前电池保险到期时间
      */
     private Long oldBatteryInsuranceExpireTime;
@@ -102,6 +112,16 @@ public class EleUserOperateRecord {
      * 操作后电池保险到期时间
      */
     private Long newBatteryInsuranceExpireTime;
+    
+    /**
+     * 操作前车辆保险到期时间
+     */
+    private Long oldCarInsuranceExpireTime;
+    
+    /**
+     * 操作后车辆保险到期时间
+     */
+    private Long newCarInsuranceExpireTime;
     
     /**
      * 日志类型 0：换电  1：租车

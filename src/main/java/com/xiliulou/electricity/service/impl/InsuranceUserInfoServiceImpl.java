@@ -45,72 +45,72 @@ import java.util.Objects;
 @Service("insuranceUserInfoService")
 @Slf4j
 public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoMapper, InsuranceUserInfo> implements InsuranceUserInfoService {
-
+    
     @Resource
     InsuranceUserInfoMapper insuranceUserInfoMapper;
-
+    
     @Autowired
     UserInfoService userInfoService;
-
+    
     @Autowired
     RedisService redisService;
-
+    
     @Autowired
     CityService cityService;
-
+    
     @Autowired
     UserService userService;
-
+    
     @Autowired
     InsuranceOrderService insuranceOrderService;
-
+    
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
-
+    
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
     
     @Autowired
     EleUserOperateRecordService eleUserOperateRecordService;
-
+    
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
         return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId, tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
-
+    
     @Override
     @Deprecated
     public InsuranceUserInfo queryByUid(Long uid, Integer tenantId) {
         return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId, tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus,Integer type) {
-
+    public R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus, Integer type) {
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户不存在保险");
         }
-
+        
         if (Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)) {
             return R.fail("100311", "用户保险状态为已出险，无法修改");
         }
-
+        
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateInsuranceUserInfo.setIsUse(insuranceStatus);
@@ -119,61 +119,62 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setTenantId(TenantContextHolder.getTenantId());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
-
+        
         InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
         insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
         insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
         insuranceOrderUpdate.setIsUse(insuranceStatus);
         insuranceOrderUpdate.setTenantId(TenantContextHolder.getTenantId());
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
-
+        
         return R.ok();
     }
-
+    
     @Override
     @Deprecated
     public InsuranceUserInfo queryByUidFromCache(Long uid) {
-
+        
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
         if (Objects.nonNull(cache)) {
             return cache;
         }
-
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+        
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(
+                new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
         if (Objects.isNull(insuranceUserInfo)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, insuranceUserInfo);
         return insuranceUserInfo;
     }
-
+    
     @Override
     public InsuranceUserInfo selectByUidAndTypeFromDB(Long uid, Integer type) {
         return insuranceUserInfoMapper.selectByUidAndTypeFromDB(uid, type);
     }
-
+    
     @Override
     public InsuranceUserInfo selectByUidAndTypeFromCache(Long uid, Integer type) {
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type, InsuranceUserInfo.class);
         if (Objects.nonNull(cache)) {
             return cache;
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type, insuranceUserInfo);
         return insuranceUserInfo;
     }
-
+    
     @Override
     public Integer insert(InsuranceUserInfo insuranceUserInfo) {
         return insuranceUserInfoMapper.insert(insuranceUserInfo);
     }
-
+    
     @Override
     public Integer update(InsuranceUserInfo insuranceUserInfo) {
         int result = this.insuranceUserInfoMapper.update(insuranceUserInfo);
@@ -184,7 +185,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         });
         return result;
     }
-
+    
     @Override
     public int updateInsuranceUserInfoById(InsuranceUserInfo insuranceUserInfo) {
         int result = this.insuranceUserInfoMapper.updateById(insuranceUserInfo);
@@ -195,12 +196,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         });
         return result;
     }
-
+    
     @Override
     @Deprecated
     public InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId) {
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoMapper.queryByUidAndTenantId(uid, tenantId);
-
+        
         if (Objects.nonNull(insuranceUserInfoVo)) {
             //获取城市名称
             City city = cityService.queryByIdFromDB(insuranceUserInfoVo.getCid());
@@ -210,7 +211,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
         return insuranceUserInfoVo;
     }
-
+    
     @Override
     public InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type) {
         InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
@@ -218,24 +219,25 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return insuranceUserInfoVo;
         }
-
+        
         insuranceUserInfoVo = this.selectUserInsuranceDetailByUidAndType(uid, type);
         if (Objects.nonNull(insuranceUserInfoVo)) {
             InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceUserInfoVo.getInsuranceOrderId());
             insuranceUserInfoVo.setPayInsuranceTime(Objects.isNull(insuranceOrder) ? null : insuranceOrder.getCreateTime());
         }
-
+        
         return insuranceUserInfoVo;
     }
-
+    
     /**
      * 保存或更新用户保险
+     *
      * @return
      */
     @Override
-    public void saveUserInsurance(InsuranceOrder insuranceOrder) {
+    public InsuranceUserInfo saveUserInsurance(InsuranceOrder insuranceOrder) {
         InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceOrder.getUid(), insuranceOrder.getInsuranceType());
-
+        
         InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
         insuranceUserInfo.setUid(insuranceOrder.getUid());
         insuranceUserInfo.setFranchiseeId(insuranceOrder.getFranchiseeId());
@@ -248,29 +250,31 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceUserInfo.setDelFlag(InsuranceUserInfo.DEL_NORMAL);
         insuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
         insuranceUserInfo.setType(insuranceOrder.getInsuranceType());
-
-        if (Objects.isNull(insuranceUserInfoCache) || Objects.equals(InsuranceUserInfo.IS_USE, insuranceUserInfoCache.getIsUse()) || insuranceUserInfoCache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+        
+        if (Objects.isNull(insuranceUserInfoCache) || Objects.equals(InsuranceUserInfo.IS_USE, insuranceUserInfoCache.getIsUse())
+                || insuranceUserInfoCache.getInsuranceExpireTime() < System.currentTimeMillis()) {
             insuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
         } else {
             insuranceUserInfo.setInsuranceExpireTime(insuranceUserInfoCache.getInsuranceExpireTime() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
         }
-
-        if(Objects.isNull(insuranceUserInfoCache)){
+        
+        if (Objects.isNull(insuranceUserInfoCache)) {
             insuranceUserInfo.setCreateTime(System.currentTimeMillis());
             insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             insuranceUserInfoService.insert(insuranceUserInfo);
-        }else{
+        } else {
             insuranceUserInfo.setId(insuranceUserInfoCache.getId());
             insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             insuranceUserInfoService.updateInsuranceUserInfoById(insuranceUserInfo);
         }
+        return insuranceUserInfo;
     }
-
+    
     @Override
     public R queryUserInsurance() {
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -281,80 +285,81 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             log.error("ELECTRICITY  ERROR! not found user! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
-        if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
+        if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(),
+                InsuranceUserInfo.IS_USE)) {
             return R.ok();
         }
         return R.ok(insuranceUserInfoVo);
     }
-
+    
     @Override
-    public R queryUserInsurance(Long uid,Integer type) {
-
+    public R queryUserInsurance(Long uid, Integer type) {
+        
         //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}", uid, type);
             return R.ok();
         }
-
+        
         InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
         BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
-
+        
         if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
             return R.ok();
         }
-
+        
         return R.ok(insuranceUserInfoVo);
     }
-
+    
     /**
      * 兼容租车和车电一体
      */
     @Override
-    public InsuranceUserInfoVo selectUserInsuranceInfo(Long uid,Integer type) {
-
+    public InsuranceUserInfoVo selectUserInsuranceInfo(Long uid, Integer type) {
+        
         //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
             return null;
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             log.warn("ELE WARN!not found insuranceUserInfo,uid={},type={}", uid, type);
             return null;
         }
-
+        
         InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
         BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
-
+        
         if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
             return null;
         }
-
+        
         return insuranceUserInfoVo;
     }
-
+    
     @Override
     public R queryInsuranceByStatus(Integer status, Long offset, Long size) {
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -365,19 +370,19 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             log.error("ELECTRICITY  ERROR! not found user! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-
+        
         if (Objects.equals(status, InsuranceUserInfo.NOT_USE)) {
-log.error("============111");
+            log.error("============111");
             InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
-            if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
+            if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(),
+                    InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
             }
             List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
@@ -389,13 +394,8 @@ log.error("============111");
             return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
             log.error("============222");
-            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
-                    .offset(offset)
-                    .size(size)
-                    .uid(uid)
-                    .isUse(InsuranceUserInfo.IS_USE)
-                    .tenantId(userInfo.getTenantId())
-                    .build();
+            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().offset(offset).size(size).uid(uid).isUse(InsuranceUserInfo.IS_USE)
+                    .tenantId(userInfo.getTenantId()).build();
             List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderService.queryListByStatus(insuranceOrderQuery);
             if (Objects.nonNull(insuranceOrderVOList)) {
                 insuranceOrderVOList.parallelStream().forEach(item -> {
@@ -406,13 +406,8 @@ log.error("============111");
             return R.ok(insuranceOrderVOList);
         } else {
             log.error("============333");
-            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
-                    .offset(offset)
-                    .size(size)
-                    .uid(uid)
-                    .isUse(InsuranceUserInfo.NOT_USE)
-                    .tenantId(userInfo.getTenantId())
-                    .build();
+            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().offset(offset).size(size).uid(uid).isUse(InsuranceUserInfo.NOT_USE)
+                    .tenantId(userInfo.getTenantId()).build();
             List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderService.queryListByStatus(insuranceOrderQuery);
             List<InsuranceOrderVO> expireInsuranceOrderList = new ArrayList<>();
             if (Objects.nonNull(insuranceOrderVOList)) {
@@ -421,21 +416,21 @@ log.error("============111");
                         item.setInsuranceExpireTime(item.getCreateTime() + (item.getValidDays() * (24 * 60 * 60 * 1000L)));
                         expireInsuranceOrderList.add(item);
                     }
-
+                    
                 });
             }
             log.error("============333{}", JsonUtil.toJson(expireInsuranceOrderList));
             return R.ok(expireInsuranceOrderList);
         }
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteById(InsuranceUserInfo insuranceUserInfo) {
         int delete = baseMapper.deleteById(insuranceUserInfo.getId());
-
+        
         expireInsuranceOrder(insuranceUserInfo);
-
+        
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid() + ":" + insuranceUserInfo.getType());
@@ -443,11 +438,11 @@ log.error("============111");
         });
         return delete;
     }
-
+    
     @Override
     public int deleteByUidAndType(Long uid, Integer type) {
         int delete = this.baseMapper.deleteByUidAndType(uid, type);
-
+        
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type);
@@ -455,7 +450,7 @@ log.error("============111");
         });
         return delete;
     }
-
+    
     private void expireInsuranceOrder(InsuranceUserInfo insuranceUserInfo) {
         String insuranceOrderId = insuranceUserInfo.getInsuranceOrderId();
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceOrderId);
@@ -468,7 +463,7 @@ log.error("============111");
             insuranceOrderService.updateOrderStatusById(insuranceOrderUpdate);
         }
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R insertUserBatteryInsurance(InsuranceUserInfoQuery query) {
@@ -477,21 +472,22 @@ log.error("============111");
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-
-        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(),
+                UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
@@ -500,49 +496,35 @@ log.error("============111");
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-
+        
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
         if (Objects.isNull(franchiseeInsurance)) {
             return R.fail("100305", "未找到保险!");
         }
-
+        
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
             return R.fail("100306", "保险已禁用!");
         }
-
+        
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
             return R.fail("100305", "未找到保险");
         }
-
+        
         if (!Objects.equals(franchiseeInsurance.getFranchiseeId(), userInfo.getFranchiseeId())) {
             return R.fail("ELECTRICITY.0038", "用户加盟商与保险加盟商不一致");
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(query.getUid(), query.getType());
         if (Objects.nonNull(insuranceUserInfo)) {
             return R.fail("100310", "用户已购买保险");
         }
-
+        
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
-        InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
-                .insuranceId(franchiseeInsurance.getId())
-                .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(franchiseeInsurance.getInsuranceType())
-                .orderId(orderId)
-                .cid(franchiseeInsurance.getCid())
-                .franchiseeId(franchiseeInsurance.getFranchiseeId())
-                .isUse(InsuranceOrder.NOT_USE)
-                .payAmount(franchiseeInsurance.getPremium())
-                .forehead(franchiseeInsurance.getForehead())
-                .payType(InsuranceOrder.OFFLINE_PAY_TYPE)
-                .phone(userInfo.getPhone())
-                .status(InsuranceOrder.STATUS_SUCCESS)
-                .tenantId(TenantContextHolder.getTenantId())
-                .uid(userInfo.getUid())
-                .userName(userInfo.getName())
-                .validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        InsuranceOrder insuranceUserOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+                .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
+                .isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
+                .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
+                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         insuranceOrderService.insert(insuranceUserOrder);
 
 /*
@@ -563,45 +545,53 @@ log.error("============111");
         this.saveUserInsurance(insuranceUserOrder);
         
         //新增操作记录
-        EleUserOperateRecord record = EleUserOperateRecord.builder()
-                .operateModel(UserOperateRecordConstant.BATTERY_INSURANCE)
-                .operateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT)
-                .operateUid(user.getUid())
-                .uid(userInfo.getUid())
-                .name(user.getUsername())
-                .newBatteryInsuranceStatus(InsuranceOrder.NOT_USE)
-                .newBatteryInsuranceExpireTime(query.getInsuranceExpireTime())
-                .tenantId(TenantContextHolder.getTenantId())
-                .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+        //判断是单电的电池操作还是车电一体的电池操作
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
+            record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT);
+            record.setNewBatteryInsuranceStatus(InsuranceOrder.NOT_USE);
+            record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
+        } else {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
+            record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.EDIT_CAR_INSURANCE_CONTENT);
+            record.setNewCarInsuranceStatus(InsuranceOrder.NOT_USE);
+            record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
+        }
+        
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         return R.ok();
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R editUserInsuranceInfo(InsuranceUserInfoQuery query){
+    public R editUserInsuranceInfo(InsuranceUserInfoQuery query) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(userInfo.getUid(), query.getType());
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户未购买保险");
         }
-
+        
+        InsuranceUserInfoVo oldInsuranceUserInfo = queryByUidAndTenantId(query.getUid(), TenantContextHolder.getTenantId());
+        
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateInsuranceUserInfo.setIsUse(query.getIsUse());
@@ -610,7 +600,7 @@ log.error("============111");
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
-
+        
         InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
         insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
         insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
@@ -619,55 +609,71 @@ log.error("============111");
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
         
         //新增操作记录
-        EleUserOperateRecord record = EleUserOperateRecord.builder()
-                .operateModel(UserOperateRecordConstant.BATTERY_INSURANCE)
-                .operateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT)
-                .operateUid(user.getUid())
-                .uid(userInfo.getUid())
-                .name(user.getUsername())
-                .newBatteryInsuranceStatus(query.getIsUse())
-                .newBatteryInsuranceExpireTime(query.getInsuranceExpireTime())
-                .tenantId(TenantContextHolder.getTenantId())
-                .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+        //判断是单电的保险操作还是车的保险操作
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
+            record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
+            record.setOldBatteryInsuranceStatus(oldInsuranceUserInfo.getIsUse());
+            record.setNewBatteryInsuranceStatus(updateInsuranceUserInfo.getIsUse());
+            record.setOldBatteryInsuranceExpireTime(oldInsuranceUserInfo.getInsuranceExpireTime());
+            record.setNewBatteryInsuranceExpireTime(query.getInsuranceExpireTime());
+        } else {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
+            record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.EDIT_CAR_INSURANCE_CONTENT);
+            record.setOldCarInsuranceStatus(oldInsuranceUserInfo.getIsUse());
+            record.setNewCarInsuranceStatus(updateInsuranceUserInfo.getIsUse());
+            record.setOldCarInsuranceExpireTime(oldInsuranceUserInfo.getInsuranceExpireTime());
+            record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
+        }
+        
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
-
+        
         return R.ok();
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R renewalUserBatteryInsurance(InsuranceUserInfoQuery query) {
-
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
-        if (Objects.isNull(userInfo)|| !Objects.equals( userInfo.getTenantId(),TenantContextHolder.getTenantId() )) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY ) && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(),
+                UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_CAR ) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        if (Objects.equals(query.getType(),FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR ) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-
+        
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(query.getUid(), query.getType());
-        if (Objects.isNull(insuranceUserInfo) ) {
+        if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户未购买保险");
         }
-
+        
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
         if (Objects.isNull(franchiseeInsurance)) {
             return R.fail("100305", "未找到保险!");
@@ -675,39 +681,27 @@ log.error("============111");
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
             return R.fail("100306", "保险已禁用!");
         }
-
-        String orderId=OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE,userInfo.getUid());
-        InsuranceOrder insuranceUserOrder = InsuranceOrder.builder()
-                .insuranceId(franchiseeInsurance.getId())
-                .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(franchiseeInsurance.getInsuranceType())
-                .orderId(orderId)
-                .cid(franchiseeInsurance.getCid())
-                .franchiseeId(franchiseeInsurance.getFranchiseeId())
-                .isUse(InsuranceOrder.NOT_USE)
-                .payAmount(franchiseeInsurance.getPremium())
-                .forehead(franchiseeInsurance.getForehead())
-                .payType(InsuranceOrder.OFFLINE_PAY_TYPE)
-                .phone(userInfo.getPhone())
-                .status(InsuranceOrder.STATUS_SUCCESS)
-                .tenantId(TenantContextHolder.getTenantId())
-                .uid(userInfo.getUid())
-                .userName(userInfo.getName())
-                .validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
+        
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
+        InsuranceOrder insuranceUserOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+                .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
+                .isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
+                .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
+                .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         insuranceOrderService.insert(insuranceUserOrder);
-
-        this.saveUserInsurance(insuranceUserOrder);
-
-        InsuranceOrder oldInsuranceUserOrder=insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
-        if(Objects.nonNull(oldInsuranceUserOrder)){
+        
+        InsuranceUserInfo newInsuranceUserInfo = this.saveUserInsurance(insuranceUserOrder);
+        
+        InsuranceOrder oldInsuranceUserOrder = insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
+        Integer newInsuranceStatus = null;
+        if (Objects.nonNull(oldInsuranceUserOrder)) {
             InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
             insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
             insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
             insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
-//            insuranceOrderService.update(insuranceUserOrderUpdate);
-            insuranceOrderService.updateUseStatusForRefund(oldInsuranceUserOrder.getOrderId(),InsuranceOrder.INVALID);
+            //            insuranceOrderService.update(insuranceUserOrderUpdate);
+            newInsuranceStatus = insuranceUserOrderUpdate.getIsUse();
+            insuranceOrderService.updateUseStatusForRefund(oldInsuranceUserOrder.getOrderId(), InsuranceOrder.INVALID);
         }
 /*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
@@ -731,12 +725,36 @@ log.error("============111");
         insuranceUserInfoService.updateInsuranceUserInfoById(updateOrAddInsuranceUserInfo);
 
         */
+        
+        //新增操作记录
+        EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+        //判断是单电的保险操作还是车的保险操作
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
+            record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
+            record.setOldBatteryInsuranceStatus(oldInsuranceUserOrder.getIsUse());
+            record.setNewBatteryInsuranceStatus(newInsuranceStatus);
+            record.setOldBatteryInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
+            record.setNewBatteryInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
+        } else {
+            record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
+            record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
+            record.setOperateContent(UserOperateRecordConstant.RENEWAL_CAR_INSURANCE_CONTENT);
+            record.setOldCarInsuranceStatus(oldInsuranceUserOrder.getIsUse());
+            record.setNewCarInsuranceStatus(newInsuranceStatus);
+            record.setOldCarInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
+            record.setNewCarInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
+        }
+        
         return R.ok();
     }
-
+    
     @Override
     public Boolean verifyUserIsNeedBuyInsurance(UserInfo userInfo, Integer type, String simpleBatteryType, Long carModelId) {
-
+        
         FranchiseeInsuranceQuery query = new FranchiseeInsuranceQuery();
         query.setTenantId(userInfo.getTenantId());
         query.setFranchiseeId(userInfo.getFranchiseeId());
@@ -744,7 +762,7 @@ log.error("============111");
         query.setInsuranceType(type);
         query.setSimpleBatteryType(simpleBatteryType);
         query.setCarModelId(carModelId);
-
+        
         if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             query.setSimpleBatteryType(simpleBatteryType);
         } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
@@ -753,56 +771,56 @@ log.error("============111");
             query.setSimpleBatteryType(simpleBatteryType);
             query.setCarModelId(carModelId);
         }
-
+        
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.selectInsuranceByType(query);
-        if(Objects.isNull(franchiseeInsurance) || !Objects.equals( FranchiseeInsurance.CONSTRAINT_FORCE, franchiseeInsurance.getIsConstraint())){
+        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(FranchiseeInsurance.CONSTRAINT_FORCE, franchiseeInsurance.getIsConstraint())) {
             return Boolean.FALSE;
         }
-
+        
         //获取用户当前绑定的保险
         InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(userInfo.getUid(), type);
-        if(Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime()<System.currentTimeMillis()){
+        if (Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis()) {
             return Boolean.TRUE;
         }
-
+        
         return Boolean.FALSE;
     }
-
+    
     @Override
     public InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type) {
         InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(uid, type);
         if (Objects.isNull(insuranceUserInfo)) {
             return null;
         }
-
+        
         InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
         BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
-
+        
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
         if (Objects.isNull(franchiseeInsurance)) {
             return insuranceUserInfoVo;
         }
-
+        
         insuranceUserInfoVo.setInsuranceName(franchiseeInsurance.getName());
-
+        
         City city = cityService.queryByIdFromDB(franchiseeInsurance.getCid());
         insuranceUserInfoVo.setCityName(Objects.isNull(city) ? "" : city.getName());
-
+        
         return insuranceUserInfoVo;
     }
-
+    
     @Override
     public void updateUserInsuranceOrderStatusTask() {
-
+        
         int offset = 0;
         int size = 200;
-
+        
         while (true) {
             List<InsuranceUserInfo> list = this.selectUserInsuranceList(offset, size);
-            if(CollectionUtils.isEmpty(list)){
+            if (CollectionUtils.isEmpty(list)) {
                 return;
             }
-
+            
             list.parallelStream().forEach(item -> {
                 if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
                     //更新用户绑定保险状态
@@ -813,22 +831,22 @@ log.error("============111");
                     insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
                     insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
                     this.updateInsuranceUserInfoById(insuranceUserInfo);
-
+                    
                     //更新订单状态
                     insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 }
             });
-
+            
             offset += size;
         }
     }
-
+    
     @Override
     public List<InsuranceUserInfo> selectByUid(Long uid) {
-        return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid,uid));
+        return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid));
     }
-
+    
     private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
-        return baseMapper.selectUserInsuranceList(offset,size);
+        return baseMapper.selectUserInsuranceList(offset, size);
     }
 }
