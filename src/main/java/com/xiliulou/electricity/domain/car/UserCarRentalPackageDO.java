@@ -105,7 +105,10 @@ public class UserCarRentalPackageDO {
      * 用户认证时间
      */
     private Long userAuthTime;
-
-
+    
+    /**
+     * 套餐购买次数
+     */
+    private Long payCount;
 
 }
