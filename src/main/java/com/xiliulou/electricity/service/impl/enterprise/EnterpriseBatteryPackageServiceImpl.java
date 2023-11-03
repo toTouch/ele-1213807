@@ -1010,7 +1010,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "ELECTRICITY.100000", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
             }
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
@@ -1278,7 +1278,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "ELECTRICITY.100000", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
             }
     
             if(Objects.nonNull(userBatteryMemberCard)){
@@ -1587,7 +1587,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "ELECTRICITY.100000", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
+                return Triple.of(false, "300084", "该骑手逾期未归还电池，已产生滞纳金，请联系骑手在'我的-滞纳金'支付后操作");
             }
             
             //如果会员表存在信息，则用户并非第一次购买套餐，需要检查是否存在冻结的状况
