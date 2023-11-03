@@ -452,4 +452,6 @@ public interface CacheConstant {
     String CACHE_CHARGE_POWER_CONFIG_NONE ="charge_p_conf_none:";
     String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
     String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
+    
+    String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
 }
