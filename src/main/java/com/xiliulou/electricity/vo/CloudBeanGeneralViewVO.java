@@ -13,7 +13,7 @@ public class CloudBeanGeneralViewVO {
     /**
      * 可分配云豆数
      */
-    private Long canAllocationCloudBean;
+    private Double canAllocationCloudBean;
     
     /**
      * 已分配云豆数量
