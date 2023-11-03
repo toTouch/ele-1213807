@@ -15,7 +15,7 @@
 
 	<select id="queryByUserName" resultType="com.xiliulou.electricity.entity.User">
 		<include refid="selectUser"/>
-		where binary name = #{username}
+		where binary name = #{username} and del_flag =0
 	</select>
 
 	<!--通过主键修改数据-->

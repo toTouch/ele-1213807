@@ -1086,7 +1086,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setAllocationMembercard(0);
             cloudBeanGeneralViewVO.setAllocationUser(0L);
         } else {
-            cloudBeanGeneralViewVO.setAllocationCloudBean(payRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
+            double allocationCloudBean = payRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum();
+            cloudBeanGeneralViewVO.setAllocationCloudBean(BigDecimal.valueOf(allocationCloudBean).setScale(2, RoundingMode.HALF_UP).doubleValue());
             cloudBeanGeneralViewVO.setAllocationMembercard(payRecords.size());
             cloudBeanGeneralViewVO.setAllocationUser(payRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
         }
