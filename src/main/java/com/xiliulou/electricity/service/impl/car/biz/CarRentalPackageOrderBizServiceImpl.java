@@ -863,7 +863,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageMemberTermPo newMemberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             
             Integer oldDays = null;
-            if (Objects.nonNull(memberTermEntity.getDueTimeTotal())) {
+            if (Objects.nonNull(memberTermEntity) && Objects.nonNull(memberTermEntity.getDueTimeTotal())) {
                 oldDays = (int) Math.ceil((double) newMemberTerm.getDueTimeTotal() / 3600000 / 24.0);
             }
             
