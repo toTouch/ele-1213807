@@ -875,8 +875,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 添加套餐操作记录
             EleUserOperateRecord rentalOrderRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
                     .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldDays)
-                    .newValidDays(newDays).oldMaxUseCount(memberTermEntity.getResidue()).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
-                    .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    .newValidDays(newDays).oldMaxUseCount(Objects.nonNull(memberTermEntity) ? memberTermEntity.getResidue() : null)
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
             
             if (Objects.nonNull(newMemberTerm)) {
                 rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
