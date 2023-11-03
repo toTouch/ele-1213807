@@ -109,6 +109,6 @@ public class UserCarRentalPackageDO {
     /**
      * 套餐购买次数
      */
-    private Long payCount;
+    private Integer payCount;
 
 }
