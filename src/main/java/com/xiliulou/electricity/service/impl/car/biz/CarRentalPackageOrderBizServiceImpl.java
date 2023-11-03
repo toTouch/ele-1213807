@@ -856,7 +856,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 添加押金操作记录
             EleUserOperateRecord depositRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
                     .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-                    .newCarDeposit(isFirstBuy ? memberTermEntity.getDeposit() : null).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
+                    .newCarDeposit(isFirstBuy && Objects.nonNull(memberTermEntity) ? memberTermEntity.getDeposit() : null).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
                     .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();// 添加押金操作记录
             eleUserOperateRecordService.asyncHandleUserOperateRecord(depositRecord);
             
