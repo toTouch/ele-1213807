@@ -42,7 +42,7 @@ public interface UserOperateRecordConstant {
     /**
      * 0--换电  1--租车
      */
-    Integer OPERATE_TYPE_BATTERY=0;
+    Integer OPERATE_TYPE_BATTERY = 0;
     
-    Integer OPERATE_TYPE_CAR=0;
+    Integer OPERATE_TYPE_CAR = 1;
 }

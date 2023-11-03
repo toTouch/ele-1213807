@@ -21,6 +21,7 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -3903,6 +3904,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT)
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
                 .operateUid(SecurityUtils.getUid())
                 .uid(electricityMemberCardOrder.getUid())
                 .name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername())
