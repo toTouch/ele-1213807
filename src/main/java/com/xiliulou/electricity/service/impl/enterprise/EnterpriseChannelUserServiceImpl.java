@@ -233,6 +233,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
             
+            log.info("Add user success for QR scan, uid = {}, enterprise channel user id = {}", uid, channelUserId);
+            
         } catch (Exception e) {
             log.error("add new user after QR scan error, uid = {}, ex = {}", query.getUid(), e);
             throw new BizException("300068", "扫码添加用户失败");
@@ -249,6 +251,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
        /* if (!ObjectUtils.allNotNull(id, uid)) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }*/
+        //uid 默认不传，根据id来查找刚添加成功的用户
+        log.info("check user is exist after QR scan, id = {}, uid = {}", id, uid);
         EnterpriseChannelUserCheckVO enterpriseChannelUserVO = new EnterpriseChannelUserCheckVO();
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserMapper.selectChannelUserByIdAndUid(id, uid);
         if (Objects.isNull(enterpriseChannelUser) || Objects.isNull(enterpriseChannelUser.getUid())) {
