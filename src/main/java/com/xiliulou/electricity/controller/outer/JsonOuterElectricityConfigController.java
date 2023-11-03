@@ -66,7 +66,7 @@ public class JsonOuterElectricityConfigController {
      * @author HeYafeng
      */
     @PostMapping(value = "/outer/weiChat/approve/in/cache")
-    public R WeChatApproveInCache(@RequestParam("msg") String msg) {
+    public R weChatApproveInCache(@RequestParam("msg") String msg) {
         redisService.set(CacheConstant.CACHE_WECHAT_APPROVE, msg);
         return R.ok();
     }
@@ -77,7 +77,7 @@ public class JsonOuterElectricityConfigController {
      * @author HeYafeng
      */
     @GetMapping("/outer/weiChat/approve/out/cache")
-    public R WeChatApproveOutCache(){
+    public R weChatApproveOutCache(){
         return R.ok(redisService.get(CacheConstant.CACHE_WECHAT_APPROVE));
     }
 }
