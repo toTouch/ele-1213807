@@ -43,7 +43,7 @@ public interface CarRentalOrderBizService {
      * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean unBindingCar(Integer tenantId, Long uid, Long optUid);
+    boolean unBindingCar(Integer tenantId, Long uid, Long optUid, String userName);
 
     /**
      * 给用户绑定车辆
@@ -53,7 +53,7 @@ public interface CarRentalOrderBizService {
      * @param optUid 操作用户UID
      * @return true(成功)、false(失败)
      */
-    boolean bindingCar(Integer tenantId, Long uid, String carSn, Long optUid);
+    boolean bindingCar(Integer tenantId, Long uid, String carSn, Long optUid, String userName);
 
     /**
      * JT 808 控制锁

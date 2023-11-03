@@ -103,7 +103,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalOrderBizService.unBindingCar(tenantId, uid, user.getUid()));
+        return R.ok(carRentalOrderBizService.unBindingCar(tenantId, uid, user.getUid(), user.getUsername()));
     }
 
     /**
@@ -123,7 +123,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRentalOrderBizService.bindingCar(tenantId, uid, carSn, user.getUid()));
+        return R.ok(carRentalOrderBizService.bindingCar(tenantId, uid, carSn, user.getUid(), user.getUsername()));
     }
 
     /**
