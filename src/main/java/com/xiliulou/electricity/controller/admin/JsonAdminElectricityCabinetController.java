@@ -113,7 +113,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     }
     
     /**
-     * 删除换电柜
+     * 获取换电柜扩展参数
      */
     @GetMapping(value = "/admin/electricityCabinet/extendData/{electricityCabinetId}")
     public R queryElectricityCabinetExtendData(@PathVariable("electricityCabinetId") Integer id) {
