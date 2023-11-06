@@ -9,6 +9,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -1834,6 +1835,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                     .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT)
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())

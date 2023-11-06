@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -628,7 +629,8 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         //记录操作日志
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MODEL)
                 .operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT).operateUid(user.getUid()).initElectricityCarSn(eleBindCarRecord.getSn()).uid(userInfo.getUid())
-                .name(userName).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).name(userName).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
         
         return true;
@@ -822,9 +824,10 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         
         //记录操作日志
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MODEL)
-                .operateContent(EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid()).newElectricityCarSn(eleBindCarRecord.getSn()).uid(userInfo.getUid()).name(userName)
-                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        eleUserOperateRecordService.insert(eleUserOperateRecord);
+                .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).operateContent(EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid())
+                .newElectricityCarSn(eleBindCarRecord.getSn()).uid(userInfo.getUid()).name(userName).tenantId(TenantContextHolder.getTenantId())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(eleUserOperateRecord);
         return true;
     }
     

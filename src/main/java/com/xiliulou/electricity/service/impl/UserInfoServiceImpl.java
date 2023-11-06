@@ -2081,8 +2081,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MODEL)
                     .operateContent(Objects.nonNull(userBindElectricityCar) ? EleUserOperateRecord.EDIT_CAR_CONTENT : EleUserOperateRecord.BIND_CAR_CONTENT)
                     .operateUid(user.getUid()).uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).name(user.getUsername())
-                    .initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "").newElectricityCarSn(electricityCar.getSn())
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "")
+                    .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
             
             //车辆控制 -- 用户绑定解锁
