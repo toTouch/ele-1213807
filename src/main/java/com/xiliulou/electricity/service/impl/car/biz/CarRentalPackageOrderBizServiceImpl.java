@@ -865,7 +865,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             Integer oldDays = null;
             if (Objects.nonNull(memberTermEntity) && Objects.nonNull(memberTermEntity.getDueTimeTotal())) {
-                oldDays = (int) Math.ceil((double) (newMemberTerm.getDueTimeTotal() - System.currentTimeMillis()) / 3600000 / 24.0);
+                oldDays = (int) Math.ceil((double) (memberTermEntity.getDueTimeTotal() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             
             Integer newDays = null;
@@ -881,7 +881,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .updateTime(System.currentTimeMillis()).build();
             
             //设置套餐记录的限次 不限次
-            if (Objects.nonNull(newMemberTerm) && RenalPackageConfineEnum.NUMBER.getCode().equals(newMemberTerm.getRentalPackageConfine())) {
+            if (Objects.nonNull(newMemberTerm) && RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) && RenalPackageConfineEnum.NUMBER.getCode()
+                    .equals(newMemberTerm.getRentalPackageConfine())) {
                 rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
             } else {
                 rentalOrderRecord.setNewMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
