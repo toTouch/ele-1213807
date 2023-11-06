@@ -3901,7 +3901,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
                 oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
             } else {
-                oldMaxUseCount = 9999L;
+                oldMaxUseCount = UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER;
             }
         }
         
@@ -3911,7 +3911,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
             newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
         } else {
-            newMaxUseCount = 9999L;
+            newMaxUseCount = UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER;
         }
 
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()

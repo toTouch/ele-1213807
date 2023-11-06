@@ -45,4 +45,10 @@ public interface UserOperateRecordConstant {
     Integer OPERATE_TYPE_BATTERY = 0;
     
     Integer OPERATE_TYPE_CAR = 1;
+    
+    
+    /**
+     * 不限制次數
+     */
+    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 }

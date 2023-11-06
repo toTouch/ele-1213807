@@ -853,11 +853,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             handBuyRentalPackageOrderSuccess(carRentalPackageOrder.getOrderNo(), tenantId, uid, null);
             
             //第一次绑定套餐时添加押金操作记录
-            if(isFirstBuy){
+            if (isFirstBuy) {
                 EleUserOperateRecord depositRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
                         .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-                        .newCarDeposit(buyOptModel.getDeposit()).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
-                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();// 添加押金操作记录
+                        .newCarDeposit(buyOptModel.getDeposit()).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId())
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();// 添加押金操作记录
                 eleUserOperateRecordService.asyncHandleUserOperateRecord(depositRecord);
             }
             
@@ -883,6 +883,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             //设置套餐记录的限次 不限次
             if (Objects.nonNull(newMemberTerm) && RenalPackageConfineEnum.NUMBER.getCode().equals(newMemberTerm.getRentalPackageConfine())) {
                 rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
+            } else {
+                rentalOrderRecord.setNewMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
             }
             
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
@@ -2236,7 +2238,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         //查询未使用的租车订单
         List<CarRentalPackageOrderPo> carRentalPackageOrderPoList = carRentalPackageOrderService.listCarRentalPackageOrdersByUid(tenantId, uid);
-       
+        
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount,
                 carModel, carAttr, carRentalState, lockType, carRentalPackageOrderPoList);
