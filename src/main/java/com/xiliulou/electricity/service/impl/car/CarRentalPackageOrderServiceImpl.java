@@ -460,12 +460,11 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     /**
      * 查询用户购买的套餐订单
      *
-     * @param tenantId
      * @param uid
      * @return 用戶购买的套餐订单
      */
-    public List<CarRentalPackageOrderPo> listCarRentalPackageOrdersByUid(Integer tenantId, Long uid) {
-        return carRentalPackageOrderMapper.selectListRentalPackageOrdersByUid(tenantId, uid);
+    public Long sumConfineNumByUid(Long uid) {
+        return carRentalPackageOrderMapper.sumConfineNumByUid(uid);
     }
     
 }

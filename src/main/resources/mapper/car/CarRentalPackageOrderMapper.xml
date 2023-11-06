@@ -352,10 +352,7 @@
     </insert>
     
     
-    <select id="selectListRentalPackageOrdersByUid" resultMap="entityMap">
-        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
-        <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid}
-        </where>
+    <select id="sumConfineNumByUid" resultType="long">
+        select sum(confine_num) from t_car_rental_package_order where `uid` = #{uid} and `del_flag` = 0 and use_state = 1
     </select>
 </mapper>

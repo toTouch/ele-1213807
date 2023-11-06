@@ -201,9 +201,8 @@ public interface CarRentalPackageOrderMapper {
     /**
      * 查询用户购买的套餐订单
      *
-     * @param tenantId
      * @param uid
      * @return 用户购买的套餐订单
      */
-    List<CarRentalPackageOrderPo> selectListRentalPackageOrdersByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    Long sumConfineNumByUid(@Param("uid") Long uid);
 }

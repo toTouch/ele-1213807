@@ -219,10 +219,9 @@ public interface CarRentalPackageOrderService {
     /**
      * 查询用户购买的套餐订单
      *
-     * @param tenantId
      * @param uid
      * @return 用户购买的套餐订单
      */
-    List<CarRentalPackageOrderPo> listCarRentalPackageOrdersByUid(Integer tenantId, Long uid);
+    Long sumConfineNumByUid(Long uid);
     
 }

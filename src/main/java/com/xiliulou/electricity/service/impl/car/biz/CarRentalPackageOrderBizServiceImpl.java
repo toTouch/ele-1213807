@@ -2237,12 +2237,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 8. 滞纳金信息
         BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
         
-        //查询未使用的租车订单
-        List<CarRentalPackageOrderPo> carRentalPackageOrderPoList = carRentalPackageOrderService.listCarRentalPackageOrdersByUid(tenantId, uid);
+        //查询未使用的租车订单的限制次数
+        Long confineNum = carRentalPackageOrderService.sumConfineNumByUid(uid);
         
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount,
-                carModel, carAttr, carRentalState, lockType, carRentalPackageOrderPoList);
+                carModel, carAttr, carRentalState, lockType, confineNum);
         
         // 9. 查询冻结订单信息
         CarRentalPackageOrderFreezePo carRentalPackageOrderFreezePo = carRentalPackageOrderFreezeService.selectLatestFreezeOrder(rentalPackageOrderNo);
@@ -2258,7 +2258,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPo memberTerm, CarRentalPackagePo carRentalPackage, CarRentalPackageOrderPo carRentalPackageOrder,
             InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount, ElectricityCarModel carModel,
-            CarAttr carAttr, Integer carRentalState, Integer lockType, List<CarRentalPackageOrderPo> carRentalPackageOrderPoList) {
+            CarAttr carAttr, Integer carRentalState, Integer lockType, Long confineNum) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -2297,15 +2297,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         //设置剩余总次数
         Long residue = memberTerm.getResidue();
-        if (!CollectionUtils.isEmpty(carRentalPackageOrderPoList)) {
-            List<CarRentalPackageOrderPo> unUseOrderList = carRentalPackageOrderPoList.stream()
-                    .filter(item -> Objects.equals(item.getUseState(), UseStateEnum.UN_USED.getCode()) && Objects.nonNull(item.getConfineNum())).collect(Collectors.toList());
-            //套餐总剩余次数
-            if (!CollectionUtils.isEmpty(unUseOrderList)) {
-                for (CarRentalPackageOrderPo order : unUseOrderList) {
-                    residue += order.getConfineNum();
-                }
-            }
+        if (Objects.nonNull(confineNum)) {
+            residue += confineNum;
         }
         carRentalPackageOrderVO.setResidueNum(residue);
         
