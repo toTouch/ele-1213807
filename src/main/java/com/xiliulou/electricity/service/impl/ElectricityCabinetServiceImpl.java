@@ -130,6 +130,7 @@ import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetExtendDataVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
@@ -5177,5 +5178,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return franchisee.getName();
+    }
+    
+    /**
+     * 查询柜机扩展参数
+     * @param electricityCabinetId 柜机id
+     * @return 柜机扩展参数
+     */
+    public R queryElectricityCabinetExtendData(Integer electricityCabinetId) {
+        ElectricityCabinetExtendDataVO extendDataVO = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId,
+                ElectricityCabinetExtendDataVO.class);
+        return R.ok(extendDataVO);
     }
 }
