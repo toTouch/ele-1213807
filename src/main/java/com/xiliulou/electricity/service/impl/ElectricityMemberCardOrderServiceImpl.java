@@ -3888,10 +3888,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserDepositOperateRecord);
 
-        Integer oldValidDays = 0;
-        Integer newValidDays = 0;
-        Long oldMaxUseCount = 0L;
-        Long newMaxUseCount = 0L;
+        Integer oldValidDays = null;
+        Integer newValidDays = null;
+        Long oldMaxUseCount = null;
+        Long newMaxUseCount = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));

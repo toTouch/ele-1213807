@@ -834,18 +834,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             boolean isFirstBuy = false;
             // 5）租车套餐会员期限处理
-            CarRentalPackageMemberTermPo memberTermInsertEntity = null;
             if (ObjectUtils.isEmpty(memberTermEntity)) {
                 // 生成租车套餐会员期限表信息，准备 Insert
                 isFirstBuy = true;
-                memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
+                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
                 carRentalPackageMemberTermService.insert(memberTermInsertEntity);
             } else {
                 if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
                     // 先删除
                     carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
                     // 生成租车套餐会员期限表信息，准备 Insert
-                    memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
+                    CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder, payDeposit);
                     carRentalPackageMemberTermService.insert(memberTermInsertEntity);
                 }
             }
@@ -864,12 +863,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             Integer oldDays = null;
             if (Objects.nonNull(memberTermEntity) && Objects.nonNull(memberTermEntity.getDueTimeTotal())) {
-                oldDays = (int) Math.ceil((double) newMemberTerm.getDueTimeTotal() / 3600000 / 24.0);
+                oldDays = (int) Math.ceil((double) (newMemberTerm.getDueTimeTotal() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             
             Integer newDays = null;
             if (Objects.nonNull(newMemberTerm) && Objects.nonNull(newMemberTerm.getDueTimeTotal())) {
-                newDays = (int) Math.ceil((double) newMemberTerm.getDueTimeTotal() / 3600000 / 24.0);
+                newDays = (int) Math.ceil((double) (newMemberTerm.getDueTimeTotal() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             
             // 添加套餐操作记录
@@ -879,9 +878,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             
-            if (Objects.nonNull(newMemberTerm)) {
+            //设置套餐记录的限次 不限次
+            if (Objects.nonNull(newMemberTerm) && RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())) {
                 rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
             }
+            
             eleUserOperateRecordService.asyncHandleUserOperateRecord(rentalOrderRecord);
             
         } catch (BizException e) {
@@ -2276,7 +2277,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         //设置剩余天数/分钟
-        Long dueTime = memberTerm.getDueTime();
+        Long dueTime = memberTerm.getDueTimeTotal();
         if (Objects.nonNull(dueTime)) {
             if (RentalUnitEnum.DAY.getCode().equals(carRentalPackageOrder.getTenancyUnit())) {
                 carRentalPackageOrderVO.setResidueTime(
