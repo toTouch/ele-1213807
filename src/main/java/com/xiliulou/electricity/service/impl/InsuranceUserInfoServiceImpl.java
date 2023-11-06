@@ -542,7 +542,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
         insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
         */
-        this.saveUserInsurance(insuranceUserOrder);
+        InsuranceUserInfo saveUserInsurance = this.saveUserInsurance(insuranceUserOrder);
         
         //新增操作记录
         EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
@@ -554,13 +554,13 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT);
             record.setNewBatteryInsuranceStatus(InsuranceOrder.NOT_USE);
-            record.setNewBatteryInsuranceExpireTime(query.getInsuranceExpireTime());
+            record.setNewBatteryInsuranceExpireTime(saveUserInsurance.getInsuranceExpireTime());
         } else {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
             record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.EDIT_CAR_INSURANCE_CONTENT);
             record.setNewCarInsuranceStatus(InsuranceOrder.NOT_USE);
-            record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
+            record.setNewCarInsuranceExpireTime(saveUserInsurance.getInsuranceExpireTime());
         }
         
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
