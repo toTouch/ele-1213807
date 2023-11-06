@@ -879,7 +879,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .updateTime(System.currentTimeMillis()).build();
             
             //设置套餐记录的限次 不限次
-            if (Objects.nonNull(newMemberTerm) && RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())) {
+            if (Objects.nonNull(newMemberTerm) && RenalPackageConfineEnum.NUMBER.getCode().equals(newMemberTerm.getRentalPackageConfine())) {
                 rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
             }
             
