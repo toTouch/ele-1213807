@@ -345,8 +345,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
         
         //待回收云豆=总的支付的云豆-总消耗的云豆
-        BigDecimal recycle = result.add(totalCloudBean.subtract(totalUsedCloudBean));
-        return BigDecimal.ZERO.compareTo(recycle) > 0 ? recycle : BigDecimal.ZERO;
+        return result.add(totalCloudBean.subtract(totalUsedCloudBean));
     }
     
     @Override
