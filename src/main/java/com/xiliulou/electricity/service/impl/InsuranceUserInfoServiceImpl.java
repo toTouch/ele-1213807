@@ -554,7 +554,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT);
             record.setNewBatteryInsuranceStatus(InsuranceOrder.NOT_USE);
-            record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
+            record.setNewBatteryInsuranceExpireTime(query.getInsuranceExpireTime());
         } else {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
             record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
