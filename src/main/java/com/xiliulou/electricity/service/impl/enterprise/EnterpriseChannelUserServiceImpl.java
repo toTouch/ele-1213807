@@ -456,7 +456,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             //ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
             userBatteryVo.setElectricityCabinetId(electricityCabinetOrderVO.getElectricityCabinetId());
             userBatteryVo.setElectricityCabinetName(electricityCabinetOrderVO.getElectricityCabinetName());
-            userBatteryVo.setBatteryExchangeTime(electricityCabinetOrderVO.getCreateTime());
+            userBatteryVo.setBatteryExchangeTime(electricityCabinetOrderVO.getUpdateTime());
         }
         
         return userBatteryVo;

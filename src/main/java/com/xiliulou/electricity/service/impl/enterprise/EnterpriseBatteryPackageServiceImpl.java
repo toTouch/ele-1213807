@@ -1162,7 +1162,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
             enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
             enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
-            enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
+            //enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
             
             UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
@@ -1453,6 +1453,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
             enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
             enterpriseUserPackageDetailsVO.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             
             UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
@@ -1729,7 +1730,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
             enterpriseUserPackageDetailsVO.setOrderId(electricityMemberCardOrder.getOrderId());
             enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
-            enterpriseUserPackageDetailsVO.setBatteryDeposit(BigDecimal.ZERO);
+            enterpriseUserPackageDetailsVO.setBatteryDeposit(batteryMemberCard.getDeposit());
+            enterpriseUserPackageDetailsVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
             
             UserBatteryMemberCard userBatteryMemberCardInfo = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
             enterpriseUserPackageDetailsVO.setMemberCardExpireTime(userBatteryMemberCardInfo.getMemberCardExpireTime());
