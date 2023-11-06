@@ -145,7 +145,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("100304", "保险名称已存在！");
         }
 
-        if (BigDecimal.ZERO.compareTo(franchiseeInsuranceAddAndUpdate.getForehead()) <= 0) {
+        if (BigDecimal.ZERO.compareTo(franchiseeInsuranceAddAndUpdate.getForehead()) >= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
