@@ -874,8 +874,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 添加套餐操作记录
             EleUserOperateRecord rentalOrderRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
-                    .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldDays)
-                    .newValidDays(newDays).oldMaxUseCount(Objects.nonNull(memberTermEntity) ? memberTermEntity.getResidue() : null)
+                    .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                    .oldValidDays(oldDays).newValidDays(newDays).oldMaxUseCount(Objects.nonNull(memberTermEntity) ? memberTermEntity.getResidue() : null)
                     .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             
@@ -2272,6 +2272,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
             carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
             carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
+            carRentalPackageOrderVO.setResidueNum(memberTerm.getResidue());
+        }
+        
+        //设置剩余天数/分钟
+        Long dueTime = memberTerm.getDueTime();
+        if (Objects.nonNull(dueTime)) {
+            if (RentalUnitEnum.DAY.getCode().equals(carRentalPackageOrder.getTenancyUnit())) {
+                carRentalPackageOrderVO.setResidueTime(
+                        dueTime > System.currentTimeMillis() ? (int) Math.ceil((double) (dueTime - System.currentTimeMillis()) / 24 / 60 / 60 / 1000.0) : 0);
+            } else {
+                carRentalPackageOrderVO.setResidueTime(dueTime > System.currentTimeMillis() ? (int) Math.ceil((double) (dueTime - System.currentTimeMillis()) / 60 / 1000.0) : 0);
+            }
         }
         
         carRentalPackageOrderVO.setCarRentalPackageName(ObjectUtils.isNotEmpty(carRentalPackage) ? carRentalPackage.getName() : null);

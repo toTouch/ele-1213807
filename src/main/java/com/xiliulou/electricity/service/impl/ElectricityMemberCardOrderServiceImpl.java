@@ -3896,11 +3896,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
                 oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
             }
-            oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
+            
+            //设置限次 不限次
+            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
+            } else {
+                oldMaxUseCount = 9999L;
+            }
         }
         
         newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-        newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
+        
+        //设置限次 不限次
+        if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+            newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
+        } else {
+            newMaxUseCount = 9999L;
+        }
 
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
