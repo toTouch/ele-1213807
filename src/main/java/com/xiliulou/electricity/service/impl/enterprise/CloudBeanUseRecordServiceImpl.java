@@ -231,7 +231,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             log.warn("ACQUIRE CAN RECYCLE WARN!not found userBatteryDeposit,uid={}", uid);
             return result;
         }
-        
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.warn("ACQUIRE CAN RECYCLE WARN!not found userBatteryMemberCard,uid={}", uid);
+            return result;
+        }
+    
         //押金云豆数
         result = result.add(userBatteryDeposit.getBatteryDeposit());
     
@@ -272,12 +278,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 if(ObjectUtil.equal( enterpriseRentRecord.getRentMembercardOrderId(), enterpriseRentRecord.getReturnMembercardOrderId())){
                     ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                     if (Objects.nonNull(electricityMemberCardOrder)) {
-    
-                        AnotherPayMembercardRecord payMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(),null);
-    
+                        
                         Long beginTime = enterpriseRentRecord.getRentTime();
     
-                        Long endTime = Objects.nonNull(payMembercardRecord) && Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > payMembercardRecord.getEndTime() ? payMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
+                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : enterpriseRentRecord.getReturnTime();
     
                         long useDays = DateUtils.diffDay(beginTime , endTime);
             
@@ -328,7 +332,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         
                         Long beginTime = returnAnotherPayMembercardRecord.getBeginTime();
     
-                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
+                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : enterpriseRentRecord.getReturnTime();
     
                         //使用天数
                         long useDays = DateUtils.diffDay( beginTime, endTime);
@@ -341,7 +345,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
         
         //待回收云豆=总的支付的云豆-总消耗的云豆
-        return result.add(totalCloudBean.subtract(totalUsedCloudBean));
+        BigDecimal recycle = result.add(totalCloudBean.subtract(totalUsedCloudBean));
+        return BigDecimal.ZERO.compareTo(recycle) > 0 ? recycle : BigDecimal.ZERO;
     }
     
     @Override
