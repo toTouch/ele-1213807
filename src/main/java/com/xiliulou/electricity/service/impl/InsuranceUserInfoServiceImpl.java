@@ -693,14 +693,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceUserInfo newInsuranceUserInfo = this.saveUserInsurance(insuranceUserOrder);
         
         InsuranceOrder oldInsuranceUserOrder = insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
-        Integer newInsuranceStatus = null;
         if (Objects.nonNull(oldInsuranceUserOrder)) {
             InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
             insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
             insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
             insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
             //            insuranceOrderService.update(insuranceUserOrderUpdate);
-            newInsuranceStatus = insuranceUserOrderUpdate.getIsUse();
             insuranceOrderService.updateUseStatusForRefund(oldInsuranceUserOrder.getOrderId(), InsuranceOrder.INVALID);
         }
 /*
@@ -736,7 +734,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
             record.setOldBatteryInsuranceStatus(oldInsuranceUserOrder.getIsUse());
-            record.setNewBatteryInsuranceStatus(newInsuranceStatus);
+            record.setNewBatteryInsuranceStatus(newInsuranceUserInfo.getIsUse());
             record.setOldBatteryInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
             record.setNewBatteryInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
         } else {
@@ -744,7 +742,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_CAR_INSURANCE_CONTENT);
             record.setOldCarInsuranceStatus(oldInsuranceUserOrder.getIsUse());
-            record.setNewCarInsuranceStatus(newInsuranceStatus);
+            record.setNewCarInsuranceStatus(newInsuranceUserInfo.getIsUse());
             record.setOldCarInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
             record.setNewCarInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
         }
