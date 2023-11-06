@@ -23,6 +23,6 @@ public interface EleUserOperateRecordMapper extends BaseMapper<EleUserOperateRec
             @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId, @Param("operateType") Integer operateType);
     
     Integer queryCount(@Param("uid") Long uid, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel,
-            @Param("tenantId") Integer tenantId);
+            @Param("tenantId") Integer tenantId, @Param("operateType") Integer operateType);
     
 }

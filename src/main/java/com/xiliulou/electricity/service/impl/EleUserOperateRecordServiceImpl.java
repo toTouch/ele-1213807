@@ -43,9 +43,9 @@ public class EleUserOperateRecordServiceImpl extends ServiceImpl<EleUserOperateR
     
     @Slave
     @Override
-    public R queryCount(Long uid, Long beginTime, Long enTime, Integer operateModel) {
+    public R queryCount(Long uid, Long beginTime, Long enTime, Integer operateModel, Integer operateType) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(eleUserOperateRecordMapper.queryCount(uid, beginTime, enTime, operateModel, tenantId));
+        return R.ok(eleUserOperateRecordMapper.queryCount(uid, beginTime, enTime, operateModel, tenantId, operateType));
     }
     
     @Override

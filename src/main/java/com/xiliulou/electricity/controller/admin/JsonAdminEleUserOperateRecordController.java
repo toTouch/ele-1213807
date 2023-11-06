@@ -61,8 +61,9 @@ public class JsonAdminEleUserOperateRecordController {
     @GetMapping(value = "/admin/eleUserOperateRecord/queryCount")
     @Deprecated
     public R queryCount(@RequestParam(value = "uid") Long uid, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "operateModel", required = false) Integer operateModel) {
-        return eleUserOperateRecordService.queryCount(uid, beginTime, endTime, operateModel);
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "operateModel", required = false) Integer operateModel,
+            @RequestParam(value = "type", required = false) Integer operateType) {
+        return eleUserOperateRecordService.queryCount(uid, beginTime, endTime, operateModel, operateType);
     }
     
     
