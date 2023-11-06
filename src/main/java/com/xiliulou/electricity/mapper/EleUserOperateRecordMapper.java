@@ -17,11 +17,12 @@ import java.util.List;
  * @since 2022-07-12 14:44:12
  */
 public interface EleUserOperateRecordMapper extends BaseMapper<EleUserOperateRecord> {
-
-
-    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId);
-
-    Integer queryCount(@Param("uid") Long uid, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId);
-
-
+    
+    
+    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("beginTime") Long beginTime,
+            @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId, @Param("operateType") Integer operateType);
+    
+    Integer queryCount(@Param("uid") Long uid, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel,
+            @Param("tenantId") Integer tenantId);
+    
 }

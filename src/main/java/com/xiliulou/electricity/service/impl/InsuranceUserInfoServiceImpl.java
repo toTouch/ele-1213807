@@ -748,6 +748,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOldCarInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
             record.setNewCarInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
         }
+        eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         
         return R.ok();
     }
