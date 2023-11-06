@@ -350,5 +350,12 @@
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
     </insert>
-
+    
+    
+    <select id="selectListRentalPackageOrdersByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </select>
 </mapper>
