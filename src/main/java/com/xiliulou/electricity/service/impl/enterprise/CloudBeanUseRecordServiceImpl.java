@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -240,6 +241,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return result;
         }
     
+        Map<String, AnotherPayMembercardRecord> payMembercardRecordMap = anotherPayMembercardRecords.stream().collect(Collectors.toMap(AnotherPayMembercardRecord::getOrderId, entity -> entity));
+    
         //套餐总的云豆数
         BigDecimal totalCloudBean = BigDecimal.ZERO;
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
@@ -269,7 +272,14 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 if(ObjectUtil.equal( enterpriseRentRecord.getRentMembercardOrderId(), enterpriseRentRecord.getReturnMembercardOrderId())){
                     ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                     if (Objects.nonNull(electricityMemberCardOrder)) {
-                        long useDays = DateUtils.diffDay(enterpriseRentRecord.getRentTime(), enterpriseRentRecord.getReturnTime());
+    
+                        AnotherPayMembercardRecord payMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(),null);
+    
+                        Long beginTime = enterpriseRentRecord.getRentTime();
+    
+                        Long endTime = Objects.nonNull(payMembercardRecord) && Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > payMembercardRecord.getEndTime() ? payMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
+    
+                        long useDays = DateUtils.diffDay(beginTime , endTime);
             
                         //退电套餐单价
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
@@ -278,7 +288,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     }
                 } else {
                     //租电套餐消耗的云豆
-                    AnotherPayMembercardRecord rentAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getRentMembercardOrderId());
+                    AnotherPayMembercardRecord rentAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(),null);
                     ElectricityMemberCardOrder rentElectricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                     if (Objects.nonNull(rentAnotherPayMembercardRecord) && Objects.nonNull(rentElectricityMemberCardOrder)) {
                         //单价
@@ -308,16 +318,20 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     }
     
                     //退电消耗的云豆
-                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService
-                            .selectByOrderId(enterpriseRentRecord.getReturnMembercardOrderId());
+                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getReturnMembercardOrderId(), null);
                     ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService
                             .selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());
                     if (Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnElectricityMemberCardOrder)) {
                         //单价
                         BigDecimal price = returnElectricityMemberCardOrder.getPayAmount()
                                 .divide(BigDecimal.valueOf(returnElectricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
+                        
+                        Long beginTime = returnAnotherPayMembercardRecord.getBeginTime();
+    
+                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
+    
                         //使用天数
-                        long useDays = DateUtils.diffDay(returnAnotherPayMembercardRecord.getBeginTime(), enterpriseRentRecord.getReturnTime());
+                        long useDays = DateUtils.diffDay( beginTime, endTime);
         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
                         log.info("RECYCLE BATTERY MEMBERCARD INFO!returnUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
