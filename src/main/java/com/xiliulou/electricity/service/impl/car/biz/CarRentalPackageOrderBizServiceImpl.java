@@ -852,12 +852,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 7）无须唤起支付，走支付回调的逻辑，抽取方法，直接调用
             handBuyRentalPackageOrderSuccess(carRentalPackageOrder.getOrderNo(), tenantId, uid, null);
             
-            // 添加押金操作记录
-            EleUserOperateRecord depositRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
-                    .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-                    .newCarDeposit(isFirstBuy && Objects.nonNull(memberTermEntity) ? memberTermEntity.getDeposit() : null).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
-                    .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();// 添加押金操作记录
-            eleUserOperateRecordService.asyncHandleUserOperateRecord(depositRecord);
+            //第一次绑定套餐时添加押金操作记录
+            if(isFirstBuy){
+                EleUserOperateRecord depositRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                        .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                        .newCarDeposit(buyOptModel.getDeposit()).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR)
+                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();// 添加押金操作记录
+                eleUserOperateRecordService.asyncHandleUserOperateRecord(depositRecord);
+            }
             
             CarRentalPackageMemberTermPo newMemberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             
