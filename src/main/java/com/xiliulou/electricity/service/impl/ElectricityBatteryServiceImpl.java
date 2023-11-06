@@ -885,6 +885,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     /**
+     * 更新电池绑定的用户
+     *
+     * @param guessUid
+     * @return
+     */
+    @Override
+    public List<ElectricityBattery> listBatteryByGuessUid(Long guessUid) {
+        return electricitybatterymapper.selectListBatteryByGuessUid(guessUid);
+    }
+    
+    @Override
+    public Integer batchUpdateBatteryGuessUid(List<Long> batteryIdList, Long guessUid) {
+        return electricitybatterymapper.batchUpdateBatteryGuessUid(batteryIdList, guessUid);
+    }
+    
+    /**
      * 更新电池状态
      *
      * @param electricityBattery

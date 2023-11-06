@@ -1083,6 +1083,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             notBindOldElectricityBattery.setUid(null);
             notBindOldElectricityBattery.setBorrowExpireTime(null);
             notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
         
@@ -1129,6 +1130,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setElectricityCabinetName(null);
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
             
             return null;
@@ -1254,6 +1256,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setUid(null);
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setBindTime(System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(electricityBattery);
         
         //生成后台操作记录

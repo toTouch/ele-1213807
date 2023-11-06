@@ -263,6 +263,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
+        battery.setGuessUid(null);
         battery.setHealthStatus(eleBatteryVO.getHealth());
         battery.setChargeStatus(eleBatteryVO.getChargeStatus());
 

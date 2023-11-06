@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryOtherPropertiesMapper">
+  <select id="selectBatteryOtherPropertiesList" resultType="com.xiliulou.electricity.entity.BatteryOtherProperties">
+      select battery_name, battery_v from t_battery_other_properties
+      <where>
+          battery_name in
+          <foreach collection="snList" item="sn" open="(" close=")" separator=",">
+              #{sn}
+          </foreach>
+      </where>
+  </select>
+  
+</mapper>
