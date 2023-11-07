@@ -38,12 +38,7 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        //获取柜机的扩展参数
-        ElectricityCabinetExtendDataVO extendsDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), ElectricityCabinetExtendDataVO.class);
-        if (Objects.nonNull(extendsDataVO)) {
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinet.getId(), extendsDataVO);
-        }
-        
+      
         executorService.execute(() -> {
             if (StringUtils.isEmpty(receiverMessage.getVersion())) {
                 return;
