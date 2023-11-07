@@ -1093,6 +1093,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             notBindOldElectricityBattery.setUid(null);
             notBindOldElectricityBattery.setBorrowExpireTime(null);
             notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
     
@@ -1138,6 +1139,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setElectricityCabinetName(null);
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
     
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
@@ -1273,6 +1275,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setUid(null);
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setBindTime(System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(electricityBattery);
     
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());

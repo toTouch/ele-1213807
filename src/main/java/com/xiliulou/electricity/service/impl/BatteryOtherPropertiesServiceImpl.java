@@ -88,7 +88,12 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		batteryOtherPropertiesQuery.setBatteryCoreVList(JsonUtil.fromJson(batteryOtherProperties.getBatteryCoreVList(),List.class));
 		return R.ok(batteryOtherPropertiesQuery);
 	}
-
+	
+	@Override
+	public List<BatteryOtherProperties> listBatteryOtherPropertiesBySn(List<String> snList) {
+		return batteryOtherPropertiesMapper.selectBatteryOtherPropertiesList(snList);
+	}
+	
 	@Override
 	@Slave
 	public BatteryOtherProperties selectByBatteryName(String sn) {

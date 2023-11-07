@@ -11,10 +11,12 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -129,6 +131,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 新增数据
@@ -417,6 +422,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 //        eleRefundOrderUpdate.setRefundAmount(refundAmount);
 //        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
 //        eleRefundOrderService.update(eleRefundOrderUpdate);
+    
+        //修改企业用户代付状态为已过期
+        enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
 
         //退款0元
         if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
@@ -624,6 +632,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
 
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+    
+            //修改企业用户代付状态为代付过期
+            enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
 
             return Triple.of(true, "", "免押解冻成功");
         }
@@ -1179,6 +1190,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             //删除用户电池服务费
             serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+    
+            //修改企业用户代付状态为代付过期
+            enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
 
             return Triple.of(true, "", null);
         }
@@ -1797,6 +1811,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
+    
+        //修改企业用户代付状态为代付过期
+        enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单

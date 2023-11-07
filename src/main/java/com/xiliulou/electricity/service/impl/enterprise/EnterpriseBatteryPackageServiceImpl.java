@@ -2013,6 +2013,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
         }
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+    
+        //用户电池型号
+        enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
         
         //查询骑手续费方式
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
@@ -2074,9 +2077,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
         enterpriseUserPackageDetailsVO.setRentUnit(batteryMemberCard.getRentUnit());
         enterpriseUserPackageDetailsVO.setLimitCount(batteryMemberCard.getLimitCount());
-        
-        //用户电池型号
-        enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
         
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
     }
@@ -2260,7 +2260,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 //设置企业代付时间
                 enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
                 
-                //此时用户无绑定电池信息
             } else {
                 enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
                 enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
@@ -2278,15 +2277,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
                 }
                 
-                //设置用户电池伏数
-                enterprisePackageOrderVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(enterprisePackageOrderVO.getUid()));
-                
-                //设置电池编码
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(enterprisePackageOrderVO.getUid());
-                if (Objects.nonNull(electricityBattery)) {
-                    enterprisePackageOrderVO.setBatterySn(electricityBattery.getSn());
-                }
-                
+            }
+    
+            //查看此时用户有无绑定电池信息，若存在续租的线上套餐，则存在电池信息
+            //设置用户电池伏数
+            enterprisePackageOrderVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(enterprisePackageOrderVO.getUid()));
+    
+            //设置电池编码
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(enterprisePackageOrderVO.getUid());
+            if (Objects.nonNull(electricityBattery)) {
+                enterprisePackageOrderVO.setBatterySn(electricityBattery.getSn());
             }
             
             //设置可回收云豆信息
