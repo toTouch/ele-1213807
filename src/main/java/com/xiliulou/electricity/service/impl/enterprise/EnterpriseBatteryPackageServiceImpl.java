@@ -2013,6 +2013,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
         }
         enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+    
+        //用户电池型号
+        enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
         
         //查询骑手续费方式
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
@@ -2074,9 +2077,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setMemberCardName(batteryMemberCard.getName());
         enterpriseUserPackageDetailsVO.setRentUnit(batteryMemberCard.getRentUnit());
         enterpriseUserPackageDetailsVO.setLimitCount(batteryMemberCard.getLimitCount());
-        
-        //用户电池型号
-        enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
         
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
     }

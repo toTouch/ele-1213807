@@ -95,4 +95,6 @@ public interface EnterpriseChannelUserService {
     Triple<Boolean, String, Object> enterpriseChannelUserSearch(EnterpriseChannelUserQuery query);
     
     int updatePaymentStatusByUid(Long uid, Integer paymentStatus);
+    
+    void updatePaymentStatusForRefundDeposit(Long uid, Integer paymentStatus);
 }

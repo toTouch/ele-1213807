@@ -426,6 +426,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updatePaymentStatusByUid(Long uid, Integer paymentStatus) {
         log.info("update payment status by uid, uid = {}, payment status = {}", uid, paymentStatus);
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
@@ -434,6 +435,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
         return enterpriseChannelUserMapper.updateChannelUserByUid(enterpriseChannelUser);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePaymentStatusForRefundDeposit(Long uid, Integer paymentStatus) {
+        log.info("update payment status for refund deposit, uid = {}, payment status = {}", uid, paymentStatus);
+        EnterpriseChannelUser enterpriseChannelUser = this.selectByUid(uid);
+        if(Objects.isNull(enterpriseChannelUser)){
+            return;
+        }
+        updatePaymentStatusByUid(uid, paymentStatus);
     }
     
     @Override
