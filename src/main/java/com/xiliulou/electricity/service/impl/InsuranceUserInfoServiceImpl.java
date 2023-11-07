@@ -590,7 +590,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100309", "用户未购买保险");
         }
         
-        InsuranceUserInfoVo oldInsuranceUserInfo = queryByUidAndTenantId(query.getUid(), TenantContextHolder.getTenantId());
+        InsuranceUserInfoVo oldInsuranceUserInfo = selectUserInsurance(query.getUid(), query.getType());
         
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
