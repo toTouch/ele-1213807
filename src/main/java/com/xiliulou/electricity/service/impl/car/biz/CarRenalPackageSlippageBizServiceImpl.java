@@ -110,6 +110,10 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             log.warn("clearSlippage, not found t_car_rental_package_order_slippage. uid is {}", uid);
             return true;
         }
+        
+        //获取滞纳金金额
+        BigDecimal lateFeeAmount = queryCarPackageUnpaidAmountByUid(tenantId, uid);
+        
         // 查询会员详情
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
@@ -129,9 +133,6 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             }
             saveClearSlippageTx(slippageEntityList, freezeEntity, optUid, memberTermEntity);
         }
-        
-        //获取滞纳金金额
-        BigDecimal lateFeeAmount = queryCarPackageUnpaidAmountByUid(tenantId, uid);
         
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
                 .operateContent(UserOperateRecordConstant.CLEAN_CAR_SERVICE_FEE).operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).operateUid(optUid).uid(uid).name(userName)
