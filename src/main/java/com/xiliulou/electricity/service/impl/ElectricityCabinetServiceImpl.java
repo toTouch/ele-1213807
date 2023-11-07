@@ -4190,7 +4190,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        if(OtaConstant.OTA_TYPE_DOWNLOAD > operateType || OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE < operateType) {
+        if (OtaConstant.OTA_TYPE_DOWNLOAD > operateType || OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE < operateType) {
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}", electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
@@ -4201,7 +4201,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR!  electricityCabinet is not version ！eid={}", eid);
             return R.fail("100312", "柜机暂无版本号，无法ota升级");
         }
-    
+        
         // 版本号前缀：旧版（大于等于50）、新版（小于10）、六合一版（大于等于10且小于20）
         String sessionPrefix = getSessionPrefix(operateType, versionType, versionPrefix);
         String sessionId = sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
