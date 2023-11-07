@@ -2162,6 +2162,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("ELE WARN!not found userInfo,uid={}", SecurityUtils.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
         // 1. 查询会员期限信息
         CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTerm) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTerm.getStatus())) {
@@ -2252,6 +2258,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         //设置还车拒绝原因
         rentalPackageVO.setRejectReasonForReturnVehicle(rejectReasonForReturnVehicle);
+        rentalPackageVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         
         return R.ok(rentalPackageVO);
     }
