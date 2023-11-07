@@ -171,6 +171,8 @@ public class EleUserOperateRecord {
     
     private BigDecimal batteryServiceFee;
     
+    private BigDecimal carServiceFee;
+    
     private String oldMemberCard;
     
     private String newMemberCard;

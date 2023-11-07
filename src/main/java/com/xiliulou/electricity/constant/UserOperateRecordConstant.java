@@ -33,6 +33,11 @@ public interface UserOperateRecordConstant {
     Integer RENEWAL_CAR_INSURANCE_CONTENT = 16;
     
     /**
+     * 清除车辆服务费
+     */
+    Integer CLEAN_CAR_SERVICE_FEE=17;
+    
+    /**
      * 0--正常  1--暂停
      */
     Integer CAR_MEMBER_CARD_ENABLE = 0;
@@ -50,5 +55,5 @@ public interface UserOperateRecordConstant {
     /**
      * 不限制次數
      */
-    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
+    Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 }

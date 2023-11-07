@@ -143,7 +143,7 @@ public class JsonAdminUserInfoV2Controller {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(carRenalPackageSlippageBizService.clearSlippage(tenantId, uid, user.getUid()));
+        return R.ok(carRenalPackageSlippageBizService.clearSlippage(tenantId, uid, user.getUid(), user.getUsername()));
     }
 
     /**
