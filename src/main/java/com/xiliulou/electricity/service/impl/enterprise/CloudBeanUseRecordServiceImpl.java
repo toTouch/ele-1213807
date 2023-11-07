@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -232,6 +234,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             return result;
         }
     
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if(Objects.isNull(eleDepositOrder)){
+            log.warn("ACQUIRE CAN RECYCLE WARN!not found eleDepositOrder,uid={}", uid);
+            return result;
+        }
+    
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if(Objects.isNull(userBatteryMemberCard)){
             log.warn("ACQUIRE CAN RECYCLE WARN!not found userBatteryMemberCard,uid={}", uid);
@@ -239,7 +247,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         }
     
         //押金云豆数
-        result = result.add(userBatteryDeposit.getBatteryDeposit());
+        if (Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+            result = result.add(eleDepositOrder.getPayAmount());
+        }
     
         //代付套餐记录
         List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(userInfo.getUid());

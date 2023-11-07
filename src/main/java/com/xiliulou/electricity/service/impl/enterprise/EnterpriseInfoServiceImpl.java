@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -47,6 +49,7 @@ import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -193,6 +196,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Autowired
     private EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Autowired
+    private EleDepositOrderService eleDepositOrderService;
     
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
@@ -654,10 +660,10 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.warn("RECYCLE WARN! user not pay deposit,uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0049", "未缴纳押金");
-        }
+//        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+//            log.warn("RECYCLE WARN! user not pay deposit,uid={}", uid);
+//            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+//        }
         
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.warn("RECYCLE WARN! user rent battery,uid={}", uid);
@@ -704,17 +710,17 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             log.error("RECYCLE CLOUD BEAN ERROR! not found enterpriseInfo,enterpriseId={},uid={}", enterpriseChannelUser.getEnterpriseId(), uid);
             return Triple.of(false, "ELECTRICITY.0019", "企业信息不存在");
         }
+    
+        //回收押金
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDeposit(userInfo, enterpriseInfo);
+        if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
+            return batteryDepositTriple;
+        }
         
         //回收套餐
         Triple<Boolean, String, Object> membercardTriple = recycleBatteryMembercard(userInfo, enterpriseInfo, userBatteryMemberCard);
         if (Boolean.FALSE.equals(membercardTriple.getLeft())) {
             return membercardTriple;
-        }
-        
-        //回收押金
-        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDeposit(userInfo, enterpriseInfo);
-        if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
-            return batteryDepositTriple;
         }
         
         //解绑用户相关信息
@@ -1040,6 +1046,16 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("RECYCLE BATTERY DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
             return Triple.of(false, "100247", "用户信息不存在");
+        }
+    
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if(Objects.isNull(eleDepositOrder)){
+            log.warn("RECYCLE BATTERY DEPOSIT WARN!not found eleDepositOrder,uid={}", userInfo.getUid());
+            return Triple.of(false, "100221", "未找到订单");
+        }
+        
+        if(!Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())){
+            return Triple.of(true, null, BigDecimal.ZERO);
         }
         
         enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(userBatteryDeposit.getBatteryDeposit()));
