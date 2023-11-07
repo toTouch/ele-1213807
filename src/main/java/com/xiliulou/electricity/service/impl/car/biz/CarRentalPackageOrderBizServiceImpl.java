@@ -880,10 +880,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             
+            Long confineNum = carRentalPackageOrderService.sumConfineNumByUid(uid);
+            
+            //设置操作前套餐的使用次数
+            if (Objects.nonNull(memberTermEntity)) {
+                if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
+                    rentalOrderRecord.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
+                } else {
+                    rentalOrderRecord.setOldMaxUseCount(
+                            Objects.nonNull(confineNum) && Objects.nonNull(memberTermEntity.getResidue()) ? Long.valueOf(confineNum + memberTermEntity.getResidue())
+                                    : memberTermEntity.getResidue());
+                }
+            }
+            
             //设置套餐记录的限次 不限次
             if (Objects.nonNull(newMemberTerm) && RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) && RenalPackageConfineEnum.NUMBER.getCode()
                     .equals(newMemberTerm.getRentalPackageConfine())) {
-                rentalOrderRecord.setNewMaxUseCount(newMemberTerm.getResidue());
+                rentalOrderRecord.setNewMaxUseCount(
+                        Objects.nonNull(confineNum) && Objects.nonNull(newMemberTerm.getResidue()) ? Long.valueOf(confineNum + newMemberTerm.getResidue())
+                                : newMemberTerm.getResidue());
             } else {
                 rentalOrderRecord.setNewMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
             }
