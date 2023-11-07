@@ -2005,6 +2005,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         enterpriseUserPackageDetailsVO.setName(userInfo.getName());
         enterpriseUserPackageDetailsVO.setPhone(userInfo.getPhone());
         enterpriseUserPackageDetailsVO.setIdNumber(userInfo.getIdNumber());
+    
+        //查询用户保险信息
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        if (Objects.nonNull(insuranceUserInfo)) {
+            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+        }
+        enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
         
         //查询骑手续费方式
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(query.getEnterpriseId(), query.getUid());
@@ -2069,14 +2077,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         //用户电池型号
         enterpriseUserPackageDetailsVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
-        
-        //查询用户保险信息
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
-        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
-        if (Objects.nonNull(insuranceUserInfo)) {
-            BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
-        }
-        enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
         
         return Triple.of(true, null, enterpriseUserPackageDetailsVO);
     }

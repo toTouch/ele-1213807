@@ -24,7 +24,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -746,15 +745,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         : String.valueOf(userBatteryDeposit.getDepositType()));
             }
             
-            //判断当前使用套餐的类型
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            //判断押金订单对应的套餐类型
+            EleDepositOrder eleDepositOrder = this.queryByOrderId(userBatteryDeposit.getOrderId());
+            if(Objects.nonNull(eleDepositOrder)){
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(eleDepositOrder.getMid());
                 if (Objects.nonNull(batteryMemberCard)){
                     map.put("currentPackageType", batteryMemberCard.getBusinessType().toString());
                 }
             }
-
+            
             return R.ok(map);
         }
         return R.ok(null);

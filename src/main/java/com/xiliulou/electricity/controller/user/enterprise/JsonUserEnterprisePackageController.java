@@ -150,7 +150,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
-     * 购买套餐前，查询骑手押金状态信息
+     * 购买套餐前，查询骑手押金,保险状态信息
      *
      * @param enterpriseId
      * @param uid
