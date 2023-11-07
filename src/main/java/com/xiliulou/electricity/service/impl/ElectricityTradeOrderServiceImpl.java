@@ -720,7 +720,6 @@ public class ElectricityTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleBatteryServiceFeeOrderUpdate.setPayTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
 
