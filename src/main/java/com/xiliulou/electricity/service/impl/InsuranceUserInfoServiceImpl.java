@@ -616,7 +616,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
-            record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
+            record.setOperateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT);
             record.setOldBatteryInsuranceStatus(oldInsuranceUserInfo.getIsUse());
             record.setNewBatteryInsuranceStatus(updateInsuranceUserInfo.getIsUse());
             record.setOldBatteryInsuranceExpireTime(oldInsuranceUserInfo.getInsuranceExpireTime());
