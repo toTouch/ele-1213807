@@ -549,7 +549,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         //判断是单电的电池操作还是车电一体的电池操作
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.EDIT_BATTERY_INSURANCE_CONTENT);
@@ -613,7 +613,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         //判断是单电的保险操作还是车的保险操作
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
@@ -729,7 +729,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         //判断是单电的保险操作还是车的保险操作
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
