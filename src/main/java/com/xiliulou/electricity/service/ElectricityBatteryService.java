@@ -55,6 +55,10 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
+    
+    List<ElectricityBattery> listBatteryByGuessUid(Long guessUid);
+    
+    Integer batchUpdateBatteryGuessUid(List<Long> batteryIdList,Long guessUid);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
 

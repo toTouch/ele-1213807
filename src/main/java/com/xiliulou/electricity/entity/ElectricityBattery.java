@@ -67,8 +67,17 @@ public class ElectricityBattery {
     private Long borrowExpireTime;
 
     private Integer delFlag;
-
-
+    
+    /**
+     * 电池绑定时间
+     */
+    private Long bindTime;
+    
+    /**
+     * 电池异常交换用户ID
+     */
+    private Long guessUid;
+    
     /**
      * 0：正常 1：故障
      */

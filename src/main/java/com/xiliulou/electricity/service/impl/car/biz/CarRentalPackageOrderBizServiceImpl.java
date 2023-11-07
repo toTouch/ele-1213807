@@ -604,7 +604,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         try {
             // 加锁
-            if (!redisService.setNx(bindingUidLockKey, uid.toString(), 10 * 1000L, false)) {
+            if (!redisService.setNx(bindingUidLockKey, uid.toString(), 5 * 1000L, false)) {
                 throw new BizException("ELECTRICITY.0034", "操作频繁");
             }
             
@@ -847,7 +847,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             log.error("bindingPackage failed. ", e);
             throw new BizException("000001", "系统异常");
         } finally {
-            redisService.delete(bindingUidLockKey);
+            //临时处理重复提交问题
+            //redisService.delete(bindingUidLockKey);
         }
         
         return true;
@@ -2344,7 +2345,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         try {
             // 加锁
-            if (!redisService.setNx(buyLockKey, uid.toString(), 10 * 1000L, false)) {
+            if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
                 return R.fail("ELECTRICITY.0034", "操作频繁");
             }
             
@@ -2680,7 +2681,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             log.error("buyRentalPackageOrder failed. ", e);
             throw new BizException("000001", "系统异常");
         } finally {
-            redisService.delete(buyLockKey);
+            //临时处理重复提交问题
+            //redisService.delete(buyLockKey);
         }
         
     }
