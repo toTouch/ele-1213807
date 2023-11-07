@@ -322,7 +322,8 @@
             teco.new_electricity_battery_sn as newElectricityBatterySn,
             teco.electricity_cabinet_id as electricityCabinetId,
 			tec.name as electricityCabinetName,
-            teco.create_time as createTime
+            teco.create_time as createTime,
+            teco.update_time as updateTime
         from t_electricity_cabinet_order teco
 		left join t_electricity_cabinet tec on tec.id = teco.electricity_cabinet_id
         where teco.uid=#{uid}
