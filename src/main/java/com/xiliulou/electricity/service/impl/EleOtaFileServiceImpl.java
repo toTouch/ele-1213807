@@ -130,7 +130,7 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
     @Override
     public R queryInfo(Integer eid) {
         OtaFileCheckSumVo otaFileCheckSumVo = new OtaFileCheckSumVo();
-
+    
         EleOtaFile eleOtaFile = this.queryByEid(eid);
         if (Objects.nonNull(eleOtaFile)) {
             otaFileCheckSumVo.setSubSha256HexEle(eleOtaFile.getSubSha256Value());
@@ -139,13 +139,13 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
             otaFileCheckSumVo.setSubNameEle(eleOtaFile.getSubName());
             otaFileCheckSumVo.setFileType(eleOtaFile.getFileType());
         }
-        
+    
         OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
         if (Objects.nonNull(coreBoardOtaFileConfig)) {
             otaFileCheckSumVo.setCoreSha256HexCloud(coreBoardOtaFileConfig.getSha256Value());
             otaFileCheckSumVo.setCoreVersionCloud(coreBoardOtaFileConfig.getVersion());
         }
-        
+    
         OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
         if (Objects.nonNull(subBoardOtaFileConfig)) {
             otaFileCheckSumVo.setSubSha256HexCloud(subBoardOtaFileConfig.getSha256Value());
@@ -162,6 +162,18 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
         if (Objects.nonNull(oldSubBoardOtaFileConfig)) {
             otaFileCheckSumVo.setOldSubSha256HexCloud(oldSubBoardOtaFileConfig.getSha256Value());
             otaFileCheckSumVo.setOldSubVersionCloud(oldSubBoardOtaFileConfig.getVersion());
+        }
+    
+        OtaFileConfig sixInOneCoreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD);
+        if (Objects.nonNull(sixInOneCoreBoardOtaFileConfig)) {
+            otaFileCheckSumVo.setSixInOneCoreSha256HexCloud(sixInOneCoreBoardOtaFileConfig.getSha256Value());
+            otaFileCheckSumVo.setSixInOneCoreVersionCloud(sixInOneCoreBoardOtaFileConfig.getVersion());
+        }
+    
+        OtaFileConfig sixInOneSubBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD);
+        if (Objects.nonNull(sixInOneSubBoardOtaFileConfig)) {
+            otaFileCheckSumVo.setSixInOneSubSha256HexCloud(sixInOneSubBoardOtaFileConfig.getSha256Value());
+            otaFileCheckSumVo.setSixInOneSubVersionCloud(sixInOneSubBoardOtaFileConfig.getVersion());
         }
     
         return R.ok(otaFileCheckSumVo);
