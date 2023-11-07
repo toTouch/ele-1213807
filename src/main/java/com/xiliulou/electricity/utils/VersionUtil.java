@@ -20,7 +20,7 @@ public class VersionUtil {
      * @return
      */
     public static int compareVersion(String sourceVersion, String targetVersion) {
-        if (StringUtils.isBlank(sourceVersion) || StringUtils.isBlank(targetVersion) || sourceVersion.equals(targetVersion)) {
+        if (sourceVersion.equals(targetVersion)) {
             return 0;
         }
         
