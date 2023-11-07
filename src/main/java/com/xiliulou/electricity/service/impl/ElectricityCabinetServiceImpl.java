@@ -4190,9 +4190,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        if (!OtaConstant.OTA_TYPE_DOWNLOAD.equals(operateType) && !OtaConstant.OTA_TYPE_SYNC.equals(operateType) && !OtaConstant.OTA_TYPE_UPGRADE.equals(operateType)
-                && !OtaConstant.OTA_SIX_IN_ONE_TYPE_DOWNLOAD.equals(operateType) && !OtaConstant.OTA_SIX_IN_ONE_TYPE_SYNC.equals(operateType)
-                && !OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE.equals(operateType)) {
+        if(OtaConstant.OTA_TYPE_DOWNLOAD > operateType || OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE < operateType) {
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}", electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
@@ -4203,9 +4201,35 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR!  electricityCabinet is not version ！eid={}", eid);
             return R.fail("100312", "柜机暂无版本号，无法ota升级");
         }
-        
-        String sessionPrefix = null;
+    
         // 版本号前缀：旧版（大于等于50）、新版（小于10）、六合一版（大于等于10且小于20）
+        String sessionPrefix = getSessionPrefix(operateType, versionType, versionPrefix);
+        String sessionId = sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
+        
+        Map<String, Object> data = Maps.newHashMap();
+        data.put(OtaConstant.OTA_OPERATE_TYPE, operateType);
+        data.put(OtaConstant.OTA_USERID, user.getUid());
+        data.put(OtaConstant.OTA_USERNAME, user.getName());
+        
+        Triple<Boolean, String, Object> assembleContent = assembleContent(eid, operateType, cellNos, versionType, sessionId);
+        if (Boolean.TRUE.equals(assembleContent.getLeft())) {
+            data.put(OtaConstant.OTA_CONTENT, JsonUtil.toJson(assembleContent.getRight()));
+        }
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data).productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OTA_OPERATE).build();
+        
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        
+        return R.ok(sessionId);
+    }
+    
+    private String getSessionPrefix(Integer operateType, Integer versionType, Integer versionPrefix) {
+        String sessionPrefix = null;
         // 下载时 versionType:1--旧的（版本号>=50.0） 2--新的（版本号<10） 3--六合一（10.0<=版本<20.0）
         // 同步和升级时 versionType=0
         if (OtaConstant.OTA_TYPE_DOWNLOAD.equals(operateType) || OtaConstant.OTA_SIX_IN_ONE_TYPE_DOWNLOAD.equals(operateType)) {
@@ -4232,29 +4256,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 sessionPrefix = OtaConstant.SESSION_PREFIX_OLD;
             }
         }
-        
-        String sessionId = sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
-        
-        Map<String, Object> data = Maps.newHashMap();
-        data.put(OtaConstant.OTA_OPERATE_TYPE, operateType);
-        data.put(OtaConstant.OTA_USERID, user.getUid());
-        data.put(OtaConstant.OTA_USERNAME, user.getName());
-        
-        Triple<Boolean, String, Object> assembleContent = assembleContent(eid, operateType, cellNos, versionType, sessionId);
-        if (Boolean.TRUE.equals(assembleContent.getLeft())) {
-            data.put(OtaConstant.OTA_CONTENT, JsonUtil.toJson(assembleContent.getRight()));
-        }
-        
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data).productKey(electricityCabinet.getProductKey())
-                .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OTA_OPERATE).build();
-        
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        //发送命令失败
-        if (!result.getLeft()) {
-            return R.fail("ELECTRICITY.0037", "发送命令失败");
-        }
-        
-        return R.ok(sessionId);
+        return sessionPrefix;
     }
     
     private Triple<Boolean, String, Object> assembleContent(Integer eid, Integer operateType, List<Integer> cellNos, Integer fileType, String sessionId) {
@@ -4296,7 +4298,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return Triple.of(Boolean.TRUE, null, content);
     }
-    
     
     private void createOrUpdateEleOtaFile(Integer eid, Integer fileType, OtaFileConfig coreBoardOtaFileConfig, OtaFileConfig subBoardOtaFileConfig) {
         EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
