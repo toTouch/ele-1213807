@@ -822,6 +822,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             BigDecimal rentPaymentAmount = buyPackageEntity.getRent();
             log.info("BuyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
             
+            //查询续费套餐前的限制次数
+            Long oldConfineNum = carRentalPackageOrderService.sumConfineNumByUid(uid);
+            
             // 4）生成租车套餐订单，准备 insert
             CarRentalPackageOrderPo carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo, payType, payDeposit);
             carRentalPackageOrderService.insert(carRentalPackageOrder);
@@ -880,7 +883,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             
-            Long confineNum = carRentalPackageOrderService.sumConfineNumByUid(uid);
+            Long newConfineNum = carRentalPackageOrderService.sumConfineNumByUid(uid);
             
             //设置操作前套餐的使用次数
             if (Objects.nonNull(memberTermEntity)) {
@@ -888,7 +891,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     rentalOrderRecord.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
                 } else {
                     rentalOrderRecord.setOldMaxUseCount(
-                            Objects.nonNull(confineNum) && Objects.nonNull(memberTermEntity.getResidue()) ? Long.valueOf(confineNum + memberTermEntity.getResidue())
+                            Objects.nonNull(oldConfineNum) && Objects.nonNull(memberTermEntity.getResidue()) ? Long.valueOf(oldConfineNum + memberTermEntity.getResidue())
                                     : memberTermEntity.getResidue());
                 }
             }
@@ -897,7 +900,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (Objects.nonNull(newMemberTerm) && RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) && RenalPackageConfineEnum.NUMBER.getCode()
                     .equals(newMemberTerm.getRentalPackageConfine())) {
                 rentalOrderRecord.setNewMaxUseCount(
-                        Objects.nonNull(confineNum) && Objects.nonNull(newMemberTerm.getResidue()) ? Long.valueOf(confineNum + newMemberTerm.getResidue())
+                        Objects.nonNull(newConfineNum) && Objects.nonNull(newMemberTerm.getResidue()) ? Long.valueOf(newConfineNum + newMemberTerm.getResidue())
                                 : newMemberTerm.getResidue());
             } else {
                 rentalOrderRecord.setNewMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
