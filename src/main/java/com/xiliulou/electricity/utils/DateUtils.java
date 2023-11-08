@@ -116,6 +116,11 @@ public class DateUtils {
         return days;
     }
     
+    public static long diffDayV2(long beginTime, long endTime) {
+        long days = TimeUnit.MILLISECONDS.toDays((endTime - 1) - beginTime) + 1;
+        return days;
+    }
+    
     /**
      * 判断两个时间段是否有交集
      *
