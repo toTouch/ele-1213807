@@ -366,7 +366,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                     
                     //如果当前套餐是企业套餐，则将该骑手的代付状态更新为代付到期
                     BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-                    if(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                    if(Objects.nonNull(batteryMemberCard) && BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
                         enterpriseChannelUserService.updatePaymentStatusByUid(item.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
                     }
                 }

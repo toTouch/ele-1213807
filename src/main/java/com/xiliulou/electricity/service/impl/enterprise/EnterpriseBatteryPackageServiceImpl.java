@@ -814,7 +814,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             callPxzRsp = pxzDepositService.freeDepositOrder(query);
         } catch (Exception e) {
             log.error("Pxz error fot free battery deposit, freeDepositOrder fail! uid={},orderId={}", freeQuery.getUid(), freeDepositOrder.getOrderId(), e);
-            return Triple.of(false, "3000745", "免押调用失败！");
+            return Triple.of(false, "3000745", "请填写免押骑手用户名/身份证号码/手机号");
         }
         
         if (Objects.isNull(callPxzRsp)) {
@@ -1015,7 +1015,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "用户套餐已冻结");
+                return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
             }
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
@@ -1284,7 +1284,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "用户套餐已冻结");
+                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
@@ -1595,7 +1595,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "用户套餐已冻结");
+                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
