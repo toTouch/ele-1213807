@@ -57,4 +57,6 @@ public interface FreeDepositOrderMapper extends BaseMapper<FreeDepositOrder> {
     int deleteById(Long id);
 
     Integer selectByPageCount(FreeDepositOrderQuery query);
+    
+    List<FreeDepositOrder> selectEnterpriseRefundingOrder(@Param("offset") int offset, @Param("size") Integer size);
 }
