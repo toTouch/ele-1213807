@@ -1015,7 +1015,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "用户套餐已冻结");
+                return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
             }
     
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
@@ -1284,7 +1284,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "用户套餐已冻结");
+                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
@@ -1595,7 +1595,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if(Objects.nonNull(userBatteryMemberCard)){
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                    return Triple.of(false, "300070", "用户套餐已冻结");
+                    return Triple.of(false, "300070", "该骑手套餐已暂停，无法代付，请联系骑手启用后操作");
                 }
     
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
