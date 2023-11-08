@@ -557,7 +557,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         List<CloudBeanUseRecord> list = cloudBeanUseRecordMapper.selectByTime(beginTime, endTime, enterpriseInfo.getId());
         if (CollectionUtils.isEmpty(list)) {
             log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! list is empty,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100316", "云豆账单为空!");
+            return Triple.of(false, "100316", "所选时间段内无可用账单数据，无法下载");
         }
         
         List<CloudBeanOrderExcelVO> cloudBeanOrderExcelVOList = new ArrayList<>();

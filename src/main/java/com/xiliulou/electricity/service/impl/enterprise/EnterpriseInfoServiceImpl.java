@@ -678,7 +678,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.warn("RECYCLE WARN! user's member card is stop,uid={}", uid);
-            return Triple.of(false, "100211", "用户套餐已暂停");
+            return Triple.of(false, "100211", "该骑手套餐已暂停，无法回收云豆，请联系骑手启用后操作");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
