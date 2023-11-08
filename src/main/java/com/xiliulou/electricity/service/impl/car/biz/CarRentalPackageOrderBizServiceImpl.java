@@ -2322,7 +2322,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         //设置剩余总次数
         Long residue = memberTerm.getResidue();
-        if (Objects.nonNull(confineNum)) {
+        if (Objects.nonNull(confineNum) && Objects.nonNull(residue)) {
             residue += confineNum;
         }
         carRentalPackageOrderVO.setResidueNum(residue);
