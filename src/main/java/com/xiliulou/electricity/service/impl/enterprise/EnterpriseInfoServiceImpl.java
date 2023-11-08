@@ -868,6 +868,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             if (Objects.nonNull(enterpriseRentRecord.getRentTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime())) {
                 //租退电是否在同一个套餐内
                 if (ObjectUtil.equal(enterpriseRentRecord.getRentMembercardOrderId(), enterpriseRentRecord.getReturnMembercardOrderId())) {
+                    AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getReturnMembercardOrderId(), null);
+    
                     //当前套餐租退电总消耗时间
                     long totalUseDay = 0L;
                     
@@ -876,7 +878,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     if (!CollectionUtils.isEmpty(rentRecordList)) {
                         for (EnterpriseRentRecord rentRecord : rentRecordList) {
                             Long beginTime = rentRecord.getRentTime();
-                            Long endTime = Objects.nonNull(rentRecord.getReturnTime()) && rentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : rentRecord.getReturnTime();
+                            Long endTime = Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime()) && Objects.nonNull(rentRecord.getReturnTime()) && rentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : rentRecord.getReturnTime();
                             totalUseDay = totalUseDay + DateUtils.diffDay(beginTime, endTime);
                             
                             ids.add(rentRecord.getId());
@@ -888,7 +890,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
                     if (Objects.nonNull(electricityMemberCardOrder)) {
                         
-                        //退电套餐单价
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
                         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(totalUseDay)));
@@ -982,7 +983,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         
                         Long beginTime = returnAnotherPayMembercardRecord.getBeginTime();
     
-                        Long endTime =  Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : enterpriseRentRecord.getReturnTime();
+                        Long endTime =  Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
     
                         //使用天数
                         long useDays = DateUtils.diffDay( beginTime, endTime);

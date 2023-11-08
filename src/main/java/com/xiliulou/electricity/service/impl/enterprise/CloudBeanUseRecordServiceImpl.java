@@ -288,10 +288,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 if(ObjectUtil.equal( enterpriseRentRecord.getRentMembercardOrderId(), enterpriseRentRecord.getReturnMembercardOrderId())){
                     ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(enterpriseRentRecord.getRentMembercardOrderId());
                     if (Objects.nonNull(electricityMemberCardOrder)) {
-                        
+                        AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getRentMembercardOrderId(), null);
+    
                         Long beginTime = enterpriseRentRecord.getRentTime();
     
-                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : enterpriseRentRecord.getReturnTime();
+                        Long endTime = Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime())&& Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
     
                         long useDays = DateUtils.diffDay(beginTime , endTime);
             
@@ -342,7 +343,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         
                         Long beginTime = returnAnotherPayMembercardRecord.getBeginTime();
     
-                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > userBatteryMemberCard.getMemberCardExpireTime() ? userBatteryMemberCard.getMemberCardExpireTime() : enterpriseRentRecord.getReturnTime();
+                        Long endTime = Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
     
                         //使用天数
                         long useDays = DateUtils.diffDay( beginTime, endTime);
