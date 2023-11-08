@@ -7,6 +7,8 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -19,8 +21,10 @@ import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -55,8 +59,10 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -82,9 +88,15 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
+import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -118,6 +130,8 @@ import java.util.stream.Collectors;
 @Service("enterpriseInfoService")
 @Slf4j
 public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
+    
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("CLOUD-BEAN-RECYCLE-POOL", 1, "unFreeDepositOrder:");
     
     @Resource
     private EnterpriseInfoMapper enterpriseInfoMapper;
@@ -202,6 +216,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
+    @Autowired
+    private FreeDepositOrderService freeDepositOrderService;
+    
+    @Autowired
+    private PxzConfigService pxzConfigService;
+    
+    @Autowired
+    private PxzDepositService pxzDepositService;
     
     
     /**
@@ -1088,6 +1111,64 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         //记录企业用户退押记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRefundDeposit(userInfo.getUid(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder);
+        
+        if(!Objects.equals( eleDepositOrder.getPayType(),EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+            return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
+        }
+    
+        threadPool.execute(() -> {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+            if (Objects.isNull(freeDepositOrder)) {
+                log.error("RECYCLE BATTERY DEPOSIT ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+                return;
+            }
+        
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+                log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
+                return;
+            }
+        
+            PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
+            testQuery.setAesSecret(pxzConfig.getAesKey());
+            testQuery.setDateTime(System.currentTimeMillis());
+            testQuery.setSessionId(eleRefundOrder.getOrderId());
+            testQuery.setMerchantCode(pxzConfig.getMerchantCode());
+        
+            PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+            queryRequest.setRemark("电池押金解冻");
+            queryRequest.setTransId(freeDepositOrder.getOrderId());
+            testQuery.setData(queryRequest);
+        
+            PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
+        
+            try {
+                pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
+            } catch (Exception e) {
+                log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
+                return;
+            }
+        
+            if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
+                log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
+                return;
+            }
+        
+            if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
+                log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={},result={}", userInfo.getUid(), freeDepositOrder.getOrderId(),
+                        pxzUnfreezeDepositCommonRsp.getRespDesc());
+                return;
+            }
+        
+            if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
+                //更新免押订单状态
+                FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+                freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositOrderService.update(freeDepositOrderUpdate);
+            }
+        });
         
         return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
     }
