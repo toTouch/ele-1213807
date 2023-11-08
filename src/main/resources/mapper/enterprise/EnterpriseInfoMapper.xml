@@ -109,7 +109,7 @@
         <where>
         tei.del_flag=0
         <if test="name != null and name != ''">
-            and tei.name = #{name}
+            and tei.name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         <if test="franchiseeId != null">
             and tei.franchisee_id = #{franchiseeId}
