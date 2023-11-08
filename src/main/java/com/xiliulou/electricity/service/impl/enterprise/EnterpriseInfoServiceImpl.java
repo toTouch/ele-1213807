@@ -1164,7 +1164,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 //更新免押订单状态
                 FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
                 freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
                 freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
                 freeDepositOrderService.update(freeDepositOrderUpdate);
             }
