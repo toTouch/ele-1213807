@@ -1122,6 +1122,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 log.error("RECYCLE BATTERY DEPOSIT ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
                 return;
             }
+    
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
         
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -1162,11 +1169,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
             if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
                 //更新免押订单状态
-                FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-                freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
-                freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositOrderService.update(freeDepositOrderUpdate);
+                FreeDepositOrder updateFreeDepositOrder = new FreeDepositOrder();
+                updateFreeDepositOrder.setId(freeDepositOrder.getId());
+                updateFreeDepositOrder.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+                updateFreeDepositOrder.setUpdateTime(System.currentTimeMillis());
+                freeDepositOrderService.update(updateFreeDepositOrder);
             }
         });
         
