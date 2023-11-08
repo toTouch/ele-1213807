@@ -1211,7 +1211,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanGeneralViewVO.setRecycleMembercard(0);
             cloudBeanGeneralViewVO.setRecycleUser(0L);
         } else {
-            cloudBeanGeneralViewVO.setRecycleCloudBean(recycleRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum());
+            double sum = recycleRecords.stream().mapToDouble(item -> item.getBeanAmount().doubleValue()).sum();
+            cloudBeanGeneralViewVO.setRecycleCloudBean(BigDecimal.valueOf(sum).setScale(2, RoundingMode.HALF_UP).doubleValue());
             cloudBeanGeneralViewVO.setRecycleMembercard(
                     (int) recycleRecords.stream().filter(item -> Objects.equals(CloudBeanUseRecord.ORDER_TYPE_BATTERY_MEMBERCARD, item.getOrderType())).count());
             cloudBeanGeneralViewVO.setRecycleUser(recycleRecords.stream().map(CloudBeanUseRecord::getUid).distinct().count());
@@ -1235,7 +1236,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             for (AnotherPayMembercardRecord anotherPayMembercardRecord : recycleList) {
                 canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
             }
-            cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.doubleValue());
+            cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.setScale(2, RoundingMode.HALF_UP).doubleValue());
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
