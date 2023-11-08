@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord" id="CloudBeanUseRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="orderType" column="order_type" jdbcType="INTEGER"/>
+        <result property="beanAmount" column="bean_amount" jdbcType="NUMERIC"/>
+        <result property="remainingBeanAmount" column="remaining_bean_amount" jdbcType="NUMERIC"/>
+        <result property="packageId" column="package_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="ref" column="ref" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where id = #{id}
+    </select>
+    
+    <select id="selectCloudBeanByEnterpriseIdAndType" resultType="double">
+        select IFNULL(sum(bean_amount),0)
+        from t_cloud_bean_use_record
+        where enterprise_id = #{enterpriseId} and type=#{type}
+    </select>
+    
+    <select id="selectByEnterpriseIdAndType" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where enterprise_id = #{enterpriseId} and type=#{type}
+    </select>
+    
+    <select id="selectByTime" resultMap="CloudBeanUseRecordMap">
+        select
+          id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        where enterprise_id = #{enterpriseId} and create_time &gt;= #{beginTime} and  create_time &lt;= #{endTime}
+    </select>
+    
+    <select id="selectCanRecycleRecord" resultMap="CloudBeanUseRecordMap">
+        SELECT
+	        cbur.id,
+	        cbur.enterprise_id,
+	        cbur.uid,
+	        cbur.type,
+	        cbur.bean_amount,
+	        cbur.remaining_bean_amount,
+	        cbur.package_id,
+	        cbur.franchisee_id,
+	        cbur.ref,
+	        cbur.tenant_id,
+	        cbur.create_time,
+	        cbur.update_time
+        FROM
+	        t_cloud_bean_use_record cbur
+	        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = cbur.uid
+        WHERE
+            cbur.enterprise_id = #{enterpriseId} and ubmc.member_card_expire_time &lt;= #{currentTimeMillis}
+    </select>
+    
+    <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
+        select
+        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        from t_cloud_bean_use_record
+        <where>
+            <if test="startTime != null">
+                and create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_cloud_bean_use_record
+        <set>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="ref != null">
+                ref = #{ref},
+            </if>
+            <if test="beanAmount != null">
+                bean_amount = #{beanAmount},
+            </if>
+            <if test="remainingBeanAmount != null">
+                remaining_bean_amount = #{remainingBeanAmount},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_cloud_bean_use_record where id = #{id}
+    </delete>
+
+</mapper>

@@ -19,6 +19,8 @@ public enum BusinessType {
     BATTERY_DEPOSIT(15),
     //电池退押审核订单
     BATTERY_DEPOSIT_REFUND(16),
+    //企业渠道换电套餐订单
+    ENTERPRISE_BATTERY_PACKAGE(17),
 
 
     //租车套餐订单
@@ -60,7 +62,9 @@ public enum BusinessType {
     //分帐订单
     DIVIDE_ACCOUNT(60),
     //提现订单
-    WITHDRAW(61);
+    WITHDRAW(61),
+
+    CLOUD_BEAN(62);
 
     private final Integer business;
 

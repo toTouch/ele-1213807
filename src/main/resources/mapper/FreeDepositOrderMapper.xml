@@ -138,6 +138,29 @@
             </foreach>
         </if>
     </select>
+    
+
+    <select id="selectEnterpriseRefundingOrder" resultMap="FreeDepositOrderMap">
+        select
+        fdo.id,
+        fdo.uid,
+        fdo.order_id,
+        fdo.auth_no,
+        fdo.phone,
+        fdo.id_card,
+        fdo.real_name,
+        fdo.trans_amt,
+        fdo.pay_trans_amt,
+        fdo.auth_status,
+        fdo.pay_status,
+        fdo.tenant_id,
+        fdo.type,
+        fdo.deposit_type,
+        fdo.create_time,
+        fdo.update_time
+        from t_free_deposit_order fdo left join t_ele_deposit_order edo on edo.order_id=fdo.order_id where fdo.auth_status=11 and edo.order_type=1
+        limit #{offset},#{size}
+    </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="FreeDepositOrderMap">

@@ -10,7 +10,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EnableMemberCardRecord">
         select id
-        ,user_name,phone,member_card_name,enable_type,disable_days,battery_service_fee_status,disable_member_card_no
+        ,user_name,phone,member_card_name,member_card_id,enable_type,disable_days,battery_service_fee_status,disable_member_card_no
         ,uid,franchisee_id,disable_time,enable_time,create_time,update_time,tenant_id,service_fee from
         t_enable_member_card_record
         <where>

@@ -371,6 +371,34 @@ public interface CacheConstant {
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
 
     /**
+     * 企业渠道用户购买套餐缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY = "enterprise_user_purchase_package_lock_key:";
+    
+    /**
+     * 企业渠道用户购买套餐+押金
+     */
+    String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITH_DEPOSIT_LOCK_KEY = "enterprise_user_purchase_package_with_deposit_lock_key:";
+    
+    /**
+     * 企业渠道用户免押购买套餐
+     */
+    String ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_WITHOUT_DEPOSIT_LOCK_KEY = "enterprise_user_purchase_package_without_deposit_lock_key:";
+    
+    /**
+     * 根据手机号码添加企业渠道用户缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY = "enterprise_user_save_by_phone_lock_key:";
+    
+    /**
+     * 扫码添加企业渠道用户缓存锁
+     */
+    String ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY = "enterprise_user_update_after_scan_lock_key:";
+    
+    
+    String ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY = "user_cloud_bean_recharge_lock_key:";
+
+    /**
      * 迁移加盟商缓存锁
      */
     String ELE_CACHE_USER_MOVE_FRANCHISEE_LOCK_KEY = "user_move_franchisee_lock_key:";
@@ -453,5 +481,11 @@ public interface CacheConstant {
     String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
     String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
     
+    /**
+     * 企业配置缓存
+     */
+    String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
+    
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
+
 }

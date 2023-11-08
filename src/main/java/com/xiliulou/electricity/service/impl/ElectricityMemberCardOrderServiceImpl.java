@@ -73,6 +73,8 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -140,6 +142,8 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -168,6 +172,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -343,6 +348,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
     /**
      * 根据用户ID查询对应状态的记录
@@ -818,6 +829,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("BATTERY MEMBER ORDER WARN! user not auth,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            //检查是否为自主续费状态
+            Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
+            if(!userRenewalStatus){
+                log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), query.getMemberId());
+                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
             }
 
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1549,6 +1567,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                 .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .memberCardName(batteryMemberCard.getName())
+                .memberCardId(batteryMemberCard.getId())
                 .enableTime(System.currentTimeMillis())
                 .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
                 .batteryServiceFeeStatus(serviceFeeStatus)
@@ -1590,6 +1609,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUdpate);
+    
+        //记录企业用户冻结后启用套餐记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), enableMemberCardRecord.getId() + "_" + enableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode(), enableMemberCardRecord.getEnableTime());
 
         return R.ok();
     }
@@ -3085,6 +3107,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                         .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                         .memberCardName(eleDisableMemberCardRecord.getMemberCardName())
+                        .memberCardId(eleDisableMemberCardRecord.getBatteryMemberCardId())
                         .enableTime(System.currentTimeMillis())
                         .enableType(EnableMemberCardRecord.SYSTEM_ENABLE)
                         .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_INIT)
@@ -3111,6 +3134,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
                     eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
                 }
+    
+                //记录企业用户冻结后启用套餐记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), enableMemberCardRecordInsert.getId() + "_" + enableMemberCardRecordInsert.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode(), enableMemberCardRecordInsert.getEnableTime());
+    
             });
 
             offset += size;
@@ -3394,8 +3421,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return authMessageNotifyCommon;
         }).collect(Collectors.toList());
     }
-
-
+    
     @Override
     public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
         return baseMapper.insert(electricityMemberCardOrder);
@@ -4508,6 +4534,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
         userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());
         userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
+        userBatteryMemberCardInfoVO.setBusinessType(batteryMemberCard.getBusinessType());
 
         //用户电池型号
         userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
@@ -4517,6 +4544,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if(Objects.nonNull(eleDisableMemberCardRecord)
                 && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())){
             userBatteryMemberCardInfoVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
+        }
+        
+        //检查用户自主续费状态
+        Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
+        if(userRenewalStatus){
+            userBatteryMemberCardInfoVO.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode());
         }
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);

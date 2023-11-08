@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseRentRecordMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord" id="EnterpriseRentRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="rentMembercardOrderId" column="rent_membercard_order_id" jdbcType="VARCHAR"/>
+        <result property="returnMembercardOrderId" column="return_membercard_order_id" jdbcType="VARCHAR"/>
+        <result property="rentTime" column="rent_time" jdbcType="INTEGER"/>
+        <result property="returnTime" column="return_time" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="EnterpriseRentRecordMap">
+        select
+          id, uid, rent_time, return_time, create_time, update_time, tenant_id
+        from t_enterprise_rent_record
+        where id = #{id}
+    </select>
+    
+    <select id="selectByUid" resultMap="EnterpriseRentRecordMap">
+        select
+          any_value ( id ) id,
+          any_value ( uid ) uid,
+          any_value ( rent_membercard_order_id ) rent_membercard_order_id,
+          any_value ( return_membercard_order_id ) return_membercard_order_id,
+          any_value ( rent_time ) rent_time,
+          any_value ( return_time ) return_time,
+          any_value ( create_time ) create_time,
+          any_value ( update_time ) update_time,
+          any_value ( tenant_id ) tenant_id
+        from t_enterprise_rent_record
+        where uid = #{uid} and rent_time is not null and return_time is not null GROUP BY FROM_UNIXTIME(update_time / 1000, '%Y-%m-%d' );
+    </select>
+    
+    <select id="selectLatestRentRecord" resultMap="EnterpriseRentRecordMap">
+        select
+          id, uid, rent_membercard_order_id,return_membercard_order_id, rent_time, return_time, create_time, update_time, tenant_id
+        from t_enterprise_rent_record
+        where uid = #{uid} and return_time is null order by id desc limit 1
+    </select>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_enterprise_rent_record where id = #{id}
+    </delete>
+    
+    <delete id="deleteByUid">
+        delete from t_enterprise_rent_record where uid = #{uid}
+    </delete>
+
+</mapper>

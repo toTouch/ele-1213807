@@ -24,11 +24,13 @@ public class BatteryMembercardExpireUpdateStatusTask extends IJobHandler {
 
     @Override
     public ReturnT<String> execute(String s) throws Exception {
+        log.info("battery member card expire update status task start");
         try {
             userBatteryMemberCardService.batteryMembercardExpireUpdateStatusTask();
         } catch (Exception e) {
             log.error("xxl-job换电套餐过期更新套餐订单状态失败", e);
         }
+        log.info("battery member card expire update status task end");
         return IJobHandler.SUCCESS;
     }
 }

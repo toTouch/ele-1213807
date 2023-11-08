@@ -58,5 +58,6 @@ public interface RentBatteryOrderService {
     List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
 
     Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
-
+    
+    List<RentBatteryOrder> selectByUidAndTime(Long uid, Long membercardStartTime, Long currentTime);
 }

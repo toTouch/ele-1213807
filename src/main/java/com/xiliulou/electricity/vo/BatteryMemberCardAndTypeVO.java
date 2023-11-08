@@ -95,7 +95,7 @@ public class BatteryMemberCardAndTypeVO {
      */
     private String remark;
     /**
-     * 套餐业务类型：0，换电套餐；1，车电一体套餐
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
      */
     private Integer businessType;
 
