@@ -502,6 +502,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         enterpriseChannelUserService.deleteByEnterpriseId(id);
         
+        enterprisePackageService.deleteByEnterpriseId(id);
+        
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
         enterpriseInfoUpdate.setDelFlag(EnterpriseInfo.DEL_DEL);
