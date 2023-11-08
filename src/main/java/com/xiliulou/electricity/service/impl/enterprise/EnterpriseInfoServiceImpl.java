@@ -995,7 +995,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     }
                     
                     //退电消耗的云豆
-                    //AnotherPayMembercardRecord returnAnotherPayMembercardRecord = anotherPayMembercardRecordService.selectByOrderId(enterpriseRentRecord.getReturnMembercardOrderId());
                     AnotherPayMembercardRecord returnAnotherPayMembercardRecord = payMembercardRecordMap.getOrDefault(enterpriseRentRecord.getReturnMembercardOrderId(),null);
                     ElectricityMemberCardOrder returnElectricityMemberCardOrder = electricityMemberCardOrderService
                             .selectByOrderNo(enterpriseRentRecord.getReturnMembercardOrderId());

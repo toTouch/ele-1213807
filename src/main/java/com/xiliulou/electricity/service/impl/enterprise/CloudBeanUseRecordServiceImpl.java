@@ -264,12 +264,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         for (AnotherPayMembercardRecord anotherPayMembercardRecord : anotherPayMembercardRecords) {
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(anotherPayMembercardRecord.getOrderId());
             if (Objects.isNull(electricityMemberCardOrder)) {
-                log.warn("RECYCLE BATTERY MEMBERCARD WARN! not found electricityMemberCardOrder,uid={},orderId={}", userInfo.getUid(), anotherPayMembercardRecord.getOrderId());
+                log.warn("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD WARN! not found electricityMemberCardOrder,uid={},orderId={}", userInfo.getUid(), anotherPayMembercardRecord.getOrderId());
                 continue;
             }
             totalCloudBean = totalCloudBean.add(electricityMemberCardOrder.getPayAmount());
         }
-        log.info("RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
+        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!totalCloudBean={},uid={}", totalCloudBean.doubleValue(), userInfo.getUid());
     
         //租退电记录
         List<EnterpriseRentRecord> enterpriseRentRecords = enterpriseRentRecordService.selectByUid(userInfo.getUid());
@@ -300,6 +300,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
             
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
+                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!one membercard used cloud bean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
                     }
                 } else {
                     //租电套餐消耗的云豆
@@ -313,7 +314,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         long useDays = DateUtils.diffDayV2(enterpriseRentRecord.getRentTime(), rentAnotherPayMembercardRecord.getEndTime());
         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        log.info("RECYCLE BATTERY MEMBERCARD INFO!rentUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!rentUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
                     }
     
                     List<String> membercardList = anotherPayMembercardRecords.stream().map(AnotherPayMembercardRecord::getOrderId).collect(Collectors.toList());
@@ -326,7 +327,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                                 ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
                                 if (Objects.nonNull(electricityMemberCardOrder)) {
                                     totalUsedCloudBean = totalUsedCloudBean.add(electricityMemberCardOrder.getPayAmount());
-                                    log.info("RECYCLE BATTERY MEMBERCARD INFO!containUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+                                    log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!containUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
                                 }
                             }
                         }
@@ -349,7 +350,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         long useDays = DateUtils.diffDayV2( beginTime, endTime);
         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
-                        log.info("RECYCLE BATTERY MEMBERCARD INFO!returnUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
+                        log.info("ACQUIRE CAN RECYCLE BATTERY MEMBERCARD INFO!returnUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
                     }
                 }
             }
