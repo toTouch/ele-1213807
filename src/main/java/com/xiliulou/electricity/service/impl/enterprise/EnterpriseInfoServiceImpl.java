@@ -375,7 +375,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseCloudBeanOrder.setType(EnterpriseCloudBeanOrder.TYPE_USER_RECHARGE);
             enterpriseCloudBeanOrder.setRemark("");
             enterpriseCloudBeanOrder.setBeanAmount(query.getTotalBeanAmount());
-            enterpriseCloudBeanOrder.setFranchiseeId(userInfo.getFranchiseeId());
+            enterpriseCloudBeanOrder.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             enterpriseCloudBeanOrder.setTenantId(userInfo.getTenantId());
             enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
             enterpriseCloudBeanOrder.setUpdateTime(System.currentTimeMillis());
