@@ -814,7 +814,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             callPxzRsp = pxzDepositService.freeDepositOrder(query);
         } catch (Exception e) {
             log.error("Pxz error fot free battery deposit, freeDepositOrder fail! uid={},orderId={}", freeQuery.getUid(), freeDepositOrder.getOrderId(), e);
-            return Triple.of(false, "3000745", "免押调用失败！");
+            return Triple.of(false, "3000745", "请填写免押骑手用户名/身份证号码/手机号");
         }
         
         if (Objects.isNull(callPxzRsp)) {

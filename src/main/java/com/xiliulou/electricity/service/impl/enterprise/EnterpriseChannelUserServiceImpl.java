@@ -519,7 +519,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 5. 检查用户是否购买过线上套餐(包含换电, 租车, 车电一体套餐)
         if (userInfo.getPayCount() > 0) {
             log.warn("Exist package pay count for current user, uid = {}", userInfo.getUid());
-            return Triple.of(false, "300060", "当前用户已购买过线上套餐");
+            return Triple.of(false, "300060", "该骑手已是平台用户，无法再次添加");
         }
         
         // 6. 当前用户不能属于其他企业
