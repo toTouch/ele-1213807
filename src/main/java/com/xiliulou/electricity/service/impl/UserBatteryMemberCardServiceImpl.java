@@ -7,10 +7,20 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.MemberCardFailureRecordService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +72,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -270,6 +283,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public List<UserBatteryMemberCard> selectList(int offset, int size) {
         return userBatteryMemberCardMapper.selectByList(offset, size);
     }
+    
+    @Override
+    public List<UserBatteryMemberCard> selectExpireList(int offset, int size, long memberCardExpireTime) {
+        return userBatteryMemberCardMapper.selectExpireList(offset, size, memberCardExpireTime);
+    }
 
     @Override
     public List<UserBatteryMemberCard> selectUseableList(int offset, int size) {
@@ -345,6 +363,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                     electricityMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
                     electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
                     electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrder);
+                    
+                    //如果当前套餐是企业套餐，则将该骑手的代付状态更新为代付到期
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                    if(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                        enterpriseChannelUserService.updatePaymentStatusByUid(item.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+                    }
                 }
 
             });

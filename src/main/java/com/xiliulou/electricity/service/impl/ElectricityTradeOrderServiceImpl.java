@@ -11,18 +11,29 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -182,6 +193,21 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     ActivityService activityService;
+
+    @Autowired
+    EnterpriseCloudBeanOrderService enterpriseCloudBeanOrderService;
+
+    @Autowired
+    EnterpriseInfoService enterpriseInfoService;
+
+    @Autowired
+    CloudBeanUseRecordService cloudBeanUseRecordService;
+    
+    @Resource
+    AnotherPayMembercardRecordService anotherPayMembercardRecordService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     /**
      * 租车套餐购买回调
@@ -395,6 +421,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
+
             // 8. 处理分账
             DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
             divisionAccountOrderDTO.setOrderNo(electricityMemberCardOrder.getOrderId());
@@ -1051,6 +1078,90 @@ public class ElectricityTradeOrderServiceImpl extends
                 .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
+    }
+
+    /**
+     * 云豆充值回调
+     */
+    @Override
+    public Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+        } else {
+            log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!pay fail,tradeOrderNo={}", callBackResource.getOutTradeNo());
+        }
+
+        //系统订单
+        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(callBackResource.getOutTradeNo());
+        if (Objects.isNull(electricityTradeOrder)) {
+            log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!not found electricity_trade_order,tradeOrderNo={}", callBackResource.getOutTradeNo());
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
+            log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!electricity_trade_order status is not init,tradeOrderNo={}", callBackResource.getOutTradeNo());
+            return Pair.of(false, "交易订单已处理");
+        }
+
+        //云豆订单
+        EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = enterpriseCloudBeanOrderService.selectByOrderId(electricityTradeOrder.getOrderNo());
+        if (Objects.isNull(enterpriseCloudBeanOrder)) {
+            log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!not found enterpriseCloudBeanOrder,orderNo={}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "云豆充值订单不存在");
+        }
+
+        if (!ObjectUtil.equal(EnterpriseCloudBeanOrder.STATUS_INIT, enterpriseCloudBeanOrder.getStatus())) {
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ! enterpriseCloudBeanOrder status is not init,orderNo={}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "云豆充值订单已处理!");
+        }
+
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseCloudBeanOrder.getEnterpriseId());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ! not found enterpriseInfo,orderNo={},enterpriseId={}", electricityTradeOrder.getOrderNo(), enterpriseCloudBeanOrder.getEnterpriseId());
+            return Pair.of(false, "企业配置不存在!");
+        }
+
+        EnterpriseCloudBeanOrder enterpriseCloudBeanOrderUpdate = new EnterpriseCloudBeanOrder();
+        enterpriseCloudBeanOrderUpdate.setId(enterpriseCloudBeanOrder.getId());
+        enterpriseCloudBeanOrderUpdate.setStatus(EnterpriseCloudBeanOrder.STATUS_SUCCESS);
+        enterpriseCloudBeanOrderUpdate.setUpdateTime(System.currentTimeMillis());
+
+        if (Objects.equals(tradeOrderStatus, EnterpriseCloudBeanOrder.STATUS_SUCCESS)) {
+            EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
+            enterpriseInfoUpdate.setId(enterpriseInfo.getId());
+            enterpriseInfoUpdate.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(enterpriseCloudBeanOrder.getBeanAmount()));
+            enterpriseInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            enterpriseInfoService.update(enterpriseInfoUpdate);
+
+            CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+            cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+            cloudBeanUseRecord.setUid(enterpriseCloudBeanOrder.getUid());
+            cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_USER_RECHARGE);
+            cloudBeanUseRecord.setBeanAmount(enterpriseCloudBeanOrder.getBeanAmount());
+            cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfoUpdate.getTotalBeanAmount());
+            cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+            cloudBeanUseRecord.setRef(enterpriseCloudBeanOrder.getOrderId());
+            cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+            cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+        } else {
+            enterpriseCloudBeanOrderUpdate.setStatus(EnterpriseCloudBeanOrder.STATUS_FAIL);
+        }
+
+        enterpriseCloudBeanOrderService.update(enterpriseCloudBeanOrderUpdate);
+
+        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
+        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
+        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
+        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(electricityTradeOrderUpdate);
+
+        return Pair.of(true, null);
     }
 
     @Override

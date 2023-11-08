@@ -13,10 +13,26 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
+import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
+import com.xiliulou.electricity.entity.BatteryTrackRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.Message;
+import com.xiliulou.electricity.entity.NotExistSn;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.NotExistSnService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -270,13 +286,11 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(power)) {
             battery.setPower(power * 100);
         }
-
+    
         //获取电池型号
-        //if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
-            battery.setModel(batteryModel);
-       // }
-
+        String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
+        battery.setModel(batteryModel);
+    
         return battery;
     }
 
@@ -294,20 +308,17 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         electricityCabinetBox.setBId(electricityBattery.getId());
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
         electricityCabinetBox.setEmptyGridStartTime(null);
-
+    
         if (Objects.nonNull(power)) {
             electricityCabinetBox.setPower(power * 100);
         }
-
+    
         //获取电池型号
-      //  if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
-            electricityCabinetBox.setBatteryType(batteryModel);
-      //  }
-
+        String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
+        electricityCabinetBox.setBatteryType(batteryModel);
+    
         return electricityCabinetBox;
     }
-
 
     private void handleBatteryNameIsBlank(ElectricityCabinetBox eleBox, ElectricityCabinet electricityCabinet,
                                           EleBatteryVO eleBatteryVO) {
@@ -571,7 +582,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //1.9.9之后的版本走新的满仓提醒流程
         String APP_VERSION = "1.9.9";
-        if (VersionUtil.compareVersion(electricityCabinet.getVersion(), APP_VERSION) > 0) {
+        if (StringUtils.isBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), APP_VERSION) > 0) {
             return;
         }
 

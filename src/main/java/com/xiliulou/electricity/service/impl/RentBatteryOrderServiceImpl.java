@@ -18,9 +18,13 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -536,11 +540,27 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_BATTERY, userInfo.getUid());
         
+        //根据套餐类型, 设置当前订单类型
+        Integer orderType = BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()) ? RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode() : RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
+
         //生成订单
-        RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).electricityBatterySn(electricityBattery.getSn()).uid(userInfo.getUid())
-                .phone(userInfo.getPhone()).name(userInfo.getName()).batteryDeposit(userBatteryDeposit.getBatteryDeposit()).type(RentBatteryOrder.TYPE_USER_RENT)
-                .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT).electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(store.getId()).franchiseeId(store.getFranchiseeId())
+        RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
+                .orderId(orderId)
+                .electricityBatterySn(electricityBattery.getSn())
+                .uid(userInfo.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .batteryDeposit(userBatteryDeposit.getBatteryDeposit())
+                .type(RentBatteryOrder.TYPE_USER_RENT)
+                .orderSeq(RentBatteryOrder.STATUS_INIT)
+                .status(RentBatteryOrder.INIT)
+                .orderType(orderType)
+                .electricityCabinetId(electricityCabinet.getId())
+                .cellNo(Integer.valueOf(cellNo))
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .storeId(store.getId())
+                .franchiseeId(store.getFranchiseeId())
                 .tenantId(TenantContextHolder.getTenantId()).build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
         
@@ -678,6 +698,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
             
+            Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
+            
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
                 
@@ -702,7 +724,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.warn("RETURNBATTERY WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
                     return R.fail("ELECTRICITY.00121", "套餐不存在");
                 }
-                
+    
+                //根据套餐类型，设置租退订单类型
+                if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                    orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
+                }
+
                 //判断用户电池服务费
                 Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                         batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
@@ -741,10 +768,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             
             //生成订单
-            RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid()).phone(userInfo.getPhone()).name(userInfo.getName())
-                    .batteryDeposit(userBatteryDeposit.getBatteryDeposit()).type(RentBatteryOrder.TYPE_USER_RETURN).orderSeq(RentBatteryOrder.STATUS_INIT)
-                    .status(RentBatteryOrder.INIT).electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo)).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).storeId(store.getId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).build();
+            RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
+                    .phone(userInfo.getPhone()).name(userInfo.getName())
+                    .batteryDeposit(userBatteryDeposit.getBatteryDeposit())
+                    .type(RentBatteryOrder.TYPE_USER_RETURN)
+                    .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT)
+                    .orderType(orderType)
+                    .electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                    .storeId(store.getId())
+                    .franchiseeId(store.getFranchiseeId())
+                    .tenantId(TenantContextHolder.getTenantId()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
             
             //发送开门命令
@@ -784,6 +818,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            
             return R.ok(orderId);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());
@@ -1531,6 +1566,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
         return rentBatteryOrderMapper.selectUsedRecordsTotalCount(eleCabinetUsedRecordQuery);
+    }
+    
+    @Slave
+    @Override
+    public List<RentBatteryOrder> selectByUidAndTime(Long uid, Long startTime, Long endTime) {
+        return rentBatteryOrderMapper.selectByUidAndTime(uid,startTime,endTime);
     }
     
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {

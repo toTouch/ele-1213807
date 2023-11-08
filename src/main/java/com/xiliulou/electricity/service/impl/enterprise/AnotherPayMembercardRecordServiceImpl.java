@@ -1,0 +1,130 @@
+package com.xiliulou.electricity.service.impl.enterprise;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
+import com.xiliulou.electricity.mapper.AnotherPayMembercardRecordMapper;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 代付记录表(AnotherPayMembercardRecord)表服务实现类
+ *
+ * @author zzlong
+ * @since 2023-10-10 15:07:39
+ */
+@Service("anotherPayMembercardRecordService")
+@Slf4j
+public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMembercardRecordService {
+    
+    @Resource
+    private AnotherPayMembercardRecordMapper anotherPayMembercardRecordMapper;
+    
+    @Autowired
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    /**
+     * 通过ID查询单条数据从DB
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public AnotherPayMembercardRecord queryByIdFromDB(Long id) {
+        return this.anotherPayMembercardRecordMapper.queryById(id);
+    }
+    
+    /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public AnotherPayMembercardRecord queryByIdFromCache(Long id) {
+        return null;
+    }
+    
+    /**
+     * 修改数据
+     *
+     * @param anotherPayMembercardRecord 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(AnotherPayMembercardRecord anotherPayMembercardRecord) {
+        return this.anotherPayMembercardRecordMapper.update(anotherPayMembercardRecord);
+        
+    }
+    
+    /**
+     * 通过主键删除数据
+     *
+     * @param id 主键
+     * @return 是否成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
+        return this.anotherPayMembercardRecordMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public int saveAnotherPayMembercardRecord(Long uid, String orderId, Integer tenantId) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("save Another Pay Membercard Record error!not found electricityMemberCardOrder,orderId={}", orderId);
+            return 0;
+        }
+        
+        Long startTime = System.currentTimeMillis();
+        Long endTime = System.currentTimeMillis() + electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+        AnotherPayMembercardRecord latestAnotherPayMembercardRecord = this.anotherPayMembercardRecordMapper.selectLatestByUid(uid);
+        if (Objects.nonNull(latestAnotherPayMembercardRecord)) {
+            startTime = latestAnotherPayMembercardRecord.getEndTime();
+            endTime = latestAnotherPayMembercardRecord.getEndTime() + electricityMemberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
+        }
+        
+        AnotherPayMembercardRecord anotherPayMembercardRecord = new AnotherPayMembercardRecord();
+        anotherPayMembercardRecord.setOrderId(orderId);
+        anotherPayMembercardRecord.setUid(uid);
+        anotherPayMembercardRecord.setBeginTime(startTime);
+        anotherPayMembercardRecord.setEndTime(endTime);
+        anotherPayMembercardRecord.setCreateTime(System.currentTimeMillis());
+        anotherPayMembercardRecord.setUpdateTime(System.currentTimeMillis());
+        anotherPayMembercardRecord.setTenantId(tenantId);
+        
+        return this.anotherPayMembercardRecordMapper.insert(anotherPayMembercardRecord);
+    }
+    
+    @Override
+    public List<AnotherPayMembercardRecord> selectByUid(Long uid) {
+        return this.anotherPayMembercardRecordMapper.selectList(new LambdaQueryWrapper<AnotherPayMembercardRecord>().eq(AnotherPayMembercardRecord::getUid, uid));
+    }
+    
+    @Override
+    public int deleteByUid(Long uid) {
+        return this.anotherPayMembercardRecordMapper.deleteByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId) {
+        return this.anotherPayMembercardRecordMapper.selectListByEnterpriseId(enterpriseId);
+    }
+    
+    @Override
+    public AnotherPayMembercardRecord selectByOrderId(String orderId) {
+        return this.anotherPayMembercardRecordMapper.selectOne(new LambdaQueryWrapper<AnotherPayMembercardRecord>().eq(AnotherPayMembercardRecord::getOrderId,orderId));
+    }
+}

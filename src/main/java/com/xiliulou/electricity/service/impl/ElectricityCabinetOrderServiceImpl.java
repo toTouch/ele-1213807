@@ -2046,6 +2046,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
     
+    @Override
+    public ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid) {
+        return electricityCabinetOrderMapper.selectLatestOrderAndCabinetInfo(uid);
+    }
+    
     @Slave
     @Override
     public List<ElectricityCabinetOrder> selectTodayExchangeOrder(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId) {
