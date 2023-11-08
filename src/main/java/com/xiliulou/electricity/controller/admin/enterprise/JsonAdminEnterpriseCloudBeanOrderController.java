@@ -111,6 +111,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
             @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "operateUid", required = false) Long operateUid,
             @RequestParam(value = "enterpriseId", required = false) Long enterpriseId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -126,6 +127,7 @@ public class JsonAdminEnterpriseCloudBeanOrderController extends BaseController 
                 .size(Long.MAX_VALUE)
                 .offset(NumberConstant.ZERO_L)
                 .enterpriseId(enterpriseId)
+                .operateUid(operateUid)
                 .orderId(orderId)
                 .uid(uid)
                 .type(type)
