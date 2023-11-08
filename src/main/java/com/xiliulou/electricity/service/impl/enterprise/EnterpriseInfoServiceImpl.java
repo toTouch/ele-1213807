@@ -879,7 +879,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         for (EnterpriseRentRecord rentRecord : rentRecordList) {
                             Long beginTime = rentRecord.getRentTime();
                             Long endTime = Objects.nonNull(returnAnotherPayMembercardRecord) && Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime()) && Objects.nonNull(rentRecord.getReturnTime()) && rentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : rentRecord.getReturnTime();
-                            totalUseDay = totalUseDay + DateUtils.diffDay(beginTime, endTime);
+                            totalUseDay = totalUseDay + DateUtils.diffDayV2(beginTime, endTime);
                             
                             ids.add(rentRecord.getId());
                         }
@@ -925,7 +925,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         BigDecimal price = rentElectricityMemberCardOrder.getPayAmount()
                                 .divide(BigDecimal.valueOf(rentElectricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
                         //使用天数
-                        long useDays = DateUtils.diffDay(enterpriseRentRecord.getRentTime(), rentAnotherPayMembercardRecord.getEndTime());
+                        long useDays = DateUtils.diffDayV2(enterpriseRentRecord.getRentTime(), rentAnotherPayMembercardRecord.getEndTime());
                         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
                         log.info("RECYCLE BATTERY MEMBERCARD INFO!rentUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
@@ -986,7 +986,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         Long endTime =  Objects.nonNull(returnAnotherPayMembercardRecord.getEndTime()) && Objects.nonNull(enterpriseRentRecord.getReturnTime()) && enterpriseRentRecord.getReturnTime() > returnAnotherPayMembercardRecord.getEndTime() ? returnAnotherPayMembercardRecord.getEndTime() : enterpriseRentRecord.getReturnTime();
     
                         //使用天数
-                        long useDays = DateUtils.diffDay( beginTime, endTime);
+                        long useDays = DateUtils.diffDayV2( beginTime, endTime);
                         
                         totalUsedCloudBean = totalUsedCloudBean.add(price.multiply(BigDecimal.valueOf(useDays)));
                         log.info("RECYCLE BATTERY MEMBERCARD INFO!returnUsedCloudBean={},uid={}", totalUsedCloudBean.doubleValue(), userInfo.getUid());
