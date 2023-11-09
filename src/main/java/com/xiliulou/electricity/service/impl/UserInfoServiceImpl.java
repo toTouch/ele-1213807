@@ -2665,6 +2665,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 // 邀请人
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                
+                threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery other info error!", e);
