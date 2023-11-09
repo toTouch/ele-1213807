@@ -125,6 +125,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -4975,7 +4976,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetExtendDataVO extendDataVO = null;
         
         //如果柜机在线，则需要取柜机上报的信号
-        if (eleResult) {
+        //1.9.9之后的版本走新的满仓提醒流程
+        String SIGNAL_APP_VERSION = "2.0.1";
+        if (eleResult && Objects.nonNull(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), SIGNAL_APP_VERSION) >= 0) {
             extendDataVO = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId, ElectricityCabinetExtendDataVO.class);
         }
         
