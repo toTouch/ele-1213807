@@ -188,7 +188,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
-        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT)) {
+        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())
+                && offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime()) {
             //扣除月卡
             userBatteryMemberCardService.minCountForOffLineEle(userBatteryMemberCard);
         }
