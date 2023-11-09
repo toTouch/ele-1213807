@@ -109,7 +109,8 @@ public class UserBatteryMemberCard {
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
     public static final Long MEMBER_CARD_ZERO_REMAINING = 0L;
-
+    
+    public static final Long MEMBER_CARD_ONE_REMAINING = 1L;
 
     public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 
