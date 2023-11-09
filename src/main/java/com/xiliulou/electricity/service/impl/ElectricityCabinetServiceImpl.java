@@ -4973,15 +4973,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-        ElectricityCabinetExtendDataVO extendDataVO = null;
-        
+        String netType=null;
         //如果柜机在线，则需要取柜机上报的信号
-        //1.9.9之后的版本走新的满仓提醒流程
-        String SIGNAL_APP_VERSION = "2.0.1";
-        if (eleResult && Objects.nonNull(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), SIGNAL_APP_VERSION) >= 0) {
-            extendDataVO = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId, ElectricityCabinetExtendDataVO.class);
+        if (eleResult) {
+            netType = redisService.get(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId);
         }
-        
-        return R.ok(extendDataVO);
+
+        return R.ok(netType);
     }
 }

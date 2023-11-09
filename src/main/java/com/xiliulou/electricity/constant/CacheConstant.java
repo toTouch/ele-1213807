@@ -453,5 +453,5 @@ public interface CacheConstant {
     String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
     String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
     
-    String CACHE_ELECTRICITY_CABINET_EXTEND_DATA="electricityCabinetExtendsData:";
+    String CACHE_ELECTRICITY_CABINET_EXTEND_DATA="electricity_cabinet_extends_data:";
 }

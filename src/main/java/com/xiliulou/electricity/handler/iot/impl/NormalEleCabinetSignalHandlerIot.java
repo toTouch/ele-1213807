@@ -17,6 +17,7 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -35,8 +36,8 @@ public class NormalEleCabinetSignalHandlerIot extends AbstractElectricityIotHand
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         //获取柜机的扩展参数
         ElectricityCabinetExtendDataVO extendsDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), ElectricityCabinetExtendDataVO.class);
-        if (Objects.nonNull(extendsDataVO)) {
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinet.getId(), extendsDataVO);
+        if (Objects.nonNull(extendsDataVO) && Objects.nonNull(extendsDataVO.getNetType())) {
+            redisService.saveWithString(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinet.getId(), extendsDataVO.getNetType(), 30L, TimeUnit.MINUTES);
         }
     }
 }
