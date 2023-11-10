@@ -835,7 +835,7 @@ public class UnionTradeOrderServiceImpl extends
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             //若用户未购买套餐  直接绑定
-            if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())){
+            if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId() , UserBatteryMemberCard.SEND_REMAINING_NUMBER)){
                 electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
                 userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
