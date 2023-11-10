@@ -57,6 +57,12 @@ public class UserBatteryMemberCardInfoVO {
      * 套餐总剩余次数
      */
     private Long remainingNumber;
+    
+    /**
+     * 当前套餐剩余次数
+     */
+    private Long orderRemainingNumber;
+    
     /**
      * 套餐状态
      */

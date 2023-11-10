@@ -4488,6 +4488,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        userBatteryMemberCardInfoVO.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
         userBatteryMemberCardInfoVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
