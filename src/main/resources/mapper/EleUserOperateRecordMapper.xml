@@ -16,6 +16,9 @@
         <if test="operateModel != null">
             and operate_model =#{operateModel}
         </if>
+        <if test="operateType != null">
+            and operate_type =#{operateType}
+        </if>
         order by create_time desc
         limit #{offset},#{size}
     </select>
@@ -31,6 +34,9 @@
         </if>
         <if test="operateModel != null">
             and operate_model =#{operateModel}
+        </if>
+        <if test="operateType != null">
+            and operate_type =#{operateType}
         </if>
     </select>
 

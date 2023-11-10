@@ -275,6 +275,7 @@
             tcrpme.status as packageStatus,
             tcrpme.deposit_pay_order_no as depositOrderNo,
             tcrpme.due_time_total as packageExpiredTime,
+            tcrpme.pay_count as payCount,
             tec.sn as carSn,
             tec.model as carModel,
             tui.tenant_id as tenantId,

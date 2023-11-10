@@ -14,13 +14,13 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
  * @since 2022-07-12 14:44:12
  */
 public interface EleUserOperateRecordService extends IService<EleUserOperateRecord> {
-
-
+    
+    
     void insert(EleUserOperateRecord eleUserOperateRecord);
-
-    R queryList(Long uid,Long size,Long offset,Long beginTime,Long enTime,Integer operateModel);
-
-    R queryCount(Long uid,Long beginTime,Long enTime,Integer operateModel);
-
-
+    
+    R queryList(Long uid, Long size, Long offset, Long beginTime, Long enTime, Integer operateModel, Integer operateType);
+    
+    R queryCount(Long uid, Long beginTime, Long enTime, Integer operateModel, Integer operateType);
+    
+    void asyncHandleUserOperateRecord(EleUserOperateRecord eleUserOperateRecord);
 }

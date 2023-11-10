@@ -21,6 +21,11 @@ public class RentalPackageVO implements Serializable {
     private static final long serialVersionUID = -83061401678360392L;
     
     /**
+     * 租电状态
+     */
+    private Integer batteryRentStatus;
+    
+    /**
      * 当前套餐订单信息
      */
     private CarRentalPackageOrderVo carRentalPackageOrder;

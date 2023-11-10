@@ -127,11 +127,13 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetExtendDataVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
@@ -4177,8 +4179,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Triple.of(true, null, null);
     }
     
-    @Override
     public R otaCommand(Integer eid, Integer operateType, Integer versionType, List<Integer> cellNos) {
+
         Long uid = SecurityUtils.getUid();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
@@ -4323,7 +4325,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         create.setCreateTime(System.currentTimeMillis());
         eleOtaFileService.insert(create);
     }
-    
     
     private Integer getVersionPrefix(Integer eid) {
         EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
@@ -4993,5 +4994,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         return franchisee.getName();
+    }
+    
+    /**
+     * 查询柜机扩展参数
+     *
+     * @param electricityCabinetId 柜机id
+     * @return 柜机扩展参数
+     */
+    public R queryElectricityCabinetExtendData(Integer electricityCabinetId) {
+        
+        //校验柜机Id
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("100003", "柜机不存在");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        String netType=null;
+        //如果柜机在线，则需要取柜机上报的信号
+        if (eleResult) {
+            netType = redisService.get(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId);
+        }
+
+        return R.ok(netType);
     }
 }

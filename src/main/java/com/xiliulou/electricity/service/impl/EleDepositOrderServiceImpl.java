@@ -12,6 +12,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
@@ -1574,6 +1575,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .oldBatteryDeposit(null)
                     .newBatteryDeposit(batteryDepositAdd.getPayAmount())
                     .tenantId(TenantContextHolder.getTenantId())
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
