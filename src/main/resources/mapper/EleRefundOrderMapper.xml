@@ -44,7 +44,7 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
         tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
         memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
-        tero.refund_order_type as refundOrderType, tedo.pay_type as payType
+        tero.refund_order_type as refundOrderType, tedo.pay_type as payType, tedo.order_type as orderType
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>

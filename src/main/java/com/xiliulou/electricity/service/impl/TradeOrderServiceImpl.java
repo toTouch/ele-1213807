@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -156,6 +157,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -190,6 +194,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            //检查是否为自主续费状态
+            Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
+            if(!userRenewalStatus){
+                log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
+                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
             }
 
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -362,6 +373,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            //检查是否为自主续费状态
+            Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
+            if(!userRenewalStatus){
+                log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", userInfo.getUid(), query.getMemberId());
+                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
             }
 
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {

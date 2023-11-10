@@ -46,8 +46,21 @@ public class ElectricityUserBatteryVo {
      */
     private Double latitude;
 
-
     private Long updateTime;
+    
+    /**
+     * 换电柜ID
+     */
+    private Integer electricityCabinetId;
+    /**
+     * 换电柜名称
+     */
+    private String electricityCabinetName;
+    
+    /**
+     * 换电时间
+     */
+    private Long batteryExchangeTime;
 
 
 }

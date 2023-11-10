@@ -15,4 +15,8 @@ public class UserInfoSearchVo {
     private Long uid;
     
     private String name;
+    
+    private String phone;
+    
+    private String nameAndPhone;
 }

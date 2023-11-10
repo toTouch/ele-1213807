@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -99,5 +100,11 @@ public class BatteryMemberCardQuery {
     private Long uid;
 
     private List<Integer> rentTypes;
+    
+    /**
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * @see BatteryMemberCardBusinessTypeEnum
+     */
+    private Integer businessType;
 
 }

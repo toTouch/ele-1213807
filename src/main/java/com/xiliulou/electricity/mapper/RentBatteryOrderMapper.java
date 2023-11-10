@@ -33,5 +33,6 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     List<EleCabinetUsedRecord> selectEleCabinetUsedRecords(@Param("query") EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
 
     Integer selectUsedRecordsTotalCount(@Param("query") EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
-
+    
+    List<RentBatteryOrder> selectByUidAndTime(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 }

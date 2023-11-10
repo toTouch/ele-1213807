@@ -36,6 +36,11 @@ public class EnableMemberCardRecord {
      * 用户手机号
      */
     private String phone;
+    
+    /**
+     * 套餐ID
+     */
+    private Long memberCardId;
 
     /**
      * 套餐名称

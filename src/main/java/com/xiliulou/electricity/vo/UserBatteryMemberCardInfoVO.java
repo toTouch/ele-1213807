@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -80,6 +82,12 @@ public class UserBatteryMemberCardInfoVO {
      * 用户电池型号
      */
     private String userBatterySimpleType;
+    
+    /**
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * @see BatteryMemberCardBusinessTypeEnum
+     */
+    private Integer businessType;
 
     private Long franchiseeId;
 
@@ -91,6 +99,12 @@ public class UserBatteryMemberCardInfoVO {
      * 冻结申请后，若被拒绝，显示的拒绝原因
      */
     private String rejectReason;
+    
+    /**
+     * 自主续费状态 0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatus;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;
