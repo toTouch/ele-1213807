@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,6 +156,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -659,6 +663,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        
+        //如果为企业用户，返回1给前端，代表当前用户为企业用户
+        /*EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
+        if(Objects.nonNull(enterpriseChannelUserVO)){
+            map.put("isEnterpriseUser", NumberConstant.ONE.toString());
+            return R.ok(map);
+        }*/
 
         //是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -734,7 +745,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("depositType", Objects.isNull(userBatteryDeposit.getDepositType()) ? null
                         : String.valueOf(userBatteryDeposit.getDepositType()));
             }
-
+            
+            //判断押金订单对应的套餐类型
+            EleDepositOrder eleDepositOrder = this.queryByOrderId(userBatteryDeposit.getOrderId());
+            if(Objects.nonNull(eleDepositOrder)){
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(eleDepositOrder.getMid());
+                if (Objects.nonNull(batteryMemberCard)){
+                    map.put("currentPackageType", batteryMemberCard.getBusinessType().toString());
+                }
+            }
+            
             return R.ok(map);
         }
         return R.ok(null);
@@ -794,7 +814,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         return Triple.of(true, null, insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY));
     }
-
+    
+    @Override
+    public EleDepositOrderVO queryByUidAndSourceOrderNo(Long uid, String sourceOrderNo) {
+    
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.queryByUidAndSourceOrderNo(uid, sourceOrderNo);
+        EleDepositOrderVO eleDepositOrderVO = new EleDepositOrderVO();
+        if(Objects.nonNull(eleDepositOrder)){
+            BeanUtils.copyProperties(eleDepositOrder, eleDepositOrderVO);
+        }
+        
+        return eleDepositOrderVO;
+    }
+    
     @Slave
     @Override
     public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {

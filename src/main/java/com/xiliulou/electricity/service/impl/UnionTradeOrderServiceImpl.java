@@ -44,6 +44,15 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.enums.*;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
+import com.xiliulou.electricity.mq.producer.ActivityProducer;
+import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -104,6 +113,8 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -301,6 +312,12 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    AnotherPayMembercardRecordService anotherPayMembercardRecordService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -835,6 +852,12 @@ public class UnionTradeOrderServiceImpl extends
                 userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
                 userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
                 userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
+    
+                //保存用户押金对应的电池型号
+                List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                    userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+                }
             }else{
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 //若用户已购买套餐
@@ -867,6 +890,12 @@ public class UnionTradeOrderServiceImpl extends
                         electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
                         electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
+                    }
+    
+                    //保存用户押金对应的电池型号
+                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
                     }
                 } else {
 
@@ -966,7 +995,185 @@ public class UnionTradeOrderServiceImpl extends
 
         return Pair.of(true, null);
     }
-
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> manageEnterpriseMemberCardOrder(String orderNo, Integer orderStatus) {
+    
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
+        if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
+            log.error("notify member card order error, not found electricityMemberCardOrder,orderNo={}", orderNo);
+            return Pair.of(false, "未找到订单!");
+        }
+    
+        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
+            log.error("notify member card order error, electricityMemberCardOrder status is not init, orderNo={}", orderNo);
+            return Pair.of(false, "套餐订单已处理!");
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("notify member card order error, userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            return Pair.of(false, "用户不存在");
+        }
+    
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("notify member card order error, batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),electricityMemberCardOrder.getMemberCardId());
+            return Pair.of(false, "套餐不存在");
+        }
+    
+        //获取套餐订单优惠券
+        //List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
+    
+        Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
+    
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
+    
+        //套餐订单
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+    
+        if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            //若用户未购买套餐  直接绑定
+            if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())){
+                electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+            
+                userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
+                userBatteryMemberCardUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+                userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+                userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+                userBatteryMemberCardUpdate.setOrderRemainingNumber(remainingNumber);
+                userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber);
+                userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+                userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+                userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
+                userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+                userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
+                
+                //新用户直接绑定电池
+                //更新用户电池型号
+                userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+                
+            }else{
+                BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                //若用户已购买套餐
+                //     1.套餐过期，直接绑定
+                //     2.套餐未过期，保存到资源包
+                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                
+                    electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+                
+                    userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+                    userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());
+                    userBatteryMemberCardUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
+                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
+                    userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setOrderRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+                    userBatteryMemberCardUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+                    userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+                    userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
+                    userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+                    userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
+                    userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
+                
+                    //如果用户原来绑定的有套餐 套餐过期了，需要把原来绑定的套餐订单状态更新为已过期
+                    if(org.apache.commons.lang3.StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())){
+                        ElectricityMemberCardOrder electricityMemberCardOrderUpdateUseStatus = new ElectricityMemberCardOrder();
+                        electricityMemberCardOrderUpdateUseStatus.setOrderId(userBatteryMemberCard.getOrderId());
+                        electricityMemberCardOrderUpdateUseStatus.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                        electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
+                        electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
+                    }
+                    
+                    //套餐过期后重新 绑定电池信息。
+                    //更新用户电池型号
+                    userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+                    
+                } else {
+                
+                    UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
+                    userBatteryMemberCardPackage.setUid(userInfo.getUid());
+                    userBatteryMemberCardPackage.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
+                    userBatteryMemberCardPackage.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
+                    userBatteryMemberCardPackage.setMemberCardExpireTime(batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
+                    userBatteryMemberCardPackage.setTenantId(userInfo.getTenantId());
+                    userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
+                    userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
+                    userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
+                
+                    userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, electricityMemberCardOrder));
+                    userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + electricityMemberCardOrder.getMaxUseCount());
+                    userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1);
+                    userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                }
+            }
+        
+            if(Objects.isNull(userBatteryMemberCard)){
+                userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
+            }else{
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            }
+        
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
+            ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+            serviceFeeUserInfoInsertOrUpdate.setUid(userBatteryMemberCardUpdate.getUid());
+            serviceFeeUserInfoInsertOrUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoInsertOrUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoInsertOrUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                serviceFeeUserInfoInsertOrUpdate.setCreateTime(System.currentTimeMillis());
+                serviceFeeUserInfoInsertOrUpdate.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+                serviceFeeUserInfoInsertOrUpdate.setDisableMemberCardNo("");
+                serviceFeeUserInfoService.insert(serviceFeeUserInfoInsertOrUpdate);
+            } else {
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
+            }
+        
+            //修改套餐订单购买次数
+            electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
+        
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(userInfo.getUid());
+            userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
+           
+        }
+    
+        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setStatus(orderStatus);
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+    
+        //保存骑手购买套餐信息，用于云豆回收业务
+        anotherPayMembercardRecordService.saveAnotherPayMembercardRecord(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getTenantId());
+        
+        //更新云豆状态为未回收状态,同时更新代付状态为已代付
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(electricityMemberCardOrder.getUid());
+        
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = new EnterpriseChannelUserQuery();
+        enterpriseChannelUserQuery.setId(enterpriseChannelUser.getId());
+        enterpriseChannelUserQuery.setUid(electricityMemberCardOrder.getUid());
+        enterpriseChannelUserQuery.setCloudBeanStatus(CloudBeanStatusEnum.NOT_RECYCLE.getCode());
+        enterpriseChannelUserQuery.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_SUCCESS.getCode());
+        enterpriseChannelUserService.updateChannelUserStatus(enterpriseChannelUserQuery);
+        
+        return Pair.of(true, null);
+        
+    }
+    
     //处理保险订单
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1123,7 +1330,7 @@ public class UnionTradeOrderServiceImpl extends
 
         return Pair.of(true, null);
     }
-
+    
     /**
      *
      * @param orderNo 逾期订单号

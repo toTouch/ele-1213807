@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser" id="EnterpriseChannelUserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="invitationWay" column="invitation_way" jdbcType="INTEGER"/>
+        <result property="enterpriseId" column="enterprise_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="paymentStatus" column="payment_status" jdbcType="INTEGER"/>
+        <result property="renewalStatus" column="renewal_status" jdbcType="INTEGER"/>
+        <result property="cloudBeanStatus" column="cloud_bean_status" jdbcType="INTEGER"/>
+        <result property="inviterId" column="inviter_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectEnterpriseChannelUser">
+        select id, uid, invitation_way, enterprise_id, franchisee_id, tenant_id, renewal_status, cloud_bean_status, inviter_id, create_time, update_time, remark from t_enterprise_channel_user
+    </sql>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+
+        where id = #{id}
+    </select>
+    
+    <select id="queryNotRecycleUserCount" resultType="int">
+        select
+        count(*)
+        from t_enterprise_channel_user
+        where enterprise_id = #{enterpriseId} and cloud_bean_status=1
+    </select>
+    
+    <select id="enterpriseChannelUserSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
+        select tui.id, tui.uid, tui.name, tui.phone FROM t_user_info tui left join t_enterprise_channel_user tecu on tecu.uid=tui.uid
+        WHERE tui.del_flag = 0 and tui.auth_status=2 and tecu.uid is null
+        <if test="tenantId != null">
+            and tui.tenant_id = #{tenantId}
+        </if>
+        <if test="keywords != null and keywords != ''">
+            and (tui.name like concat('%', #{keywords}, '%')  or tui.phone LIKE CONCAT('%', #{keywords}, '%'))
+        </if>
+        <if test=" franchiseeIds != null">
+            and  tui.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test=" storeIds != null">
+            and  tui.store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by tui.id
+        limit #{offset}, #{size}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            uid is not null
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="invitationWay != null">
+                and invitation_way = #{invitationWay}
+            </if>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="renewalStatus != null">
+                and renewal_status = #{renewalStatus}
+            </if>
+
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_enterprise_channel_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            invitation_way,
+            enterprise_id,
+            franchisee_id,
+            tenant_id,
+            payment_status,
+            renewal_status,
+            inviter_id,
+            create_time,
+            update_time,
+            remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{invitationWay},
+            #{enterpriseId},
+            #{franchiseeId},
+            #{tenantId},
+            #{paymentStatus},
+            #{renewalStatus},
+            #{inviterId},
+            #{createTime},
+            #{updateTime},
+            #{remark}
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_enterprise_channel_user
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="invitationWay != null">
+                invitation_way = #{invitationWay},
+            </if>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+            <if test="paymentStatus != null">
+                payment_status = #{paymentStatus},
+            </if>
+            <if test="inviterId != null">
+                inviter_id = #{inviterId},
+            </if>
+            <if test="cloudBeanStatus != null">
+                cloud_bean_status = #{cloudBeanStatus},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_enterprise_channel_user where id = #{id}
+    </delete>
+
+    <!--查询未关联到企业的记录-->
+    <select id="selectUnusedChannelUser" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            uid is null
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+    
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+            
+        </where>
+       
+    </select>
+
+    <!--查询已关联至企业的用户-->
+    <select id="selectUsedChannelUser" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
+    
+    <!--根据电话查询已关联至企业的用户-->
+    <select id="selectChannelUserByPhone" resultMap="EnterpriseChannelUserMap">
+        SELECT
+            tecu.id,
+            tecu.uid,
+            tui.phone,
+            tecu.invitation_way,
+            tecu.enterprise_id,
+            tecu.franchisee_id,
+            tecu.tenant_id,
+            tecu.renewal_status,
+            tecu.cloud_bean_status,
+            tecu.inviter_id,
+            tecu.create_time,
+            tecu.update_time,
+            tecu.remark
+        FROM
+            t_enterprise_channel_user tecu
+        left join t_user_info tui on tecu.uid = tui.uid
+        <where>
+            
+            <if test="phone != null ">
+                and tui.phone = #{phone}
+            </if>
+        
+        </where>
+        limit 1
+    </select>
+
+    <!--根据ID 和 UID查询已关联至企业的用户-->
+    <select id="selectChannelUserByIdAndUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
+
+    <!--根据EnterpriseID 和 UID查询已关联至企业的用户-->
+    <select id="selectChannelUserByEnterpriseIdAndUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        <where>
+            <if test="enterpriseId != null">
+                and enterprise_id = #{enterpriseId}
+            </if>
+
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+
+        </where>
+    </select>
+    
+    <select id="selectByUid" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        where uid = #{uid} order by id limit 1
+    </select>
+    
+    <select id="selectAllByEnterpriseId" resultMap="EnterpriseChannelUserMap">
+        <include refid="selectEnterpriseChannelUser"/>
+        where enterprise_id = #{enterpriseId}
+    </select>
+    
+    <select id="selectUserRelatedEnterprise" resultType="com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO">
+        select
+            tecu.id,
+            tecu.uid,
+            tecu.invitation_way,
+            tecu.enterprise_id,
+            tei.name as enterpriseName,
+            tei.uid as chiefUid,
+            tecu.franchisee_id,
+            tecu.tenant_id,
+            tecu.cloud_bean_status,
+            tecu.renewal_status,
+            tecu.inviter_id,
+            tecu.del_flag,
+            tecu.create_time,
+            tecu.update_time
+        from t_enterprise_channel_user tecu
+        left join t_enterprise_info tei on tei.id = tecu.enterprise_id
+    
+        <where>
+            tecu.del_flag = 0
+            <if test="uid != null">
+                and tecu.uid = #{uid}
+            </if>
+        
+        </where>
+       
+    </select>
+    
+    <update id="updateRenewStatus">
+        update t_enterprise_channel_user
+        <set>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+    
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            
+        </set>
+        where uid = #{uid}
+    </update>
+    
+    <update id="updateChannelUserByUid">
+        update t_enterprise_channel_user
+        <set>
+            <if test="invitationWay != null">
+                invitation_way = #{invitationWay},
+            </if>
+            <if test="enterpriseId != null">
+                enterprise_id = #{enterpriseId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="renewalStatus != null">
+                renewal_status = #{renewalStatus},
+            </if>
+            <if test="paymentStatus != null">
+                payment_status = #{paymentStatus},
+            </if>
+            <if test="inviterId != null">
+                inviter_id = #{inviterId},
+            </if>
+            <if test="cloudBeanStatus != null">
+                cloud_bean_status = #{cloudBeanStatus},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where uid = #{uid}
+    </update>
+    
+    <update id="batchUpdateRenewStatus">
+        update t_enterprise_channel_user set renewal_status = #{renewalStatus}, update_time = UNIX_TIMESTAMP()*1000
+        where id in
+        <foreach collection="channelUserIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+      
+    </update>
+    
+    <delete id="deleteByEnterpriseId">
+        delete from t_enterprise_channel_user where enterprise_id = #{enterpriseId}
+    </delete>
+    
+    <delete id="deleteByUid">
+        delete from t_enterprise_channel_user where uid = #{uid}
+    </delete>
+</mapper>

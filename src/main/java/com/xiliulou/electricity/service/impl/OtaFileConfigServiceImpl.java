@@ -151,7 +151,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (type < 1 || type > 4) {
+        if (type < OtaFileConfig.TYPE_CORE_BOARD || type > OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD) {
             log.error("OTA UPLOAD ERROR! ota file type error! name={}, version={}, type={}", name, version, type);
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
@@ -167,20 +167,26 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("100313", "ota文件版本号不合法");
         }
     
+        //旧版 大于等于50.
         Integer versionNum = result.getRight();
-        if (Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) || Objects
-                .equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
-            if (Objects.isNull(versionNum) || versionNum < 50) {
-                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version,
-                        type);
+        if (Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
+            if (Objects.isNull(versionNum) || OtaFileConfig.MIN_OLD_BOARD_VERSION > versionNum) {
+                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
+                return R.fail("100313", "ota文件版本号不合法");
+            }
+        }
+        // 新版 小于10.
+        if (Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD)) {
+            if (Objects.isNull(versionNum) || OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION <= versionNum) {
+                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
                 return R.fail("100313", "ota文件版本号不合法");
             }
         }
     
-        if (Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD)) {
-            if (Objects.isNull(versionNum) || versionNum > 50) {
-                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version,
-                        type);
+        // 六合一版 大于等于10. 且小于20.
+        if (Objects.equals(type, OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD)) {
+            if (Objects.isNull(versionNum) || OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION > versionNum || OtaFileConfig.MAX_SIX_IN_ONE_BOARD_VERSION <= versionNum) {
+                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
                 return R.fail("100313", "ota文件版本号不合法");
             }
         }
@@ -189,8 +195,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         InputStream sha256HexInputStream = null;
         try {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
-            String downloadLink =
-                    "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
+            String downloadLink = "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
         
             byte[] fileByte = file.getBytes();
             ossInputStream = new ByteArrayInputStream(fileByte);

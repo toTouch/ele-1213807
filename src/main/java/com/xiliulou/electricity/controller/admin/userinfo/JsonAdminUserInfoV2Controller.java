@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -308,10 +309,18 @@ public class JsonAdminUserInfoV2Controller {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
+        
+        //处理查询关键自重带有/时，无法进行搜索的问题
+        String keyWords = userInfoQryReq.getKeywords();
+        if(StringUtils.isNotBlank(keyWords) && keyWords.contains(StringConstant.FORWARD_SLASH)){
+            keyWords = StringUtils.substringBefore(keyWords, StringConstant.FORWARD_SLASH);
+            userInfoQryReq.setKeywords(keyWords);
+        }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .tenantId(tenantId)
                 .keywords(userInfoQryReq.getKeywords())
+                .authStatus(userInfoQryReq.getAuthStatus())
                 .offset(Long.valueOf(userInfoQryReq.getOffset()))
                 .size(Long.valueOf(userInfoQryReq.getSize()))
                 .franchiseeIds(franchiseeIds)

@@ -735,8 +735,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      */
     @PostMapping("/admin/electricityCabinet/ota/command")
     public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType,
-                        @RequestParam(value = "cellNos", required = false) List<Integer> cellNos) {
-        return electricityCabinetService.otaCommand(eid, operateType, cellNos);
+            @RequestParam("versionType") Integer versionType, @RequestParam(value = "cellNos", required = false) List<Integer> cellNos) {
+        return electricityCabinetService.otaCommand(eid, operateType, versionType, cellNos);
     }
 
     /**
