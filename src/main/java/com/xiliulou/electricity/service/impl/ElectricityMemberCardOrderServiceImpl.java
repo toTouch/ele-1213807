@@ -993,6 +993,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
             vo.setIsRefund(batteryMemberCard.getIsRefund());
+            vo.setRefundLimit(batteryMemberCard.getRefundLimit());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
 
             BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
