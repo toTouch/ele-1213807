@@ -14,10 +14,12 @@ import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.service.VersionNotificationService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     private TenantNotifyMailService tenantNotifyMailService;
     @Autowired
     private MailService mailService;
+    
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
 
     /**
@@ -191,5 +197,15 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         updateVersionNotification.setSendMailStatus(VersionNotification.STATUS_SEND_MAIL_YES);
         updateVersionNotification.setUpdateTime(System.currentTimeMillis());
         this.update(updateVersionNotification);
+    }
+    
+    /**
+     * @description 获取上传通知图片所需的签名
+     * @date 2023/10/26 18:16:06
+     * @author HeYafeng
+     */
+    @Override
+    public R acquireVersionNotificationFileSign() {
+        return R.ok(storageService.getOssUploadSign("saas/versionNotification/"));
     }
 }

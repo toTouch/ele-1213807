@@ -2230,6 +2230,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             disableMembercardServiceFeeOrder.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
             disableMembercardServiceFeeOrder.setBatteryServiceFeeEndTime(System.currentTimeMillis());
             disableMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
+            disableMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(disableMembercardServiceFeeOrder);
         }
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())) {
@@ -2239,6 +2240,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
             expireMembercardServiceFeeOrder.setBatteryServiceFeeEndTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
         }
 
