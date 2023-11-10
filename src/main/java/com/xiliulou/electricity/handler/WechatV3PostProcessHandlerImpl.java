@@ -36,7 +36,6 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
     @Autowired
     WechatV3MerchantLoadAndUpdateCertificateService certificateService;
 
-
     @Autowired
     RedisService redisService;
 
@@ -105,7 +104,9 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             unionTradeOrderService.notifyMembercardInsurance(callBackResource);
         }else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_SERVUCE_FEE)){
             unionTradeOrderService.notifyServiceFee(callBackResource);
-        }else {
+        }else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)){
+            electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
+        } else {
             electricityTradeOrderService.notifyMemberOrder(callBackResource);
         }
     }

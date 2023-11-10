@@ -77,6 +77,12 @@ public class EleRefundOrderVO {
     
     private Integer payType;
     
+    /**
+     * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     * @see PackageOrderTypeEnum
+     */
+    private Integer orderType;
+    
     //private Integer refundOrderType;
     private Boolean isFreeDepositAliPay;
     
@@ -198,6 +204,14 @@ public class EleRefundOrderVO {
     
     public void setPayType(Integer payType) {
         this.payType = payType;
+    }
+    
+    public Integer getOrderType() {
+        return orderType;
+    }
+    
+    public void setOrderType(Integer orderType) {
+        this.orderType = orderType;
     }
     
     //    public Integer getRefundOrderType() {

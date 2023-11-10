@@ -1,0 +1,264 @@
+package com.xiliulou.electricity.controller.admin.enterprise;
+
+import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
+import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-09-14-10:27
+ */
+@RestController
+@Slf4j
+public class JsonAdminEnterpriseInfoController extends BaseController {
+
+    @Autowired
+    private EnterpriseInfoService enterpriseInfoService;
+    
+    @Autowired
+    private EnterpriseChannelUserService enterpriseChannelUserService;
+    @Autowired
+    private UserDataScopeService userDataScopeService;
+
+    /**
+     * 分页列表
+     */
+    @GetMapping("/admin/enterpriseInfo/page")
+    public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                  @RequestParam(value = "status", required = false) Integer status,
+                  @RequestParam(value = "packageId", required = false) Long packageId,
+                  @RequestParam(value = "uid", required = false) Long uid,
+                  @RequestParam(value = "phone", required = false) String phone,
+                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                  @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        EnterpriseInfoQuery query = EnterpriseInfoQuery.builder()
+                .size(size)
+                .offset(offset)
+                .status(status)
+                .phone(phone)
+                .packageId(packageId)
+                .name(name)
+                .uid(uid)
+                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+
+        return R.ok(enterpriseInfoService.selectByPage(query));
+    }
+
+    /**
+     * 分页总数
+     */
+    @GetMapping("/admin/enterpriseInfo/count")
+    public R pageCount(@RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "packageId", required = false) Long packageId,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                       @RequestParam(value = "name", required = false) String name) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+
+        EnterpriseInfoQuery query = EnterpriseInfoQuery.builder()
+                .status(status)
+                .phone(phone)
+                .packageId(packageId)
+                .name(name)
+                .uid(uid)
+                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+
+        return R.ok(enterpriseInfoService.selectByPageCount(query));
+    }
+
+    /**
+     * 新增
+     */
+    @PostMapping("/admin/enterpriseInfo")
+    public R save(@RequestBody @Validated(CreateGroup.class) EnterpriseInfoQuery enterpriseInfoQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
+        return returnTripleResult(enterpriseInfoService.save(enterpriseInfoQuery));
+    }
+
+    /**
+     * 修改
+     */
+    @PutMapping("/admin/enterpriseInfo")
+    public R update(@RequestBody @Validated(UpdateGroup.class) EnterpriseInfoQuery enterpriseInfoQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
+        return returnTripleResult(enterpriseInfoService.modify(enterpriseInfoQuery));
+    }
+
+    /**
+     * 删除
+     */
+    @DeleteMapping("/admin/enterpriseInfo/{id}")
+    public R delete(@PathVariable("id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
+        return returnTripleResult(enterpriseInfoService.delete(id));
+    }
+
+    /**
+     * 云豆充值
+     */
+    @PutMapping("/admin/enterpriseInfo/recharge")
+    public R recharge(@RequestBody @Validated EnterpriseCloudBeanRechargeQuery enterpriseCloudBeanRechargeQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+
+        return returnTripleResult(enterpriseInfoService.rechargeForAdmin(enterpriseCloudBeanRechargeQuery));
+    }
+    
+    /**
+     * 云豆充值退款  【测试使用】
+     */
+    @PutMapping("/admin/enterpriseInfo/refund/{orderId}")
+    public R refund(@PathVariable("orderId") String orderId, HttpServletRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+    
+        return returnTripleResult(enterpriseInfoService.refund(orderId,request));
+    }
+    
+    /**
+     * 企业渠道用户搜索
+     * @return
+     */
+    @GetMapping("/admin/enterpriseInfo/queryByKeywords")
+    public R queryByKeywords(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset,
+            @RequestParam(value = "keywords", required = false) String keywords) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10;
+        }
+    
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0;
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        EnterpriseChannelUserQuery query = new EnterpriseChannelUserQuery();
+    
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                query.setStoreIds(storeIds);
+            }
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                query.setFranchiseeIds(franchiseeIds);
+            }
+        }
+    
+        query.setSize(size);
+        query.setOffset(offset);
+        query.setKeywords(keywords);
+        query.setTenantId(TenantContextHolder.getTenantId().longValue());
+        
+        return returnTripleResult(enterpriseChannelUserService.enterpriseChannelUserSearch(query));
+    }
+}

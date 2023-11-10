@@ -15,6 +15,7 @@
         <result property="isBatteryReview" column="is_battery_review" jdbcType="INTEGER"/>
         <result property="disableMemberCard" column="disable_member_card" jdbcType="INTEGER"/>
         <result property="isLowBatteryExchange" column="is_low_battery_exchange" jdbcType="INTEGER"/>
+        <result property="isSelectionExchange" column="is_selection_exchange" jdbcType="INTEGER"/>
         <result property="lowBatteryExchangeModel" column="low_battery_exchange_model" jdbcType="VARCHAR"/>
         <result property="isEnableSelfOpen" column="is_enable_self_open" jdbcType="INTEGER"/>
         <result property="isEnableReturnBoxCheck" column="is_enable_return_box_check" jdbcType="INTEGER"/>
@@ -58,6 +59,9 @@
             </if>
             <if test="isLowBatteryExchange != null">
                 is_low_battery_exchange = #{isLowBatteryExchange},
+            </if>
+            <if test="isSelectionExchange != null">
+                is_selection_exchange = #{isSelectionExchange},
             </if>
             <if test="lowBatteryExchangeModel != null and lowBatteryExchangeModel != ''">
                 low_battery_exchange_model = #{lowBatteryExchangeModel},

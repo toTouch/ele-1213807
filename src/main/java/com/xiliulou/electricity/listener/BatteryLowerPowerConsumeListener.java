@@ -75,7 +75,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
     private void handleSendWxTemplate(BatteryPowerNotifyDto batteryPowerNotifyDto) {
         ElectricityBattery electricityBattery = electricityBatteryService.queryUserAttrBySnFromDb(batteryPowerNotifyDto.getSn());
         if (Objects.isNull(electricityBattery)) {
-            log.error("BATTERY NOT FOUND! Can't send template! sn={}", batteryPowerNotifyDto.getSn());
+            log.warn("BATTERY NOT FOUND! Can't send template! sn={}", batteryPowerNotifyDto.getSn());
             return;
         }
 

@@ -427,7 +427,6 @@ public class BasicController extends BaseController {
         // 用户拦截
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -436,7 +435,7 @@ public class BasicController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                log.info("BasicController.checkPermission. Franchisee data rights are empty.");
+                log.warn("BasicController.checkPermission. Franchisee data rights are empty. uid is {}", user.getUid());
                 return Triple.of(null, null, false);
             }
         }
@@ -446,7 +445,7 @@ public class BasicController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(storeIds)) {
-                log.info("BasicController.checkPermission. Store data rights are empty.");
+                log.warn("BasicController.checkPermission. Store data rights are empty. uid is {}", user.getUid());
                 return Triple.of(null, storeIds, false);
             }
         }
@@ -466,7 +465,6 @@ public class BasicController extends BaseController {
         // 用户拦截
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -476,7 +474,7 @@ public class BasicController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                log.info("BasicController.checkPermission. Franchisee data rights are empty.");
+                log.warn("BasicController.checkPermission. Franchisee data rights are empty. uid is {}", user.getUid());
                 return Triple.of(null, null, false);
             }
             franchiseeIdList = franchiseeIds.stream().map(Long::intValue).collect(Collectors.toList());
@@ -488,7 +486,7 @@ public class BasicController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(storeIds)) {
-                log.info("BasicController.checkPermission. Store data rights are empty.");
+                log.warn("BasicController.checkPermission. Store data rights are empty. uid is {}", user.getUid());
                 return Triple.of(null, null, false);
             }
             storeIdList = storeIds.stream().map(Long::intValue).collect(Collectors.toList());

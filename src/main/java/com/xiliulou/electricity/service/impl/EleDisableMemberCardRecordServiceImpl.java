@@ -7,11 +7,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
@@ -62,6 +65,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -84,7 +90,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getBatteryMemberCardId());
             item.setRentUnit(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getRentUnit());
-
+            item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
+            
         });
 
         return R.ok(eleDisableMemberCardRecordVOS);
@@ -187,9 +194,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
             updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
-
+           
             //用户是否绑定电池
             if(!Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+                //记录企业用户冻结套餐记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
                 return R.ok();
             }
 
@@ -223,6 +232,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+    
+            //记录企业用户冻结套餐记录
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), updateEleDisableMemberCardRecord.getId() + "_" + updateEleDisableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_FREEZE_PACKAGE.getCode(), updateEleDisableMemberCardRecord.getDisableMemberCardTime());
         }
 
         return R.ok();

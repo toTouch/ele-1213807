@@ -97,7 +97,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
         Long now = System.currentTimeMillis();
         if (Objects.equals(electricityMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
-            log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+            log.warn("order WARN! memberCard  is Expire ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
@@ -109,7 +109,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             }
 
             if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+                log.warn("order WARN! memberCard  is Expire ! uid:{} ", user.getUid());
                 return R.fail("ELECTRICITY.0023", "月卡已过期");
             }
 

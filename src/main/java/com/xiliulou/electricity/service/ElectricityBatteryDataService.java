@@ -15,6 +15,8 @@ public interface ElectricityBatteryDataService extends IService<ElectricityBatte
     
     R selectAllBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
     
+    R updateGuessUserInfo(Long id);
+    
     R selectInCabinetBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
     
     R selectInCabinetBatteryDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);

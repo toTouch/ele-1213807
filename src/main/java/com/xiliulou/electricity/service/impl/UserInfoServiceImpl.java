@@ -18,13 +18,18 @@ import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
+import com.xiliulou.electricity.dto.EnterpriseUserCostRecordDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
@@ -35,12 +40,17 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseUserCostRecordRemarkVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -220,7 +230,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     UserAuthMessageService userAuthMessageService;
-
+    
+    @Autowired
+    EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
     /**
      * 分页查询
      *
@@ -985,6 +1004,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+        Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //判断电池滞纳金
 
@@ -1008,6 +1028,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if(Objects.isNull(batteryMemberCard)){
                 log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                 return R.fail( "ELECTRICITY.00121","套餐不存在");
+            }
+            
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
             }
 
             //判断用户电池服务费
@@ -1069,9 +1093,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             notBindOldElectricityBattery.setUid(null);
             notBindOldElectricityBattery.setBorrowExpireTime(null);
             notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
-
+    
+        Integer finalOrderType = orderType;
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
@@ -1088,6 +1114,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
+            rentBatteryOrder.setOrderType(finalOrderType);
             rentBatteryOrderService.insert(rentBatteryOrder);
 
             //生成后台操作记录
@@ -1112,8 +1139,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setElectricityCabinetName(null);
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
-
+    
+            enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
+            
+            //记录企业用户租电池记录
+            enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+            
             return null;
         });
         return R.ok();
@@ -1187,10 +1220,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBUNBIND ERROR! not found user bind battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
+    
+        Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
 
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //判断电池滞纳金
-
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
                 log.warn("WEBBIND ERROR ERROR! user haven't memberCard uid={}", oldUserInfo.getUid());
@@ -1211,6 +1245,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if(Objects.isNull(batteryMemberCard)){
                 log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(),userBatteryMemberCard.getMemberCardId());
                 return R.fail( "ELECTRICITY.00121","套餐不存在");
+            }
+    
+            //根据套餐类型，设置租退订单类型
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+                orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
             }
 
             //判断用户电池服务费
@@ -1236,8 +1275,28 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setUid(null);
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setBindTime(System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(electricityBattery);
-
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
+        //生成退电池记录
+        RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+        rentBatteryOrder.setUid(oldUserInfo.getUid());
+        rentBatteryOrder.setName(oldUserInfo.getName());
+        rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+        rentBatteryOrder.setElectricityBatterySn(oldElectricityBattery.getSn());
+        rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+        rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
+        rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+        rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+        rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+        rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
+        rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+        rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+        rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+        rentBatteryOrder.setOrderType(orderType);
+        rentBatteryOrderService.insert(rentBatteryOrder);
+        
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.BATTERY_MODEL)
@@ -1251,7 +1310,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-
+    
+        enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
+    
+        //记录企业用户还电池记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
+        
         return R.ok();
     }
 
@@ -1334,6 +1398,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public UserInfo queryUserByPhoneAndFranchisee(String phone, Integer franchiseeId, Integer tenantId) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getFranchiseeId, franchiseeId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Slave
@@ -1607,7 +1676,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
 
-        log.info("HOME INFO!acquire user status info! uid={},result={}", userInfo.getUid(), JsonUtil.toJson(userInfoResult));
         return Triple.of(true, "", userInfoResult);
     }
 
@@ -1837,6 +1905,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         vo.setCarRentalPackageOrderAmountTotal(carRentalPackageOrderBizService.queryAmountTotalByUid(userInfo.getTenantId(), userInfo.getUid()));
         vo.setCarRentalPackageOrderSlippageAmountTotal(carRentalPackageOrderSlippageService.selectPaySuccessAmountTotal(userInfo.getTenantId(), userInfo.getUid()));
+    
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(uid);
+        if(Objects.nonNull(enterpriseChannelUserVO)){
+            vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
+        }
 
         return R.ok(vo);
     }
@@ -2425,6 +2499,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return;
         }
+        
+        //檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
+        if(Objects.nonNull(enterpriseChannelUserVO)){
+            return;
+        }
 
         //若租车和租电押金都退了，则解绑用户所属加盟商
         UserInfo updateUserInfo = new UserInfo();
@@ -2663,6 +2743,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 // 邀请人
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+                
+                // 设置企业信息
+                EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
+                if(Objects.nonNull(enterpriseChannelUserVO)){
+                    item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
+                }
+                
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery other info error!", e);

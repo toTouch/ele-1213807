@@ -23,20 +23,17 @@ public class SaaSGlobalExceptionAdvice {
     @Resource
     private FeishuService feishuService;
 
-
-
     @ResponseBody
     @ExceptionHandler(BizException.class)
     public R handlerBizException(HttpServletRequest request, BizException e) {
-        log.error("BizException error: ", e);
-        feishuService.sendException(request.getRequestURI(), MDC.get(CommonConstant.TRACE_ID), e);
+        log.warn("BizException warn: ", e);
         return R.fail(e.getErrCode(), e.getMessage());
     }
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public R handlerException(HttpServletRequest request, Exception e) {
-        log.error("BizException error: ", e);
+        log.error("Exception error: ", e);
         feishuService.sendException(request.getRequestURI(), MDC.get(CommonConstant.TRACE_ID), e);
         return R.fail("000001", "系统异常");
     }

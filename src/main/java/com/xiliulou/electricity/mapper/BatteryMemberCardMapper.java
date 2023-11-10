@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import org.apache.ibatis.annotations.Param;
@@ -43,7 +44,7 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     int deleteById(Long id);
 
     List<BatteryMemberCard> selectByPage(BatteryMemberCardQuery query);
-
+    
     Integer selectByPageCount(BatteryMemberCardQuery query);
 
     List<BatteryMemberCard> selectBySearch(BatteryMemberCardQuery query);
@@ -55,6 +56,10 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCardVO> selectMembercardBatteryV(BatteryMemberCardQuery query);
 
     List<BatteryMemberCard> selectByQuery(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardAndTypeVO> selectMemberCardsByEnterprise(EnterpriseMemberCardQuery query);
+    
+    List<BatteryMemberCardVO> selectMembercardBatteryVByEnterprise(EnterpriseMemberCardQuery query);
 
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 }

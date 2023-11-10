@@ -21,9 +21,9 @@ public class EleOtaFile {
     private Long id;
     
     private Integer electricityCabinetId;
-
+    
     private String coreName;
-
+    
     private String subName;
     
     private String coreSha256Value;
@@ -40,7 +40,11 @@ public class EleOtaFile {
     private Integer fileType;
     
     public static final Integer DEL_NORMAL = 0;
+    
     public static final Integer DEL_DEL = 1;
+    
+    
+    public static final Integer TYPE_SIX_IN_ONE_FILE = 3;
     
     public static final Integer TYPE_NEW_FILE = 2;
     

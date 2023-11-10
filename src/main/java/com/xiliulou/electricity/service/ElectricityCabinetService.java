@@ -159,6 +159,8 @@ public interface ElectricityCabinetService {
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
+    
+    Triple<Boolean, String, Object> queryElectricityCabinetBoxInfoByCabinetId(Integer electricityCabinetId);
 
     List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
 
@@ -181,7 +183,7 @@ public interface ElectricityCabinetService {
     
     R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);
     
-    R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
+    R otaCommand(Integer eid, Integer operateType, Integer versionType, List<Integer> cellNos);
     
     R checkOtaSession(String sessionId);
     

@@ -200,7 +200,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         }
 
         if (CollectionUtils.isEmpty(totalBatteryTypes)) {
-            log.error("ELE ERROR! totalBatteryTypes is null,uid={}", userInfo.getUid());
+            log.info("ELE INFO! totalBatteryTypes is null,uid={}", userInfo.getUid());
             return;
         }
 

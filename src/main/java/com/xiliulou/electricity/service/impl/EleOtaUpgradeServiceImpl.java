@@ -2,15 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.OtaConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.EleOtaUpgrade;
 import com.xiliulou.electricity.entity.EleOtaUpgradeHistory;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.mapper.EleOtaUpgradeMapper;
-import com.xiliulou.electricity.query.OtaUpgradeQuery;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
-import com.xiliulou.electricity.service.EleOtaFileService;
 import com.xiliulou.electricity.service.EleOtaUpgradeHistoryService;
 import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -141,16 +140,17 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     @Transactional(rollbackFor = Exception.class)
     public void updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid, String sessionId) {
         Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().forEach(cellNo -> {
-            Integer type = Objects.equals(cellNo, 0) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
-    
+            Integer type = Objects.equals(cellNo, NumberConstant.ZERO) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
+        
             Integer fileType = null;
-            if (sessionId.startsWith("OLD")) {
-                fileType = Objects.equals(cellNo, 0) ? OtaFileConfig.TYPE_OLD_CORE_BOARD
-                        : OtaFileConfig.TYPE_OLD_SUB_BOARD;
+            if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_OLD)) {
+                fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_OLD_CORE_BOARD : OtaFileConfig.TYPE_OLD_SUB_BOARD;
+            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW)) {
+                fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
             } else {
-                fileType = Objects.equals(cellNo, 0) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
+                fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD : OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD;
             }
-            
+        
             EleOtaUpgrade eleOtaUpgradeFromDb = queryByEidAndCellNo(eid, cellNo, type);
             if (Objects.isNull(eleOtaUpgradeFromDb)) {
                 EleOtaUpgrade eleOtaUpgrade = new EleOtaUpgrade();
@@ -168,7 +168,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
                 eleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
                 eleOtaUpgradeMapper.update(eleOtaUpgrade);
             }
-            
+        
             EleOtaUpgradeHistory eleOtaUpgradeHistory = new EleOtaUpgradeHistory();
             eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));

@@ -84,13 +84,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-
-        // 数据权校验
-/*        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
-        if (!permissionTriple.getRight()) {
-            return R.ok(Collections.emptyList());
-        }*/
-
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
@@ -98,8 +91,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
-/*        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
-        qryModel.setStoreIdList(permissionTriple.getMiddle());*/
 
         // 调用服务
         List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
@@ -153,7 +144,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         // 获取用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -184,17 +174,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-        // 数据权校验
-//        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
-//        if (!permissionTriple.getRight()) {
-//            return R.ok(Collections.emptyList());
-//        }
-
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
-//        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
-//        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackagePo> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
@@ -286,17 +268,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok(NumberConstant.ZERO);
         }
 
-        // 数据权校验
-//        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
-//        if (!permissionTriple.getRight()) {
-//            return R.ok(NumberConstant.ZERO);
-//        }
-
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
-//        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
-//        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageService.count(qryModel));
@@ -371,7 +345,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -391,7 +364,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -415,7 +387,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 

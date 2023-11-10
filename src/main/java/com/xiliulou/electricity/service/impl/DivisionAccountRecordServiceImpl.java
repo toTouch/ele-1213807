@@ -323,7 +323,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(electricityMemberCardOrder.getMemberCardId().longValue(), null, electricityMemberCardOrder.getFranchiseeId(), electricityMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.error("Division Account error, Division account for electricity member card, not found division account config info, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
+                    log.info("Division Account info, Division account for electricity member card, not found division account config info, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
                     return;
                 }
 

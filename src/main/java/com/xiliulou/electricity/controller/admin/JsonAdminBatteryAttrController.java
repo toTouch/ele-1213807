@@ -129,11 +129,11 @@ public class JsonAdminBatteryAttrController {
 		}
 
 		if (StringUtils.isNotBlank(orderId)) {
-			String sql = "select * from t_battery_change where electricityCabinetId=? and orderId =? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+			String sql = "select * from t_battery_change where electricityCabinetId=? and orderId =? and cellNo=? and createTime>=? AND createTime<=? order by  createTime desc  limit ?,?";
 			return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, orderId, cellNo, begin, end, offset, size));
 		}
 
-		String sql = "select * from t_battery_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+		String sql = "select * from t_battery_change where electricityCabinetId=? and cellNo=? and createTime>=? AND createTime<=? order by  createTime desc  limit ?,?";
 		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
 	}
 

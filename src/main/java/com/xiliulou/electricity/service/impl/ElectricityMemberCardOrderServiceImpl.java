@@ -25,27 +25,137 @@ import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMemberCardOrderCoupon;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.EnableMemberCardRecord;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
+import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.TemplateConfigEntity;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
-import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
+import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
+import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
+import com.xiliulou.electricity.service.ActivityService;
+import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.DivisionAccountRecordService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.EleUserOperateRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.EnableMemberCardRecordService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.InvitationActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.OldUserActivityService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.ShareActivityMemberCardService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TemplateConfigService;
+import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.OldUserActivityVO;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -62,6 +172,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,7 +181,16 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -228,6 +348,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+    
+    @Resource
+    EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
     /**
      * 根据用户ID查询对应状态的记录
@@ -703,6 +829,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("BATTERY MEMBER ORDER WARN! user not auth,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            //检查是否为自主续费状态
+            Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(user.getUid());
+            if(!userRenewalStatus){
+                log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", user.getUid(), query.getMemberId());
+                return Triple.of(false, "000088", "自主续费状态已关闭，购买套餐请联系企业负责人");
             }
 
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1434,6 +1567,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                 .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .memberCardName(batteryMemberCard.getName())
+                .memberCardId(batteryMemberCard.getId())
                 .enableTime(System.currentTimeMillis())
                 .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
                 .batteryServiceFeeStatus(serviceFeeStatus)
@@ -1475,6 +1609,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUdpate);
+    
+        //记录企业用户冻结后启用套餐记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), enableMemberCardRecord.getId() + "_" + enableMemberCardRecord.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode(), enableMemberCardRecord.getEnableTime());
 
         return R.ok();
     }
@@ -1943,7 +2080,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .pauseOrderNo("")
                 .expireOrderNo("")
                 .franchiseeId(userInfo.getFranchiseeId())
-                .serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime())
+                .serviceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime())
                 .tenantId(eleDisableMemberCardRecord.getTenantId())
                 .uid(uid)
                 .updateTime(System.currentTimeMillis()).build();
@@ -2972,6 +3109,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                         .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                         .memberCardName(eleDisableMemberCardRecord.getMemberCardName())
+                        .memberCardId(eleDisableMemberCardRecord.getBatteryMemberCardId())
                         .enableTime(System.currentTimeMillis())
                         .enableType(EnableMemberCardRecord.SYSTEM_ENABLE)
                         .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_INIT)
@@ -2998,6 +3136,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
                     eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
                 }
+    
+                //记录企业用户冻结后启用套餐记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForBattery(userInfo.getUid(), enableMemberCardRecordInsert.getId() + "_" + enableMemberCardRecordInsert.getDisableMemberCardNo(), UserCostTypeEnum.COST_TYPE_ENABLE_PACKAGE.getCode(), enableMemberCardRecordInsert.getEnableTime());
+    
             });
 
             offset += size;
@@ -3281,8 +3423,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return authMessageNotifyCommon;
         }).collect(Collectors.toList());
     }
-
-
+    
     @Override
     public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
         return baseMapper.insert(electricityMemberCardOrder);
@@ -3891,6 +4032,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + tempTime);
                     }
                 }
+    
+                if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
+                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+                    Long tempTime = Math.abs(userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
+                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
+                }
             }
         }
 
@@ -4389,6 +4536,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
         userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());
         userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
+        userBatteryMemberCardInfoVO.setBusinessType(batteryMemberCard.getBusinessType());
 
         //用户电池型号
         userBatteryMemberCardInfoVO.setUserBatterySimpleType(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
@@ -4398,6 +4546,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if(Objects.nonNull(eleDisableMemberCardRecord)
                 && UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE.equals(eleDisableMemberCardRecord.getStatus())){
             userBatteryMemberCardInfoVO.setRejectReason(eleDisableMemberCardRecord.getErrMsg());
+        }
+        
+        //检查用户自主续费状态
+        Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
+        if(userRenewalStatus){
+            userBatteryMemberCardInfoVO.setRenewalStatus(RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode());
         }
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
