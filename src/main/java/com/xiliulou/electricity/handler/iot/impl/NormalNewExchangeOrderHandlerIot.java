@@ -11,11 +11,31 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryTrackRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -94,9 +114,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
-    @Autowired
-    private ElectricityBatteryDataService electricityBatteryDataService;
-    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
     
@@ -108,62 +125,76 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
-        if (Objects.isNull(electricityCabinetOrder)) {
-            log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
-            return;
+        ElectricityCabinetOrder electricityCabinetOrder = null;
+        
+        try {
+            if (!redisService.setNx(CacheConstant.EXCHANGE_ORDER_HANDLE_LIMIT + exchangeOrderRsp.getOrderId(), "1", 200L, false)) {
+                log.info("EXCHANGE ORDER INFO! order is being processed,requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
+                return;
+            }
+            
+            electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
+            if (Objects.isNull(electricityCabinetOrder)) {
+                log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
+                return;
+            }
+            
+            if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+                //确认订单结束
+                senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
+                log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
+                        electricityCabinetOrder.getUid());
+            }
+            
+            // 处理失败回退电池套餐次数
+            handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
+            
+            if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+                //确认订单结束
+                log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
+                        electricityCabinetOrder.getUid());
+                return;
+            }
+            
+            //是否开启异常仓门锁仓
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK) && exchangeOrderRsp
+                    .getIsException()) {
+                lockExceptionDoor(electricityCabinetOrder, exchangeOrderRsp);
+            }
+            
+            if (exchangeOrderRsp.getIsException()) {
+                handleOrderException(electricityCabinetOrder, exchangeOrderRsp, electricityConfig);
+                return;
+            }
+            
+            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setOrderSeq(exchangeOrderRsp.getOrderSeq());
+            newElectricityCabinetOrder.setStatus(exchangeOrderRsp.getOrderStatus());
+            newElectricityCabinetOrder.setOldElectricityBatterySn(exchangeOrderRsp.getPlaceBatteryName());
+            newElectricityCabinetOrder.setNewElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
+            newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
+            newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
+            if (exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+                newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
+            }
+            electricityCabinetOrderService.update(newElectricityCabinetOrder);
+            
+            //处理放入电池的相关信息
+            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+            
+            //处理取走电池的相关信息
+            handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+            
+            //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
+            handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
+        } catch (Exception e) {
+            log.error("ELE EXCHANGE HANDLER ERROR!", e);
+        } finally {
+            redisService.delete(CacheConstant.EXCHANGE_ORDER_HANDLE_LIMIT + exchangeOrderRsp.getOrderId());
         }
-        
-        if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-            //确认订单结束
-            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
-            log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
-                    electricityCabinetOrder.getUid());
-        }
-        
-        // 处理失败回退电池套餐次数
-        handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
-        
-        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
-            //确认订单结束
-            log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
-                    electricityCabinetOrder.getUid());
-            return;
-        }
-        
-        //是否开启异常仓门锁仓
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
-        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK) && exchangeOrderRsp.getIsException()) {
-            lockExceptionDoor(electricityCabinetOrder, exchangeOrderRsp);
-        }
-        
-        if (exchangeOrderRsp.getIsException()) {
-            handleOrderException(electricityCabinetOrder, exchangeOrderRsp, electricityConfig);
-            return;
-        }
-        
-        ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-        newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
-        newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-        newElectricityCabinetOrder.setOrderSeq(exchangeOrderRsp.getOrderSeq());
-        newElectricityCabinetOrder.setStatus(exchangeOrderRsp.getOrderStatus());
-        newElectricityCabinetOrder.setOldElectricityBatterySn(exchangeOrderRsp.getPlaceBatteryName());
-        newElectricityCabinetOrder.setNewElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
-        newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
-        newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
-        if (exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-            newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
-        }
-        electricityCabinetOrderService.update(newElectricityCabinetOrder);
-        
-        //处理放入电池的相关信息
-        handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
-        
-        //处理取走电池的相关信息
-        handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
-        
-        //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-        handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
     }
     
     /**

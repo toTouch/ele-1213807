@@ -582,7 +582,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //1.9.9之后的版本走新的满仓提醒流程
         String APP_VERSION = "1.9.9";
-        if (StringUtils.isBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), APP_VERSION) > 0) {
+        if (StringUtils.isBlank(electricityCabinet.getVersion()) || VersionUtil.compareVersion(electricityCabinet.getVersion(), APP_VERSION) > 0) {
             return;
         }
 
