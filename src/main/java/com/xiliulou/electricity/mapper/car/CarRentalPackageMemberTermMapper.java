@@ -160,5 +160,5 @@ public interface CarRentalPackageMemberTermMapper {
      * @param uidList
      * @return
      */
-    List<UserCarRentalPackageDO> queryUserPayCount(@Param("uidList") List<Long> uidList);
+    List<UserCarRentalPackageDO> selectListUserPayCount(@Param("uidList") List<Long> uidList);
 }

@@ -151,9 +151,8 @@ public interface CarRentalPackageMemberTermService {
     Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery);
     
     /**
-     * 会员列表统计会员gou=
-     * @param uidList
+     * 会员列表统计会员购买次数
      * @return
      */
-    List<UserCarRentalPackageDO> queryUserPayCountByUidList(List<Long> uidList);
+    List<UserCarRentalPackageDO> listUserPayCountByUidList(List<Long> uidList);
 }

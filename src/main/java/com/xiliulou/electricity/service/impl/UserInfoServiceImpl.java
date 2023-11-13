@@ -562,7 +562,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //处理payCount为空（押金已退），根据uid查詢套餐列表
         List<Long> uidList = userCarRentalPackageVOList.stream().map(UserCarRentalPackageVO::getUid).collect(Collectors.toList());
-        List<UserCarRentalPackageDO> packageDOList = carRentalPackageMemberTermService.queryUserPayCountByUidList(uidList);
+        List<UserCarRentalPackageDO> packageDOList = carRentalPackageMemberTermService.listUserPayCountByUidList(uidList);
         Map<Long, List<UserCarRentalPackageDO>> listMap = packageDOList.stream().collect(Collectors.groupingBy(UserCarRentalPackageDO::getUid));
         
         Map<Long, Integer> payCountMap = Maps.newHashMap();
