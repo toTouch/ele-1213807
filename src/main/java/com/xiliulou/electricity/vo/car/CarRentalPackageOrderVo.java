@@ -61,6 +61,16 @@ public class CarRentalPackageOrderVo implements Serializable {
     private Long confineNum;
     
     /**
+     * 当前套餐余量
+     */
+    private Long residueNum;
+    
+    /**
+     * 当前套餐剩余时间
+     */
+    private Integer residueTime;
+    
+    /**
      * 租期
      */
     private Integer tenancy;

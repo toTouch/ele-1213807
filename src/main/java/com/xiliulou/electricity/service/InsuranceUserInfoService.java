@@ -62,8 +62,8 @@ public interface InsuranceUserInfoService {
     InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type);
 
     InsuranceUserInfoVo selectUserInsurance(Long uid, Integer type);
-
-    void saveUserInsurance(InsuranceOrder insuranceOrder);
+    
+    InsuranceUserInfo saveUserInsurance(InsuranceOrder insuranceOrder);
 
     void updateUserInsuranceOrderStatusTask();
 

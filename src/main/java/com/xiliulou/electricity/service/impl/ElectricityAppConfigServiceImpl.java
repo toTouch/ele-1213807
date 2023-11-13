@@ -98,7 +98,7 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
                 return R.ok();
             }
         } catch (Exception e) {
-            log.error("selection exchange saas update time is error");
+            log.warn("selection exchange saas update time is error");
             return R.ok();
         }
         
