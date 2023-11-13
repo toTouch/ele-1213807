@@ -161,7 +161,8 @@ public class JsonUserEleDepositOrderController {
      */
     @PostMapping("/user/payBatteryServiceFee")
     public R payBatteryServiceFee(HttpServletRequest request) {
-        return eleDepositOrderService.payBatteryServiceFee(request);
+        // return eleDepositOrderService.payBatteryServiceFee(request);
+        return R.fail("000001","小程序版本过低，请升级小程序");
     }
 
     //用户查询租车押金
