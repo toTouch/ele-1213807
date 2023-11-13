@@ -111,7 +111,6 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
             boxOtherProperties.setLockReason(eleCellVo.getLockReason());
             boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
-            boxOtherProperties.setRemark(StringUtils.EMPTY);
             boxOtherProperties.setCreateTime(System.currentTimeMillis());
             boxOtherProperties.setUpdateTime(System.currentTimeMillis());
             boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
