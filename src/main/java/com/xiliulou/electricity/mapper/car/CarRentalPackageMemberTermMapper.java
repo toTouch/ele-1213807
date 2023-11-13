@@ -153,5 +153,12 @@ public interface CarRentalPackageMemberTermMapper {
      * @return
      */
     Integer queryUserCarRentalPackageCount(@Param("query") UserInfoQuery userInfoQuery);
-
+    
+    
+    /**
+     * 会员列表统计会员购买次数
+     * @param uidList
+     * @return
+     */
+    List<UserCarRentalPackageDO> queryUserPayCount(List<Long> uidList);
 }

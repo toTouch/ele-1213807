@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.api.client.util.Maps;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -58,6 +59,7 @@ import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -557,6 +559,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("Data summary browsing error for car rental.", e);
         }
+        
+        //处理payCount为空（押金已退），根据uid查詢套餐列表
+        List<Long> uidList = userCarRentalPackageVOList.stream().map(UserCarRentalPackageVO::getUid).collect(Collectors.toList());
+        List<UserCarRentalPackageDO> packageDOList = carRentalPackageMemberTermService.queryUserPayCountByUidList(uidList);
+        Map<Long, List<UserCarRentalPackageDO>> listMap = packageDOList.stream().collect(Collectors.groupingBy(UserCarRentalPackageDO::getUid));
+        
+        Map<Long, Integer> payCountMap = Maps.newHashMap();
+        if (MapUtils.isNotEmpty(listMap)) {
+            listMap.forEach((key, rentalPackageDOList) -> {
+                UserCarRentalPackageDO userCarRentalPackageDO = rentalPackageDOList.stream().max(Comparator.comparing(UserCarRentalPackageDO::getUid))
+                        .orElse(new UserCarRentalPackageDO());
+                payCountMap.put(key, userCarRentalPackageDO.getPayCount());
+            });
+        }
+        
+        //payCount为空时，进行处理
+        userCarRentalPackageVOList.forEach(userCarRentalPackageVO -> {
+            if (Objects.isNull(userCarRentalPackageVO.getPayCount()) && payCountMap.containsKey(userCarRentalPackageVO.getUid())) {
+                userCarRentalPackageVO.setPayCount(payCountMap.get(userCarRentalPackageVO.getUid()));
+            }
+        });
         
         return R.ok(userCarRentalPackageVOList);
     }

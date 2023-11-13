@@ -391,5 +391,12 @@
 
         </where>
     </select>
+    
+    <select id="queryUserPayCount" resultType="com.xiliulou.electricity.domain.car.UserCarRentalPackageDO">
+       SELECT uid,pay_count FROM t_car_rental_package_member_term WHERE uid IN
+        <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
 
 </mapper>
