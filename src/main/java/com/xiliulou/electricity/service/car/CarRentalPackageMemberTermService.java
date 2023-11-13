@@ -154,5 +154,5 @@ public interface CarRentalPackageMemberTermService {
      * 会员列表统计会员购买次数
      * @return
      */
-    List<UserCarRentalPackageDO> listUserPayCountByUidList(List<Long> uidList);
+    List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList);
 }
