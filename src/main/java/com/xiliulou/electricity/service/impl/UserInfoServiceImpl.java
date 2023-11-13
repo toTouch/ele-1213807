@@ -565,10 +565,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<CarRentalPackageMemberTermPo> packageDOList = carRentalPackageMemberTermService.listUserPayCountByUidList(uidList);
         
         Map<Long, Integer> payCountMap = Maps.newHashMap();
-        if(CollectionUtils.isNotEmpty(packageDOList)){
-            payCountMap = packageDOList.stream()
-                    .collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, CarRentalPackageMemberTermPo::getPayCount, (k1, k2) -> k1));
-            
+        if (CollectionUtils.isNotEmpty(packageDOList)) {
+            payCountMap = packageDOList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, CarRentalPackageMemberTermPo::getPayCount, (k1, k2) -> k1));
         }
         
         //payCount为空时，进行处理
