@@ -132,6 +132,9 @@
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
         order by id
     </select>
 

@@ -2,8 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.InvitationActivityUser;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
+import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
 import com.xiliulou.electricity.vo.InvitationActivityUserVO;
-import com.xiliulou.electricity.vo.UserInfoVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -74,4 +74,6 @@ public interface InvitationActivityUserService {
     Triple<Boolean, String, Object> delete(Long id);
 
     InvitationActivityUser selectByUid(Long uid);
+    
+    Triple<Boolean, String, Object> saveInvitationUser(InvitationActivityUserSaveQuery query);
 }

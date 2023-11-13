@@ -3,14 +3,18 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
+import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -36,7 +40,8 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "uid", required = false) Long uid,
                   @RequestParam(value = "phone", required = false) String phone,
-                  @RequestParam(value = "userName", required = false) String userName) {
+                  @RequestParam(value = "userName", required = false) String userName,
+                  @RequestParam(value = "activityName", required = false) String activityName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -75,6 +80,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
                 .phone(phone)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
+                .activityName(activityName)
                 .build();
 
         return R.ok(invitationActivityUserService.selectByPage(query));
@@ -119,7 +125,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
     }
 
     @PostMapping("/admin/invitationActivityUser/save")
-    public R save(@RequestParam(value = "uid") Long uid, @RequestParam(value = "activityId") Long activityId) {
+    public R save(@RequestBody @Validated(CreateGroup.class) InvitationActivityUserSaveQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -128,10 +134,8 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-
-        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder().activityId(activityId).uid(uid).build();
-
-        return returnTripleResult(invitationActivityUserService.save(query));
+        
+        return returnTripleResult(invitationActivityUserService.saveInvitationUser(query));
     }
 
     @DeleteMapping("/admin/invitationActivityUser/{id}")

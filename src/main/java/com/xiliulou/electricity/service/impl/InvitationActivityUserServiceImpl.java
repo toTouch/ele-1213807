@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityUserMapper;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
+import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -190,5 +191,37 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     @Override
     public InvitationActivityUser selectByUid(Long uid) {
         return this.invitationActivityUserMapper.selectByUid(uid);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> saveInvitationUser(InvitationActivityUserSaveQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+    
+        // TODO 提示语
+        InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
+        if (Objects.nonNull(invitationActivityUser1)) {
+            return Triple.of(false, "", "用户已存在");
+        }
+        
+        // 查询绑定的所有活动下是否有重复的套餐
+        List<Long> memberCardIds = query.getMemberCardIds();
+        if(CollectionUtils.isEmpty(memberCardIds)) {
+            return Triple.of(false, "", "用户已存在");
+        }
+        
+        // TODO 待完成
+    
+        return null;
     }
 }

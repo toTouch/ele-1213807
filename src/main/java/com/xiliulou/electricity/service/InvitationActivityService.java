@@ -75,4 +75,6 @@ public interface InvitationActivityService {
     Triple<Boolean, String, Object> activityInfo();
 
     Triple<Boolean, String, Object> findActivityById(Long id);
+    
+    Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid);
 }

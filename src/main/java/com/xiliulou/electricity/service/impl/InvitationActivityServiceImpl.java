@@ -17,9 +17,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +29,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -380,7 +386,43 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
         return  Triple.of(true, null, invitationActivityVO);
     }
-
+    
+    @Override
+    public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
+    
+        List<InvitationActivityMemberCardVO> list = new ArrayList<>();
+    
+        // 获取已上架的所有活动
+        List<InvitationActivity> invitationActivities = selectBySearch(query);
+    
+        if (CollectionUtils.isEmpty(invitationActivities)) {
+            return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+        }
+    
+        // 获取邀请人已绑定的活动
+        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(uid);
+    
+        // 对所有的活动进行过滤
+        invitationActivities.stream().peek(item -> {
+            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+        
+            if (Objects.nonNull(invitationActivityUser)) {
+                // 获取已绑定的活动对应的套餐ID
+                List<Long> memberCardIdsUser = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivityUser.getId());
+                memberCardIds.removeAll(memberCardIdsUser);
+            }
+        
+            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+            invitationActivityMemberCardVO.setId(item.getId());
+            invitationActivityMemberCardVO.setName(item.getName());
+            invitationActivityMemberCardVO.setMemberCardIdList(memberCardIds);
+        
+            list.add(invitationActivityMemberCardVO);
+        }).collect(Collectors.toList());
+    
+        return Triple.of(true, null, list);
+    }
+    
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId){
         List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
         List<InvitationActivityMemberCard> invitationActivityMemberCards = invitationActivityMemberCardService.selectPackagesByActivityIdAndType(activityId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());

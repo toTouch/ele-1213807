@@ -31,7 +31,9 @@
         select
           iau.id id, iau.activity_id , iau.uid uid, iau.operator operator, iau.create_time create_time, iau.update_time update_time,
           tui.name as userName ,tui.phone as phone
-        from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
+        from t_invitation_activity_user iau
+            left join t_user_info tui on tui.uid=iau.uid
+            left join t_invitation_activity ia on ia.id=iau.activity_id
         <where>
             <if test="uid != null">
                 and tui.uid = #{uid}
@@ -41,6 +43,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and ia.name = #{activityName}
             </if>
             <if test="tenantId != null">
                 and tui.tenant_id = #{tenantId}
