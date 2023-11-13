@@ -563,21 +563,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //处理payCount为空（押金已退），根据uid查詢套餐列表
         List<Long> uidList = userCarRentalPackageVOList.stream().map(UserCarRentalPackageVO::getUid).collect(Collectors.toList());
         List<CarRentalPackageMemberTermPo> packageDOList = carRentalPackageMemberTermService.listUserPayCountByUidList(uidList);
-        Map<Long, List<CarRentalPackageMemberTermPo>> listMap = packageDOList.stream().collect(Collectors.groupingBy(CarRentalPackageMemberTermPo::getUid));
         
         Map<Long, Integer> payCountMap = Maps.newHashMap();
-        if (MapUtils.isNotEmpty(listMap)) {
-            listMap.forEach((key, rentalPackageDOList) -> {
-                CarRentalPackageMemberTermPo carRentalPackageMemberTermPo = rentalPackageDOList.stream().max(Comparator.comparing(CarRentalPackageMemberTermPo::getId))
-                        .orElse(new CarRentalPackageMemberTermPo());
-                payCountMap.put(key, carRentalPackageMemberTermPo.getPayCount());
-            });
+        if(CollectionUtils.isNotEmpty(packageDOList)){
+            payCountMap = packageDOList.stream()
+                    .collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, CarRentalPackageMemberTermPo::getPayCount, (k1, k2) -> k1));
+            
         }
         
         //payCount为空时，进行处理
+        Map<Long, Integer> finalPayCountMap = payCountMap;
         userCarRentalPackageVOList.forEach(userCarRentalPackageVO -> {
-            if (Objects.isNull(userCarRentalPackageVO.getPayCount()) && payCountMap.containsKey(userCarRentalPackageVO.getUid())) {
-                userCarRentalPackageVO.setPayCount(payCountMap.get(userCarRentalPackageVO.getUid()));
+            if (Objects.isNull(userCarRentalPackageVO.getPayCount()) && finalPayCountMap.containsKey(userCarRentalPackageVO.getUid())) {
+                userCarRentalPackageVO.setPayCount(finalPayCountMap.get(userCarRentalPackageVO.getUid()));
             }
         });
         
