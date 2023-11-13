@@ -4207,7 +4207,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         if (Objects.equals(userBatteryMemberCard.getMemberCardId() , UserBatteryMemberCard.SEND_REMAINING_NUMBER) ||userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindbatteryMemberCard) || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-            
             memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
             
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
