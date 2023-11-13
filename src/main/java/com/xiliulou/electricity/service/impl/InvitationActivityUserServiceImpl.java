@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityUserMapper;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
 import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
+import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -38,12 +39,18 @@ import java.util.stream.Collectors;
 public class InvitationActivityUserServiceImpl implements InvitationActivityUserService {
     @Resource
     private InvitationActivityUserMapper invitationActivityUserMapper;
+    
     @Autowired
     private UserInfoService userInfoService;
+    
     @Autowired
     private UserService userService;
+    
     @Autowired
     private InvitationActivityService invitationActivityService;
+    
+    @Autowired
+    private InvitationActivityMemberCardService invitationActivityMemberCardService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -207,21 +214,14 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
-        // TODO 提示语
-        InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
-        if (Objects.nonNull(invitationActivityUser1)) {
-            return Triple.of(false, "", "用户已存在");
+        
+        InvitationActivityUser invitationActivityUser = this.selectByUid(query.getUid());
+        if (Objects.nonNull(invitationActivityUser)) {
+            // 获取已绑定的活动对应的套餐ID
+            List<Long> memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivityUser.getId());
         }
         
-        // 查询绑定的所有活动下是否有重复的套餐
-        List<Long> memberCardIds = query.getMemberCardIds();
-        if(CollectionUtils.isEmpty(memberCardIds)) {
-            return Triple.of(false, "", "用户已存在");
-        }
-        
-        // TODO 待完成
-    
+        // TODO 查询所选的活动下是否有重复的套餐
         return null;
     }
 }

@@ -408,8 +408,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         
             if (Objects.nonNull(invitationActivityUser)) {
                 // 获取已绑定的活动对应的套餐ID
-                List<Long> memberCardIdsUser = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivityUser.getId());
-                memberCardIds.removeAll(memberCardIdsUser);
+                List<Long> memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivityUser.getId());
+                memberCardIds.removeAll(memberCardIdsByActivity);
             }
         
             InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();

@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.query;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -14,16 +12,16 @@ import java.util.List;
  */
 @Data
 @Builder
-public class InvitationActivityUserSaveQuery {
+public class InvitationActivityUserAddQuery {
     
     /**
-     * 用户ID
+     * 活动ID
      */
-    private Long uid;
+    private Long id;
     
     /**
-     * 活动列表
+     * 可参与活动的套餐
      */
-    private List<InvitationActivityUserAddQuery> invitationActivityUserAddQueries;
+    private List<Long> memberCardIds;
     
 }
