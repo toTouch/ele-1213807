@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -34,6 +35,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -75,6 +78,8 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(2);
 
     /**
      * 通过ID查询单条数据从DB
@@ -117,16 +122,8 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UserBatteryMemberCard insert(UserBatteryMemberCard userBatteryMemberCard) {
         int insert = this.userBatteryMemberCardMapper.insert(userBatteryMemberCard);
-
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid(),
-                    userBatteryMemberCard);
-            return null;
-        });
-
         return userBatteryMemberCard;
     }
 
@@ -137,13 +134,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer updateByUid(UserBatteryMemberCard userBatteryMemberCard) {
         int update = this.userBatteryMemberCardMapper.updateByUid(userBatteryMemberCard);
 
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            return null;
+            clearCache(userBatteryMemberCard.getUid());
         });
 
         return update;
@@ -156,15 +152,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
         int delete = this.userBatteryMemberCardMapper.deleteByUid(uid);
 
-//        saveMemberCardFailureRecord(uid);
-
-        DbUtils.dbOperateSuccessThen(delete, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            return null;
+            clearCache(uid);
         });
 
         return delete;
@@ -189,9 +182,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
         int update = this.userBatteryMemberCardMapper.unbindMembercardInfoByUid(userBatteryMemberCard);
 
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            return null;
+            clearCache(uid);
         });
         return update;
     }
@@ -200,11 +193,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer minCount(UserBatteryMemberCard userBatteryMemberCard) {
 
         Integer update = userBatteryMemberCardMapper.minCount(userBatteryMemberCard.getId());
-
-
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            return null;
+            clearCache(userBatteryMemberCard.getUid());
         });
 
         return update;
@@ -214,9 +206,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer minCountForOffLineEle(UserBatteryMemberCard userBatteryMemberCard) {
         Integer update = userBatteryMemberCardMapper.minCountForOffLineEle(userBatteryMemberCard.getId());
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            return null;
+            clearCache(userBatteryMemberCard.getUid());
         });
 
         return update;
@@ -225,9 +217,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer deductionExpireTime(Long uid, Long time, Long updateTime) {
         Integer update = userBatteryMemberCardMapper.deductionExpireTime(uid, time, updateTime);
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            return null;
+            clearCache(uid);
         });
 
         return update;
@@ -236,9 +228,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer plusCount(Long id) {
         Integer count = userBatteryMemberCardMapper.plusCount(id);
-        DbUtils.dbOperateSuccessThen(count, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(count, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + id);
-            return null;
+            clearCache(id);
         });
         return count;
     }
@@ -247,9 +239,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard) {
         int update = this.userBatteryMemberCardMapper.updateByUidForDisableCard(userBatteryMemberCard);
 
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            return null;
+            clearCache(userBatteryMemberCard.getUid());
         });
 
         return update;
@@ -300,7 +292,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     /**
-     * 校验用户电池i套餐是否过期
+     * 校验用户电池套餐是否过期
      */
     @Override
     public Boolean verifyUserBatteryMembercardEffective(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard) {
@@ -385,10 +377,17 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
      */
     @Override
     public Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard) {
-        Long result = 0L;
-
+    
         Long remainingTime = userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis();
 
-        return result = Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000;
+        return Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000;
+    }
+    
+    private void clearCache(Long uid){
+        scheduledExecutor.schedule(() -> {
+            if (redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid)) {
+                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
+            }
+        }, 1, TimeUnit.SECONDS);
     }
 }
