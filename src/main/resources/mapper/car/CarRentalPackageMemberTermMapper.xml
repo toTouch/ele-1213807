@@ -113,7 +113,7 @@
     <select id="selectLastByUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} and status != 0
         </where>
         ORDER BY `id` DESC LIMIT 1
     </select>
@@ -398,7 +398,7 @@
         INNER JOIN (
         SELECT MAX(id) AS max_id
         FROM t_car_rental_package_member_term
-        WHERE uid IN
+        WHERE status != 0 and uid IN
         <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
             #{uid}
         </foreach>
