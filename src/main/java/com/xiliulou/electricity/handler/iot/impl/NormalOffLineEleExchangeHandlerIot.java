@@ -200,7 +200,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
             //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
             if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime()
-                    && userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) {
+                    && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
                 //扣除月卡
                 userBatteryMemberCardService.minCount(userBatteryMemberCard);
             }
