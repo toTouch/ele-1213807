@@ -23,6 +23,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -3162,7 +3163,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     
                     //设置电池电压 容量
                     if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
                     }
                 }
                 
@@ -4017,7 +4018,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //设置电池电压 容量
                 if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
                 }
             }
             
