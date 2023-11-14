@@ -1330,7 +1330,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         EnterpriseInfo enterpriseInfo = this.selectByUid(userInfo.getUid());
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
             return Boolean.FALSE;
         }
         
