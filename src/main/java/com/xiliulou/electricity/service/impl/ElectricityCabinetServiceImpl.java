@@ -27,6 +27,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -3155,9 +3156,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
-                    electricityCabinetBoxVO.setBatteryCapacity(electricityBattery.getCapacity());
                     if (StringUtils.isNotBlank(electricityBattery.getSn())) {
                         electricityCabinetBoxVO.setBatteryShortType(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
+                    }
+                    
+                    //设置电池电压 容量
+                    if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
                     }
                 }
                 
@@ -4009,7 +4014,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
             if (Objects.nonNull(electricityBattery)) {
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
-                electricityCabinetBoxVO.setBatteryCapacity(electricityBattery.getCapacity());
+                
+                //设置电池电压 容量
+                if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity());
+                }
             }
             
             if (StringUtils.isNotBlank(item.getBatteryType())) {
@@ -5013,7 +5022,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-        String netType=null;
+        String netType = null;
         //如果柜机在线，则需要取柜机上报的信号
         if (eleResult) {
             netType = redisService.get(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId);
