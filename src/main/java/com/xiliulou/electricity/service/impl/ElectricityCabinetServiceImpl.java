@@ -3155,7 +3155,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
-                    
+                    electricityCabinetBoxVO.setBatteryCapacity(electricityBattery.getCapacity());
                     if (StringUtils.isNotBlank(electricityBattery.getSn())) {
                         electricityCabinetBoxVO.setBatteryShortType(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
                     }
@@ -4009,6 +4009,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
             if (Objects.nonNull(electricityBattery)) {
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
+                electricityCabinetBoxVO.setBatteryCapacity(electricityBattery.getCapacity());
             }
             
             if (StringUtils.isNotBlank(item.getBatteryType())) {
