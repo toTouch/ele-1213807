@@ -1676,6 +1676,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // TX 事务
         saveFreezeInfoTx(freezeEntity, tenantId, uid, optUid, systemDefinitionEnum);
         
+        // 添加操作记录
+        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum)) {
+            EleUserOperateRecord record = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                    .operateContent(EleUserOperateRecord.MEMBER_CARD_DISABLE).operateUid(optUid).uid(userInfo.getUid()).name(userName)
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).memberCardDisableStatus(UserOperateRecordConstant.CAR_MEMBER_CARD_DISABLE)
+                    .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
+        }
+        
         return true;
     }
     
