@@ -91,8 +91,8 @@ public class ActivityServiceImpl implements ActivityService {
     public Triple<Boolean, String, Object> userActivityInfo() {
         ActivityUserInfoVO activityUserInfoVO = new ActivityUserInfoVO();
 
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
-        activityUserInfoVO.setInvitationActivity(Objects.isNull(invitationActivityUser) ? Boolean.FALSE : Boolean.TRUE);
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        activityUserInfoVO.setInvitationActivity(CollectionUtils.isEmpty(invitationActivityUserList) ? Boolean.FALSE : Boolean.TRUE);
 
         return Triple.of(true, "", activityUserInfoVO);
     }

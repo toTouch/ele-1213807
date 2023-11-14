@@ -23,11 +23,17 @@
         from t_invitation_activity_record
         where id = #{id}
     </select>
-
-    <select id="selectByActivityIdAndUid" resultMap="InvitationActivityRecordMap">
-        select   id, activity_id, code, uid, share_count, invitation_count, status, money
+    
+    <select id="selectByActivityIdAndUid" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
+        select id, activity_id, code, uid, share_count, invitation_count, status, money
         from t_invitation_activity_record
-        where activity_id = #{activityId} and uid=#{uid} order by id desc limit 1
+        <where>
+            activity_id in
+            <foreach collection="activityIds" item="activityId" open="(" close=")" separator=",">
+                #{activityId}
+            </foreach>
+        </where>
+        and uid=#{uid} order by id desc limit 1
     </select>
 
     <select id="selectByUid" resultMap="InvitationActivityRecordMap">
@@ -48,6 +54,7 @@
         select
         iar.id,
         iar.activity_id,
+        iar.activity_ids as activityIds
         iar.code,
         iar.uid,
         iar.share_count,

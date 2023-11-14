@@ -236,7 +236,11 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="existsByJoinUidAndActivityId" resultType="java.lang.Integer">
+        select 1 from t_invitation_activity_join_history where join_uid=#{joinUid} and activity_id = #{activityId} LIMIT 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time)

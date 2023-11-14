@@ -68,7 +68,18 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="listMemberCardIdsByActivityIds" resultType="java.lang.Long">
+        select mid
+        from t_invitation_activity_member_card
+        <where>
+            activity_id in
+            <foreach collection="boundActivityIds" item="activityId" open="(" close=")" separator=",">
+                #{activityId}
+            </foreach>
+        </where>
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_invitation_activity_member_card(activity_id, mid, package_type, create_time, update_time, tenant_id)

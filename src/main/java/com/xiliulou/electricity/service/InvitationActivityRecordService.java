@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
@@ -77,8 +76,8 @@ public interface InvitationActivityRecordService {
     Integer addMoneyByRecordId( BigDecimal rewardAmount, Long recordId);
 
     Triple<Boolean, String, Object> selectUserInvitationDetail();
-
-    InvitationActivityRecord selectByActivityIdAndUid(Long id, Long uid);
+    
+    List<InvitationActivityRecord> selectByActivityIdAndUid(List<Long> activityIds, Long uid);
 
     InvitationActivityRecord selectByUid(Long uid);
 }

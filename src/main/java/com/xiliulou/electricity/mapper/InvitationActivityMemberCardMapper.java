@@ -72,5 +72,6 @@ public interface InvitationActivityMemberCardMapper extends BaseMapper<Invitatio
     Integer deleteByActivityId(@Param("activityId") Long activityId);
 
     List<InvitationActivityMemberCard> selectPackagesByActivityIdAndPackageType(@Param("activityId") Long activityId, @Param("packageType") Integer packageType);
-
+    
+    List<Long> listMemberCardIdsByActivityIds(List<Long> boundActivityIds);
 }

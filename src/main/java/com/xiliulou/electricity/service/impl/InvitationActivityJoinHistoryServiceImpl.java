@@ -172,4 +172,9 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         invitationActivityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
         invitationActivityJoinHistoryMapper.updateExpired(invitationActivityJoinHistoryUpdate);
     }
+    
+    @Override
+    public Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId) {
+        return invitationActivityJoinHistoryMapper.existsByJoinUidAndActivityId(joinUid, activityId);
+    }
 }

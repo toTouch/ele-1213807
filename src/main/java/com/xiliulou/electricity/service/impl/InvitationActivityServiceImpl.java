@@ -339,38 +339,25 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Override
     public Triple<Boolean, String, Object> activityInfo() {
-
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
-        if(Objects.isNull(invitationActivityUser)){
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             return Triple.of(true, null, null);
         }
-
-        InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
-        if(Objects.isNull(invitationActivity)){
-            return Triple.of(true, null, null);
-        }
-
-        InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
-        BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
-
-        /*List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivity.getId());
-        if (!CollectionUtils.isEmpty(membercardIds)) {
-            List<ElectricityMemberCard> memberCardList = Lists.newArrayList();
-            for (Long membercardId : membercardIds) {
-                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercardId.intValue());
-                if (Objects.nonNull(electricityMemberCard)) {
-                    memberCardList.add(electricityMemberCard);
-                }
+    
+        List<InvitationActivityVO> invitationActivityVOList = invitationActivityUserList.stream().map(invitationActivityUser -> {
+            InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
+            InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
+            if (Objects.nonNull(invitationActivity)) {
+                BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
+            
+                invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
+                invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+                invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
-
-//            invitationActivityVO.setMemberCardList(memberCardList);
-        }*/
-
-        invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
-        invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-        invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
-
-        return Triple.of(true, null, invitationActivityVO);
+            return invitationActivityVO;
+        }).collect(Collectors.toList());
+    
+        return Triple.of(true, null, invitationActivityVOList);
     }
 
     @Override
@@ -389,9 +376,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
-    
-        List<InvitationActivityMemberCardVO> list = new ArrayList<>();
-    
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
     
@@ -400,16 +384,15 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         }
     
         // 获取邀请人已绑定的活动
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(uid);
-    
-        // 对所有的活动进行过滤
-        invitationActivities.stream().peek(item -> {
-            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
         
-            if (Objects.nonNull(invitationActivityUser)) {
-                // 获取已绑定的活动对应的套餐ID
-                List<Long> memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivityUser.getId());
-                memberCardIds.removeAll(memberCardIdsByActivity);
+        // 对所有的活动进行过滤
+        List<InvitationActivityMemberCardVO> list = invitationActivities.stream().map(item -> {
+            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+            List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
+            
+            if (CollectionUtils.isNotEmpty(boundActivityIds)) {
+                memberCardIds = memberCardIds.stream().filter(id -> !boundActivityIds.contains(id)).collect(Collectors.toList());
             }
         
             InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
@@ -417,7 +400,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityMemberCardVO.setName(item.getName());
             invitationActivityMemberCardVO.setMemberCardIdList(memberCardIds);
         
-            list.add(invitationActivityMemberCardVO);
+            return invitationActivityMemberCardVO;
         }).collect(Collectors.toList());
     
         return Triple.of(true, null, list);

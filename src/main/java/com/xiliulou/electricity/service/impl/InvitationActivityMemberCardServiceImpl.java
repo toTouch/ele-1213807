@@ -108,7 +108,12 @@ public class InvitationActivityMemberCardServiceImpl implements InvitationActivi
     public List<InvitationActivityMemberCard> selectPackagesByActivityIdAndType(Long id, Integer packageType) {
         return invitationActivityMemberCardMapper.selectPackagesByActivityIdAndPackageType(id, packageType);
     }
-
+    
+    @Override
+    public List<Long> selectMemberCardIdsByActivityIds(List<Long> boundActivityIds) {
+        return invitationActivityMemberCardMapper.listMemberCardIdsByActivityIds(boundActivityIds);
+    }
+    
     @Override
     public Integer batchInsert(List<InvitationActivityMemberCard> shareActivityMemberCards) {
         return invitationActivityMemberCardMapper.batchInsert(shareActivityMemberCards);

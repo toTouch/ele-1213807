@@ -17,7 +17,7 @@ import java.util.List;
 public class InvitationActivityUserSaveQuery {
     
     /**
-     * 用户ID
+     * 邀请人uid
      */
     private Long uid;
     

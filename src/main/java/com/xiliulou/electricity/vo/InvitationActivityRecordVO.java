@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -18,6 +19,8 @@ public class InvitationActivityRecordVO {
      */
     private Long activityId;
     private String activityName;
+    
+    private String activityIds;
 
     /**
      * 用户uid

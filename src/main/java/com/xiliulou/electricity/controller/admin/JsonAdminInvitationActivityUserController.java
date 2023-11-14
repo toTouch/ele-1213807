@@ -135,7 +135,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return returnTripleResult(invitationActivityUserService.saveInvitationUser(query));
+        return returnTripleResult(invitationActivityUserService.save(query));
     }
 
     @DeleteMapping("/admin/invitationActivityUser/{id}")

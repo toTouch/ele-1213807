@@ -73,7 +73,7 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
 
     Integer addCountAndMoneyByUid(@Param("rewardAmount") BigDecimal rewardAmount, @Param("recordId") Long recordId);
 
-    InvitationActivityRecord selectByActivityIdAndUid(@Param("activityId") Long activityId, @Param("uid") Long uid);
+    List<InvitationActivityRecord> selectByActivityIdAndUid(@Param("activityIds") List<Long> activityIds, @Param("uid") Long uid);
 
     Integer addShareCount(@Param("id") Long id);
 

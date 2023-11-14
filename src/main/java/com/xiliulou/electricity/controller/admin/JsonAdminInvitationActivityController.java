@@ -73,6 +73,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
     
     /**
      * @description 根据邀请人uid获取可参加的活动列表
+     * @param uid 邀请人uid
      * @date 2023/11/13 15:43:36
      * @author HeYafeng
      */
