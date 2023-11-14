@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * (UserBatteryDeposit)表服务实现类
@@ -30,6 +33,8 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     
     @Autowired
     private RedisService redisService;
+    
+    private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(2);
     
     /**
      * 通过ID查询单条数据从DB
@@ -83,18 +88,16 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer insert(UserBatteryDeposit userBatteryDeposit) {
-        int insert = this.userBatteryDepositMapper.insertOne(userBatteryDeposit);
-        return insert;
+        return this.userBatteryDepositMapper.insertOne(userBatteryDeposit);
     }
 
     @Override
     public UserBatteryDeposit insertOrUpdate(UserBatteryDeposit userBatteryDeposit) {
         int insert = this.userBatteryDepositMapper.insertOrUpdate(userBatteryDeposit);
-        DbUtils.dbOperateSuccessThen(insert, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid());
-            return null;
+            clearCache(userBatteryDeposit.getUid());
         });
         return userBatteryDeposit;
     }
@@ -106,12 +109,11 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer updateByUid(UserBatteryDeposit userBatteryDeposit) {
         int update = this.userBatteryDepositMapper.updateByUid(userBatteryDeposit);
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid());
-            return null;
+            clearCache(userBatteryDeposit.getUid());
         });
         return update;
     }
@@ -123,12 +125,11 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
         int delete = this.userBatteryDepositMapper.deleteByUid(uid);
-        DbUtils.dbOperateSuccessThen(delete, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
-            return null;
+            clearCache(uid);
         });
         return delete;
     }
@@ -142,9 +143,9 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
 
         int update = this.userBatteryDepositMapper.updateByUid(userBatteryDepositUpdate);
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
-            return null;
+            clearCache(uid);
         });
         return update;
     }
@@ -185,5 +186,13 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         }
 
         return result;
+    }
+    
+    private void clearCache(Long uid){
+        scheduledExecutor.schedule(() -> {
+            if (redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid)) {
+                redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
+            }
+        }, 1, TimeUnit.SECONDS);
     }
 }

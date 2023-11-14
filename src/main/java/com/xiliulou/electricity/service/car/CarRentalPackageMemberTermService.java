@@ -150,4 +150,9 @@ public interface CarRentalPackageMemberTermService {
      */
     Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery);
     
+    /**
+     * 会员列表统计会员购买次数
+     * @return
+     */
+    List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList);
 }

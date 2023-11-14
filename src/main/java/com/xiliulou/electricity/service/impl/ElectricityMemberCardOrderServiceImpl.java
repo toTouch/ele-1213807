@@ -2172,6 +2172,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             disableMembercardServiceFeeOrder.setStatus(EleBatteryServiceFeeOrder.STATUS_CLEAN);
             disableMembercardServiceFeeOrder.setBatteryServiceFeeEndTime(System.currentTimeMillis());
             disableMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
+            disableMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(disableMembercardServiceFeeOrder);
         }
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())) {
@@ -2181,6 +2182,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setPayAmount(expireBatteryServiceFee);
             expireMembercardServiceFeeOrder.setBatteryServiceFeeEndTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
+            expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
         }
         
@@ -4201,9 +4203,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NOT_USE);
         
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindbatteryMemberCard)
-                || Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0) {
-            
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId() , UserBatteryMemberCard.SEND_REMAINING_NUMBER) ||userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindbatteryMemberCard) || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
             memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
             
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
@@ -4614,8 +4614,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             UserInfo userInfo) {
         int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         //用户未绑定套餐
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
-                NumberConstant.ZERO_L)) {
+        if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId() , NumberConstant.ZERO_L) || Objects.equals(userBatteryMemberCard.getMemberCardId() , UserBatteryMemberCard.SEND_REMAINING_NUMBER)){
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());
