@@ -4092,8 +4092,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
         //截取串数
         String num = batteryType.substring(batteryType.lastIndexOf("_") + 1);
-        String key = batteryV + "/" + num;
-        return key;
+        return batteryV + "/" + num;
     }
     
     private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
@@ -4102,8 +4101,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
         //截取串数
-        String key = batteryV + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
-        return key;
+        return batteryV + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
     }
     
     private Triple<Boolean, String, Object> verficationMemberCardStatus(UserInfo userInfo) {
