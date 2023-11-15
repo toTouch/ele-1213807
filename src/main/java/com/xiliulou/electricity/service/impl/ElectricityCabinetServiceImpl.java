@@ -3193,13 +3193,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if (StringUtils.isNotBlank(electricityBattery.getSn())) {
                         electricityCabinetBoxVO.setBatteryShortType(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
                     }
-                    
-                    //设置电池电压 容量
-                    if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                                electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
-                                        + BatteryConstant.CAPACITY_UNIT);
-                    }
                 }
                 
                 //如果电池类型为空,则返回null
@@ -3208,8 +3201,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 if (StringUtils.isNotBlank(item.getBatteryType())) {
+                    String batteryType = item.getBatteryType();
                     //设置电池短型号
-                    electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(item.getBatteryType()));
+                    electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
+                    //设置电池电压 容量
+                    if (Objects.nonNull(electricityBattery.getCapacity())) {
+                        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
+                                batteryV + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
+                                        + BatteryConstant.CAPACITY_UNIT);
+                    }
                 }
                 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
@@ -4050,17 +4051,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
             if (Objects.nonNull(electricityBattery)) {
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
-                
-                //设置电池电压 容量
-                if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                            electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
-                                    + BatteryConstant.CAPACITY_UNIT);
-                }
             }
             
             if (StringUtils.isNotBlank(item.getBatteryType())) {
-                electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(item.getBatteryType()));
+                String batteryType = item.getBatteryType();
+                electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
+                
+                //设置电池电压 容量
+                if (Objects.nonNull(batteryType) && Objects.nonNull(electricityBattery.getCapacity())) {
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
+                            batteryType + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
+                                    + BatteryConstant.CAPACITY_UNIT);
+                }
             }
             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
         });
