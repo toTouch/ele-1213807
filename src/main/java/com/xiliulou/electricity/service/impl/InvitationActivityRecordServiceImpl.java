@@ -223,12 +223,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100392", "无权限参加此活动");
         }
     
+        // todo
         List<Long> activityUserIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(activityUserIds) || !new HashSet<>(activityIds).containsAll(activityUserIds)) {
             log.error("INVITATION ACTIVITY ERROR! activityUserIds is empty or activityUserIds is invalid,uid={}", userInfo.getUid());
             return Triple.of(false, "100392", "无权限参加此活动");
         }
 
+        // todo 提前
         if (StringUtils.isBlank(userInfo.getPhone())) {
             log.error("INVITATION ACTIVITY ERROR! phone is null,uid={}", userInfo.getUid());
             return Triple.of(false, "000001", "系统异常");
@@ -240,6 +242,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "000001", "系统异常");
         }
     
+        // todo
         StringBuilder activityIdsSb = new StringBuilder();
         invitationActivityUserList.forEach(item -> {
             activityIdsSb.append(item.getActivityId()).append(StrUtil.COMMA);
@@ -247,6 +250,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, userInfo.getUid())
                             .eq(InvitationActivityRecord::getActivityId, item.getActivityId()));
+            // todo 批量
             if (Objects.isNull(invitationActivityRecord)) {
                 //第一次分享  生成分享记录
                 InvitationActivityRecord invitationActivityRecordInsert = new InvitationActivityRecord();
