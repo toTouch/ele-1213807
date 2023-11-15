@@ -22,8 +22,8 @@ public class InvitationActivityUserSaveQuery {
     private Long uid;
     
     /**
-     * 活动列表
+     * 活动id列表
      */
-    private List<InvitationActivityUserAddQuery> invitationActivityUserAddQueries;
+    private List<Long> activityIds;
     
 }

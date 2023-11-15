@@ -1,12 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.InvitationActivity;
+import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.electricity.entity.InvitationActivityUser;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityUserMapper;
-import com.xiliulou.electricity.query.InvitationActivityUserAddQuery;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
 import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
 import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
@@ -16,18 +14,15 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -165,48 +160,45 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
-        // 活动及对应的套餐id
-        List<InvitationActivityUserAddQuery> invitationActivityUserAddQueries = query.getInvitationActivityUserAddQueries();
-    
         // 获取该邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
     
-        // 根据已绑定的活动获取其对应的套餐id
+        // 获取已绑定的活动对应的套餐id
         List<Long> memberCardIdsByActivity = null;
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
             memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
         }
-        
-        if (CollectionUtils.isEmpty(invitationActivityUserAddQueries)) {
+    
+        // 所选活动id
+        List<Long> activityIds = query.getActivityIds();
+        if (CollectionUtils.isEmpty(activityIds)) {
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
     
-        // 判断所选活动的套餐是否包含已绑定的活动的套餐
+        // 所选活动对应的套餐id
+        List<Long> memberCardIdsByActivityIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIds);
+        if (CollectionUtils.isEmpty(memberCardIdsByActivityIds)) {
+            return Triple.of(false, "100393", "所选活动未绑定套餐");
+        }
+    
+        // 所选活动的套餐不能包含已绑定的活动的套餐
         if (CollectionUtils.isNotEmpty(memberCardIdsByActivity)) {
-        
-            for (InvitationActivityUserAddQuery activityUserAddQuery : invitationActivityUserAddQueries) {
-                // 每个活动对应的套餐id
-                List<Long> memberCardIdsEveryActivity = activityUserAddQuery.getMemberCardIds();
-            
-                // 判断 每个活动对应的套餐id是否含有该邀请用户已绑定的套餐id，如果包含，移除该活动
-                if (CollectionUtils.isNotEmpty(memberCardIdsEveryActivity)) {
-                    for (Long cardId : memberCardIdsByActivity) {
-                        if (memberCardIdsEveryActivity.contains(cardId)) {
-                            return Triple.of(false, "ELECTRICITY.0069", "所选的活动包含其已绑定的活动套餐");
-                        }
+            for (Long memberCardId : memberCardIdsByActivityIds) {
+                for (Long cardId : memberCardIdsByActivity) {
+                    if (NumberUtil.equals(memberCardId, cardId)) {
+                        return Triple.of(false, "100394", "所选的活动包含已绑定的活动套餐");
                     }
                 }
             }
         }
     
-        invitationActivityUserAddQueries.stream().peek(item -> {
-            InvitationActivityUser invitationActivityUser1 = InvitationActivityUser.builder().activityId(item.getId()).uid(query.getUid()).operator(SecurityUtils.getUid())
-                    .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
-            this.invitationActivityUserMapper.insertOne(invitationActivityUser1);
-        
-        }).collect(Collectors.toList());
+        List<InvitationActivityUser> invitationActivityUsers = memberCardIdsByActivityIds.stream()
+                .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
+                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
+                .collect(Collectors.toList());
+    
+        invitationActivityUserMapper.batchInsert(invitationActivityUsers);
     
         return Triple.of(true, null, null);
     }

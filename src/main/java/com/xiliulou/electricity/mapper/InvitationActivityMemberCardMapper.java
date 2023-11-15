@@ -73,5 +73,7 @@ public interface InvitationActivityMemberCardMapper extends BaseMapper<Invitatio
 
     List<InvitationActivityMemberCard> selectPackagesByActivityIdAndPackageType(@Param("activityId") Long activityId, @Param("packageType") Integer packageType);
     
-    List<Long> listMemberCardIdsByActivityIds(List<Long> boundActivityIds);
+    List<Long> selectListMemberCardIdsByActivityIds(List<Long> boundActivityIds);
+    
+    List<Long> selectListActivityIdByPackageIdAndPackageType(@Param("packageId") Long packageId, @Param("packageType") Integer packageType);
 }

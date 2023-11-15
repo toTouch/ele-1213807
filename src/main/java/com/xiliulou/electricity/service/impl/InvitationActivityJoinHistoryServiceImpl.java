@@ -177,4 +177,9 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     public Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId) {
         return invitationActivityJoinHistoryMapper.existsByJoinUidAndActivityId(joinUid, activityId);
     }
+    
+    @Override
+    public List<InvitationActivityJoinHistory> listByJoinUid(Long uid) {
+        return invitationActivityJoinHistoryMapper.selectListByJoinUid(uid);
+    }
 }

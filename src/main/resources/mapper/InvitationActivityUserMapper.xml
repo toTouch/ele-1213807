@@ -102,7 +102,14 @@
         insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id)
         values (#{activityId}, #{uid}, #{operator},  #{createTime}, #{updateTime}, #{tenantId})
     </insert>
-
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id) values
+        <foreach item="item" index="index" collection="invitationActivityUsers" separator=",">
+            (#{item.activityId}, #{item.uid}, #{item.operator}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+        </foreach>
+    </insert>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_invitation_activity_user

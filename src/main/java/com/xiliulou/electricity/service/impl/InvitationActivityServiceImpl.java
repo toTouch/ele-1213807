@@ -21,7 +21,6 @@ import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -343,20 +339,20 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             return Triple.of(true, null, null);
         }
-    
+        
         List<InvitationActivityVO> invitationActivityVOList = invitationActivityUserList.stream().map(invitationActivityUser -> {
             InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
             InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
             if (Objects.nonNull(invitationActivity)) {
                 BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
-            
+                
                 invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
                 invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
             return invitationActivityVO;
         }).collect(Collectors.toList());
-    
+        
         return Triple.of(true, null, invitationActivityVOList);
     }
 
@@ -385,28 +381,41 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
-        
-        // 对所有的活动进行过滤
-        List<InvitationActivityMemberCardVO> list = invitationActivities.stream().map(item -> {
-            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+    
+        if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
-            
-            if (CollectionUtils.isNotEmpty(boundActivityIds)) {
-                memberCardIds = memberCardIds.stream().filter(id -> !boundActivityIds.contains(id)).collect(Collectors.toList());
+            //根据已绑定的活动获取对应的套餐id
+            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
+        
+            // 对所有的活动进行过滤,过滤掉已绑定活动的套餐所对应的活动
+            List<InvitationActivity> removeInvitationActivities = new ArrayList<>();
+            for (InvitationActivity activity : invitationActivities) {
+                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
+                for (Long memCardId : memberCardIds) {
+                    if (boundMemberCardIds.contains(memCardId)) {
+                        removeInvitationActivities.add(activity);
+                        break;
+                    }
+                }
             }
         
+            invitationActivities.removeAll(removeInvitationActivities);
+        }
+    
+        List<InvitationActivityMemberCardVO> list = invitationActivities.stream().map(item -> {
+            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
             InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
             invitationActivityMemberCardVO.setId(item.getId());
             invitationActivityMemberCardVO.setName(item.getName());
             invitationActivityMemberCardVO.setMemberCardIdList(memberCardIds);
-        
             return invitationActivityMemberCardVO;
+        
         }).collect(Collectors.toList());
     
         return Triple.of(true, null, list);
     }
     
-    private List<BatteryMemberCardVO> getBatteryPackages(Long activityId){
+    private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {
         List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
         List<InvitationActivityMemberCard> invitationActivityMemberCards = invitationActivityMemberCardService.selectPackagesByActivityIdAndType(activityId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
 

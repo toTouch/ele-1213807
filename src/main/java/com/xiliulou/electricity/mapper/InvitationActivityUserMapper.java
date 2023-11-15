@@ -73,4 +73,6 @@ public interface InvitationActivityUserMapper extends BaseMapper<InvitationActiv
     Integer selectByPageCount(InvitationActivityUserQuery query);
     
     List<InvitationActivityUser> selectByUid(@Param("uid") Long uid);
+    
+    Integer batchInsert(List<InvitationActivityUser> invitationActivityUsers);
 }

@@ -82,4 +82,6 @@ public interface InvitationActivityJoinHistoryService {
     void handelActivityJoinHistoryExpired();
     
     Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId);
+    
+    List<InvitationActivityJoinHistory> listByJoinUid(Long uid);
 }
