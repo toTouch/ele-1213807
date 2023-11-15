@@ -979,6 +979,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
                 assignExchangeableBatteyType(exchangeableList, e);
+                assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
             
@@ -1020,6 +1021,38 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         });
         e.setExchangebleMapes(batteryTypeMap);
+    }
+    
+    private void assignExchangeableVoltageAndCapacity(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
+        HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
+        
+        //根据可换电格挡电池的sn列表查询电池列表获取容量
+        List<String> snList = exchangeableList.stream().filter(item -> StringUtils.isNotBlank(item.getSn())).map(ElectricityCabinetBox::getSn).collect(Collectors.toList());
+        List<ElectricityBattery> batteryList = electricityBatteryService.selectBySnList(TenantContextHolder.getTenantId(), snList);
+        
+        Map<String, Integer> capacityMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(batteryList)) {
+            capacityMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getCapacity, (k1, k2) -> k1));
+        }
+        
+        //获取电池的容量
+        Map<String, Integer> finalCapacityMap = capacityMap;
+        
+        exchangeableList.forEach(electricityCabinetBox -> {
+            String batteryType = electricityCabinetBox.getBatteryType();
+            String sn = electricityCabinetBox.getSn();
+            if (StringUtils.isNotBlank(batteryType)) {
+                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
+                //统计可换电电池型号
+                if (voltageAndCapacityMap.containsKey(key)) {
+                    Integer count = finalCapacityMap.get(key);
+                    voltageAndCapacityMap.put(key, count + 1);
+                } else {
+                    voltageAndCapacityMap.put(key, 1);
+                }
+            }
+        });
+        e.setVoltageAndCapacityMapes(voltageAndCapacityMap);
     }
     
     private void assignBatteryTypes(List<ElectricityCabinetBox> cabinetBoxList, ElectricityCabinetVO e) {
@@ -3163,7 +3196,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     
                     //设置电池电压 容量
                     if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
+                                electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
+                                        + BatteryConstant.CAPACITY_UNIT);
                     }
                 }
                 
@@ -4018,7 +4053,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //设置电池电压 容量
                 if (Objects.nonNull(electricityBattery.getVoltage()) && Objects.nonNull(electricityBattery.getCapacity())) {
-                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
+                            electricityBattery.getVoltage() + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity()
+                                    + BatteryConstant.CAPACITY_UNIT);
                 }
             }
             
@@ -4046,6 +4083,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //截取串数
         String num = batteryType.substring(batteryType.lastIndexOf("_") + 1);
         String key = batteryV + "/" + num;
+        return key;
+    }
+    
+    private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
+        if (StringUtils.isBlank(batteryType) || Objects.isNull(capacity)) {
+            return null;
+        }
+        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+        //截取串数
+        String key = batteryV + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
         return key;
     }
     
@@ -4191,7 +4238,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     public R otaCommand(Integer eid, Integer operateType, Integer versionType, List<Integer> cellNos) {
-
+        
         Long uid = SecurityUtils.getUid();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
@@ -4503,6 +4550,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(exchangeableList)) {
                     assignExchangeableBatteyType(exchangeableList, item);
+                    assignExchangeableVoltageAndCapacity(exchangeableList, item);
                 }
                 long exchangeableNumber = exchangeableList.size();
                 
@@ -5028,7 +5076,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (eleResult) {
             netType = redisService.get(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId);
         }
-
+        
         return R.ok(netType);
     }
 }
