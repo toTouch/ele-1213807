@@ -3210,11 +3210,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                     //设置电池电压 容量
+                    StringBuilder voltageAndCapacity = new StringBuilder();
+                    String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                    voltageAndCapacity.append(batteryV);
                     if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
-                        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
-                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                                batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                        voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                     }
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
                 }
                 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
@@ -4060,13 +4062,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (StringUtils.isNotBlank(item.getBatteryType())) {
                 String batteryType = item.getBatteryType();
                 electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
+                String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                 
+                StringBuilder voltageAndCapacity = new StringBuilder();
+                voltageAndCapacity.append(batteryV);
                 //设置电池电压 容量
-                if (Objects.nonNull(batteryType) && Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
-                    String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
-                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                            batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
+                    voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                 }
+                electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
             }
             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
         });
