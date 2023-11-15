@@ -17,6 +17,9 @@ public interface TimeConstant {
 
     /** 十分钟的毫秒数 */
     long TEN_MINUTE_MILLISECOND = 1000 * 60 * 10;
+    
+    /** 一小时的毫秒数 */
+    long HOURS_MILLISECOND = 60 * 60 * 1000L;
 
 
 }

@@ -31,7 +31,9 @@ public class InvitationActivityRecord {
     /**
      * 多个活动id，用逗号隔开
      */
+/*
     private String activityIds;
+*/
     /**
      * 加密code
      */

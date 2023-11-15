@@ -19,8 +19,6 @@ public class InvitationActivityRecordVO {
      */
     private Long activityId;
     private String activityName;
-    
-    private String activityIds;
 
     /**
      * 用户uid

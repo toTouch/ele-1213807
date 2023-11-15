@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -41,7 +42,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,25 +96,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-        
+
         return list.parallelStream().peek(item -> {
-            String activityIds = item.getActivityIds();
-            List<Long> activityIdList = Arrays.stream(activityIds.split(StrUtil.COMMA)).map(Long::valueOf).collect(Collectors.toList());
-            StringBuilder activityNameSb = new StringBuilder();
-    
-            activityIdList.forEach(activityId -> {
-                InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
-                if(Objects.nonNull(invitationActivity)) {
-                    activityNameSb.append(invitationActivity.getName());
-                    activityNameSb.append(StrUtil.COMMA);
-                }
-            });
-    
-            String activityNames = activityNameSb.toString();
-            item.setActivityName(activityNames.substring(NumberConstant.ZERO, activityNames.lastIndexOf(StrUtil.COMMA)));
-    
+
+            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
+            item.setActivityName(Objects.isNull(invitationActivity) ? "" : invitationActivity.getName());
+
         }).collect(Collectors.toList());
-        
     }
 
     @Override
@@ -252,46 +240,44 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "000001", "系统异常");
         }
     
-        // 多个activityId用逗号分割
-        String activityIdStr = generateActivityIds(invitationActivityUserList);
+        StringBuilder activityIdsSb = new StringBuilder();
+        invitationActivityUserList.forEach(item -> {
+            activityIdsSb.append(item.getActivityId()).append(StrUtil.COMMA);
+        
+            InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
+                    new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, userInfo.getUid())
+                            .eq(InvitationActivityRecord::getActivityId, item.getActivityId()));
+            if (Objects.isNull(invitationActivityRecord)) {
+                //第一次分享  生成分享记录
+                InvitationActivityRecord invitationActivityRecordInsert = new InvitationActivityRecord();
+                invitationActivityRecordInsert.setActivityId(item.getActivityId());
+                invitationActivityRecordInsert.setUid(userInfo.getUid());
+                invitationActivityRecordInsert.setCode(RandomUtil.randomNumbers(NumberConstant.SIX));
+                invitationActivityRecordInsert.setShareCount(NumberConstant.ZERO);
+                invitationActivityRecordInsert.setInvitationCount(NumberConstant.ZERO);
+                invitationActivityRecordInsert.setMoney(BigDecimal.ZERO);
+                invitationActivityRecordInsert.setTenantId(TenantContextHolder.getTenantId());
+                invitationActivityRecordInsert.setStatus(InvitationActivityRecord.STATUS_SUCCESS);
+                invitationActivityRecordInsert.setCreateTime(System.currentTimeMillis());
+                invitationActivityRecordInsert.setUpdateTime(System.currentTimeMillis());
+            
+                invitationActivityRecordMapper.insertOne(invitationActivityRecordInsert);
+            }
+        });
     
+        // 多个activityId用逗号分割
+        String str = activityIdsSb.toString();
+        String activityIdsStr = "";
+        if(str.contains(StrUtil.COMMA)) {
+            activityIdsStr = str.substring(NumberConstant.ZERO, str.lastIndexOf(StrUtil.COMMA));
+        }
+        
         InvitationActivityCodeVO invitationActivityCodeVO = new InvitationActivityCodeVO();
-        invitationActivityCodeVO.setCode(codeEnCoder(activityIdStr, userInfo.getUid()));
+        invitationActivityCodeVO.setCode(codeEnCoder(activityIdsStr, userInfo.getUid()));
         invitationActivityCodeVO.setTenantCode(tenant.getCode());
         invitationActivityCodeVO.setPhone(userInfo.getPhone());
         
-        InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(new LambdaQueryWrapper<InvitationActivityRecord>()
-                .eq(InvitationActivityRecord::getUid, userInfo.getUid()));
-        if (Objects.isNull(invitationActivityRecord)) {
-            //第一次分享  生成分享记录
-            InvitationActivityRecord invitationActivityRecordInsert = new InvitationActivityRecord();
-            invitationActivityRecordInsert.setActivityIds(activityIdStr);
-            invitationActivityRecordInsert.setUid(userInfo.getUid());
-            invitationActivityRecordInsert.setCode(RandomUtil.randomNumbers(NumberConstant.SIX));
-            invitationActivityRecordInsert.setShareCount(NumberConstant.ZERO);
-            invitationActivityRecordInsert.setInvitationCount(NumberConstant.ZERO);
-            invitationActivityRecordInsert.setMoney(BigDecimal.ZERO);
-            invitationActivityRecordInsert.setTenantId(TenantContextHolder.getTenantId());
-            invitationActivityRecordInsert.setStatus(InvitationActivityRecord.STATUS_SUCCESS);
-            invitationActivityRecordInsert.setCreateTime(System.currentTimeMillis());
-            invitationActivityRecordInsert.setUpdateTime(System.currentTimeMillis());
-        
-            invitationActivityRecordMapper.insertOne(invitationActivityRecordInsert);
-        }
-        
         return Triple.of(true, null, invitationActivityCodeVO);
-    }
-    
-    private String generateActivityIds(List<InvitationActivityUser> invitationActivityUserList) {
-        StringBuilder sb = new StringBuilder();
-        invitationActivityUserList.stream().peek(item->{
-            sb.append(item.getActivityId());
-            sb.append(StrUtil.COMMA);
-        }).collect(Collectors.toList());
-    
-        String str = sb.toString();
-    
-        return str.substring(NumberConstant.ZERO, str.lastIndexOf(StrUtil.COMMA));
     }
 
     @Override
@@ -349,52 +335,53 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
     
-        // 获取活动记录
-        InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
-                new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid));
-        if (Objects.isNull(invitationActivityRecord) || StringUtils.isEmpty(invitationActivityRecord.getActivityIds())) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityRecord is null, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+        // 活动id集合
+        List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(activityIdList)) {
+            log.error("INVITATION ACTIVITY ERROR!  not found valid activity, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
         }
     
-        // 活动id集合
-        List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(activityIdList)) {
-            for (Long activityId : activityIdList) {
-                InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
-                if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
-                    log.error("INVITATION ACTIVITY ERROR! invitationActivity disable,activityId={}, uid={}", activityId, userInfo.getUid());
-                    return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
-                }
-            
-                //用户是否已参与过此活动
-                Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
-                if (Objects.nonNull(exist)) {
-                    log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
-                    return Triple.of(true, "ELECTRICITY.00107", "已参加过活动");
-                }
-            
-                if (invitationActivityRecord.getActivityIds().contains(activityId.toString())) {
-                    //保存活动参与记录
-                    InvitationActivityJoinHistory invitationActivityJoinHistoryInsert = new InvitationActivityJoinHistory();
-                    invitationActivityJoinHistoryInsert.setUid(invitationUid);
-                    invitationActivityJoinHistoryInsert.setJoinUid(userInfo.getUid());
-                    invitationActivityJoinHistoryInsert.setActivityId(activityId);
-                    invitationActivityJoinHistoryInsert.setRecordId(invitationActivityRecord.getId());
-                    invitationActivityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_INIT);
-                    invitationActivityJoinHistoryInsert.setStartTime(System.currentTimeMillis());
-                    invitationActivityJoinHistoryInsert.setExpiredTime(System.currentTimeMillis() + invitationActivity.getHours() * 60 * 60 * 1000L);
-                    invitationActivityJoinHistoryInsert.setTenantId(TenantContextHolder.getTenantId());
-                    invitationActivityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
-                    invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
-                
-                    invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
-                }
+        for (Long activityId : activityIdList) {
+            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
+            if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
+                log.error("INVITATION ACTIVITY ERROR! invitationActivity disable,activityId={}, uid={}", activityId, userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
             }
+        
+            // 获取活动记录
+            InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
+                    new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid).eq(InvitationActivityRecord::getActivityId, activityId));
+            if (Objects.isNull(invitationActivityRecord) || Objects.isNull(invitationActivityRecord.getActivityId())) {
+                log.error("INVITATION ACTIVITY ERROR!  invitationActivityRecord is null, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+            }
+        
+            //用户是否已参与过此活动
+            Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
+            if (Objects.nonNull(exist)) {
+                log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
+                return Triple.of(true, "ELECTRICITY.00107", "已参加过活动");
+            }
+        
+            //保存活动参与记录
+            InvitationActivityJoinHistory invitationActivityJoinHistoryInsert = new InvitationActivityJoinHistory();
+            invitationActivityJoinHistoryInsert.setUid(invitationUid);
+            invitationActivityJoinHistoryInsert.setJoinUid(userInfo.getUid());
+            invitationActivityJoinHistoryInsert.setActivityId(activityId);
+            invitationActivityJoinHistoryInsert.setRecordId(invitationActivityRecord.getId());
+            invitationActivityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_INIT);
+            invitationActivityJoinHistoryInsert.setStartTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryInsert.setExpiredTime(System.currentTimeMillis() + invitationActivity.getHours() * TimeConstant.HOURS_MILLISECOND);
+            invitationActivityJoinHistoryInsert.setTenantId(TenantContextHolder.getTenantId());
+            invitationActivityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
+        
+            invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
+        
+            //更新活动邀请总人数
+            invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
         }
-        //更新活动邀请总人数
-        invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
-    
         return Triple.of(true, null, null);
     }
 

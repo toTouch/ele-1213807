@@ -54,7 +54,6 @@
         select
         iar.id,
         iar.activity_id,
-        iar.activity_ids as activityIds
         iar.code,
         iar.uid,
         iar.share_count,
