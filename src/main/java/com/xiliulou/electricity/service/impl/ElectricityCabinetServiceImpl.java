@@ -1011,7 +1011,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             String batteryType = electricityCabinetBox.getBatteryType();
             if (StringUtils.isNotBlank(batteryType)) {
                 String key = subStringButteryType(batteryType);
-                if(StringUtils.isNotBlank(key)){
+                if (StringUtils.isNotBlank(key)) {
                     //统计可换电电池型号
                     if (batteryTypeMap.containsKey(key)) {
                         Integer count = batteryTypeMap.get(key);
@@ -1047,10 +1047,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 
                 //统计可换电电池型号
-                if(Objects.nonNull(key)){
+                if (Objects.nonNull(key)) {
                     if (voltageAndCapacityMap.containsKey(key)) {
                         Integer count = voltageAndCapacityMap.get(key);
-                            voltageAndCapacityMap.put(key, count + 1);
+                        voltageAndCapacityMap.put(key, count + 1);
                     } else {
                         voltageAndCapacityMap.put(key, 1);
                     }
@@ -3213,7 +3213,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if (Objects.nonNull(electricityBattery.getCapacity())) {
                         String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                         electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                                batteryV + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                                batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
                     }
                 }
                 
@@ -4063,8 +4063,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //设置电池电压 容量
                 if (Objects.nonNull(batteryType) && Objects.nonNull(electricityBattery.getCapacity())) {
+                    String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
-                            batteryType + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
+                            batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
                 }
             }
             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
