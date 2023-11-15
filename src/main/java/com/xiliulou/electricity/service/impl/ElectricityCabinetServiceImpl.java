@@ -1045,7 +1045,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 //统计可换电电池型号
                 if (voltageAndCapacityMap.containsKey(key)) {
-                    Integer count = finalCapacityMap.get(key);
+                    Integer count = voltageAndCapacityMap.get(key);
                     if(Objects.nonNull(count)){
                         voltageAndCapacityMap.put(key, count + 1);
                     }
