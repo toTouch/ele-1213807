@@ -161,13 +161,12 @@ public class ActivityServiceImpl implements ActivityService {
                     log.info("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
                     return Triple.of(false, "110002", "当前换电套餐已暂停");
                 }
-                //判断当前用户是否购买过套餐，如果买过任意套餐，则为老用户,若是第一次购买，则为新用户
-                //Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
+                
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
 
                 log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
+                
                 //是否是新用户
-                //if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
                 if(userInfo.getPayCount() == 1){
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());

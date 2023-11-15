@@ -100,7 +100,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return list.parallelStream().peek(item -> {
 
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
-            item.setActivityName(Objects.isNull(invitationActivity) ? "" : invitationActivity.getName());
+            item.setActivityName(Objects.isNull(invitationActivity) ? StringUtils.EMPTY : invitationActivity.getName());
 
         }).collect(Collectors.toList());
     }
@@ -267,7 +267,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 多个activityId用逗号分割
         String str = activityIdsSb.toString();
-        String activityIdsStr = "";
+        String activityIdsStr = StringUtils.EMPTY;
         if(str.contains(StrUtil.COMMA)) {
             activityIdsStr = str.substring(NumberConstant.ZERO, str.lastIndexOf(StrUtil.COMMA));
         }
@@ -505,10 +505,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         activityJoinHistoryList = activityJoinHistoryList.stream().filter(history -> !activityIdsSet.contains(history.getActivityId())).collect(Collectors.toList());
     
         //增加换电套餐和租车及车电一体套餐的判断逻辑
-        Long packageId = null;
+        Long packageId;
         Integer payCount = userInfo.getPayCount();
         if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
-            //ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
 
             if (Objects.isNull(userBatteryMemberCard)) {
@@ -516,7 +515,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 return;
             }
             packageId = userBatteryMemberCard.getMemberCardId();
-            //payCount = userBatteryMemberCard.getCardPayCount();
         }else{
             //获取租车或者车电一体订单信息
             CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
@@ -528,11 +526,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             //根据当前用户uid, 订单号, 购买成功等条件查询，当前套餐的购买记录
             CarRentalPackageOrderQryModel queryModel = new CarRentalPackageOrderQryModel();
             queryModel.setUid(userInfo.getUid());
-            //queryModel.setRentalPackageId(carRentalPackageOrderPO.getRentalPackageId());
             queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
 
             packageId = carRentalPackageOrderPO.getRentalPackageId();
-            //payCount = carRentalPackageOrderService.count(queryModel);
         }
     
         // 获取购买的套餐绑定的所有活动
@@ -564,7 +560,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
     
         //返现金额
-        BigDecimal rewardAmount = null;
+        BigDecimal rewardAmount;
 
         //首次购买套餐
         if (NumberUtil.equals(payCount, NumberConstant.ONE)) {
