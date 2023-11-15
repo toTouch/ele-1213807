@@ -3210,7 +3210,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                     //设置电池电压 容量
-                    if (Objects.nonNull(electricityBattery.getCapacity())) {
+                    if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
                         String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                         electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
                                 batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
@@ -4062,7 +4062,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                 
                 //设置电池电压 容量
-                if (Objects.nonNull(batteryType) && Objects.nonNull(electricityBattery.getCapacity())) {
+                if (Objects.nonNull(batteryType) && Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
                     String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(
                             batteryV + StringConstant.FORWARD_SLASH + electricityBattery.getCapacity() + BatteryConstant.CAPACITY_UNIT);
