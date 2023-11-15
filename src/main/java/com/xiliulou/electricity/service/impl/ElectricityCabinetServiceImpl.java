@@ -1028,7 +1028,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private void assignExchangeableVoltageAndCapacity(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
         HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
         
-        //根据可换电格挡电池的sn列表查询电池列表获取容量
+        // 根据可换电格挡电池的sn列表查询电池列表获取容量
         List<String> snList = exchangeableList.stream().map(ElectricityCabinetBox::getSn).filter(StringUtils::isNotBlank).collect(Collectors.toList());
         List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
         
@@ -1037,7 +1037,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             capacityMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getCapacity, (k1, k2) -> k1));
         }
         
-        //获取电池的容量
+        // 获取电池的容量
         Map<String, Integer> finalCapacityMap = capacityMap;
         
         exchangeableList.forEach(electricityCabinetBox -> {
@@ -1046,7 +1046,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (StringUtils.isNotBlank(batteryType)) {
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 
-                //统计可换电电池型号
+                // 统计可换电电池型号
                 if (Objects.nonNull(key)) {
                     if (voltageAndCapacityMap.containsKey(key)) {
                         Integer count = voltageAndCapacityMap.get(key);

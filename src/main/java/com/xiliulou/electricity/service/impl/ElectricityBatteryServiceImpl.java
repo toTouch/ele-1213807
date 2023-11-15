@@ -903,7 +903,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public List<ElectricityBattery> listBatteryBySnList(List<String> snList) {
-        if(CollectionUtils.isEmpty(snList)){
+        if (CollectionUtils.isEmpty(snList)) {
             return Collections.emptyList();
         }
         return electricitybatterymapper.selectListBatteryBySnList(snList);
