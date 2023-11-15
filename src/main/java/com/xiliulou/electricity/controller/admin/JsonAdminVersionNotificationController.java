@@ -73,4 +73,14 @@ public class JsonAdminVersionNotificationController extends BaseController {
     public R queryVersionLatest(){
         return R.ok(notificationService.queryCreateTimeMaxTenantNotification());
     }
+    
+    /**
+     * @description 获取上传通知图片所需的签名
+     * @date 2023/10/26 18:16:06
+     * @author HeYafeng
+     */
+    @GetMapping(value = "/admin/acquire/upload/versionNotification/file/sign")
+    public R getUploadVersionNotificationFileSign() {
+        return notificationService.acquireVersionNotificationFileSign();
+    }
 }

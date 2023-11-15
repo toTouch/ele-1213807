@@ -16,7 +16,7 @@ public interface CarRenalPackageSlippageBizService {
      * @param optUid 操作用户ID
      * @return true(成功)、false(失败)
      */
-    boolean clearSlippage(Integer tenantId, Long uid, Long optUid);
+    boolean clearSlippage(Integer tenantId, Long uid, Long optUid, String userName);
 
     /**
      * 根据用户ID查询车辆租赁套餐订单未支付的滞纳金金额

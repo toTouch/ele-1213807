@@ -12,6 +12,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
@@ -51,6 +52,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -603,12 +605,23 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        List<EleDepositOrderVO> eleDepositOrderVOS = null;
-        if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
-            eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-        } else {
-            eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
-        }
+        List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+    
+        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+        
+            List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
+            // 订单已退押或正在退押中
+            if (!CollectionUtils.isEmpty(eleRefundOrders)) {
+                for (EleRefundOrder e : eleRefundOrders) {
+                    if (EleRefundOrder.STATUS_SUCCESS.equals(e.getStatus()) || EleRefundOrder.STATUS_REFUND.equals(e.getStatus())) {
+                        eleDepositOrderVO.setRefundFlag(false);
+                    }
+                }
+            }
+            return eleDepositOrderVO;
+        }).collect(Collectors.toList());
+    
         return R.ok(eleDepositOrderVOS);
     }
 
@@ -1562,6 +1575,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .oldBatteryDeposit(null)
                     .newBatteryDeposit(batteryDepositAdd.getPayAmount())
                     .tenantId(TenantContextHolder.getTenantId())
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);

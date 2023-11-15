@@ -424,7 +424,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v3")
     public R uploadV3(@RequestBody BatteryExcelV3Query batteryExcelV3Query) {
-        if (ObjectUtils.isEmpty(batteryExcelV3Query)) {
+        if (Objects.isNull(batteryExcelV3Query)) {
             return R.fail("100602", "Excel模版中数据为空，请检查修改后再操作");
         }
         

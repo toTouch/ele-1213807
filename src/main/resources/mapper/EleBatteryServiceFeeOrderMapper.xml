@@ -132,7 +132,7 @@
                 </foreach>
             </if>
             <if test=" query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
-            order by te.id desc
+            order by te.pay_time desc
             limit #{query.offset},#{query.size}
         </where>
     </select>

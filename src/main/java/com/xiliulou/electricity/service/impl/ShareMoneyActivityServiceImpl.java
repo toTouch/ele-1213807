@@ -416,7 +416,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("order  ERROR! user not auth,uid={} ", user.getUid());
+            log.warn("ACTIVITY WARN! user not auth,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
@@ -520,7 +520,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("order  ERROR! user not auth,uid={} ", user.getUid());
+            log.warn("ACTIVITY WARN! user not auth,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 

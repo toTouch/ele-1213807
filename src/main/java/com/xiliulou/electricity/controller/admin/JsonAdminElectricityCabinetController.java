@@ -111,6 +111,17 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         return electricityCabinetService.delete(id);
     }
+    
+    /**
+     * 获取换电柜扩展参数
+     */
+    @GetMapping(value = "/admin/electricityCabinet/extendData/{electricityCabinetId}")
+    public R queryElectricityCabinetExtendData(@PathVariable("electricityCabinetId") Integer id) {
+        if (Objects.isNull(id)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.queryElectricityCabinetExtendData(id);
+    }
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")
