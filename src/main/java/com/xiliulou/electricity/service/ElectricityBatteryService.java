@@ -58,6 +58,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBattery> listBatteryByGuessUid(Long guessUid);
     
+    List<ElectricityBattery> listBatteryBySnList(List<String> snList);
+    
     Integer batchUpdateBatteryGuessUid(List<Long> batteryIdList,Long guessUid);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);

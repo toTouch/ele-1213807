@@ -895,6 +895,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectListBatteryByGuessUid(guessUid);
     }
     
+    /**
+     * 根据sn列表查询电池的信息
+     *
+     * @param snList
+     * @return
+     */
+    @Override
+    public List<ElectricityBattery> listBatteryBySnList(List<String> snList) {
+        if(CollectionUtils.isEmpty(snList)){
+            return Collections.emptyList();
+        }
+        return electricitybatterymapper.selectListBatteryBySnList(snList);
+    }
+    
     @Override
     public Integer batchUpdateBatteryGuessUid(List<Long> batteryIdList, Long guessUid) {
         return electricitybatterymapper.batchUpdateBatteryGuessUid(batteryIdList, guessUid);

@@ -1029,8 +1029,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
         
         //根据可换电格挡电池的sn列表查询电池列表获取容量
-        List<String> snList = exchangeableList.stream().filter(item -> StringUtils.isNotBlank(item.getSn())).map(ElectricityCabinetBox::getSn).collect(Collectors.toList());
-        List<ElectricityBattery> batteryList = electricityBatteryService.selectBySnList(TenantContextHolder.getTenantId(), snList);
+        List<String> snList = exchangeableList.stream().map(ElectricityCabinetBox::getSn).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
         
         Map<String, Integer> capacityMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(batteryList)) {
@@ -4097,7 +4097,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
         //截取串数
-        String key = batteryV + BatteryConstant.VOLTAGE_UNIT + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
+        String key = batteryV + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
         return key;
     }
     

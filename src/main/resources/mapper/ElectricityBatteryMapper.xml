@@ -431,6 +431,15 @@
         from t_electricity_battery where guess_uid = #{guessUid} and del_flag=0
     </select>
     
+    <select id="selectListBatteryBySnList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select id, sn, capacity
+        from t_electricity_battery
+        where sn in
+        <foreach collection="snList" item="sn" open="(" close=")" separator=",">
+            #{sn}
+        </foreach>
+    </select>
+    
     <update id="batchUpdateBatteryGuessUid">
         update t_electricity_battery set guess_uid= #{guessUid}
         where id in
