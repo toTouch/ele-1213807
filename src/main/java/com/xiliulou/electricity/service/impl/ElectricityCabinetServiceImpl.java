@@ -4097,7 +4097,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
         StringBuilder voltageAndCapacity = new StringBuilder();
-        if (StringUtils.isNotBlank(voltageAndCapacity)) {
+        if (StringUtils.isNotBlank(batteryType)) {
             String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
             voltageAndCapacity.append(batteryV);
         }
