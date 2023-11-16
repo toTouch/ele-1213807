@@ -73,10 +73,12 @@
         select mid
         from t_invitation_activity_member_card
         <where>
-            activity_id in
-            <foreach collection="boundActivityIds" item="activityId" open="(" close=")" separator=",">
-                #{activityId}
-            </foreach>
+            <if test="boundActivityIds != null and boundActivityIds.size()>0">
+                activity_id in
+                <foreach collection="boundActivityIds" item="activityId" open="(" close=")" separator=",">
+                    #{activityId}
+                </foreach>
+            </if>
         </where>
     </select>
     

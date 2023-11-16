@@ -489,5 +489,7 @@ public interface CacheConstant {
     String CACHE_ENTERPRISE_INFO = "enterprise_Info:";
     
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
+    
+    String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
 
 }

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.NumberUtil;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.InvitationActivityUser;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -51,6 +54,9 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     
     @Autowired
     private InvitationActivityMemberCardService invitationActivityMemberCardService;
+    
+    @Autowired
+    private RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -145,7 +151,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
 
     @Override
     public Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query) {
-        // TODO 并发问题？
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
     
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -166,39 +172,40 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
     
-        // 获取该邀请人已绑定的活动
-        List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
-    
-        // 获取已绑定的活动对应的套餐id
-        List<Long> memberCardIdsByActivity = null;
-        if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
-            List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
-            memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
-        }
-    
-        // 所选活动对应的套餐id
+        // 获取所选活动对应的套餐id
         List<Long> memberCardIdsByActivityIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIds);
         if (CollectionUtils.isEmpty(memberCardIdsByActivityIds)) {
             return Triple.of(false, "100393", "所选活动未绑定套餐");
         }
     
-        // 所选活动的套餐不能包含已绑定的活动的套餐
-        if (CollectionUtils.isNotEmpty(memberCardIdsByActivity)) {
-            for (Long memberCardId : memberCardIdsByActivityIds) {
-                for (Long cardId : memberCardIdsByActivity) {
-                    if (NumberUtil.equals(memberCardId, cardId)) {
-                        return Triple.of(false, "100394", "所选的活动包含已绑定的活动套餐");
-                    }
+        if (!redisService.setNx(CacheConstant.CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK + query.getUid(), NumberConstant.ONE.toString(), TimeConstant.TEN_SECOND_MILLISECOND, false)) {
+            return Triple.of(false, "100002", "操作频繁");
+        }
+    
+        // 获取该邀请人已绑定的活动
+        List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
+    
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+            List<InvitationActivityUser> invitationActivityUsers = memberCardIdsByActivityIds.stream()
+                    .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
+                            .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
+                    .collect(Collectors.toList());
+        
+            invitationActivityUserMapper.batchInsert(invitationActivityUsers);
+        } else {
+            // 获取已绑定的活动对应的套餐id
+            List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
+            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
+        
+            // 所选活动的套餐不能包含已绑定的活动的套餐
+            if (CollectionUtils.isNotEmpty(boundMemberCardIds)) {
+                boolean containsMatch = memberCardIdsByActivityIds.stream().anyMatch(boundMemberCardIds::contains);
+            
+                if (containsMatch) {
+                    return Triple.of(false, "100394", "所选的活动包含已绑定的活动套餐");
                 }
             }
         }
-    
-        List<InvitationActivityUser> invitationActivityUsers = memberCardIdsByActivityIds.stream()
-                .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
-                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
-                .collect(Collectors.toList());
-    
-        invitationActivityUserMapper.batchInsert(invitationActivityUsers);
     
         return Triple.of(true, null, null);
     }
