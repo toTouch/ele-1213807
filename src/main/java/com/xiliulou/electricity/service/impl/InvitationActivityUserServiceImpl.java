@@ -145,7 +145,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
 
     @Override
     public Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query) {
-    
+        // TODO 并发问题？
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
     
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -160,6 +160,12 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
     
+        // 所选活动id
+        List<Long> activityIds = query.getActivityIds();
+        if (CollectionUtils.isEmpty(activityIds)) {
+            return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+        }
+    
         // 获取该邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
     
@@ -168,12 +174,6 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
             memberCardIdsByActivity = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
-        }
-    
-        // 所选活动id
-        List<Long> activityIds = query.getActivityIds();
-        if (CollectionUtils.isEmpty(activityIds)) {
-            return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
     
         // 所选活动对应的套餐id
