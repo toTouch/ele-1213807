@@ -83,7 +83,7 @@
     </select>
     
     <select id="selectListActivityIdByPackageIdAndPackageType" resultType="java.lang.Long">
-        select mid
+        select activity_id
         from t_invitation_activity_member_card
         where mid=#{packageId} and package_type=#{packageType}
     </select>

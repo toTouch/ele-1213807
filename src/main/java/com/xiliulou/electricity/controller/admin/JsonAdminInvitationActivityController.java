@@ -74,11 +74,12 @@ public class JsonAdminInvitationActivityController extends BaseController {
     /**
      * @description 根据邀请人uid获取可参加的活动列表
      * @param uid 邀请人uid
+     *  @param activityName 活动名称
      * @date 2023/11/13 15:43:36
      * @author HeYafeng
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
-    public R searchByUser(@RequestParam(value = "uid") Long uid, @RequestParam(value = "name", required = false) String name) {
+    public R searchByUser(@RequestParam(value = "uid") Long uid, @RequestParam(value = "activityName", required = false) String activityName) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -92,7 +93,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         InvitationActivityQuery query = InvitationActivityQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(NumberConstant.ONE)
-                .name(name)
+                .name(activityName)
                 .build();
         
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));

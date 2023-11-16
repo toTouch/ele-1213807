@@ -498,7 +498,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return;
         }
     
-        // 过滤掉未上架的活动
+        // 对参与过的活动进行过滤，过滤掉未上架的活动
         Set<Long> activityIdsSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         activityJoinHistoryList = activityJoinHistoryList.stream().filter(history -> !activityIdsSet.contains(history.getActivityId())).collect(Collectors.toList());
     
