@@ -1712,7 +1712,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
                 && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-            log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+            log.warn("RENTBATTERY WARN! battery memberCard is Expire,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
         }
         

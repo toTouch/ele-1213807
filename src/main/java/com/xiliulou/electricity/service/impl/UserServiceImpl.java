@@ -1013,7 +1013,7 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(electricityCabinet) && Objects.isNull(user.getRefId())) {
                 updateUser.setRefId(electricityCabinet.getId().longValue());
             } else {
-                log.error("ELE ERROR! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), user.getUid());
+                log.warn("ELE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), user.getUid());
             }
         }
 
