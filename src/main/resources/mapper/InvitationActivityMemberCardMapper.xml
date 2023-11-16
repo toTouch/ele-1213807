@@ -74,8 +74,8 @@
         from t_invitation_activity_member_card
         <where>
             activity_id in
-            <foreach collection="boundActivityIds" item="activityId" open="(" close=")" separator=",">
-                #{activityId}
+            <foreach collection="boundActivityIds" item="item" open="(" close=")" separator=",">
+                #{item.activityId}
             </foreach>
         </where>
     </select>

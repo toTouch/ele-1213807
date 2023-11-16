@@ -29,8 +29,8 @@
         from t_invitation_activity_record
         <where>
             activity_id in
-            <foreach collection="activityIds" item="activityId" open="(" close=")" separator=",">
-                #{activityId}
+            <foreach collection="activityIds" item="item" open="(" close=")" separator=",">
+                #{item.activityId}
             </foreach>
         </where>
         and uid=#{uid} order by id desc limit 1
