@@ -74,5 +74,5 @@ public interface InvitationActivityUserMapper extends BaseMapper<InvitationActiv
     
     List<InvitationActivityUser> selectByUid(@Param("uid") Long uid);
     
-    Integer batchInsert(List<InvitationActivityUser> invitationActivityUsers);
+    Integer batchInsert(@Param("invitationActivityUsers") List<InvitationActivityUser> invitationActivityUsers);
 }
