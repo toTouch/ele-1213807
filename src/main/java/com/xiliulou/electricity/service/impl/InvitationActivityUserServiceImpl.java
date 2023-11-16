@@ -184,28 +184,28 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     
         // 获取该邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
-    
-        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-            List<InvitationActivityUser> invitationActivityUsers = memberCardIdsByActivityIds.stream()
-                    .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
-                            .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
-                    .collect(Collectors.toList());
         
-            invitationActivityUserMapper.batchInsert(invitationActivityUsers);
-        } else {
+        if(CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             // 获取已绑定的活动对应的套餐id
             List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
             List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
-        
+    
             // 所选活动的套餐不能包含已绑定的活动的套餐
             if (CollectionUtils.isNotEmpty(boundMemberCardIds)) {
                 boolean containsMatch = memberCardIdsByActivityIds.stream().anyMatch(boundMemberCardIds::contains);
-            
+        
                 if (containsMatch) {
                     return Triple.of(false, "100394", "所选的活动包含已绑定的活动套餐");
                 }
             }
         }
+    
+        List<InvitationActivityUser> invitationActivityUsers = memberCardIdsByActivityIds.stream()
+                .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
+                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
+                .collect(Collectors.toList());
+    
+        invitationActivityUserMapper.batchInsert(invitationActivityUsers);
     
         return Triple.of(true, null, null);
     }
