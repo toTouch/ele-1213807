@@ -242,7 +242,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100392", "无权限参加此活动");
         }
     
-        List<InvitationActivityRecord> InvitationActivityRecordList = new ArrayList<>();
+        List<InvitationActivityRecord> invitationActivityRecordList = new ArrayList<>();
         InvitationActivityRecord invitationActivityRecordIn = InvitationActivityRecord.builder().uid(userInfo.getUid()).code(RandomUtil.randomNumbers(NumberConstant.SIX))
                 .shareCount(NumberConstant.ZERO).invitationCount(NumberConstant.ZERO).money(BigDecimal.ZERO).tenantId(TenantContextHolder.getTenantId())
                 .status(InvitationActivityRecord.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
@@ -262,11 +262,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 BeanUtils.copyProperties(invitationActivityRecordIn, invitationActivityRecordInsert);
                 invitationActivityRecordInsert.setActivityId(item.getActivityId());
             
-                InvitationActivityRecordList.add(invitationActivityRecordInsert);
+                invitationActivityRecordList.add(invitationActivityRecordInsert);
             }
         });
     
-        invitationActivityRecordMapper.batchInsert(InvitationActivityRecordList);
+        if (CollectionUtils.isNotEmpty(invitationActivityRecordList)) {
+            invitationActivityRecordMapper.batchInsert(invitationActivityRecordList);
+        }
     
         InvitationActivityCodeVO invitationActivityCodeVO = new InvitationActivityCodeVO();
         invitationActivityCodeVO.setCode(codeEnCoder(activityIdsStr.toString(), userInfo.getUid()));

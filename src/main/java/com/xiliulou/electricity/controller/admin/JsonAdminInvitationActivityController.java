@@ -78,7 +78,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
-    public R searchByUser(@RequestParam(value = "uid") Long uid) {
+    public R searchByUser(@RequestParam(value = "uid") Long uid, @RequestParam(value = "name", required = false) String name) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -92,6 +92,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
         InvitationActivityQuery query = InvitationActivityQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(NumberConstant.ONE)
+                .name(name)
                 .build();
         
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
