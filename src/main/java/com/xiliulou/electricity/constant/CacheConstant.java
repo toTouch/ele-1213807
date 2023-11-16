@@ -106,6 +106,8 @@ public interface CacheConstant {
     String ORDER_TIME_UID = "order_time_uid:";
     
     String EXCHANGE_ORDER_HANDLE_LIMIT = "exchange_order_handle_limit:";
+    
+    String RENT_BATTERY_ORDER_HANDLE_LIMIT = "rent_battery_order_handle_limit:";
 
     //电池异常锁住换电柜
     String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";

@@ -223,26 +223,35 @@ public class EleOperateQueueHandler {
                 }
             }
         } else {
-            
-            //租还电池订单
-            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
-            if (Objects.isNull(rentBatteryOrder)) {
-                return;
+            try {
+                if (!redisService.setNx(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId(), "1", 200L, false)) {
+                    log.info("RENT ORDER INFO! order is being processed,requestId={},orderId={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId());
+                    return;
+                }
+                //租还电池订单
+                RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
+                if (Objects.isNull(rentBatteryOrder)) {
+                    return;
+                }
+                
+                if (rentBatteryOrder.getOrderSeq() > finalOpenDTO.getOrderSeq()) {
+                    log.warn("RENT ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
+                            rentBatteryOrder.getUid());
+                    return;
+                }
+                
+                //换电柜异常
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(rentBatteryOrder.getTenantId());
+                if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
+                    lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
+                }
+                
+                handleRentOrder(rentBatteryOrder, finalOpenDTO);
+            }  catch (Exception e) {
+                log.error("RENT BATTERY HANDLER ERROR!", e);
+            } finally {
+                redisService.delete(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId());
             }
-            
-            if (rentBatteryOrder.getOrderSeq() > finalOpenDTO.getOrderSeq()) {
-                log.warn("RENT ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId(),
-                        rentBatteryOrder.getUid());
-                return;
-            }
-            
-            //换电柜异常
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(rentBatteryOrder.getTenantId());
-            if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
-                lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
-            }
-            
-            handleRentOrder(rentBatteryOrder, finalOpenDTO);
         }
     }
     
