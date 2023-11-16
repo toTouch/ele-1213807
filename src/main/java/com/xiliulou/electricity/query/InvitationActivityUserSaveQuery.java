@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -15,11 +17,14 @@ import java.util.List;
  */
 @Data
 @Builder
-public class InvitationActivityUserSaveQuery implements Serializable {
+@AllArgsConstructor
+@NoArgsConstructor
+public class InvitationActivityUserSaveQuery {
     
     /**
      * 邀请人uid
      */
+    @NotNull(message = "uid不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Long uid;
     
     /**
