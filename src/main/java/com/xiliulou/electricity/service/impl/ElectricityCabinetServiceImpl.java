@@ -1047,13 +1047,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 
                 // 统计可换电电池型号
-                if (Objects.nonNull(key)) {
-                    if (voltageAndCapacityMap.containsKey(key)) {
-                        Integer count = voltageAndCapacityMap.get(key);
-                        voltageAndCapacityMap.put(key, count + 1);
-                    } else {
-                        voltageAndCapacityMap.put(key, 1);
-                    }
+                if (voltageAndCapacityMap.containsKey(key)) {
+                    Integer count = voltageAndCapacityMap.get(key);
+                    voltageAndCapacityMap.put(key, count + 1);
+                } else {
+                    voltageAndCapacityMap.put(key, 1);
                 }
             }
         });
@@ -4098,12 +4096,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
-        if (StringUtils.isBlank(batteryType) || Objects.isNull(capacity)) {
-            return null;
+        StringBuilder voltageAndCapacity = new StringBuilder();
+        if (StringUtils.isNotBlank(voltageAndCapacity)) {
+            String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+            voltageAndCapacity.append(batteryV);
         }
-        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+        
+        if (Objects.nonNull(capacity) && Objects.equals(NumberConstant.ONE, capacity)) {
+            voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(capacity).append(BatteryConstant.CAPACITY_UNIT);
+        }
         //截取串数
-        return batteryV + StringConstant.FORWARD_SLASH + capacity + BatteryConstant.CAPACITY_UNIT;
+        return voltageAndCapacity.toString();
     }
     
     private Triple<Boolean, String, Object> verficationMemberCardStatus(UserInfo userInfo) {
