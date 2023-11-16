@@ -4102,7 +4102,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             voltageAndCapacity.append(batteryV);
         }
         
-        if (Objects.nonNull(capacity) && Objects.equals(NumberConstant.ONE, capacity)) {
+        if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ONE, capacity)) {
             voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(capacity).append(BatteryConstant.CAPACITY_UNIT);
         }
         //截取串数
