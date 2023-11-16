@@ -3213,7 +3213,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     StringBuilder voltageAndCapacity = new StringBuilder();
                     String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                     voltageAndCapacity.append(batteryV);
-                    if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
+                    if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
+                            electricityBattery.getCapacity())) {
                         voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                     }
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
@@ -4067,7 +4068,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 StringBuilder voltageAndCapacity = new StringBuilder();
                 voltageAndCapacity.append(batteryV);
                 //设置电池电压 容量
-                if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity())) {
+                if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
+                        electricityBattery.getCapacity())) {
                     voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                 }
                 electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
