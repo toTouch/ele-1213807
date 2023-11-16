@@ -375,7 +375,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Override
     public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
     
-        List<InvitationActivityMemberCardVO> list = new ArrayList<>();
+        List<InvitationActivityMemberCardVO> list;
     
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
@@ -387,28 +387,42 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
     
-        if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
         
-            Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            //根据已绑定的活动获取对应的套餐id
-            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(new ArrayList<>(boundActivityIds));
-        
-            // 通过memberCardId判断，过滤掉已绑定的活动
             list = invitationActivities.stream().map(item -> {
-                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
-            
-                return new AbstractMap.SimpleEntry<>(item, memberCardIds);
-            
-            }).filter(entry -> boundMemberCardIds.stream().noneMatch(entry.getValue()::contains)).map(entry -> {
                 InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-                invitationActivityMemberCardVO.setId(entry.getKey().getId());
-                invitationActivityMemberCardVO.setName(entry.getKey().getName());
-                invitationActivityMemberCardVO.setMemberCardIdList(entry.getValue());
+                invitationActivityMemberCardVO.setId(item.getId());
+                invitationActivityMemberCardVO.setName(item.getName());
+            
+                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+                List<Long> distinctMemberCardIds = memberCardIds.stream().distinct().collect(Collectors.toList());
+                invitationActivityMemberCardVO.setMemberCardIdList(distinctMemberCardIds);
             
                 return invitationActivityMemberCardVO;
             
             }).collect(Collectors.toList());
         }
+    
+        Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+        //根据已绑定的活动获取对应的套餐id
+        List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(new ArrayList<>(boundActivityIds));
+    
+        // 通过memberCardId判断，过滤掉已绑定的活动
+        list = invitationActivities.stream().map(item -> {
+            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+        
+            return new AbstractMap.SimpleEntry<>(item, memberCardIds);
+        
+        }).filter(entry -> boundMemberCardIds.stream().noneMatch(entry.getValue()::contains)).map(entry -> {
+            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+            invitationActivityMemberCardVO.setId(entry.getKey().getId());
+            invitationActivityMemberCardVO.setName(entry.getKey().getName());
+            invitationActivityMemberCardVO.setMemberCardIdList(entry.getValue());
+        
+            return invitationActivityMemberCardVO;
+        
+        }).collect(Collectors.toList());
+    
         return Triple.of(true, null, list);
     }
     
