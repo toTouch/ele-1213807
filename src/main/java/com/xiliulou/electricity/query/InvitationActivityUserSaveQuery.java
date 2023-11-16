@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
  */
 @Data
 @Builder
-public class InvitationActivityUserSaveQuery {
+public class InvitationActivityUserSaveQuery implements Serializable {
     
     /**
      * 邀请人uid
