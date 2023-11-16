@@ -80,4 +80,6 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
     Integer addMoneyByRecordId(@Param("rewardAmount") BigDecimal rewardAmount, @Param("recordId") Long recordId);
 
     InvitationActivityRecord selectByUid(@Param("uid") Long uid);
+    
+    Integer batchInsert(List<InvitationActivityRecord> invitationActivityRecordList);
 }

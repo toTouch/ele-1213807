@@ -28,10 +28,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -372,6 +374,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
+    
+        List<InvitationActivityMemberCardVO> list = new ArrayList<>();
+    
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
     
@@ -383,35 +388,27 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
     
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
-            List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
+        
+            Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
             //根据已绑定的活动获取对应的套餐id
-            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
+            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(new ArrayList<>(boundActivityIds));
         
-            // 对所有的活动进行过滤,过滤掉已绑定活动的套餐所对应的活动
-            List<InvitationActivity> removeInvitationActivities = new ArrayList<>();
-            for (InvitationActivity activity : invitationActivities) {
-                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
-                for (Long memCardId : memberCardIds) {
-                    if (boundMemberCardIds.contains(memCardId)) {
-                        removeInvitationActivities.add(activity);
-                        break;
-                    }
-                }
-            }
-        
-            invitationActivities.removeAll(removeInvitationActivities);
+            // 通过memberCardId判断，过滤掉已绑定的活动
+            list = invitationActivities.stream().map(item -> {
+                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+            
+                return new AbstractMap.SimpleEntry<>(item, memberCardIds);
+            
+            }).filter(entry -> boundMemberCardIds.stream().noneMatch(entry.getValue()::contains)).map(entry -> {
+                InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+                invitationActivityMemberCardVO.setId(entry.getKey().getId());
+                invitationActivityMemberCardVO.setName(entry.getKey().getName());
+                invitationActivityMemberCardVO.setMemberCardIdList(entry.getValue());
+            
+                return invitationActivityMemberCardVO;
+            
+            }).collect(Collectors.toList());
         }
-    
-        List<InvitationActivityMemberCardVO> list = invitationActivities.stream().map(item -> {
-            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
-            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-            invitationActivityMemberCardVO.setId(item.getId());
-            invitationActivityMemberCardVO.setName(item.getName());
-            invitationActivityMemberCardVO.setMemberCardIdList(memberCardIds);
-            return invitationActivityMemberCardVO;
-        
-        }).collect(Collectors.toList());
-    
         return Triple.of(true, null, list);
     }
     

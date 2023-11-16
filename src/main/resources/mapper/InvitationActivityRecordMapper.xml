@@ -190,7 +190,15 @@
         insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id)
         values (#{activityId}, #{code}, #{uid}, #{shareCount}, #{invitationCount}, #{status}, #{money}, #{createTime}, #{updateTime}, #{tenantId})
     </insert>
-
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id) values
+        <foreach collection="invitationActivityRecordList" index="index" separator="," item="item">
+            (#{item.activityId}, #{item.code}, #{item.uid}, #{item.shareCount}, #{item.invitationCount},
+             #{item.status},#{item.money}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+        </foreach>
+    </insert>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_invitation_activity_record
