@@ -374,9 +374,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
-    
-        List<InvitationActivityMemberCardVO> list;
-    
+        
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
     
