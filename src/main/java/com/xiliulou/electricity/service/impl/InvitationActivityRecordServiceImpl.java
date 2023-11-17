@@ -503,7 +503,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 对参与过的活动进行过滤，过滤掉未上架的活动
         Set<Long> activityIdsSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
-        activityJoinHistoryList = activityJoinHistoryList.stream().filter(history -> !activityIdsSet.contains(history.getActivityId())).collect(Collectors.toList());
+        activityJoinHistoryList = activityJoinHistoryList.stream().filter(history -> activityIdsSet.contains(history.getActivityId())).collect(Collectors.toList());
     
         //增加换电套餐和租车及车电一体套餐的判断逻辑
         Long packageId;
@@ -544,7 +544,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 .collect(Collectors.toMap(InvitationActivityJoinHistory::getActivityId, item -> item));
     
         // 由于规则:参与的所有活动下的套餐不会重复，所以上述交集元素唯一
-        if (MapUtils.isEmpty(intersectionActivityMap)) {
+        if (NumberUtil.equals(intersectionActivityMap.size(), NumberConstant.ZERO)) {
             log.info("Invitation activity info! package not bound to activity, package type = {}, package Id={},uid={}", packageType, packageId, userInfo.getUid());
             return;
         }
