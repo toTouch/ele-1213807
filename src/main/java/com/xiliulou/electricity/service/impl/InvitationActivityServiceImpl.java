@@ -409,7 +409,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         List<InvitationActivityMemberCardVO> rspList = new ArrayList<>();
         List<Long> activityList = new ArrayList<>();
-        memCardIdsMap.values().forEach(item -> {
+    
+        memCardIdsMap.values().stream().distinct().forEach(item -> {
             Long activityId = item.getId();
             if (!activityList.contains(activityId)) {
                 activityList.add(activityId);
@@ -421,6 +422,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 invitationActivityMemberCardVO.setId(activityId);
                 invitationActivityMemberCardVO.setName(activityName);
                 invitationActivityMemberCardVO.setMemberCardIdList(memCardIdsList);
+                
                 rspList.add(invitationActivityMemberCardVO);
             }
         });
