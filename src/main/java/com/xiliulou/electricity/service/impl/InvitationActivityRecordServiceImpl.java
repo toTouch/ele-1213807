@@ -22,11 +22,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityCodeVO;
+import com.xiliulou.electricity.vo.InvitationActivityRecordInfoListVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -41,12 +41,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -197,13 +197,22 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(true, null, null);
         }
     
-        List<InvitationActivityRecordInfoVO> collect = activityRecords.stream().map(item -> {
-            InvitationActivityRecordInfoVO invitationActivityRecordInfoVO = new InvitationActivityRecordInfoVO();
-            BeanUtils.copyProperties(item, invitationActivityRecordInfoVO);
-            return invitationActivityRecordInfoVO;
-        }).collect(Collectors.toList());
+        BigDecimal totalMoney = BigDecimal.ZERO;
+        Integer totalInvitationCount = NumberConstant.ZERO;
+        List<InvitationActivityRecordInfoListVO> list = new ArrayList<>();
+        for (InvitationActivityRecord record : activityRecords) {
+            totalMoney = totalMoney.add(record.getMoney());
+            totalInvitationCount += record.getInvitationCount();
+        
+            InvitationActivityRecordInfoListVO invitationActivityRecordInfoListVO = new InvitationActivityRecordInfoListVO();
+            BeanUtils.copyProperties(record, invitationActivityRecordInfoListVO);
+            list.add(invitationActivityRecordInfoListVO);
+        }
+        InvitationActivityRecordInfoVO invitationActivityRecordInfoVO = InvitationActivityRecordInfoVO.builder().totalMoney(totalMoney).totalInvitationCount(totalInvitationCount)
+                .invitationActivityRecordInfoList(list).build();
+        invitationActivityRecordInfoVO.setTotalMoney(totalMoney);
     
-        return Triple.of(true, null, collect);
+        return Triple.of(true, null, list);
     }
 
     @Override
@@ -339,7 +348,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(activityIdList)) {
             log.error("INVITATION ACTIVITY ERROR!  not found valid activity, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+            return Triple.of(false, "ELECTRICITY.100450", "渠道活动不存在");
         }
     
         for (Long activityId : activityIdList) {

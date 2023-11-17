@@ -28,10 +28,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * (InvitationActivity)表服务实现类
  *
  * @author zzlong
- * @since 2023-06-01 15:55:48
+ * @since 2023-06-01 15:55:48d
  */
 @Service("invitationActivityService")
 @Slf4j
@@ -384,46 +384,49 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
     
-        // 获取邀请人已绑定的活动
-        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
-    
-        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-        
-            list = invitationActivities.stream().map(item -> {
-                InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-                invitationActivityMemberCardVO.setId(item.getId());
-                invitationActivityMemberCardVO.setName(item.getName());
-            
-                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
-                List<Long> distinctMemberCardIds = memberCardIds.stream().distinct().collect(Collectors.toList());
-                invitationActivityMemberCardVO.setMemberCardIdList(distinctMemberCardIds);
-            
-                return invitationActivityMemberCardVO;
-            
-            }).collect(Collectors.toList());
-        } else {
-            Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            //根据已绑定的活动获取对应的套餐id
-            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(new ArrayList<>(boundActivityIds));
-        
-            // 通过memberCardId判断，过滤掉已绑定的活动
-            list = invitationActivities.stream().map(item -> {
-                List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
-            
-                return new AbstractMap.SimpleEntry<>(item, memberCardIds);
-            
-            }).filter(entry -> boundMemberCardIds.stream().noneMatch(entry.getValue()::contains)).map(entry -> {
-                InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-                invitationActivityMemberCardVO.setId(entry.getKey().getId());
-                invitationActivityMemberCardVO.setName(entry.getKey().getName());
-                invitationActivityMemberCardVO.setMemberCardIdList(entry.getValue());
-            
-                return invitationActivityMemberCardVO;
-            
-            }).collect(Collectors.toList());
+        // 对相同套餐的活动做唯一处理
+        Map<Long, InvitationActivity> memCardIdsMap = new HashMap<>();
+        Map<Long, List<Long>> activityIdMemCardsMap = new HashMap<>();
+        for (InvitationActivity activity : invitationActivities) {
+            List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
+            for (Long memCardId : memCardIds) {
+                if (!memCardIdsMap.containsKey(memCardId)) {
+                    memCardIdsMap.put(memCardId, activity);
+                    activityIdMemCardsMap.put(activity.getId(), memCardIds);
+                }
+            }
         }
     
-        return Triple.of(true, null, list);
+        // 获取邀请人已绑定的活动
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
+        if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
+            //根据已绑定活动的套餐对待选活动做唯一处理
+            Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+            for (Long activityId : boundActivityIds) {
+                List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
+                for (Long memCardId : memCardIds) {
+                    memCardIdsMap.remove(memCardId);
+                }
+            
+                activityIdMemCardsMap.put(activityId, memCardIds);
+            }
+        }
+    
+        List<InvitationActivityMemberCardVO> collect = memCardIdsMap.values().stream().map(invitationActivity -> {
+            Long activityId = invitationActivity.getId();
+            String activityName = this.queryByIdFromCache(activityId).getName();
+            List<Long> memCardIdsList = activityIdMemCardsMap.get(activityId);
+        
+            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+            invitationActivityMemberCardVO.setId(activityId);
+            invitationActivityMemberCardVO.setName(activityName);
+            invitationActivityMemberCardVO.setMemberCardIdList(memCardIdsList);
+        
+            return invitationActivityMemberCardVO;
+        
+        }).collect(Collectors.toList());
+    
+        return Triple.of(true, null, collect);
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {
