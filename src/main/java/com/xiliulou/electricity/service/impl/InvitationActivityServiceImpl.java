@@ -385,13 +385,11 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 对相同套餐的活动做唯一处理
         Map<Long, InvitationActivity> memCardIdsMap = new HashMap<>();
-        Map<Long, List<Long>> activityIdMemCardsMap = new HashMap<>();
         for (InvitationActivity activity : invitationActivities) {
             List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
             for (Long memCardId : memCardIds) {
                 if (!memCardIdsMap.containsKey(memCardId)) {
                     memCardIdsMap.put(memCardId, activity);
-                    activityIdMemCardsMap.put(activity.getId(), memCardIds);
                 }
             }
         }
@@ -406,8 +404,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 for (Long memCardId : memCardIds) {
                     memCardIdsMap.remove(memCardId);
                 }
-            
-                activityIdMemCardsMap.put(activityId, memCardIds);
             }
         }
     
@@ -419,7 +415,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 activityList.add(activityId);
             
                 String activityName = this.queryByIdFromCache(activityId).getName();
-                List<Long> memCardIdsList = activityIdMemCardsMap.get(activityId);
+                List<Long> memCardIdsList = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
             
                 InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
                 invitationActivityMemberCardVO.setId(activityId);

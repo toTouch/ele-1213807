@@ -351,13 +351,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.100450", "渠道活动不存在");
         }
     
+        int count = NumberConstant.ZERO;
         for (Long activityId : activityIdList) {
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
             if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
                 log.error("INVITATION ACTIVITY ERROR! invitationActivity disable,activityId={}, uid={}", activityId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
             }
-    
+        
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
             if (Objects.nonNull(exist)) {
@@ -368,11 +369,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             // 获取活动记录
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid).eq(InvitationActivityRecord::getActivityId, activityId));
-            if (Objects.isNull(invitationActivityRecord)) {
-                log.error("INVITATION ACTIVITY ERROR! invitationActivityRecord is null,activityId={}, invitationUid={}, uid={}", activityId, invitationUid, userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
-            }
     
+            if (Objects.isNull(invitationActivityRecord)) {
+                count += NumberConstant.ONE;
+                if (count == activityIdList.size()) {
+                    log.error("INVITATION ACTIVITY ERROR! invitationActivityRecord is null,activityId={}, invitationUid={}, uid={}", activityId, invitationUid, userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+                }
+                continue;
+            }
+        
             //更新活动邀请总人数
             invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
         
@@ -390,7 +396,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
         
             invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
-            
+        
+        
         }
         return Triple.of(true, null, null);
     }
