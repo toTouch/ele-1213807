@@ -151,6 +151,10 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
 
     @Override
     public Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query) {
+        
+        if (!redisService.setNx(CacheConstant.CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK + query.getUid(), NumberConstant.ONE.toString(), TimeConstant.THREE_SECOND_MILLISECOND, false)) {
+            return Triple.of(false, "100002", "操作频繁");
+        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
     
@@ -176,10 +180,6 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         List<Long> memberCardIdsByActivityIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIds);
         if (CollectionUtils.isEmpty(memberCardIdsByActivityIds)) {
             return Triple.of(false, "100393", "所选活动未绑定套餐");
-        }
-    
-        if (!redisService.setNx(CacheConstant.CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK + query.getUid(), NumberConstant.ONE.toString(), TimeConstant.TEN_SECOND_MILLISECOND, false)) {
-            return Triple.of(false, "100002", "操作频繁");
         }
     
         // 获取该邀请人已绑定的活动

@@ -109,11 +109,13 @@ public class InvitationActivityMemberCardServiceImpl implements InvitationActivi
         return invitationActivityMemberCardMapper.selectPackagesByActivityIdAndPackageType(id, packageType);
     }
     
+    @Slave
     @Override
     public List<Long> selectMemberCardIdsByActivityIds(List<Long> boundActivityIds) {
         return invitationActivityMemberCardMapper.selectListMemberCardIdsByActivityIds(boundActivityIds);
     }
     
+    @Slave
     @Override
     public List<Long> selectActivityIdByPackageIdAndPackageType(Long packageId, Integer packageType) {
         return invitationActivityMemberCardMapper.selectListActivityIdByPackageIdAndPackageType(packageId, packageType);

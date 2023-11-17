@@ -23,5 +23,8 @@ public interface TimeConstant {
     
     /** 十秒的毫秒数 */
     long TEN_SECOND_MILLISECOND = 10 * 1000L;
+    
+    /** 三秒的毫秒数 */
+    long THREE_SECOND_MILLISECOND = 3 * 1000L;
 
 }
