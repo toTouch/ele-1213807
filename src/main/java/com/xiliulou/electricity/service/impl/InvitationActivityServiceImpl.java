@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -374,7 +375,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     public Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid) {
-        
+    
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
     
@@ -410,21 +411,25 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             }
         }
     
-        List<InvitationActivityMemberCardVO> collect = memCardIdsMap.values().stream().map(invitationActivity -> {
-            Long activityId = invitationActivity.getId();
-            String activityName = this.queryByIdFromCache(activityId).getName();
-            List<Long> memCardIdsList = activityIdMemCardsMap.get(activityId);
-        
-            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-            invitationActivityMemberCardVO.setId(activityId);
-            invitationActivityMemberCardVO.setName(activityName);
-            invitationActivityMemberCardVO.setMemberCardIdList(memCardIdsList);
-        
-            return invitationActivityMemberCardVO;
-        
-        }).collect(Collectors.toList());
+        List<InvitationActivityMemberCardVO> rspList = new ArrayList<>();
+        List<Long> activityList = new ArrayList<>();
+        memCardIdsMap.values().forEach(item -> {
+            Long activityId = item.getId();
+            if (!activityList.contains(activityId)) {
+                activityList.add(activityId);
+            
+                String activityName = this.queryByIdFromCache(activityId).getName();
+                List<Long> memCardIdsList = activityIdMemCardsMap.get(activityId);
+            
+                InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+                invitationActivityMemberCardVO.setId(activityId);
+                invitationActivityMemberCardVO.setName(activityName);
+                invitationActivityMemberCardVO.setMemberCardIdList(memCardIdsList);
+                rspList.add(invitationActivityMemberCardVO);
+            }
+        });
     
-        return Triple.of(true, null, collect);
+        return Triple.of(true, null, rspList);
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {
