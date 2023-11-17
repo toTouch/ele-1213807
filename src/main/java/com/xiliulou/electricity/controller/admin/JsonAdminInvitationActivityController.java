@@ -22,11 +22,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +81,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/invitationActivity/searchByUser")
-    public R searchByUser(@RequestParam(value = "uid") Long uid, @RequestParam(value = "activityName", required = false) String activityName) {
+    public R searchByUser(@RequestParam(value = "uid") Long uid, @NotBlank @RequestParam(value = "activityName", required = false) String activityName) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
