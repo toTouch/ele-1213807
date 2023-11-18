@@ -31,6 +31,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -378,64 +380,68 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
-        
-        log.info("invitationActivities size={}, datas={}", invitationActivities.size(), invitationActivities);
     
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
+        log.info("invitationActivities1 size = {}", invitationActivities.size());
     
         // 对相同套餐的活动做唯一处理
+        Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>();
         Map<Long, InvitationActivity> memCardIdsMap = new HashMap<>();
-        for (InvitationActivity activity : invitationActivities) {
+        Iterator<InvitationActivity> invitationActivityIterator = invitationActivities.iterator();
+        while (invitationActivityIterator.hasNext()) {
+            InvitationActivity activity = invitationActivityIterator.next();
             List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
-            for (Long memCardId : memCardIds) {
+            activityIdMemCardIdsMap.put(activity.getId(), memCardIds);
+        
+            for (Long memCardId : new HashSet<>(memCardIds)) {
                 if (!memCardIdsMap.containsKey(memCardId)) {
                     memCardIdsMap.put(memCardId, activity);
+                } else {
+                    invitationActivityIterator.remove();
                 }
             }
         }
     
-        log.info("memCardIdsMap1 size={}, datas={}", memCardIdsMap.size(), memCardIdsMap);
+        log.info("invitationActivities2 size = {}", invitationActivities.size());
     
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             //根据已绑定活动的套餐对待选活动做唯一处理
             Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            for (Long activityId : boundActivityIds) {
-                List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
-                for (Long memCardId : memCardIds) {
-                    memCardIdsMap.remove(memCardId);
+            Iterator<InvitationActivity> invitationActivityIterator2 = invitationActivities.iterator();
+            while (invitationActivityIterator2.hasNext()) {
+                List<Long> memCardIdsList1 = activityIdMemCardIdsMap.get(invitationActivityIterator2.next().getId());
+            
+                for (Long activityId : boundActivityIds) {
+                    List<Long> memCardIdsList2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
+                    boolean containsAny = memCardIdsList1.stream().anyMatch(memCardIdsList2::contains);
+                    if (containsAny) {
+                        invitationActivityIterator2.remove();
+                    }
                 }
             }
         }
     
-        log.info("memCardIdsMap2 size={}, datas={}", memCardIdsMap.size(), memCardIdsMap);
+        log.info("invitationActivities3 size = {}", invitationActivities.size());
     
-        List<InvitationActivityMemberCardVO> rspList = new ArrayList<>();
-        List<Long> activityList = new ArrayList<>();
-    
-        memCardIdsMap.values().stream().distinct().forEach(item -> {
+        List<InvitationActivityMemberCardVO> collect = invitationActivities.stream().map(item -> {
             Long activityId = item.getId();
-            if (!activityList.contains(activityId)) {
-                activityList.add(activityId);
-            
-                String activityName = this.queryByIdFromCache(activityId).getName();
-                List<Long> memCardIdsList = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
-            
-                InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
-                invitationActivityMemberCardVO.setId(activityId);
-                invitationActivityMemberCardVO.setName(activityName);
-                invitationActivityMemberCardVO.setMemberCardIdList(memCardIdsList);
-                
-                rspList.add(invitationActivityMemberCardVO);
-            }
-        });
+            String activityName = this.queryByIdFromCache(activityId).getName();
+            List<Long> memCardIdList = activityIdMemCardIdsMap.get(activityId);
+        
+            InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
+            invitationActivityMemberCardVO.setId(activityId);
+            invitationActivityMemberCardVO.setName(activityName);
+            invitationActivityMemberCardVO.setMemberCardIdList(memCardIdList);
+        
+            return invitationActivityMemberCardVO;
+        
+        }).collect(Collectors.toList());
     
-        log.info("rspList size={}, datas={}", rspList.size(), rspList);
-    
-        return Triple.of(true, null, rspList);
+        return Triple.of(true, null, collect);
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {
