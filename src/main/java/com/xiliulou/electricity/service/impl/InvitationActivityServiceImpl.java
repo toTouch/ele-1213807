@@ -388,7 +388,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 对相同套餐的活动做唯一处理
         Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>();
-        List<InvitationActivity> removeList = new ArrayList<>();
+        Set<InvitationActivity> removeSet1 = new HashSet<>();
         for (int i = 0; i < invitationActivities.size(); i++) {
             InvitationActivity activity1 = invitationActivities.get(i);
             List<Long> memCardIds1 = activityIdMemCardIdsMap.get(activity1.getId());
@@ -397,31 +397,31 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             for (int j = i + 1; j < invitationActivities.size()-1; j++) {
                 InvitationActivity activity2 = invitationActivities.get(j);
                 List<Long> memCardIds2 = activityIdMemCardIdsMap.get(activity2.getId());
-                if (memCardIds1.stream().anyMatch(memCardIds2::contains)) {
-                    removeList.add(activity2);
+                if (CollectionUtils.isNotEmpty(memCardIds1) && CollectionUtils.isNotEmpty(memCardIds2) && memCardIds1.stream().anyMatch(memCardIds2::contains)) {
+                    removeSet1.add(activity2);
                 }
             }
         }
     
-        invitationActivities.removeAll(removeList);
+        invitationActivities.removeAll(removeSet1);
     
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             //根据已绑定活动的套餐对待选活动做唯一处理
             Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            List<InvitationActivity> removeList2 = new ArrayList<>();
+            Set<InvitationActivity> removeSet2 = new HashSet<>();
             for (InvitationActivity activity : invitationActivities) {
-                List<Long> memCardIdsList1 = activityIdMemCardIdsMap.get(activity.getId());
+                List<Long> memCardIds1 = activityIdMemCardIdsMap.get(activity.getId());
             
                 for (Long activityId : boundActivityIds) {
-                    List<Long> memCardIdsList2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
-                    if (memCardIdsList1.stream().anyMatch(memCardIdsList2::contains)) {
-                        removeList2.add(activity);
+                    List<Long> memCardIds2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
+                    if (CollectionUtils.isNotEmpty(memCardIds1) && CollectionUtils.isNotEmpty(memCardIds2) && memCardIds1.stream().anyMatch(memCardIds2::contains)) {
+                        removeSet2.add(activity);
                     }
                 }
             }
-            invitationActivities.removeAll(removeList2);
+            invitationActivities.removeAll(removeSet2);
         }
     
         List<InvitationActivityMemberCardVO> collect = invitationActivities.stream().map(item -> {
