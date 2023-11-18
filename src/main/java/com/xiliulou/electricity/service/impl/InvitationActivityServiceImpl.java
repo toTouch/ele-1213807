@@ -378,6 +378,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 获取已上架的所有活动
         List<InvitationActivity> invitationActivities = selectBySearch(query);
+        
+        log.info("invitationActivities size={}, datas={}", invitationActivities.size(), invitationActivities);
     
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
@@ -394,6 +396,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             }
         }
     
+        log.info("memCardIdsMap1 size={}, datas={}", memCardIdsMap.size(), memCardIdsMap);
+    
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
@@ -406,6 +410,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 }
             }
         }
+    
+        log.info("memCardIdsMap2 size={}, datas={}", memCardIdsMap.size(), memCardIdsMap);
     
         List<InvitationActivityMemberCardVO> rspList = new ArrayList<>();
         List<Long> activityList = new ArrayList<>();
@@ -426,6 +432,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 rspList.add(invitationActivityMemberCardVO);
             }
         });
+    
+        log.info("rspList size={}, datas={}", rspList.size(), rspList);
     
         return Triple.of(true, null, rspList);
     }
