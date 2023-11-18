@@ -173,13 +173,18 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         // 所选活动id
         List<Long> activityIds = query.getActivityIds();
         if (CollectionUtils.isEmpty(activityIds)) {
-            return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+            return Triple.of(false, "100397", "暂无活动");
         }
     
         // 获取所选活动对应的套餐id
         List<Long> memberCardIdsByActivityIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIds);
         if (CollectionUtils.isEmpty(memberCardIdsByActivityIds)) {
             return Triple.of(false, "100393", "所选活动未绑定套餐");
+        }
+    
+        // 判断所选活动是否包含相同的套餐
+        if (memberCardIdsByActivityIds.stream().distinct().count() < memberCardIdsByActivityIds.size()) {
+            return Triple.of(false, "100395", "所选活动包含有相同的套餐");
         }
     
         // 获取该邀请人已绑定的活动
@@ -192,10 +197,8 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     
             // 所选活动的套餐不能包含已绑定的活动的套餐
             if (CollectionUtils.isNotEmpty(boundMemberCardIds)) {
-                boolean containsMatch = memberCardIdsByActivityIds.stream().anyMatch(boundMemberCardIds::contains);
-        
-                if (containsMatch) {
-                    return Triple.of(false, "100394", "所选的活动包含已绑定的活动套餐");
+                if (memberCardIdsByActivityIds.stream().anyMatch(boundMemberCardIds::contains)) {
+                    return Triple.of(false, "100394", "该活动配置的套餐，邀请人已参加，请重新选择");
                 }
             }
         }

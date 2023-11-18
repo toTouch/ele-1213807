@@ -22,18 +22,15 @@ import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -225,12 +222,26 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
         }
-
-//        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
-//        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
-//            return Triple.of(false, "", "已存在上架的活动");
-//        }
-
+    
+        //活动上架 需判断 是否有相同套餐的活动已上架
+        if(Objects.equals(InvitationActivity.STATUS_UP, query.getStatus())) {
+            // 租户下所有已上架的活动
+            List<InvitationActivity> invitationActivities = invitationActivityMapper.selectUsableActivity(TenantContextHolder.getTenantId());
+            if(CollectionUtils.isNotEmpty(invitationActivities)) {
+                List<Long> activityIdsAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toList());
+        
+                //所有已上架活动的套餐id
+                List<Long> memCardIdsAll = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIdsAll);
+        
+                //本次上架活动的套餐id
+                List<Long> memCardIdsThis = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(query.getId());
+                
+                if(memCardIdsAll.stream().anyMatch(memCardIdsThis::contains)) {
+                    return Triple.of(false, "100396", "已上架的活动中包含该活动的套餐");
+                }
+            }
+        }
+        
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
 
         invitationActivityUpdate.setId(query.getId());
@@ -385,50 +396,39 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
-    
-        // 对相同套餐的活动做唯一处理
-        Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>();
-        Set<InvitationActivity> removeSet1 = new HashSet<>();
-        for (int i = 0; i < invitationActivities.size(); i++) {
-            InvitationActivity activity1 = invitationActivities.get(i);
-            List<Long> memCardIds1 = activityIdMemCardIdsMap.get(activity1.getId());
-            activityIdMemCardIdsMap.put(activity1.getId(), memCardIds1);
         
-            for (int j = i + 1; j < invitationActivities.size()-1; j++) {
-                InvitationActivity activity2 = invitationActivities.get(j);
-                List<Long> memCardIds2 = activityIdMemCardIdsMap.get(activity2.getId());
-                if (CollectionUtils.isNotEmpty(memCardIds1) && CollectionUtils.isNotEmpty(memCardIds2) && memCardIds1.stream().anyMatch(memCardIds2::contains)) {
-                    removeSet1.add(activity2);
-                }
-            }
-        }
-    
-        invitationActivities.removeAll(removeSet1);
-    
         // 获取邀请人已绑定的活动
+        Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>(invitationActivities.size());
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             //根据已绑定活动的套餐对待选活动做唯一处理
+            Set<InvitationActivity> removeSet = new HashSet<>();
             Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            Set<InvitationActivity> removeSet2 = new HashSet<>();
             for (InvitationActivity activity : invitationActivities) {
-                List<Long> memCardIds1 = activityIdMemCardIdsMap.get(activity.getId());
+                List<Long> memCardIds1 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
+                activityIdMemCardIdsMap.put(activity.getId(), memCardIds1);
             
                 for (Long activityId : boundActivityIds) {
                     List<Long> memCardIds2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
-                    if (CollectionUtils.isNotEmpty(memCardIds1) && CollectionUtils.isNotEmpty(memCardIds2) && memCardIds1.stream().anyMatch(memCardIds2::contains)) {
-                        removeSet2.add(activity);
+                    if (memCardIds1.stream().anyMatch(memCardIds2::contains)) {
+                        removeSet.add(activity);
                     }
                 }
             }
-            invitationActivities.removeAll(removeSet2);
+            
+            invitationActivities.removeAll(removeSet);
         }
     
         List<InvitationActivityMemberCardVO> collect = invitationActivities.stream().map(item -> {
             Long activityId = item.getId();
             String activityName = this.queryByIdFromCache(activityId).getName();
-            List<Long> memCardIdList = activityIdMemCardIdsMap.get(activityId);
-        
+            List<Long> memCardIdList;
+            if(activityIdMemCardIdsMap.containsKey(activityId)) {
+                memCardIdList = activityIdMemCardIdsMap.get(activityId);
+            } else{
+                memCardIdList = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
+            }
+            
             InvitationActivityMemberCardVO invitationActivityMemberCardVO = new InvitationActivityMemberCardVO();
             invitationActivityMemberCardVO.setId(activityId);
             invitationActivityMemberCardVO.setName(activityName);

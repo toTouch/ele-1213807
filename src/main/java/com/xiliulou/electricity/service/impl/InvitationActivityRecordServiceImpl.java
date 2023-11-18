@@ -238,21 +238,29 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.error("INVITATION ACTIVITY ERROR! invitationActivities is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100391", "暂无上架的活动");
         }
-    
-        Set<Long> activityIds = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
-    
+        
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100392", "无权限参加此活动");
         }
-    
-        List<Long> activityUserIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(activityUserIds) || !activityIds.containsAll(activityUserIds)) {
-            log.error("INVITATION ACTIVITY ERROR! activityUserIds is empty or activityUserIds is invalid,uid={}", userInfo.getUid());
-            return Triple.of(false, "100392", "无权限参加此活动");
+        
+        // 过滤掉未上线的活动
+        Set<Long> activityIdSetAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
+        Set<Long> activityIdSetUser = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+        for (Long activityIdUser : activityIdSetUser) {
+            if (!activityIdSetAll.contains(activityIdUser)) {
+                invitationActivityUserList = invitationActivityUserList.stream().filter(item -> !Objects.equals(item.getId(), activityIdUser)).collect(Collectors.toList());
+            }
         }
-    
+        
+        if(invitationActivityUserList.size()==NumberConstant.ZERO) {
+            if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+                log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
+                return Triple.of(false, "100391", "暂无上架的活动");
+            }
+        }
+        
         List<InvitationActivityRecord> invitationActivityRecordList = new ArrayList<>();
         InvitationActivityRecord invitationActivityRecordIn = InvitationActivityRecord.builder().uid(userInfo.getUid()).code(RandomUtil.randomNumbers(NumberConstant.SIX))
                 .shareCount(NumberConstant.ZERO).invitationCount(NumberConstant.ZERO).money(BigDecimal.ZERO).tenantId(TenantContextHolder.getTenantId())
@@ -317,19 +325,19 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         if (StringUtils.isBlank(decrypt)) {
             log.error("INVITATION ACTIVITY ERROR! invitation activity code decrypt error,code={}, uid={}", query.getCode(), userInfo.getUid());
-            return Triple.of(false, "100457", "活动二维码解析失败");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
         if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.TWO) {
             log.error("INVITATION ACTIVITY ERROR! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
-            return Triple.of(false, "100459", "活动二维码内容不合法");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         String activityIdStr = split[NumberConstant.ZERO];
         if (StringUtils.isEmpty(activityIdStr)) {
             log.error("INVITATION ACTIVITY ERROR! not found invitationActivity, uid={}", userInfo.getUid());
-            return Triple.of(false, "100450", "渠道活动不存在");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         Long invitationUid = Long.parseLong(split[NumberConstant.ONE]);
@@ -346,36 +354,37 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 活动id集合
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(activityIdList)) {
-            log.error("INVITATION ACTIVITY ERROR!  not found valid activity, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.100450", "渠道活动不存在");
-        }
-    
-        int count = NumberConstant.ZERO;
+        int downCount = 0;
+        int recordCount = 0;
         for (Long activityId : activityIdList) {
+            if (downCount == activityIdList.size()) {
+                log.error("INVITATION ACTIVITY ERROR! activityList status are all down, invitationUid={},uid={}", invitationUid, userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+            }
+            
+            if(recordCount == activityIdList.size()) {
+                log.error("INVITATION ACTIVITY ERROR! not found record, invitationUid={},uid={}", invitationUid, userInfo.getUid());
+                return Triple.of(false, "100463", "二维码已失效");
+            }
+            
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
             if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
-                log.error("INVITATION ACTIVITY ERROR! invitationActivity disable,activityId={}, uid={}", activityId, userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+                downCount += 1;
+                continue;
             }
         
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
             if (Objects.nonNull(exist)) {
                 log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
-                return Triple.of(true, "ELECTRICITY.00107", "已参加过活动");
+                return Triple.of(true, "100398", "您已参与过该活动，无法重复参加");
             }
         
             // 获取活动记录
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid).eq(InvitationActivityRecord::getActivityId, activityId));
-    
             if (Objects.isNull(invitationActivityRecord)) {
-                count += NumberConstant.ONE;
-                if (count == activityIdList.size()) {
-                    log.error("INVITATION ACTIVITY ERROR! invitationActivityRecord is null,activityId={}, invitationUid={}, uid={}", activityId, invitationUid, userInfo.getUid());
-                    return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
-                }
+                recordCount += 1;
                 continue;
             }
         
@@ -396,8 +405,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
         
             invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
-        
-        
+            
         }
         return Triple.of(true, null, null);
     }
