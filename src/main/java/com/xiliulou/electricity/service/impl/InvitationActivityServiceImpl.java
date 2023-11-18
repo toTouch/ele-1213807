@@ -22,6 +22,7 @@ import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -384,29 +385,25 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
-        log.info("invitationActivities1 size = {}", invitationActivities.size());
     
         // 对相同套餐的活动做唯一处理
         Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>();
         List<InvitationActivity> removeList = new ArrayList<>();
         for (int i = 0; i < invitationActivities.size(); i++) {
             InvitationActivity activity1 = invitationActivities.get(i);
-            List<Long> memCardIds1 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity1.getId());
+            List<Long> memCardIds1 = activityIdMemCardIdsMap.get(activity1.getId());
             activityIdMemCardIdsMap.put(activity1.getId(), memCardIds1);
         
-            for (int j = 0; j < i; j++) {
+            for (int j = i + 1; j < invitationActivities.size()-1; j++) {
                 InvitationActivity activity2 = invitationActivities.get(j);
-                List<Long> memCardIds2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity2.getId());
+                List<Long> memCardIds2 = activityIdMemCardIdsMap.get(activity2.getId());
                 if (memCardIds1.stream().anyMatch(memCardIds2::contains)) {
                     removeList.add(activity2);
                 }
             }
-        
         }
     
         invitationActivities.removeAll(removeList);
-    
-        log.info("invitationActivities2 size = {}", invitationActivities.size());
     
         // 获取邀请人已绑定的活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(uid);
@@ -426,8 +423,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             }
             invitationActivities.removeAll(removeList2);
         }
-    
-        log.info("invitationActivities3 size = {}", invitationActivities.size());
     
         List<InvitationActivityMemberCardVO> collect = invitationActivities.stream().map(item -> {
             Long activityId = item.getId();
