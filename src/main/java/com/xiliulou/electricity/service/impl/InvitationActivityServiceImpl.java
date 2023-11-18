@@ -389,9 +389,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         // 对相同套餐的活动做唯一处理
         Map<Long, List<Long>> activityIdMemCardIdsMap = new HashMap<>();
         Map<Long, InvitationActivity> memCardIdsMap = new HashMap<>();
-        Iterator<InvitationActivity> invitationActivityIterator = invitationActivities.iterator();
-        while (invitationActivityIterator.hasNext()) {
-            InvitationActivity activity = invitationActivityIterator.next();
+        List<InvitationActivity> removeList1 = new ArrayList<>();
+        for (InvitationActivity activity : invitationActivities) {
             List<Long> memCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activity.getId());
             activityIdMemCardIdsMap.put(activity.getId(), memCardIds);
         
@@ -399,10 +398,12 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 if (!memCardIdsMap.containsKey(memCardId)) {
                     memCardIdsMap.put(memCardId, activity);
                 } else {
-                    invitationActivityIterator.remove();
+                    removeList1.add(activity);
                 }
             }
         }
+    
+        invitationActivities.removeAll(removeList1);
     
         log.info("invitationActivities2 size = {}", invitationActivities.size());
     
@@ -411,20 +412,21 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (CollectionUtils.isNotEmpty(invitationActivityUserList)) {
             //根据已绑定活动的套餐对待选活动做唯一处理
             Set<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-            Iterator<InvitationActivity> invitationActivityIterator2 = invitationActivities.iterator();
-            while (invitationActivityIterator2.hasNext()) {
-                List<Long> memCardIdsList1 = activityIdMemCardIdsMap.get(invitationActivityIterator2.next().getId());
+            List<InvitationActivity> removeList2 = new ArrayList<>();
+            for (InvitationActivity activity : invitationActivities) {
+                List<Long> memCardIdsList1 = activityIdMemCardIdsMap.get(activity.getId());
             
                 for (Long activityId : boundActivityIds) {
                     List<Long> memCardIdsList2 = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityId);
                     boolean containsAny = memCardIdsList1.stream().anyMatch(memCardIdsList2::contains);
                     if (containsAny) {
-                        invitationActivityIterator2.remove();
+                        removeList2.add(activity);
                     }
                 }
             }
+            invitationActivities.removeAll(removeList2);
         }
-    
+        
         log.info("invitationActivities3 size = {}", invitationActivities.size());
     
         List<InvitationActivityMemberCardVO> collect = invitationActivities.stream().map(item -> {
