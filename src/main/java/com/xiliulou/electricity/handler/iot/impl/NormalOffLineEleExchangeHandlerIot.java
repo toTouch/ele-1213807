@@ -198,8 +198,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         
         if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
             //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
-            if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime()
-                    && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
+            if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
                 //扣除月卡
                 userBatteryMemberCardService.minCount(userBatteryMemberCard);
             }
@@ -376,7 +375,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         userBatteryMemberCardUpdate.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
         userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
-        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
