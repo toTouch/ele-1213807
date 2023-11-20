@@ -53,4 +53,6 @@ public interface UserOauthBindService {
     List<UserOauthBind> queryListByUid(Long uid);
 
     Boolean deleteById(Long id);
+    
+    Boolean checkOpenIdByJsCode(String jsCode);
 }
