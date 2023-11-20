@@ -1041,7 +1041,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setRentUnit(batteryMemberCard.getRentUnit());
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
-            vo.setIsRefund(batteryMemberCard.getIsRefund());
+            if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
+                    + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
+                vo.setIsRefund(BatteryMemberCard.YES);
+            } else {
+                vo.setIsRefund(BatteryMemberCard.NO);
+            }
+            vo.setRefundLimit(batteryMemberCard.getRefundLimit());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
             
             BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
@@ -4392,6 +4398,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        userBatteryMemberCardInfoVO.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
         userBatteryMemberCardInfoVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
