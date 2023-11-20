@@ -1845,13 +1845,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             //用户绑定的电池型号
             List<String> userBatteryType = userBatteryTypeService.selectByUid(userInfo.getUid());
+            Set<String> batteryTypeSet = null;
+            if (CollectionUtils.isNotEmpty(userBatteryType)) {
+                batteryTypeSet = new HashSet<>(userBatteryType);
+            }
             
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                     .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).batteryServiceFeeGenerateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                     .storeId(userInfo.getStoreId()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).modelType(franchisee.getModelType())
-                    .batteryType(CollectionUtils.isEmpty(userBatteryType) ? "" : JsonUtil.toJson(userBatteryType))
+                    .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                     .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
             
