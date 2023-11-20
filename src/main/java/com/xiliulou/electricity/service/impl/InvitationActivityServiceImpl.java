@@ -222,25 +222,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
         }
-    
-        //活动上架 需判断 是否有相同套餐的活动已上架
-        if(Objects.equals(InvitationActivity.STATUS_UP, query.getStatus())) {
-            // 租户下所有已上架的活动
-            List<InvitationActivity> invitationActivities = invitationActivityMapper.selectUsableActivity(TenantContextHolder.getTenantId());
-            if(CollectionUtils.isNotEmpty(invitationActivities)) {
-                List<Long> activityIdsAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toList());
-        
-                //所有已上架活动的套餐id
-                List<Long> memCardIdsAll = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIdsAll);
-        
-                //本次上架活动的套餐id
-                List<Long> memCardIdsThis = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(query.getId());
-                
-                if(memCardIdsAll.stream().anyMatch(memCardIdsThis::contains)) {
-                    return Triple.of(false, "100396", "已上架的活动中包含该活动的套餐");
-                }
-            }
-        }
         
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
 
@@ -394,7 +375,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         List<InvitationActivity> invitationActivities = selectBySearch(query);
     
         if (CollectionUtils.isEmpty(invitationActivities)) {
-            return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+            return Triple.of(false, "100397", "暂无活动");
         }
         
         // 获取邀请人已绑定的活动

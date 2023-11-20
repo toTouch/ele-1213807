@@ -184,7 +184,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     
         // 判断所选活动是否包含相同的套餐
         if (memberCardIdsByActivityIds.stream().distinct().count() < memberCardIdsByActivityIds.size()) {
-            return Triple.of(false, "100395", "所选活动包含有相同的套餐");
+            return Triple.of(false, "100395", "邀请人参加的活动中不允许包含相同的套餐，请修改后提交");
         }
     
         // 获取该邀请人已绑定的活动

@@ -219,30 +219,30 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     public Triple<Boolean, String, Object> generateCode() {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            return Triple.of(false, "100001", "用户不存在");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         if (StringUtils.isBlank(userInfo.getPhone())) {
             log.error("INVITATION ACTIVITY ERROR! phone is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
             log.error("INVITATION ACTIVITY ERROR! tenant is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivities is empty,uid={}", userInfo.getUid());
-            return Triple.of(false, "100391", "暂无上架的活动");
+            return Triple.of(false, "100463", "二维码已失效");
         }
         
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
-            return Triple.of(false, "100392", "无权限参加此活动");
+            return Triple.of(false, "100463", "二维码已失效");
         }
         
         // 过滤掉未上线的活动
@@ -257,7 +257,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if(invitationActivityUserList.size()==NumberConstant.ZERO) {
             if (CollectionUtils.isEmpty(invitationActivityUserList)) {
                 log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
-                return Triple.of(false, "100391", "暂无上架的活动");
+                return Triple.of(false, "100463", "二维码已失效");
             }
         }
         
@@ -349,7 +349,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         UserInfo invitationUserInfo = userInfoService.queryByUidFromCache(invitationUid);
         if (Objects.isNull(invitationUserInfo)) {
             log.error("INVITATION ACTIVITY ERROR! not found invitationUserInfo,invitationUid={},uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
         // 活动id集合
@@ -359,14 +359,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         for (Long activityId : activityIdList) {
             if (downCount == activityIdList.size()) {
                 log.error("INVITATION ACTIVITY ERROR! activityList status are all down, invitationUid={},uid={}", invitationUid, userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.00106", "活动已下架");
+                return Triple.of(false, "100399", "该活动已下架，二维码失效");
             }
-            
-            if(recordCount == activityIdList.size()) {
+        
+            if (recordCount == activityIdList.size()) {
                 log.error("INVITATION ACTIVITY ERROR! not found record, invitationUid={},uid={}", invitationUid, userInfo.getUid());
-                return Triple.of(false, "100463", "二维码已失效");
+                return Triple.of(false, "100399", "该活动已下架，二维码失效");
             }
-            
+        
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
             if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
                 downCount += 1;
@@ -405,7 +405,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
         
             invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
-            
+        
         }
         return Triple.of(true, null, null);
     }
