@@ -78,8 +78,16 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @date 2023/11/13 15:43:36
      * @author HeYafeng
      */
-    @GetMapping("")
-    public R searchByUser(@RequestParam(value = "uid") Long uid, @RequestParam(value = "activityName", required = false) String activityName) {
+    @GetMapping("/admin/invitationActivity/searchByUser")
+    public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
+            @RequestParam(value = "activityName", required = false) String activityName) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -91,7 +99,14 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        InvitationActivityQuery query = InvitationActivityQuery.builder().tenantId(TenantContextHolder.getTenantId()).status(NumberConstant.ONE).name(activityName).build();
+        InvitationActivityQuery query = InvitationActivityQuery
+                .builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .status(NumberConstant.ONE)
+                .name(activityName)
+                .build();
     
         return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
     }
