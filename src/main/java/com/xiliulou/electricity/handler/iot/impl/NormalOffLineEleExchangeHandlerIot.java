@@ -100,7 +100,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     private UserBatteryTypeService userBatteryTypeService;
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
@@ -197,21 +196,25 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
+log.info("off uid={},batteryMemberCardId={},limitCount={},",userInfo.getUid(),batteryMemberCard.getId(),batteryMemberCard.getLimitCount());
         if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
             //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
+log.info("off uid={},userBatteryMemberCard effectiveTime={},orderRemainingNumber={},RemainingNumber={},OrderExpireTime={},offlineEleOrder endTime={},currentTime={}",userInfo.getUid(),userBatteryMemberCard.getOrderEffectiveTime(),userBatteryMemberCard.getOrderRemainingNumber(),userBatteryMemberCard.getRemainingNumber(),userBatteryMemberCard.getOrderExpireTime(),offlineEleOrderVo.getEndTime(),System.currentTimeMillis());
             if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime()
                     && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
+log.info("off mincount,uid={}",userInfo.getUid());
                 //扣除月卡
                 userBatteryMemberCardService.minCount(userBatteryMemberCard);
             }
             
             //如果套餐没过期并且剩余次数为1
-            if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) && Objects.equals(userBatteryMemberCard.getOrderRemainingNumber(),
+log.info("off uid={},OrderRemainingNumber={},RemainingNumber={}",userInfo.getUid(),userBatteryMemberCard.getOrderRemainingNumber(),userBatteryMemberCard.getRemainingNumber());
+            if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects.equals(userBatteryMemberCard.getOrderRemainingNumber(),
                     UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
                 updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineEleOrderVo.getEndTime());
             }
         }
-        
+log.info("off end uid={},",userInfo.getUid());
         //查询当前归还的电池信息
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
         //更新旧电池为在仓
@@ -364,11 +367,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     
     private void updateUserBatteryMemberCardInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long endTime) {
         UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
+log.info("off updateUserBatteryMemberCardInfo1,uid={}",userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
             userBatteryMemberCardUpdate.setMemberCardExpireTime(endTime);
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+log.info("off updateUserBatteryMemberCardInfo2,uid={}",userInfo.getUid());
             return;
         }
         
@@ -380,6 +385,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
+log.info("off updateUserBatteryMemberCardInfo3,uid={}",userInfo.getUid());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         //删除资源包
