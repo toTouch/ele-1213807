@@ -1075,7 +1075,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
                     && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                log.error("WEBBIND ERROR ERROR! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
+                log.warn("WEBBIND ERROR WARN! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.0023", "套餐已过期");
             }
         } else {

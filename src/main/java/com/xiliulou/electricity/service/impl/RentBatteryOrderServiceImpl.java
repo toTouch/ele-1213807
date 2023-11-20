@@ -208,10 +208,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
         if (Objects.nonNull(oldRentBatteryOrder)) {
             if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-                log.error("RENTBATTERY ERROR! exits unfinished rent battery order,uid={}", user.getUid());
+                log.warn("RENTBATTERY WARN! exits unfinished rent battery order,uid={}", user.getUid());
                 return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
             } else if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-                log.error("RENTBATTERY ERROR! exits unfinished return battery order,uid={}", user.getUid());
+                log.warn("RENTBATTERY WARN! exits unfinished return battery order,uid={}", user.getUid());
                 return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
             }
         }
@@ -468,7 +468,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
                 && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-            log.error("RENTBATTERY ERROR! battery memberCard is Expire,uid={}", userInfo.getUid());
+            log.warn("RENTBATTERY WARN! battery memberCard is Expire,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
         }
         
@@ -598,10 +598,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
         if (Objects.nonNull(oldRentBatteryOrder)) {
             if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-                log.error("RENTBATTERY ERROR! exits unfinished rent battery order,uid={}", user.getUid());
+                log.warn("RENTBATTERY WARN! exits unfinished rent battery order,uid={}", user.getUid());
                 return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
             } else if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-                log.error("RENTBATTERY ERROR! exits unfinished return battery order,uid={}", user.getUid());
+                log.warn("RENTBATTERY WARN! exits unfinished return battery order,uid={}", user.getUid());
                 return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
             }
         }
