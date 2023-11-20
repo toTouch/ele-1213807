@@ -376,6 +376,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(
+                userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
