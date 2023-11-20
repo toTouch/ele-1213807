@@ -218,6 +218,13 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
+        
+        //获取原套餐的套餐剩余次数
+        Long orderRemainingNumber = userBatteryMemberCard.getOrderRemainingNumber();
+        if (Objects.nonNull(orderRemainingNumber) && orderRemainingNumber > 0) {
+            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - orderRemainingNumber);
+        }
+        
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         //删除资源包

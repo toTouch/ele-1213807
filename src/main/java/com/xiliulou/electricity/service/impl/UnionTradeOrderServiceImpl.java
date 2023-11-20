@@ -893,10 +893,12 @@ public class UnionTradeOrderServiceImpl extends
                     }
     
                     //保存用户押金对应的电池型号
-                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
-                    }
+//                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+//                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+//                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+//                    }
+    
+                    userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 } else {
 
                     UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
@@ -939,9 +941,6 @@ public class UnionTradeOrderServiceImpl extends
             } else {
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
-
-            //更新用户电池型号
-//            userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
 
             //更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
