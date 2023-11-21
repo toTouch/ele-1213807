@@ -23,7 +23,7 @@ public class ElectricityCabinetOutWarehouseRequest {
     /**
      * 厂家名称/型号
      */
-    @NotEmpty(message = "厂家型号不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "厂家型号不能为空!", groups = {UpdateGroup.class})
     private Integer name;
     
     /**

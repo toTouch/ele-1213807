@@ -12,6 +12,7 @@ import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequ
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -46,6 +47,9 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     
     @Resource
     private ElectricityCabinetServerService electricityCabinetServerService;
+    
+    @Resource
+    private ElectricityCabinetService electricityCabinetService;
     
     
     @Override
@@ -111,6 +115,11 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     
     @Override
     public Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest){
+        
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(outWarehouseRequest.getId());
+        if(Objects.isNull(electricityCabinet)){
+            return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+        }
         return null;
     }
 }
