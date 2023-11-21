@@ -89,7 +89,8 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
     @GetMapping("/admin/invitationActivityUser/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
                    @RequestParam(value = "uid", required = false) Long uid,
-                   @RequestParam(value = "userName", required = false) String userName) {
+                   @RequestParam(value = "userName", required = false) String userName,
+                   @RequestParam(value = "activityName", required = false) String activityName) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -119,6 +120,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
                 .uid(uid)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
+                .activityName(activityName)
                 .build();
 
         return R.ok(invitationActivityUserService.selectByPageCount(query));
