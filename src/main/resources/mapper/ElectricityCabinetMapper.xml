@@ -844,6 +844,6 @@
     </select>
 
     <select id="existByProductKeyAndDeviceName" resultType="Integer">
-       select 1 from t_electricity_cabinet where product_key = #{productKey} and device_name = #{deviceName} and deviceName = 0 limit 1;
+       select 1 from t_electricity_cabinet where product_key = #{productKey} and device_name = #{deviceName} and del_flag = 0 limit 1;
     </select>
 </mapper>
