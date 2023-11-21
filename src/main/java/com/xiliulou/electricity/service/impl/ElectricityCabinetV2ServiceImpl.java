@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
@@ -108,4 +109,8 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         return false;
     }
     
+    @Override
+    public Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest){
+        return null;
+    }
 }
