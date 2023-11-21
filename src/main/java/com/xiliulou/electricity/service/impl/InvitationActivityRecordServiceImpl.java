@@ -517,6 +517,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return;
         }
     
+        // 根据activityId去重
+        activityJoinHistoryList = new ArrayList<>(
+                activityJoinHistoryList.stream().collect(Collectors.toMap(InvitationActivityJoinHistory::getActivityId, history -> history, (existing, replacement) -> existing))
+                        .values());
+    
         // 获取租户下所有上架的套餐返现活动
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
@@ -571,7 +576,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("Invitation activity info! package not bound to activity, package type = {}, package Id={},uid={}", packageType, packageId, userInfo.getUid());
             return;
         }
-        
+    
         intersectionActivityMap.entrySet().stream().findFirst().ifPresent(entry -> {
             //本次购买套餐的活动
             Long activityId = entry.getKey();
