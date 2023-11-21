@@ -210,9 +210,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         InvitationActivityRecordInfoVO invitationActivityRecordInfoVO = InvitationActivityRecordInfoVO.builder().totalMoney(totalMoney).totalInvitationCount(totalInvitationCount)
                 .invitationActivityRecordInfoList(list).build();
-        invitationActivityRecordInfoVO.setTotalMoney(totalMoney);
     
-        return Triple.of(true, null, list);
+        return Triple.of(true, null, invitationActivityRecordInfoVO);
     }
 
     @Override
