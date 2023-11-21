@@ -173,7 +173,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         // 所选活动id
         List<Long> activityIds = query.getActivityIds();
         if (CollectionUtils.isEmpty(activityIds)) {
-            return Triple.of(false, "100397", "暂无活动");
+            return Triple.of(false, "100396", "请选择活动名称");
         }
     
         // 获取所选活动对应的套餐id
