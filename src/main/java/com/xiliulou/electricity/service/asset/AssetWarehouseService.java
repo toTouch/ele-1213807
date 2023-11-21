@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.asset;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveRequest;
 
 /**
@@ -9,6 +10,6 @@ import com.xiliulou.electricity.request.asset.AssetWarehouseSaveRequest;
  */
 public interface AssetWarehouseService {
 
-    Integer save(AssetWarehouseSaveRequest assetWarehouseSaveRequest);
+    R save(AssetWarehouseSaveRequest assetWarehouseSaveRequest);
 
 }

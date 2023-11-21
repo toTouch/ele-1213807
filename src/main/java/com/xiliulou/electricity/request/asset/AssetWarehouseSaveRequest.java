@@ -2,6 +2,10 @@ package com.xiliulou.electricity.request.asset;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -11,6 +15,11 @@ import javax.validation.constraints.NotNull;
  * @description 新增库房
  * @date 2023/11/21 15:42:11
  */
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AssetWarehouseSaveRequest {
     /**
      * 库房名称
@@ -32,10 +41,12 @@ public class AssetWarehouseSaveRequest {
     /**
      * 库房管理员
      */
-    private String clerk;
+    private String managerName;
     
     /**
      * 联系方式
      */
-    private String contact;
+    private String managerPhone;
+    
+    private Long uid;
 }

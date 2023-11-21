@@ -40,7 +40,9 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return assetWarehouseService.save(assetWarehouseService);
+        assetWarehouseSaveRequest.setUid(user.getUid());
+        
+        return assetWarehouseService.save(assetWarehouseSaveRequest);
     }
     
 }
