@@ -21,7 +21,6 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_asset_warehouse
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            id,
             name,
             status,
             manager_name,
@@ -33,7 +32,6 @@
             update_time
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{id},
             #{name},
             #{status},
             #{managerName},
@@ -45,6 +43,34 @@
             #{updateTime}
         </trim>
     </insert>
+    
+    <update id="updateById">
+        update t_asset_warehouse
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="managerName != null and managerName != ''">
+                manager_name = #{managerName},
+            </if>
+            <if test="managerPhone != null and managerPhone != ''">
+                manager_phone = #{managerPhone},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
     
     <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.vo.asset.AssetWarehouseVO">
         SELECT

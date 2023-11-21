@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.asset.AssetWarehouse;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
@@ -41,12 +42,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        AssetWarehouse assetWarehouse = AssetWarehouse.builder().name(assetWarehouseSaveRequest.getName()).status(assetWarehouseSaveRequest.getStatus())
-                .managerName(assetWarehouseSaveRequest.getManagerName()).managerPhone(assetWarehouseSaveRequest.getManagerPhone()).address(assetWarehouseSaveRequest.getAddress())
-                .delFlag(AssetWarehouse.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveRequest.getName())
+                .status(assetWarehouseSaveRequest.getStatus()).managerName(assetWarehouseSaveRequest.getManagerName()).managerPhone(assetWarehouseSaveRequest.getManagerPhone())
+                .address(assetWarehouseSaveRequest.getAddress()).delFlag(AssetWarehouse.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId().longValue()).build();
         
-        return R.ok(assetWarehouseMapper.insertOne(assetWarehouse));
+        return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
     }
     
     @Override
@@ -71,5 +72,23 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public List<AssetWarehouseNameVO> listWarehouseNameByFranchiseeId() {
         
         return assetWarehouseMapper.selectListWarehouseNameByFranchiseeId(TenantContextHolder.getTenantId().longValue());
+    }
+    
+    @Override
+    public R deleteById(Long id) {
+        //TODO 该库房有电柜/电池/车辆正在使用，请先解绑后操作
+        
+        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetWarehouse.DEL_DEL)
+                .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId().longValue()).build();
+        
+        return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
+    }
+    
+    @Override
+    public Integer updateById(AssetWarehouseSaveRequest assetWarehouseSaveRequest) {
+        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
+        BeanUtils.copyProperties(assetWarehouseSaveRequest, warehouseSaveOrUpdateQueryModel);
+        
+        return assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel);
     }
 }
