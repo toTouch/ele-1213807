@@ -537,13 +537,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Long packageId;
         Integer payCount = userInfo.getPayCount();
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+            // UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
         
-            if (Objects.isNull(userBatteryMemberCard)) {
-                log.info("Invitation activity info, not found user battery package ,orderId={},uid={}", orderNo, userInfo.getUid());
+            if (Objects.isNull(electricityMemberCardOrder)) {
+                log.info("Invitation activity info, not found battery package order,orderId={},uid={}", orderNo, userInfo.getUid());
                 return;
             }
-            packageId = userBatteryMemberCard.getMemberCardId();
+            packageId = electricityMemberCardOrder.getMemberCardId();
         } else {
             //获取租车或者车电一体订单信息
             CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
