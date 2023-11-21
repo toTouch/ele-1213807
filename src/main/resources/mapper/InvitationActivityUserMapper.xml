@@ -44,7 +44,7 @@
                 and tui.phone = #{phone}
             </if>
             <if test="activityName != null and activityName != ''">
-                and ia.name = #{activityName}
+                and ia.name like concat('%', #{activityName}, '%')
             </if>
             <if test="tenantId != null">
                 and tui.tenant_id = #{tenantId}
