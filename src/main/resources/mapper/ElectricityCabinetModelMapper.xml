@@ -11,7 +11,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
         select
-          id, name, num, voltage, del_flag, create_time, update_time,tenant_id,manufacturer_name
+          id, name, num, voltage, del_flag, create_time, update_time,tenant_id,manufacturer_name,exchange_type,cabinet_size,cell_size,screen_size,waterproof_grade
         from t_electricity_cabinet_model
         where del_flag=0
         <if test="query.name != null and query.name != ''">
