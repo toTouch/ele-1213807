@@ -1,7 +1,14 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.entity.asset.AssetWarehouse;
+import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
+import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -13,4 +20,10 @@ import org.springframework.stereotype.Repository;
 public interface AssetWarehouseMapper {
     
     Integer insertOne(AssetWarehouse assetWarehouse);
+    
+    List<AssetWarehouseVO> selectListByFranchiseeId(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    
+    Integer queryCount(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    
+    List<AssetWarehouseNameVO> selectListWarehouseNameByFranchiseeId(Long tenantId);
 }

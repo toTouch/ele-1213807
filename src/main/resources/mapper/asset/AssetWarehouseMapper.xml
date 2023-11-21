@@ -19,7 +19,7 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_asset_inventory
+        insert into t_asset_warehouse
         <trim prefix="(" suffix=")" suffixOverrides=",">
             id,
             name,
@@ -45,6 +45,40 @@
             #{updateTime}
         </trim>
     </insert>
+    
+    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.vo.asset.AssetWarehouseVO">
+        SELECT
+        <include refid="basic_field"/>
+        FROM t_asset_warehouse
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+        ORDER BY id DESC
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_asset_warehouse
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+    </select>
+    
+    <select id="selectListWarehouseNameByFranchiseeId" resultType="com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO">
+        select id, name
+        from t_asset_warehouse
+        where tenant_id = #{tenantId}
+          and del_flag = 0;
+    </select>
 
 </mapper>
 
