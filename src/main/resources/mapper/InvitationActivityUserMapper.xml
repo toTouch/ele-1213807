@@ -68,7 +68,9 @@
 
     <select id="selectByPageCount" resultType="int">
         select count(1)
-        from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
+        from t_invitation_activity_user iau
+            left join t_user_info tui on tui.uid=iau.uid
+            left join t_invitation_activity ia on ia.id=iau.activity_id
         <where>
             <if test="uid != null">
                 and tui.uid = #{uid}
