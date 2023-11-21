@@ -44,6 +44,24 @@
             <if test="num != null">
                 num = #{num},
             </if>
+            <if test="manufacturerName != null">
+                manufacturer_name = #{manufacturerName},
+            </if>
+            <if test="exchangeType != null">
+                exchange_type = #{exchangeType},
+            </if>
+            <if test="cabinetSize != null">
+                cabinet_size = #{cabinetSize},
+            </if>
+            <if test="cellSize != null">
+                cell_size = #{cellSize},
+            </if>
+            <if test="screenSize != null">
+                screen_size = #{screenSize},
+            </if>
+            <if test="waterproofGrade != null">
+                waterproof_grade = #{waterproofGrade},
+            </if>
             <if test="voltage != null and voltage != ''">
                 voltage = #{voltage},
             </if>

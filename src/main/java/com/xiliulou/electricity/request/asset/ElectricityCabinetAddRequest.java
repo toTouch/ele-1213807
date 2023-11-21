@@ -22,7 +22,7 @@ public class ElectricityCabinetAddRequest {
     /**
      * 厂家名称/型号
      */
-    @NotEmpty(message = "厂家型号不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "厂家型号不能为空!", groups = {CreateGroup.class})
     private Integer modelId;
     
     /**
