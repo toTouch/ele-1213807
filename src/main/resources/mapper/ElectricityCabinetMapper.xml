@@ -843,5 +843,7 @@
         limit #{offset}, #{size}
     </select>
 
-
+    <select id="existByProductKeyAndDeviceName" resultType="Integer">
+       select 1 from t_electricity_cabinet where product_key = #{productKey} and device_name = #{} and deviceName = 0 limit 1;
+    </select>
 </mapper>

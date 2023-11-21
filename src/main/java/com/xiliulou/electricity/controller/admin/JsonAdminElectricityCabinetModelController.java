@@ -131,5 +131,44 @@ public class JsonAdminElectricityCabinetModelController {
 
 		return electricityCabinetService.cabinetSearch(size, offset, name, TenantContextHolder.getTenantId());
 	}
-
+	
+	/**
+	 * 查询厂家名称/型号列表
+	 * @param size 查询条数
+	 * @param offset 查询起始位置
+	 * @return 厂家名称/型号列表
+	 */
+	@GetMapping(value = "/admin/electricityCabinetModel/manufacturerName/list")
+    public R queryManufacturerNameList(@RequestParam("size") Long size,
+		    @RequestParam("offset") Long offset) {
+	    if (size < 0 || size > 50) {
+		    size = 10L;
+	    }
+	    
+	    if (offset < 0) {
+		    offset = 0L;
+	    }
+		
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+		
+	    if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+		    return R.ok(Collections.EMPTY_LIST);
+	    }
+	    
+	    Integer tenantId = TenantContextHolder.getTenantId();
+	    
+	    ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
+			    .offset(offset)
+			    .size(size)
+			    .tenantId(tenantId).build();
+	    
+	    return R.ok(electricityCabinetModelService.selectListElectricityCabinetModel(electricityCabinetModelQuery));
+    }
 }

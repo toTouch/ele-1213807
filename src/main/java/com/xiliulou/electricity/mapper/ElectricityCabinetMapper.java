@@ -84,4 +84,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     List<SearchVo> cabinetSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name,
                                @Param("tenantId") Integer tenantId);
+    
+    Integer existByProductKeyAndDeviceName(@Param("productKey") String productKey,@Param("deviceName") String deviceName);
 }

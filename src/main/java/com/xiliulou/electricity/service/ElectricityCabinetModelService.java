@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
+import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVo;
 
 import java.util.List;
 
@@ -37,4 +38,6 @@ public interface ElectricityCabinetModelService {
     ElectricityCabinetModel selectByNum(Integer num, Integer tenantId);
 
     Integer insert(ElectricityCabinetModel cabinetModelInsert);
+    
+    List<ElectricityCabinetModelVo> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery);
 }

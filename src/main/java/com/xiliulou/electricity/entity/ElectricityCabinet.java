@@ -106,7 +106,14 @@ public class ElectricityCabinet {
     private Long storeId;
 
     private Long franchiseeId;
-
+    
+    private Long warehouseId;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+    
     /**
      * 换电方式 1：有屏，2：无屏，3：单片机
      */

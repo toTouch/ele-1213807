@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
@@ -15,13 +15,17 @@ import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜型号表(TElectricityCabinetModel)表服务实现类
@@ -32,14 +36,17 @@ import java.util.Objects;
 @Service("electricityCabinetModelService")
 @Slf4j
 public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetModelService {
+    
     @Resource
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
+    
     @Autowired
     RedisService redisService;
+    
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-
-
+    
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -62,8 +69,8 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, electricityCabinetModel);
         return electricityCabinetModel;
     }
-
-
+    
+    
     @Override
     @Transactional
     public R save(ElectricityCabinetModel electricityCabinetModel) {
@@ -82,18 +89,18 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         });
         return R.ok();
     }
-
+    
     @Override
     @Transactional
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         if (Objects.isNull(electricityCabinetModel) || !Objects.equals(tenantId, electricityCabinetModel.getTenantId())) {
             return R.ok();
         }
-
+        
         if (Objects.isNull(electricityCabinetModel.getId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -101,11 +108,11 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         if (Objects.isNull(oldElectricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
-
+        
         if (!Objects.equals(tenantId, oldElectricityCabinetModel.getTenantId())) {
             return R.ok();
         }
-
+        
         Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if (count > 0) {
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
@@ -119,23 +126,23 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         });
         return R.ok();
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R delete(Integer id) {
-
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
-
+        
         if (!Objects.equals(tenantId, electricityCabinetModel.getTenantId())) {
             return R.ok();
         }
-
+        
         Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if (count > 0) {
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
@@ -152,26 +159,51 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         });
         return R.ok();
     }
-
+    
     @Override
     @Slave
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         return R.ok(electricityCabinetModelMapper.queryList(electricityCabinetModelQuery));
     }
-
+    
     @Slave
     @Override
     public R queryCount(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         return R.ok(electricityCabinetModelMapper.queryCount(electricityCabinetModelQuery));
     }
-
+    
     @Override
     public ElectricityCabinetModel selectByNum(Integer num, Integer tenantId) {
-        return electricityCabinetModelMapper.selectByNum(num,tenantId);
+        return electricityCabinetModelMapper.selectByNum(num, tenantId);
     }
-
+    
     @Override
     public Integer insert(ElectricityCabinetModel cabinetModelInsert) {
         return electricityCabinetModelMapper.insert(cabinetModelInsert);
+    }
+    
+    @Override
+    public List<ElectricityCabinetModelVo> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
+        List<ElectricityCabinetModel> electricityCabinetModels = electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
+        return electricityCabinetModels.stream().map(electricityCabinetModel -> {
+            ElectricityCabinetModelVo cabinetModelVo = new ElectricityCabinetModelVo();
+            BeanUtil.copyProperties(electricityCabinetModel, cabinetModelVo);
+            
+            // 赋值复合字段
+            StringBuilder manufacturerNameAndModelName = new StringBuilder();
+            if (StringUtils.isNotBlank(electricityCabinetModel.getManufacturerName())) {
+                manufacturerNameAndModelName.append(electricityCabinetModel.getManufacturerName());
+            }
+            
+            if (StringUtils.isNotBlank(manufacturerNameAndModelName.toString())) {
+                manufacturerNameAndModelName.append(StringConstant.FORWARD_SLASH);
+            }
+            
+            if (StringUtils.isNotBlank(electricityCabinetModel.getName())) {
+                manufacturerNameAndModelName.append(electricityCabinetModel.getName());
+            }
+            cabinetModelVo.setManufacturerNameAndModelName(manufacturerNameAndModelName.toString());
+            return cabinetModelVo;
+        }).collect(Collectors.toList());
     }
 }
