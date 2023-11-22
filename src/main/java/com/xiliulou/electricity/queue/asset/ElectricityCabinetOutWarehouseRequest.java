@@ -12,7 +12,20 @@ public class ElectricityCabinetOutWarehouseRequest {
     /**
      * id
      */
+    @NotNull(message = "换电柜ID不能为空!", groups = {UpdateGroup.class})
     private Integer id;
+    
+    /**
+     * 换电柜sn
+     */
+    @NotEmpty(message = "换电柜product不能为空!", groups = {UpdateGroup.class})
+    private String productKey;
+    
+    /**
+     * 换电柜sn
+     */
+    @NotEmpty(message = "换电柜deviceName不能为空!", groups = {UpdateGroup.class})
+    private String deviceName;
     
     /**
      * 换电柜sn

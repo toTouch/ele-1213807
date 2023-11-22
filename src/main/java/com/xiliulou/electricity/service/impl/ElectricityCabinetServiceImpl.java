@@ -60,6 +60,7 @@ import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -120,6 +121,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -148,6 +150,7 @@ import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeVo;
 import com.xiliulou.electricity.vo.HomepageOverviewDetailVo;
 import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
@@ -376,6 +379,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Autowired
+    AssetWarehouseService assetWarehouseService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -772,6 +778,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (Objects.nonNull(electricityCabinetServer)) {
                     e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
                     e.setServerEndTime(electricityCabinetServer.getServerEndTime());
+                }
+                
+                //设置运营商名称
+                if (Objects.nonNull(e.getFranchiseeId())) {
+                    Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                    e.setFranchiseeName(franchisee.getName());
+                }
+                
+                //设置仓库名称
+                if (Objects.nonNull(e.getWarehouseId())) {
+                    AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(e.getWarehouseId());
+                    e.setWarehouseName(assetWarehouseNameVO.getName());
                 }
             });
         }
@@ -4737,6 +4755,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
             electricityCabinet.setCreateTime(System.currentTimeMillis());
             electricityCabinet.setUpdateTime(System.currentTimeMillis());
+            electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+            
+            // 根据门店id查询加盟商id
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            electricityCabinet.setFranchiseeId(store.getFranchiseeId());
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
                 //添加格挡

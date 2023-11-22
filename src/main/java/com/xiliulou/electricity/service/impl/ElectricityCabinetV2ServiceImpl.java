@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -24,11 +23,14 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zhangyongbo
@@ -143,6 +145,10 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
         }
         
+        if (Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())) {
+            return Triple.of(false, "100559", "换电柜已出库");
+        }
+        
         electricityCabinet.setName(outWarehouseRequest.getName());
         electricityCabinet.setFranchiseeId(outWarehouseRequest.getFranchiseeId());
         electricityCabinet.setStoreId(outWarehouseRequest.getStoreId());
@@ -150,6 +156,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         electricityCabinet.setLatitude(outWarehouseRequest.getLatitude());
         electricityCabinet.setLongitude(outWarehouseRequest.getLongitude());
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+        electricityCabinet.setUpdateTime(System.currentTimeMillis());
         
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinet), i -> {
             //更新缓存
@@ -161,4 +168,28 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         
         return Triple.of(true, null, null);
     }
+    
+    @Override
+    public Triple<Boolean, String, Object> batchOutWarehouse(List<ElectricityCabinetOutWarehouseRequest> list) {
+        if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        List<Integer> eleIdList = list.stream().map(ElectricityCabinetOutWarehouseRequest::getId).collect(Collectors.toList());
+        // 校验已出库的不
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(eleIdList, TenantContextHolder.getTenantId());
+        List<ElectricityCabinet> unStockList = electricityCabinetList.stream()
+                .filter(electricityCabinet -> Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(unStockList)) {
+            return Triple.of(false, "100559", "您选择的换电柜中包含已出库的换电柜，请重新选择");
+        }
+        
+        list.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.batchOutWarehourse(list), i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
+        }));
+        
+        return Triple.of(true, null, null);
+    }
+    
 }

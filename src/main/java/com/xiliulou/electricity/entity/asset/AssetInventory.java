@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.entity.asset;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.enums.asset.AssetInventoryStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

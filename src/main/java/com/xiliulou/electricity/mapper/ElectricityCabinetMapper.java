@@ -3,7 +3,9 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -86,4 +88,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
                                @Param("tenantId") Integer tenantId);
     
     Integer existByProductKeyAndDeviceName(@Param("productKey") String productKey,@Param("deviceName") String deviceName);
+    
+    Integer batchOutWarehourse(List<ElectricityCabinetOutWarehouseRequest> list);
 }

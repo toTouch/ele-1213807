@@ -130,6 +130,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                       @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "id", required = false) Integer id) {
@@ -175,6 +176,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .address(address)
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
+                .stockStatus(stockStatus)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
@@ -194,6 +196,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "address", required = false) String address,
                         @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                         @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
@@ -235,6 +238,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .eleIdList(eleIdList)
                 .modelId(modelId)
                 .sn(sn)
+                .stockStatus(stockStatus)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())

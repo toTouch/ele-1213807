@@ -186,6 +186,11 @@ public class ElectricityCabinetVO {
     private Integer exchangeType;
     
     /**
+     * 库房id
+     */
+    private Long warehouseId;
+    
+    /**
      * 库房名称
      */
     private String warehouseName;
