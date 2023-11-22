@@ -2255,11 +2255,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             refund = wechatV3JsapiService.refund(wechatV3RefundQuery);
             
-            return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
+            return Triple.of(true, "", JsonUtil.toJson(refund));
         } catch (WechatPayException e) {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
         
-        return Triple.of(true, null, JsonUtil.toJson(refund));
+        return Triple.of(true, null, "退款失败");
     }
 }
