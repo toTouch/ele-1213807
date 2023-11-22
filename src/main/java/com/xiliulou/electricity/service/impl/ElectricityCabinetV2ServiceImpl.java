@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
@@ -170,12 +171,12 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     }
     
     @Override
-    public Triple<Boolean, String, Object> batchOutWarehouse(List<ElectricityCabinetOutWarehouseRequest> list) {
+    public Triple<Boolean, String, Object> batchOutWarehouse(ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest) {
         if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        List<Integer> eleIdList = list.stream().map(ElectricityCabinetOutWarehouseRequest::getId).collect(Collectors.toList());
+        List<Integer> eleIdList = batchOutWarehouseRequest.getId();
         // 校验已出库的不
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(eleIdList, TenantContextHolder.getTenantId());
         List<ElectricityCabinet> unStockList = electricityCabinetList.stream()
@@ -184,7 +185,10 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "您选择的换电柜中包含已出库的换电柜，请重新选择");
         }
         
-        list.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.batchOutWarehourse(list), i -> {
+        Integer update = electricityCabinetMapper.batchOutWarehouse(eleIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
+                batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude());
+        
+        electricityCabinetList.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
         }));

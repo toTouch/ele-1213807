@@ -708,6 +708,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
+                    // 如果型号列表中有电柜类型 则取型号的电柜类型
+                    if (Objects.nonNull(electricityCabinetModel.getExchangeType())) {
+                        e.setExchangeType(electricityCabinetModel.getExchangeType());
+                    }
                 }
                 
                 //查满仓空仓数

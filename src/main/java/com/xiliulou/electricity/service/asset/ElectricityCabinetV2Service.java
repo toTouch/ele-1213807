@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -13,5 +14,5 @@ public interface ElectricityCabinetV2Service {
     
     Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest);
     
-    Triple<Boolean, String, Object> batchOutWarehouse(List<ElectricityCabinetOutWarehouseRequest> warehouseRequestList);
+    Triple<Boolean, String, Object> batchOutWarehouse(ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest);
 }

@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -50,7 +51,7 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
     
     //出库
     @PostMapping(value = "/admin/electricityCabinet/batchOutWarehouse")
-    public R batchOutWarehouse(@RequestBody @Validated(value = UpdateGroup.class) List<ElectricityCabinetOutWarehouseRequest> list) {
+    public R batchOutWarehouse(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -60,6 +61,6 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        return returnTripleResult(electricityCabinetV2Service.batchOutWarehouse(list));
+        return returnTripleResult(electricityCabinetV2Service.batchOutWarehouse(batchOutWarehouseRequest));
     }
 }
