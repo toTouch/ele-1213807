@@ -2,9 +2,12 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
@@ -13,6 +16,8 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -50,6 +55,12 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     
     @Resource
     private ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    private StoreService storeService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     
     @Override
@@ -101,7 +112,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
         });
         
-          return Triple.of(true, null, electricityCabinet.getId());
+        return Triple.of(true, null, electricityCabinet.getId());
     }
     
     @Override
@@ -114,12 +125,40 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     }
     
     @Override
-    public Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest){
+    public Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest) {
+        //校验加盟商
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(outWarehouseRequest.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
+        }
+        
+        // 校验门店
+        Store store = storeService.queryByIdFromCache(outWarehouseRequest.getStoreId());
+        if (Objects.isNull(store)) {
+            return Triple.of(false, "ELECTRICITY.0018", "门店不存在");
+        }
         
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(outWarehouseRequest.getId());
-        if(Objects.isNull(electricityCabinet)){
+        if (Objects.isNull(electricityCabinet)) {
             return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
         }
-        return null;
+        
+        electricityCabinet.setName(outWarehouseRequest.getName());
+        electricityCabinet.setFranchiseeId(outWarehouseRequest.getFranchiseeId());
+        electricityCabinet.setStoreId(outWarehouseRequest.getStoreId());
+        electricityCabinet.setAddress(outWarehouseRequest.getAddress());
+        electricityCabinet.setLatitude(outWarehouseRequest.getLatitude());
+        electricityCabinet.setLongitude(outWarehouseRequest.getLongitude());
+        electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+        
+        DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinet), i -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            //修改柜机服务时间信息
+            electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+        });
+        
+        return Triple.of(true, null, null);
     }
 }

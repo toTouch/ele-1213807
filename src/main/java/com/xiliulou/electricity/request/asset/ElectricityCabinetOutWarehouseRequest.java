@@ -23,20 +23,20 @@ public class ElectricityCabinetOutWarehouseRequest {
     /**
      * 厂家名称/型号
      */
-    @NotNull(message = "厂家型号不能为空!", groups = {UpdateGroup.class})
-    private Integer name;
+    @NotEmpty(message = "厂家型号不能为空!", groups = {UpdateGroup.class})
+    private String name;
     
     /**
      * 物联网productKey
      */
-    @NotEmpty(message = "换电柜productKey不能为空!", groups = {UpdateGroup.class})
-    private String franchiseeId;
+    @NotNull(message = "换电柜productKey不能为空!", groups = {UpdateGroup.class})
+    private Long franchiseeId;
     
     /**
      * 物联网deviceName
      */
-    @NotEmpty(message = "门店不能为空!", groups = {UpdateGroup.class})
-    private String storeId;
+    @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
+    private Long storeId;
     
     /**
      * 换电柜地址

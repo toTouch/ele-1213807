@@ -184,6 +184,16 @@ public class ElectricityCabinetVO {
     private String pictureUrl;
 
     private Integer exchangeType;
+    
+    /**
+     * 库房名称
+     */
+    private String warehouseName;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
 
     /**
      * 柜机中电池型号统计
