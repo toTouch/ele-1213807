@@ -3,7 +3,7 @@ package com.xiliulou.electricity.vo.asset;
 import lombok.Data;
 
 @Data
-public class ElectricityCabinetModelVo {
+public class ElectricityCabinetModelVO {
     /**
      * 型号Id
      */

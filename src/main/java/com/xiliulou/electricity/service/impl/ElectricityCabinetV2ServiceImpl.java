@@ -68,12 +68,10 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     
     @Override
     public Triple<Boolean, String, Object> save(ElectricityCabinetAddRequest electricityCabinetAddRequest) {
-        
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.ELE_SAVE_UID + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        if (!result) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
         // 获取型号
@@ -86,12 +84,6 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         
         if (existByProductKeyAndDeviceName(electricityCabinetAddRequest.getProductKey(), electricityCabinetAddRequest.getDeviceName())) {
             return Triple.of(false, "ELECTRICITY.0002", "换电柜的三元组已存在");
-        }
-        
-        //操作频繁
-        boolean result = redisService.setNx(CacheConstant.ELE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
-        if (!result) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
         //换电柜
@@ -109,7 +101,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
             
-            //添加快递柜格挡
+            //添加格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             //添加服务时间记录
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);

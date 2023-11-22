@@ -141,8 +141,7 @@ public class JsonAdminElectricityCabinetModelController {
 	 * @return 厂家名称/型号列表
 	 */
 	@GetMapping(value = "/admin/electricityCabinetModel/manufacturerName/list")
-    public R queryManufacturerNameList(@RequestParam("size") Long size,
-		    @RequestParam("offset") Long offset) {
+    public R queryManufacturerNameList(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
 	    if (size < 0 || size > 50) {
 		    size = 10L;
 	    }
@@ -160,10 +159,6 @@ public class JsonAdminElectricityCabinetModelController {
             return R.ok(Collections.EMPTY_LIST);
         }
 		
-	    if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-		    return R.ok(Collections.EMPTY_LIST);
-	    }
-	    
 	    Integer tenantId = TenantContextHolder.getTenantId();
 	    
 	    ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()

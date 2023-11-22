@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
-import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVo;
+import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVO;
 
 import java.util.List;
 
@@ -39,5 +38,5 @@ public interface ElectricityCabinetModelService {
 
     Integer insert(ElectricityCabinetModel cabinetModelInsert);
     
-    List<ElectricityCabinetModelVo> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery);
+    List<ElectricityCabinetModelVO> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery);
 }

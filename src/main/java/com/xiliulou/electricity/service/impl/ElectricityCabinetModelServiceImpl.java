@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.StringConstant;
@@ -15,7 +14,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVo;
+import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,10 +182,10 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
     
     @Override
-    public List<ElectricityCabinetModelVo> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
+    public List<ElectricityCabinetModelVO> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         List<ElectricityCabinetModel> electricityCabinetModels = electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
         return electricityCabinetModels.stream().map(electricityCabinetModel -> {
-            ElectricityCabinetModelVo cabinetModelVo = new ElectricityCabinetModelVo();
+            ElectricityCabinetModelVO cabinetModelVo = new ElectricityCabinetModelVO();
             BeanUtil.copyProperties(electricityCabinetModel, cabinetModelVo);
             
             // 赋值复合字段
