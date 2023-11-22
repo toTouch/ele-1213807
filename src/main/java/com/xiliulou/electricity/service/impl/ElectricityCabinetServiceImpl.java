@@ -27,6 +27,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -708,10 +709,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
+                    
                     // 如果型号列表中有电柜类型 则取型号的电柜类型
                     if (Objects.nonNull(electricityCabinetModel.getExchangeType())) {
                         e.setExchangeType(electricityCabinetModel.getExchangeType());
                     }
+                    
+                    // 赋值复合字段
+                    StringBuilder manufacturerNameAndModelName = new StringBuilder();
+                    if (StringUtils.isNotBlank(electricityCabinetModel.getManufacturerName())) {
+                        manufacturerNameAndModelName.append(electricityCabinetModel.getManufacturerName());
+                    }
+                    
+                    if (StringUtils.isNotBlank(manufacturerNameAndModelName.toString())) {
+                        manufacturerNameAndModelName.append(StringConstant.FORWARD_SLASH);
+                    }
+                    
+                    if (StringUtils.isNotBlank(electricityCabinetModel.getName())) {
+                        manufacturerNameAndModelName.append(electricityCabinetModel.getName());
+                    }
+                    e.setManufacturerNameAndModelName(manufacturerNameAndModelName.toString());
                 }
                 
                 //查满仓空仓数

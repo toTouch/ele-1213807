@@ -64,6 +64,12 @@ public class ElectricityCabinetVO {
     * 型号Id
     */
     private Integer modelId;
+    
+    /**
+     * 设置厂家型号（厂家名称/型号）
+     */
+    private String manufacturerNameAndModelName;
+    
     /**
     * 版本
     */

@@ -1,18 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.HashMap;
 import java.util.List;

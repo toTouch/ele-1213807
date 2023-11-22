@@ -3,9 +3,9 @@ package com.xiliulou.electricity.controller.admin.asset;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.queue.asset.ElectricityCabinetAddRequest;
-import com.xiliulou.electricity.queue.asset.ElectricityCabinetBatchOutWarehouseRequest;
-import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 @RestController
