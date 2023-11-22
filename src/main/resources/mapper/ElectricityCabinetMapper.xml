@@ -858,11 +858,11 @@
     
     <update id="batchOutWarehouse">
         update t_electricity_cabinet set
-        franchisee_id = #{item.franchiseeId},
-        store_id=#{item.storeId},
-        address = #{item.address},
-        longitude = #{item.longitude},
-        latitude = #{item.latitude},
+        franchisee_id = #{franchiseeId},
+        store_id= #{storeId},
+        address = #{address},
+        longitude = #{longitude},
+        latitude = #{latitude},
         stock_status = 1
         where id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
