@@ -94,7 +94,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
         BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
-        assetWarehouseMapper.setTenantId(TenantContextHolder.getTenantId().longValue());
+        warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
         
         return assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel);
     }
