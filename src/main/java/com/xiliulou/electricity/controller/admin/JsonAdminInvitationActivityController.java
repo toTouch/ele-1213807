@@ -78,7 +78,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @date 2023/11/13 15:43:36
      * @author HeYafeng
      */
-    @GetMapping("/admin/invitationActivity/searchByUser")
+    @GetMapping("")
     public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
             @RequestParam(value = "activityName", required = false) String activityName) {
         if (size < 0 || size > 50) {

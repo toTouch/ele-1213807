@@ -238,46 +238,29 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.error("INVITATION ACTIVITY ERROR! invitationActivities is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
+        
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
-        List<InvitationActivityRecord> invitationActivityByUserRecordList = selectByUid(userInfo.getUid());
-    
-        if (CollectionUtils.isEmpty(invitationActivityUserList) || CollectionUtils.isEmpty(invitationActivityByUserRecordList)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList or invitationActivityRecordListByUser is empty,uid={}", userInfo.getUid());
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+            log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
     
+        Set<Long> activityIdList = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         
-        // 过滤掉未上线的活动
-        Set<Long> activityIdSetAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
-        Set<Long> activityIdSetRecord = invitationActivityByUserRecordList.stream().map(InvitationActivityRecord::getActivityId).collect(Collectors.toSet());
-        Set<Long> activityIdSetUser = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-    
-        if (!activityIdSetAll.containsAll(activityIdSetRecord) || !activityIdSetAll.containsAll(activityIdSetUser)) {
-            log.error("INVITATION ACTIVITY ERROR! activityIdSetRecord or activityIdSetUser is empty,uid={}", userInfo.getUid());
+        //过滤后的
+        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdList.contains(activityUser)).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(newInvitationActivityUserList)) {
+            log.error("INVITATION ACTIVITY ERROR! all activities bound user is invalid,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
         
-        for (Long activityIdUser : activityIdSetUser) {
-            if (!activityIdSetAll.contains(activityIdUser)) {
-                invitationActivityUserList = invitationActivityUserList.stream().filter(item -> !Objects.equals(item.getId(), activityIdUser)).collect(Collectors.toList());
-            }
-        }
-    
-        if (invitationActivityUserList.size() == NumberConstant.ZERO) {
-            if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-                log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
-                return Triple.of(false, "100463", "二维码已失效");
-            }
-        }
-    
         List<InvitationActivityRecord> invitationActivityRecordList = new ArrayList<>();
         InvitationActivityRecord invitationActivityRecordIn = InvitationActivityRecord.builder().uid(userInfo.getUid()).code(RandomUtil.randomNumbers(NumberConstant.SIX))
                 .shareCount(NumberConstant.ZERO).invitationCount(NumberConstant.ZERO).money(BigDecimal.ZERO).tenantId(TenantContextHolder.getTenantId())
                 .status(InvitationActivityRecord.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
     
         StringJoiner activityIdsStr = new StringJoiner(StrUtil.COMMA);
-        invitationActivityUserList.forEach(item -> {
+        newInvitationActivityUserList.forEach(item -> {
             activityIdsStr.add(item.getActivityId().toString());
         
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
@@ -362,26 +345,42 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100463", "二维码已失效");
         }
     
-        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
-        List<InvitationActivityRecord> invitationActivityByUserRecordList = selectByUid(invitationUid);
-        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(invitationUid);
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
-    
-        if (CollectionUtils.isEmpty(invitationActivities) || CollectionUtils.isEmpty(invitationActivityUserList) || CollectionUtils.isEmpty(invitationActivityByUserRecordList)
-                || !CollectionUtils.isEmpty(activityIdList)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivities is invalid,uid={}", userInfo.getUid());
-            return Triple.of(false, "100399", "该活动已下架，二维码失效");
+        if (CollectionUtils.isEmpty(activityIdList)) {
+            log.error("INVITATION ACTIVITY ERROR! joinActivity activityIdList is empty,uid={}", userInfo.getUid());
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
-        Set<Long> activityIdSetAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
-        Set<Long> activityIdSetRecord = invitationActivityByUserRecordList.stream().map(InvitationActivityRecord::getActivityId).collect(Collectors.toSet());
-        Set<Long> activityIdSetUser = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
-        if (!activityIdSetAll.containsAll(activityIdSetRecord) || !activityIdSetAll.containsAll(activityIdSetUser) || !activityIdSetAll.containsAll(activityIdList)) {
-            log.error("INVITATION ACTIVITY ERROR! activityList status are all down or not found record, invitationUid={},uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "100399", "该活动已下架，二维码失效");
+        List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(invitationActivities)) {
+            log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+            return Triple.of(false, "100463", "二维码已失效");
         }
     
-        for (Long activityId : activityIdList) {
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(invitationUid);
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+            log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivityUserList is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
+            return Triple.of(false, "100463", "二维码已失效");
+        }
+    
+        Set<Long> invitationActivitiesSet =  invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
+        Set<Long> invitationActivityUserSet =  invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+        
+        //过滤掉未上线的活动
+        Set<Long> newActivityIdSet1 = activityIdList.stream().filter(invitationActivitiesSet::contains).collect(Collectors.toSet());
+        if(CollectionUtils.isEmpty(newActivityIdSet1)) {
+            log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet1 are all down,uid={}", userInfo.getUid());
+            return Triple.of(false, "100463", "二维码已失效");
+        }
+    
+        //过滤掉邀请人解绑的活动
+        Set<Long> newActivityIdSet2 =  newActivityIdSet1.stream().filter(invitationActivityUserSet::contains).collect(Collectors.toSet());
+        if(CollectionUtils.isEmpty(newActivityIdSet2)) {
+            log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet2 are all down,uid={}", userInfo.getUid());
+            return Triple.of(false, "100463", "二维码已失效");
+        }
+        
+        for (Long activityId : newActivityIdSet2) {
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
             if (Objects.nonNull(exist)) {
@@ -396,7 +395,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             // 获取活动
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
         
-            //更新活动邀请总人数
+            //更新活动邀请次数
             invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
         
             //保存活动参与记录
