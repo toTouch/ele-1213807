@@ -422,11 +422,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return Triple.of(true, null, collect);
     }
     
-    @Override
-    public List<InvitationActivity> listByActivityIds(List<Long> activityIdList) {
-        return invitationActivityMapper.selectListByActivityIds(activityIdList);
-    }
-    
     private List<BatteryMemberCardVO> getBatteryPackages(Long activityId) {
         List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
         List<InvitationActivityMemberCard> invitationActivityMemberCards = invitationActivityMemberCardService.selectPackagesByActivityIdAndType(activityId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
