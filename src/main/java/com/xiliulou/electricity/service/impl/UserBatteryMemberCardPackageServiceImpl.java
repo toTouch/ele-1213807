@@ -140,7 +140,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || !Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
+        if (Objects.isNull(userBatteryMemberCard) || !(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
             log.warn("BATTERY MEMBER TRANSFORM WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
@@ -158,7 +158,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         
         UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(userBatteryMemberCard.getUid());
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
-//            log.warn("BATTERY MEMBER TRANSFORM WARN! not found userBatteryMemberCardPackageLatest,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
         
@@ -182,7 +181,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             }
             
             userBatteryMemberCardList.parallelStream().forEach(item -> {
-                if (!Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
+                if (!(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
                     return;
                 }
                 
