@@ -517,6 +517,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return;
         }
     
+        // 邀请-活动-状态 解析并保存用于后面判断非首次购买是否成功
+        List<Triple<Long, Long, Integer>> tripleList = activityJoinHistoryList.stream().map(history -> Triple.of(history.getUid(), history.getActivityId(), history.getStatus())).collect(Collectors.toList());
+    
         // 根据activityId去重
         activityJoinHistoryList = new ArrayList<>(
                 activityJoinHistoryList.stream().collect(Collectors.toMap(InvitationActivityJoinHistory::getActivityId, history -> history, (existing, replacement) -> existing))
@@ -612,8 +615,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 //给邀请人增加邀请成功人数及返现金额
                 this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
             } else {
-                //非首次购买需要判断 首次购买是否成功
-                if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
+                //非首次购买需要判断 首次购买是否成功（同一个邀请人下 所有活动的首次）
+                boolean isSuccess = false;
+                for (Triple<Long, Long, Integer> triple : tripleList) {
+                    if(triple.getRight().equals(InvitationActivityJoinHistory.STATUS_SUCCESS)) {
+                        isSuccess = true;
+                        break;
+                    }
+                }
+                
+                if (!isSuccess) {
                     log.error("Invitation activity error! Unsuccessful join the first activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
                             userInfo.getUid());
                     return;
