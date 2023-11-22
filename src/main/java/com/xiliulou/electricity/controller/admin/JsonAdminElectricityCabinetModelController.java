@@ -61,6 +61,7 @@ public class JsonAdminElectricityCabinetModelController {
 	@GetMapping(value = "/admin/electricityCabinetModel/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
+			@RequestParam(value = "manufacturerName", required = false) String manufacturerName,
 			@RequestParam(value = "name", required = false) String name) {
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -85,6 +86,7 @@ public class JsonAdminElectricityCabinetModelController {
 				.offset(offset)
 				.size(size)
 				.name(name)
+				.manufacturerName(manufacturerName)
 				.tenantId(tenantId).build();
 
 		return electricityCabinetModelService.queryList(electricityCabinetModelQuery);
