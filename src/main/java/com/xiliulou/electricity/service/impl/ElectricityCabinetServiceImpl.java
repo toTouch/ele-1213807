@@ -675,8 +675,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
                 
-                Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
-                e.setStoreName(Objects.isNull(store) ? "" : store.getName());
+                if (Objects.nonNull(e.getStoreId())) {
+                    Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
+                    e.setStoreName(Objects.isNull(store) ? "" : store.getName());
+                }
                 
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
@@ -4179,7 +4181,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     public R otaCommand(Integer eid, Integer operateType, Integer versionType, List<Integer> cellNos) {
-
+        
         Long uid = SecurityUtils.getUid();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
@@ -5011,12 +5013,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-        String netType=null;
+        String netType = null;
         //如果柜机在线，则需要取柜机上报的信号
         if (eleResult) {
             netType = redisService.get(CacheConstant.CACHE_ELECTRICITY_CABINET_EXTEND_DATA + electricityCabinetId);
         }
-
+        
         return R.ok(netType);
     }
 }
