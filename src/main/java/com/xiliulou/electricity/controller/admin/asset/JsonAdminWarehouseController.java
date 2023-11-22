@@ -96,7 +96,7 @@ public class JsonAdminWarehouseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/warehouse/pageCount")
-    public R pageCount(@RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "name", required = false) String name) {
+    public R pageCount(@RequestParam(value = "name", required = false) String name) {
         
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().name(name).build();
         return R.ok(assetWarehouseService.queryCount(assetInventoryRequest));
