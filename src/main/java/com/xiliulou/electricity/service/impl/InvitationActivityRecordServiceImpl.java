@@ -159,7 +159,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
-    public InvitationActivityRecord selectByUid(Long uid) {
+    public List<InvitationActivityRecord> selectByUid(Long uid) {
         return this.invitationActivityRecordMapper.selectByUid(uid);
     }
 
@@ -184,12 +184,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         //获取当前用户所绑定的套餐返现活动
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
-        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-            log.warn("INVITATION ACTIVITY WARN! not found invitationActivityUserList,uid={}", userInfo.getUid());
-            return Triple.of(true, null, null);
-        }
+        //        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+        //            log.warn("INVITATION ACTIVITY WARN! not found invitationActivityUserList,uid={}", userInfo.getUid());
+        //            return Triple.of(true, null, null);
+        //        }
     
-        List<Long> activityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
+        List<InvitationActivityRecord> recordList = selectByUid(userInfo.getUid());
+        List<Long> activityIds = recordList.stream().map(InvitationActivityRecord::getActivityId).collect(Collectors.toList());
     
         List<InvitationActivityRecord> activityRecords = this.selectByActivityIdAndUid(activityIds, userInfo.getUid());
         if (CollectionUtils.isEmpty(activityRecords)) {

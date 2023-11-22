@@ -78,6 +78,6 @@ public interface InvitationActivityRecordService {
     Triple<Boolean, String, Object> selectUserInvitationDetail();
     
     List<InvitationActivityRecord> selectByActivityIdAndUid(List<Long> activityIds, Long uid);
-
-    InvitationActivityRecord selectByUid(Long uid);
+    
+    List<InvitationActivityRecord> selectByUid(Long uid);
 }

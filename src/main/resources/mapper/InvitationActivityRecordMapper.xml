@@ -41,7 +41,7 @@
     <select id="selectByUid" resultMap="InvitationActivityRecordMap">
         select   id, activity_id, code, uid, share_count, invitation_count, status, money
         from t_invitation_activity_record
-        where  uid=#{uid} order by id desc limit 1
+        where  uid=#{uid} order by id desc
     </select>
 
     <!--查询指定行数据-->
