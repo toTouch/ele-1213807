@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.request.asset;
+package com.xiliulou.electricity.queue.asset;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;

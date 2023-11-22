@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.request.asset;
+package com.xiliulou.electricity.queue.asset;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AssetWarehouseSaveRequest {
+public class AssetWarehouseSaveOrUpdateRequest {
     /**
      * 库房ID
      */

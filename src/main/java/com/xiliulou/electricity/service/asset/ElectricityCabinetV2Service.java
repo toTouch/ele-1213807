@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
-import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetAddRequest;
+import com.xiliulou.electricity.queue.asset.ElectricityCabinetOutWarehouseRequest;
 import org.apache.commons.lang3.tuple.Triple;
 
 public interface ElectricityCabinetV2Service {

@@ -496,4 +496,6 @@ public interface CacheConstant {
     
     String CACHE_ASSET_WAREHOUSE_LOCK = "cache_asset_warehouse_lock:";
     
+    String CACHE_ASSET_INVENTORY_LOCK="cache_asset_inventory_lock:";
+    
 }

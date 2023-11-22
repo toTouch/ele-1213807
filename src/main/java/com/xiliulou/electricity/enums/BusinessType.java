@@ -64,7 +64,10 @@ public enum BusinessType {
     //提现订单
     WITHDRAW(61),
 
-    CLOUD_BEAN(62);
+    CLOUD_BEAN(62),
+    
+    // 资产盘点
+    ASSET_INVENTORY(70);
 
     private final Integer business;
 

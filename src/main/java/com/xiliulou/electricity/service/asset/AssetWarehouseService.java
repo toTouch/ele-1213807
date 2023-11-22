@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
-import com.xiliulou.electricity.request.asset.AssetWarehouseSaveRequest;
+import com.xiliulou.electricity.queue.asset.AssetWarehouseRequest;
+import com.xiliulou.electricity.queue.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface AssetWarehouseService {
 
-    R save(AssetWarehouseSaveRequest assetWarehouseSaveRequest);
+    R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
     
     List<AssetWarehouseVO> listByFranchiseeId(AssetWarehouseRequest assetInventoryRequest);
     
@@ -25,5 +25,5 @@ public interface AssetWarehouseService {
     
     R deleteById(Long id);
     
-    Integer updateById(AssetWarehouseSaveRequest assetWarehouseSaveRequest);
+    Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
 }

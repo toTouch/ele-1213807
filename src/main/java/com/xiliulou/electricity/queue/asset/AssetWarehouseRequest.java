@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.request.asset;
+package com.xiliulou.electricity.queue.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

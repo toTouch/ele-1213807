@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
-import com.xiliulou.electricity.request.asset.AssetWarehouseSaveRequest;
+import com.xiliulou.electricity.queue.asset.AssetWarehouseRequest;
+import com.xiliulou.electricity.queue.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -13,11 +12,9 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +34,7 @@ public class JsonAdminWarehouseController {
     private AssetWarehouseService assetWarehouseService;
     
     @PostMapping("/admin/asset/warehouse/save")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetWarehouseSaveRequest assetWarehouseSaveRequest) {
+    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -48,9 +45,9 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        assetWarehouseSaveRequest.setUid(user.getUid());
+        assetWarehouseSaveOrUpdateRequest.setUid(user.getUid());
         
-        return assetWarehouseService.save(assetWarehouseSaveRequest);
+        return assetWarehouseService.save(assetWarehouseSaveOrUpdateRequest);
     }
     
     @PostMapping(value = "/admin/asset/warehouse/{id}")
@@ -69,7 +66,7 @@ public class JsonAdminWarehouseController {
     }
     
     @PostMapping("/admin/asset/warehouse/update")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) AssetWarehouseSaveRequest assetWarehouseSaveRequest) {
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -80,7 +77,7 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return R.ok(assetWarehouseService.updateById(assetWarehouseSaveRequest));
+        return R.ok(assetWarehouseService.updateById(assetWarehouseSaveOrUpdateRequest));
     }
     
     /**
