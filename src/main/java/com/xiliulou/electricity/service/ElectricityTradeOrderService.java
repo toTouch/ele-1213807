@@ -63,5 +63,6 @@ public interface ElectricityTradeOrderService {
     List<ElectricityTradeOrder> selectTradeOrderByParentOrderId(Long parentOrderId);
 
     Integer updateElectricityTradeOrderById(ElectricityTradeOrder electricityTradeOrder);
-
+    
+    ElectricityTradeOrder selectTradeOrderByOrderIdV2(String orderId);
 }

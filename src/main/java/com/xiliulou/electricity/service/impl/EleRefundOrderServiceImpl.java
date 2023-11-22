@@ -2213,17 +2213,53 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return eleRefundOrderMapper.existByOrderIdAndStatus(orderId, statusList);
     }
     
+    /**
+     * 退款测试接口
+     */
     @Override
     public Triple<Boolean, String, Object> refund(BigDecimal refundAmount, Long uid, String orderId, HttpServletRequest request) {
+        WechatJsapiRefundResultDTO refund = null;
+        
         try {
             RefundOrder refundOrder = RefundOrder.builder().orderId(orderId).refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
                     .payAmount(refundAmount).refundAmount(refundAmount).build();
+            
+            ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderIdV2(refundOrder.getOrderId());
+            String tradeOrderNo = null;
+            Integer total = null;
+            if (Objects.isNull(electricityTradeOrder)) {
+                log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
+                throw new CustomBusinessException("未找到交易订单!");
+            }
+            tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+            total = refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
+            
+            if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
+                UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
+                if (Objects.nonNull(unionTradeOrder)) {
+                    tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+                    total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
+                }
+            }
+            
+            //退款
+            WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
+            wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
+            wechatV3RefundQuery.setTotal(total);
+            wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+            wechatV3RefundQuery.setReason("退款");
+            wechatV3RefundQuery.setOrderId(tradeOrderNo);
+            wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+            wechatV3RefundQuery.setCurrency("CNY");
+            wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
+            
+            refund = wechatV3JsapiService.refund(wechatV3RefundQuery);
             
             return Triple.of(true, "", eleRefundOrderService.commonCreateRefundOrder(refundOrder, request));
         } catch (WechatPayException e) {
             log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
         }
         
-        return Triple.of(true, null, "退款成功!");
+        return Triple.of(true, null, JsonUtil.toJson(refund));
     }
 }
