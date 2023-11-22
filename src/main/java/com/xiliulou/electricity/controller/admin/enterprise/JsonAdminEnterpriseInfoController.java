@@ -196,23 +196,6 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
     }
     
     /**
-     * 云豆充值退款  【测试使用】
-     */
-    @PutMapping("/admin/enterpriseInfo/refund/{orderId}")
-    public R refund(@PathVariable("orderId") String orderId, HttpServletRequest request) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-    
-        return returnTripleResult(enterpriseInfoService.refund(orderId,request));
-    }
-    
-    /**
      * 企业渠道用户搜索
      * @return
      */
