@@ -147,7 +147,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         }
         
         if (Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())) {
-            return Triple.of(false, "100559", "换电柜已出库");
+            return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
         electricityCabinet.setName(outWarehouseRequest.getName());
@@ -182,7 +182,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         List<ElectricityCabinet> unStockList = electricityCabinetList.stream()
                 .filter(electricityCabinet -> Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(unStockList)) {
-            return Triple.of(false, "100559", "您选择的换电柜中包含已出库的换电柜，请重新选择");
+            return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
         Integer update = electricityCabinetMapper.batchOutWarehouse(eleIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
