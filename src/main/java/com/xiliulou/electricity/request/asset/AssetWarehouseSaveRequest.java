@@ -22,6 +22,11 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class AssetWarehouseSaveRequest {
     /**
+     * 库房ID
+     */
+    private Long id;
+    
+    /**
      * 库房名称
      */
     @NotEmpty(message = "库房名称不能为空!", groups = {CreateGroup.class})
