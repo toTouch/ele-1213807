@@ -783,13 +783,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //设置运营商名称
                 if (Objects.nonNull(e.getFranchiseeId())) {
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
-                    e.setFranchiseeName(franchisee.getName());
+                    if (Objects.nonNull(franchisee)) {
+                        e.setFranchiseeName(franchisee.getName());
+                    }
                 }
                 
                 //设置仓库名称
                 if (Objects.nonNull(e.getWarehouseId())) {
                     AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(e.getWarehouseId());
-                    e.setWarehouseName(assetWarehouseNameVO.getName());
+                    if (Objects.nonNull(assetWarehouseNameVO)) {
+                        e.setWarehouseName(assetWarehouseNameVO.getName());
+                    }
                 }
             });
         }
