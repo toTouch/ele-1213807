@@ -856,7 +856,7 @@
        select 1 from t_electricity_cabinet where product_key = #{productKey} and device_name = #{deviceName} and del_flag = 0 limit 1;
     </select>
     
-    <update id="batchOutWarehourse">
+    <update id="batchOutWarehouse">
         update t_electricity_cabinet set
         franchisee_id = #{item.franchiseeId},
         store_id=#{item.storeId},
