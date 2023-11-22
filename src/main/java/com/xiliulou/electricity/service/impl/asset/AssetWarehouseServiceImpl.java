@@ -76,6 +76,11 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     }
     
     @Override
+    public AssetWarehouseNameVO queryById(Long id) {
+        return assetWarehouseMapper.selectById(id);
+    }
+    
+    @Override
     public R deleteById(Long id) {
         //TODO 该库房有电柜/电池/车辆正在使用，请先解绑后操作
         

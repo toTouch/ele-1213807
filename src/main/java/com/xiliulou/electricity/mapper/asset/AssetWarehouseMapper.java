@@ -26,4 +26,6 @@ public interface AssetWarehouseMapper {
     List<AssetWarehouseNameVO> selectListWarehouseNameByFranchiseeId(Long tenantId);
     
     Integer updateById(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
+    
+    AssetWarehouseNameVO selectById(Long id);
 }

@@ -23,6 +23,8 @@ public interface AssetWarehouseService {
     
     List<AssetWarehouseNameVO> listWarehouseNameByFranchiseeId();
     
+    AssetWarehouseNameVO queryById(Long id);
+    
     R deleteById(Long id);
     
     Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
