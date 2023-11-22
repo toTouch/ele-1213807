@@ -82,9 +82,7 @@
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
         ORDER BY id DESC
-        <if test="offset != null and size != null">
-            limit #{offset}, #{size}
-        </if>
+        limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="java.lang.Integer">
@@ -98,7 +96,7 @@
         </where>
     </select>
     
-    <select id="selectListWarehouseNameByFranchiseeId" resultType="com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO">
+    <select id="selectListWarehouseNameByTenantId" resultType="com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO">
         select id, name
         from t_asset_warehouse
         where tenant_id = #{tenantId}

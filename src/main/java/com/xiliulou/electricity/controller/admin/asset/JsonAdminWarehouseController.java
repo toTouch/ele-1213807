@@ -50,7 +50,7 @@ public class JsonAdminWarehouseController {
         return assetWarehouseService.save(assetWarehouseSaveOrUpdateRequest);
     }
     
-    @PostMapping(value = "/admin/asset/warehouse/{id}")
+    @PostMapping(value = "/admin/asset/warehouse/delete/{id}")
     public R delete(@PathVariable("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -86,8 +86,8 @@ public class JsonAdminWarehouseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/warehouse/names")
-    public R listWarehouseNameByFranchiseeId() {
-        return R.ok(assetWarehouseService.listWarehouseNameByFranchiseeId());
+    public R listWarehouseNameByTenantId() {
+        return R.ok(assetWarehouseService.listWarehouseNameByTenantId());
     }
     
     /**

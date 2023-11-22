@@ -91,7 +91,7 @@ public class AssetInventoryController {
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/inventory/search")
+    @GetMapping("/admin/asset/inventory/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo", required = false) String orderNo,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {

@@ -23,7 +23,7 @@ public interface AssetWarehouseMapper {
     
     Integer queryCount(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
-    List<AssetWarehouseNameVO> selectListWarehouseNameByFranchiseeId(Long tenantId);
+    List<AssetWarehouseNameVO> selectListWarehouseNameByTenantId(Long tenantId);
     
     Integer updateById(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     
