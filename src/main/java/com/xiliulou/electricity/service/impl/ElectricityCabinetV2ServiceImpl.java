@@ -176,7 +176,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        List<Integer> eleIdList = batchOutWarehouseRequest.getId();
+        List<Integer> eleIdList = batchOutWarehouseRequest.getIdList();
         // 校验已出库的不
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(eleIdList, TenantContextHolder.getTenantId());
         List<ElectricityCabinet> unStockList = electricityCabinetList.stream()
