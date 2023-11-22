@@ -240,11 +240,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
-        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
+        List<InvitationActivityRecord> invitationActivityRecordListByUser = selectByUid(userInfo.getUid());
+        
+        if (CollectionUtils.isEmpty(invitationActivityUserList) || CollectionUtils.isEmpty(invitationActivityRecordListByUser)) {
+            log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList or invitationActivityRecordListByUser is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
         
+    
         // 过滤掉未上线的活动
         Set<Long> activityIdSetAll = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         Set<Long> activityIdSetUser = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
@@ -354,39 +357,25 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 活动id集合
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
-        int downCount = 0;
-        int recordCount = 0;
+    
+        List<InvitationActivity> invitationActivityList = invitationActivityService.listByActivityIds(activityIdList);
+        List<InvitationActivityRecord> activityRecordList = invitationActivityRecordMapper.selectListByActivityIds(activityIdList);
+        if(CollectionUtils.isEmpty(invitationActivityList) || CollectionUtils.isEmpty(activityRecordList)) {
+            log.error("INVITATION ACTIVITY ERROR! activityList status are all down or not found record, invitationUid={},uid={}", invitationUid, userInfo.getUid());
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
+        }
+        
         for (Long activityId : activityIdList) {
-            if (downCount == activityIdList.size()) {
-                log.error("INVITATION ACTIVITY ERROR! activityList status are all down, invitationUid={},uid={}", invitationUid, userInfo.getUid());
-                return Triple.of(false, "100399", "该活动已下架，二维码失效");
-            }
-        
-            if (recordCount == activityIdList.size()) {
-                log.error("INVITATION ACTIVITY ERROR! not found record, invitationUid={},uid={}", invitationUid, userInfo.getUid());
-                return Triple.of(false, "100399", "该活动已下架，二维码失效");
-            }
-        
-            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
-            if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getStatus(), InvitationActivity.STATUS_UP)) {
-                downCount += 1;
-                continue;
-            }
-        
             //用户是否已参与过此活动
             Integer exist = invitationActivityJoinHistoryService.existsByJoinUidAndActivityId(userInfo.getUid(), activityId);
             if (Objects.nonNull(exist)) {
-                log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
+                log.error("INVITATION ACTIVITY ERROR! user already join invitation activity,activityId={},uid={}", activityId, userInfo.getUid());
                 return Triple.of(true, "100398", "您已参与过该活动，无法重复参加");
             }
         
             // 获取活动记录
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid).eq(InvitationActivityRecord::getActivityId, activityId));
-            if (Objects.isNull(invitationActivityRecord)) {
-                recordCount += 1;
-                continue;
-            }
         
             //更新活动邀请总人数
             invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
