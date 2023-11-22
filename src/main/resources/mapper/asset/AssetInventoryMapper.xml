@@ -67,7 +67,8 @@
             #{tenantId},
             #{delFlag},
             #{createTime},
-            #{updateTime}
+            #{updateTime},
+            #{remark}
         </trim>
     </insert>
     
