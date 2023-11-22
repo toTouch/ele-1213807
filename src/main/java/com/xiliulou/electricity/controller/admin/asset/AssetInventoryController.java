@@ -79,10 +79,10 @@ public class AssetInventoryController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/inventory/pageCount")
-    public R pageCount(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo", required = false) String orderNo,
+    public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status) {
         
-        AssetInventoryRequest assetInventoryRequest = AssetInventoryRequest.builder().size(size).offset(offset).orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
+        AssetInventoryRequest assetInventoryRequest = AssetInventoryRequest.builder().orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
         return R.ok(assetInventoryService.queryCount(assetInventoryRequest));
     }
     

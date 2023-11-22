@@ -48,7 +48,7 @@
             inventoried_total,
             pending_total,
             finish_time,
-            operator,
+            operator,W
             tenant_id,
             del_flag,
             create_time,
