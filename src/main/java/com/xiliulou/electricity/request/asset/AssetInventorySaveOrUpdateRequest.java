@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queue.asset;
+package com.xiliulou.electricity.request.asset;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queue.asset;
+package com.xiliulou.electricity.request.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 查询资产盘点
+ * @description 查询资产盘点详情
  * @date 2023/11/20 13:47:42
  */
 
@@ -15,7 +15,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AssetInventoryRequest {
+public class AssetInventoryDetailRequest {
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
     
     /**
      * 盘点订单号
@@ -23,14 +28,14 @@ public class AssetInventoryRequest {
     private String orderNo;
     
     /**
-     * 盘点加盟商ID
-     */
-    private Long franchiseeId;
-    
-    /**
      * 盘点状态
      */
     private Integer status;
+    
+    /**
+     * 操作人uid
+     */
+    private Long uid;
     
     
     private Long size;

@@ -2,8 +2,8 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.queue.asset.AssetWarehouseRequest;
-import com.xiliulou.electricity.queue.asset.AssetWarehouseSaveOrUpdateRequest;
+import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
+import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;

@@ -2,8 +2,8 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.queue.asset.AssetInventoryRequest;
-import com.xiliulou.electricity.queue.asset.AssetInventorySaveOrUpdateRequest;
+import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
+import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -54,7 +54,7 @@ public class AssetInventoryController {
     }
     
     /**
-     * @description 新增资产盘点
+     * @description 编辑资产盘点
      * @date 2023/11/21 13:15:41
      * @author HeYafeng
      */

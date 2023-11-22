@@ -1,0 +1,81 @@
+package com.xiliulou.electricity.controller.admin.asset;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
+import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
+import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
+
+/**
+ * @author HeYafeng
+ * @description 资产盘点
+ * @date 2023/11/20 14:26:31
+ */
+@RestController
+@Slf4j
+public class AssetInventoryDetailController {
+    
+    @Autowired
+    private AssetInventoryDetailService assetInventoryDetailService;
+    
+    /**
+     * @description 资产盘点详情分页
+     * @date 2023/11/21 13:21:30
+     * @author HeYafeng
+     */
+    @GetMapping("/admin/asset/inventoryDetail/page")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "orderNo") String orderNo, @RequestParam(value = "status", required = false) Integer status) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().size(size).offset(offset).franchiseeId(franchiseeId).orderNo(orderNo)
+                .status(status).uid(user.getUid()).build();
+        return assetInventoryDetailService.listByOrderNo(assetInventoryRequest);
+    }
+    
+    /***
+     * @description 批量盘点
+     * @date 2023/11/21 13:23:50
+     * @author HeYafeng
+     */
+    @GetMapping("/admin/asset/inventoryDetail/batchInventory")
+    public R batchUpdate(@RequestBody @Validated(value = CreateGroup.class) AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest);
+        
+    }
+    
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.asset.AssetInventoryDetail" id="assetInventoryDetailMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orderNo" column="order_no" jdbcType="INTEGER"/>
+        <result property="sn" column="sn " jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="inventoryStatus" column="inventory_status" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="operator" column="operator" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        sn,
+        type,
+        franchisee_id,
+        inventory_status,
+        status,
+        operator,
+        tenant_id,
+        del_flag,
+        create_time,
+        update_time,
+        remark
+    </sql>
+    
+    <update id="batchInventoryBySnList">
+        update t_asset_inventory_detail
+        set inventoryStatus = 1, status = #{status}
+        where sn in
+        <foreach collection="snList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        and tenant_id = #{tenantId} and del_flag=0
+    </update>
+    
+    <select id="selectListByOrderNo" resultType="com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO">
+        select
+        <include refid="basic_field"/>
+        from t_asset_inventory_detail
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no={orderNo}
+            </if>
+            <if test="status != null ">
+                and status={status}
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+        ORDER BY id
+        limit #{offset}, #{size}
+    </select>
+
+
+</mapper>
+
+
+
+
