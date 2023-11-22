@@ -17,7 +17,7 @@
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
         </if>
-        <if test="query.manufacturer_name != null and query.manufacturer_name != ''">
+        <if test="query.manufacturer_name != null and query.manufacturerName != ''">
             and manufacturer_name like concat('%', #{query.manufacturerName}, '%')
         </if>
         <if test="query.tenantId != null">
