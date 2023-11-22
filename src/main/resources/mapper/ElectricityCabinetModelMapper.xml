@@ -23,7 +23,7 @@
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
-        order by manufacturer_name,update_time desc
+        order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 	<select id="queryCount" resultType="java.lang.Integer">
