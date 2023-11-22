@@ -28,14 +28,17 @@
         select id, activity_id, code, uid, share_count, invitation_count, status, money
         from t_invitation_activity_record
         <where>
+            <if test="uid != null">
+                and and uid=#{uid}
+            </if>
             <if test="activityIds != null and activityIds.size()>0">
-                activity_id in
+                and activity_id in
                 <foreach collection="activityIds" item="activityId" open="(" close=")" separator=",">
                     #{activityId}
                 </foreach>
             </if>
         </where>
-        and uid=#{uid} order by id
+         order by id
     </select>
 
     <select id="selectByUid" resultMap="InvitationActivityRecordMap">
