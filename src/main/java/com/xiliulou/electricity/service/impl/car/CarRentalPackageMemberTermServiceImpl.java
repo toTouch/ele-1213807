@@ -343,4 +343,10 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         return carRentalPackageMemberTermMapper.queryUserCarRentalPackageCount(userInfoQuery);
     }
+    
+    @Override
+    public List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList){
+        return carRentalPackageMemberTermMapper.selectListUserPayCount(uidList);
+    }
+    
 }

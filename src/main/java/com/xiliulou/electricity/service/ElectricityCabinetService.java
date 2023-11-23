@@ -240,4 +240,6 @@ public interface ElectricityCabinetService {
     Triple<Boolean, String, Object> batchUpdateAddress(List<ElectricityCabinet> list);
 
     void batchUpdate(List<ElectricityCabinet> list);
+    
+    R queryElectricityCabinetExtendData(Integer electricityCabinetId);
 }

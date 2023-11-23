@@ -7,13 +7,66 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.UnionPayOrder;
+import com.xiliulou.electricity.entity.UnionTradeOrder;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.OldUserActivityService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TradeOrderService;
+import com.xiliulou.electricity.service.UnionTradeOrderService;
+import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -36,6 +89,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -746,6 +800,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {//兼容2.0版本小程序
                 //用户绑定的电池型号
                 List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+                Set<String> batteryTypeSet = null;
+                if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
+                    batteryTypeSet = new HashSet<>(userBatteryTypes);
+                }
+                
                 //生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
                 eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
@@ -763,7 +822,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .franchiseeId(franchisee.getId())
                         .storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType())
-                        .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
+                        .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                         .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
@@ -819,7 +878,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
                 //生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+                
                 List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+                Set<String> batteryTypeSet = null;
+                if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
+                    batteryTypeSet = new HashSet<>(userBatteryTypes);
+                }
+                
                 eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
                         .uid(userInfo.getUid())
@@ -834,7 +899,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .franchiseeId(franchisee.getId())
                         .storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType())
-                        .batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
+                        .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                         .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);

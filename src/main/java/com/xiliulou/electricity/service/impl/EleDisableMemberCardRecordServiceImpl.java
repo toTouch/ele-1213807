@@ -6,14 +6,31 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -27,8 +44,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @program: XILIULOU
@@ -206,6 +225,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
 
             List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            Set<String> batteryTypeSet = null;
+            if (CollectionUtils.isNotEmpty(batteryTypes)) {
+                batteryTypeSet = new HashSet<>(batteryTypes);
+            }
 
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
@@ -222,7 +245,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                     .franchiseeId(franchisee.getId())
                     .storeId(userInfo.getStoreId())
                     .modelType(franchisee.getModelType())
-                    .batteryType(CollectionUtils.isEmpty(batteryTypes) ? "" : JsonUtil.toJson(batteryTypes))
+                    .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                     .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
                     .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);

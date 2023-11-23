@@ -90,8 +90,16 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     @Autowired
     BatteryTrackRecordService batteryTrackRecordService;
     
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    @Autowired
+    private ElectricityMemberCardOrderService batteryMemberCardOrderService;
+    
+    @Autowired
+    private UserBatteryTypeService userBatteryTypeService;
+    
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
@@ -188,11 +196,19 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
-        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT)) {
-            //扣除月卡
-            userBatteryMemberCardService.minCountForOffLineEle(userBatteryMemberCard);
+        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
+            //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
+            if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
+                //扣除月卡
+                userBatteryMemberCardService.minCount(userBatteryMemberCard);
+            }
+            
+            //如果套餐没过期并且剩余次数为1
+            if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects.equals(userBatteryMemberCard.getOrderRemainingNumber(),
+                    UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
+                updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineEleOrderVo.getEndTime());
+            }
         }
-        
         //查询当前归还的电池信息
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
         //更新旧电池为在仓
@@ -341,6 +357,56 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_IN).setCreateTime(TimeUtils.convertToStandardFormatTime(electricityCabinetOrder.getCreateTime()))
                 .setOrderId(electricityCabinetOrder.getOrderId());
         batteryTrackRecordService.putBatteryTrackQueue(inBatteryTrackRecord);
+    }
+    
+    private void updateUserBatteryMemberCardInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long endTime) {
+        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
+        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(endTime);
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            return;
+        }
+        
+        //更新当前用户绑定的套餐数据
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+        userBatteryMemberCardUpdate.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
+        userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(
+                userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+        userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        
+        //删除资源包
+        userBatteryMemberCardPackageService.deleteByOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        
+        //更新原来绑定的套餐订单状态
+        ElectricityMemberCardOrder oldMemberCardOrder = new ElectricityMemberCardOrder();
+        oldMemberCardOrder.setOrderId(userBatteryMemberCard.getOrderId());
+        oldMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+        oldMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCardOrderService.updateStatusByOrderNo(oldMemberCardOrder);
+        
+        //更新新绑定的套餐订单的状态
+        ElectricityMemberCardOrder currentMemberCardOrder = new ElectricityMemberCardOrder();
+        currentMemberCardOrder.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+        currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
+        
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE ERROR!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
+                    userBatteryMemberCardPackageLatest.getOrderId());
+            return;
+        }
+        
+        //更新用户电池型号
+        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
     
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {

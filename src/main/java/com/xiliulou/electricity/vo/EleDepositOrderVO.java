@@ -108,8 +108,14 @@ public class EleDepositOrderVO {
     private String carModel;
     
     /**
+     * 可退标识 true:可退 false:不可退
+     */
+    private Boolean refundFlag;
+    
+    /**
      * 订单类型： 0-普通换电订单，1-企业渠道换电订单
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
 }

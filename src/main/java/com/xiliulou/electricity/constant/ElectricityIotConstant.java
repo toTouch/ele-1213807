@@ -27,6 +27,9 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
+    
+    public static final String NORMAL_ELE_CABINET_SIGNAL_HANDLER = "normalEleCabinetSignalHandler";
+    
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
     public static final String NORMAL_ELE_ORDER_HANDLER = "normalEleOrderHandler";
     public static final String NORMAL_ELE_ORDER_SELF_OPEN_CELL_HANDLER = "normalEleOrderSelfOpenCellHandler";
@@ -158,6 +161,8 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_BATTERY_REPORT_INFO = "battery_report_info";
     //电柜版本上报
     public static final String EXCHANGE_CABINET = "exchange_cabinet";
+    //
+    public static final String EXCHANGE_CABINET_SINAL = "net_signal_rsp";
     //配柜子
     public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
     //远程更新
@@ -447,6 +452,7 @@ public class ElectricityIotConstant {
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET_SINAL, NORMAL_ELE_CABINET_SIGNAL_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, NORMAL_OTHER_CONFIG_HANDLER);

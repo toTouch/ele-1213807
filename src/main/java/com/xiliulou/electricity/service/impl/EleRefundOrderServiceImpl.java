@@ -9,6 +9,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
@@ -134,6 +135,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
     /**
      * 新增数据
@@ -1776,6 +1780,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
+        
+        //退押时校验是否有在退租的订单
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+            log.warn("BATTERY DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+            return R.fail(false,"100018", "套餐租金退款审核中");
+        }
 
         //退款中
         Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
@@ -1858,6 +1869,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                     .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT)
+                    .operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())
@@ -2139,9 +2151,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public List<EleRefundOrder> selectByOrderId(String orderId) {
         return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
     }
-
+    
+    public List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId) {
+        return this.eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId));
+    }
+    
     @Override
     public EleRefundOrder selectLatestRefundDepositOrder(String paymentOrderNo) {
         return eleRefundOrderMapper.selectLatestRefundDepositOrder(paymentOrderNo);
+    }
+    
+    @Override
+    public Integer existByOrderIdAndStatus(String orderId, List<Integer> statusList) {
+        return eleRefundOrderMapper.existByOrderIdAndStatus(orderId, statusList);
     }
 }

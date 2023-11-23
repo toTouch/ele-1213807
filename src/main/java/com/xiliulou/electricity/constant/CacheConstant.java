@@ -106,6 +106,8 @@ public interface CacheConstant {
     String ORDER_TIME_UID = "order_time_uid:";
     
     String EXCHANGE_ORDER_HANDLE_LIMIT = "exchange_order_handle_limit:";
+    
+    String RENT_BATTERY_ORDER_HANDLE_LIMIT = "rent_battery_order_handle_limit:";
 
     //电池异常锁住换电柜
     String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
@@ -483,6 +485,8 @@ public interface CacheConstant {
     String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
     String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
     
+    String CACHE_ELECTRICITY_CABINET_EXTEND_DATA="electricity_cabinet_extends_data:";
+
     /**
      * 企业配置缓存
      */
@@ -491,5 +495,5 @@ public interface CacheConstant {
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
-
+    
 }
