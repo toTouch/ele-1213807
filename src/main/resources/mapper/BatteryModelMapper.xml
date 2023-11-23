@@ -127,8 +127,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_model(mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time)
-        values (#{mid},#{batteryModel}, #{batteryType}, #{batteryV}, #{batteryVShort}, #{delFlag}, #{type}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_battery_model(mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time,brand_name,capacity,access_protocol,size,weight)
+        values (#{mid},#{batteryModel}, #{batteryType}, #{batteryV}, #{batteryVShort}, #{delFlag}, #{type}, #{tenantId}, #{createTime}, #{updateTime}, #{brand_name}, #{capacity}, #{access_protocol}, #{size}, #{weight})
     </insert>
 
 
