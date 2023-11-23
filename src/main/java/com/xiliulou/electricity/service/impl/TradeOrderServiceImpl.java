@@ -861,6 +861,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
             allPayAmount.add(expireBatteryServiceFee);
+    
+            log.info("BATTERY SERVICE FEE INFO!user exist battery expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
         }
 
         //暂停套餐电池服务费
@@ -943,6 +945,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
 
                 pauseBatteryServiceFee = eleBatteryServiceFeeOrder.getPayAmount();
+    
+                log.info("BATTERY SERVICE FEE INFO!user exist pauseBatteryServiceFee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             }
 
             if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
