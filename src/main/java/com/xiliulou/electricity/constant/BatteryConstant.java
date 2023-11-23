@@ -16,6 +16,10 @@ public class BatteryConstant {
 
 	private static final LinkedHashMap<String, Integer> BATTERY = new LinkedHashMap<>();
 	private static final LinkedHashMap<Integer, String> BATTERY_SHORT = new LinkedHashMap<>();
+	
+	public static final String VOLTAGE_UNIT = "V";
+	
+	public static final String CAPACITY_UNIT = "Ah";
 
 	/**
 	 * 三元锂
