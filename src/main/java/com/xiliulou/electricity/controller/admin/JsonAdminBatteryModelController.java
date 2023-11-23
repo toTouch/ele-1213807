@@ -68,7 +68,8 @@ public class JsonAdminBatteryModelController extends BaseController {
      * 分页总数
      */
     @GetMapping("/admin/battery/model/count")
-    public R pageCount(@RequestParam(value = "batteryType", required = false) String batteryType) {
+    public R pageCount(@RequestParam(value = "batteryType", required = false) String batteryType,
+                       @RequestParam(value = "brandName", required = false) String brandName) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -81,6 +82,7 @@ public class JsonAdminBatteryModelController extends BaseController {
 
         BatteryModelQuery query = BatteryModelQuery.builder()
                 .batteryType(batteryType)
+                .brandName(brandName)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
 

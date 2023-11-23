@@ -329,6 +329,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         batteryModel.setDelFlag(BatteryModel.DEL_NORMAL);
         batteryModel.setCreateTime(System.currentTimeMillis());
         batteryModel.setUpdateTime(System.currentTimeMillis());
+        batteryModel.setBrandName(batteryModelQuery.getBrandName());
+        batteryModel.setAccessProtocol(batteryModelQuery.getAccessProtocol());
+        batteryModel.setSize(batteryModelQuery.getBatterySize());
+        batteryModel.setWeight(batteryModelQuery.getWeight());
         this.insert(batteryModel);
 
         return Triple.of(true, null, null);

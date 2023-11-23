@@ -94,7 +94,8 @@ public class JsonAdminElectricityCabinetModelController {
 
 	//列表查询
 	@GetMapping(value = "/admin/electricityCabinetModel/queryCount")
-	public R queryCount(@RequestParam(value = "name", required = false) String name) {
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "manufacturerName", required = false) String manufacturerName) {
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -108,6 +109,7 @@ public class JsonAdminElectricityCabinetModelController {
 
 		ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
 				.name(name)
+				.manufacturerName(manufacturerName)
 				.tenantId(tenantId).build();
 
 		return electricityCabinetModelService.queryCount(electricityCabinetModelQuery);

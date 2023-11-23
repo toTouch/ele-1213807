@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.bytebuddy.implementation.bind.annotation.Empty;
 import org.hibernate.validator.constraints.Range;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
@@ -55,5 +57,34 @@ public class BatteryModelQuery {
     @NotNull(message = "电池串数不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     @Positive(message = "电池串数不合法!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer number;
-
+    
+    /**
+     * 品牌名称
+     */
+    @NotEmpty(message = "品牌名称不能为空!", groups = {CreateGroup.class})
+    private String brandName;
+    
+    /**
+     * 电池容量
+     */
+    @NotNull(message = "电池容量不能为空!", groups = {CreateGroup.class})
+    private Integer capacity;
+    
+    /**
+     * 电池接入协议 0：未知 1：铁塔
+     */
+    @NotNull(message = "电池接入协议不能为空!", groups = {CreateGroup.class})
+    private Integer accessProtocol;
+    
+    /**
+     * 电池尺寸
+     */
+    @NotEmpty(message = "电池尺寸不能为空!", groups = {CreateGroup.class})
+    private String batterySize;
+    
+    /**
+     * 电池重量（Kg)
+     */
+    @NotNull(message = "电池重量不能为空!", groups = {CreateGroup.class})
+    private Double weight;
 }

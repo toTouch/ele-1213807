@@ -39,12 +39,17 @@
         tbm.battery_v_short,
         tbm.create_time,
         tbm.update_time,
-        tbm.type
+        tbm.type,
+        tbm.brand_name
         from t_battery_model tbm left join t_battery_material bm on tbm.mid=bm.id
         where tbm.del_flag=0
         <if test="batteryType != null and batteryType != ''">
             and tbm.battery_type = #{batteryType}
         </if>
+        <if test="brandName != null and brandName != ''">
+            and tbm.brand_name like concat('%', #{brandName}, '%')
+        </if>
+        
         <if test="tenantId != null">
             and tbm.tenant_id = #{tenantId}
         </if>
@@ -59,6 +64,9 @@
         where del_flag=0
         <if test="batteryType != null and batteryType != ''">
             and battery_type = #{batteryType}
+        </if>
+        <if test="brandName != null and brandName != ''">
+            and brand_name like concat('%', #{brandName}, '%')
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
