@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -23,6 +24,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户停卡绑定(TServiceFeeUserInfo)实体类
@@ -66,7 +69,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-
+    
+    private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(1);
+    
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
         return serviceFeeUserInfoMapper.insert(serviceFeeUserInfo);
@@ -96,6 +101,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + serviceFeeUserInfo.getUid());
+            clearCache(serviceFeeUserInfo.getUid());
             return null;
         });
         return;
@@ -107,9 +113,18 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + uid);
+            clearCache(uid);
             return null;
         });
         return delete;
+    }
+    
+    private void clearCache(Long uid){
+        scheduledExecutor.schedule(() -> {
+            if (redisService.hasKey(CacheConstant.SERVICE_FEE_USER_INFO + uid)) {
+                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + uid);
+            }
+        }, 1, TimeUnit.SECONDS);
     }
 
     @Override
