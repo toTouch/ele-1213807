@@ -19,7 +19,7 @@ public interface AssetWarehouseService {
     
     List<AssetWarehouseVO> listByFranchiseeId(AssetWarehouseRequest assetInventoryRequest);
     
-    Integer queryCount(AssetWarehouseRequest assetInventoryRequest);
+    Integer countTotal(AssetWarehouseRequest assetInventoryRequest);
     
     List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest);
     

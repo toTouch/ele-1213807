@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
-import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 @Repository
 public interface AssetInventoryDetailMapper {
     
-    List<AssetInventoryDetailVO> selectListByOrderNo(AssetInventoryDetailQueryModel assetInventoryQueryDetailModel);
+    List<AssetInventoryDetailBO> selectListByOrderNo(AssetInventoryDetailQueryModel assetInventoryQueryDetailModel);
     
     Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryRequest inventoryRequest);
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
+import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.asset.AssetWarehouse;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
@@ -14,12 +16,15 @@ import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -48,10 +53,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         }
         
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
-                .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName()).managerPhone(
-                        assetWarehouseSaveOrUpdateRequest.getManagerPhone())
-                .address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetWarehouse.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).build();
+                .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName())
+                .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetWarehouse.DEL_NORMAL)
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
     }
@@ -61,31 +65,56 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
-        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
+        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetWarehouseMapper.selectListByFranchiseeId(assetWarehouseQueryModel);
+        List<AssetWarehouseVO> rspList = new ArrayList<>();
+        List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByFranchiseeId(assetWarehouseQueryModel);
+        if (CollectionUtils.isNotEmpty(assetWarehouseBOList)) {
+            rspList = assetWarehouseBOList.stream().map(item -> {
+                AssetWarehouseVO assetWarehouseVO = new AssetWarehouseVO();
+                BeanUtils.copyProperties(item, assetWarehouseVO);
+                return assetWarehouseVO;
+            }).collect(Collectors.toList());
+        }
+        
+        return rspList;
     }
     
-    public Integer queryCount(AssetWarehouseRequest assetInventoryRequest) {
+    public Integer countTotal(AssetWarehouseRequest assetInventoryRequest) {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
-        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
+        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetWarehouseMapper.queryCount(assetWarehouseQueryModel);
+        return assetWarehouseMapper.countTotal(assetWarehouseQueryModel);
     }
     
     @Override
-    public List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest){
+    public List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest) {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
-        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
+        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
+        List<AssetWarehouseNameVO> rspList = new ArrayList<>();
+        List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
+        if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
+            rspList = assetWarehouseNameBOList.stream().map(item -> {
+                AssetWarehouseNameVO assetWarehouseNameVO = new AssetWarehouseNameVO();
+                BeanUtils.copyProperties(item, assetWarehouseNameVO);
+                return assetWarehouseNameVO;
+            }).collect(Collectors.toList());
+        }
+        
+        return rspList;
     }
     
     @Override
     public AssetWarehouseNameVO queryById(Long id) {
-        return assetWarehouseMapper.selectById(id);
+        AssetWarehouseNameVO assetWarehouseNameVO = new AssetWarehouseNameVO();
+        AssetWarehouseNameBO assetWarehouseNameBO = assetWarehouseMapper.selectById(id);
+        if (Objects.nonNull(assetWarehouseNameBO)) {
+            BeanUtils.copyProperties(assetWarehouseNameBO, assetWarehouseNameVO);
+        }
+        return assetWarehouseNameVO;
     }
     
     @Override
@@ -94,16 +123,16 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         // 判断库房是否绑定柜机
         Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
-        if(Objects.isNull(existsElectricityCabinet)) {
+        if (Objects.isNull(existsElectricityCabinet)) {
             return R.fail("300800", "该库房有电柜正在使用,请解绑后操作");
         }
-    
+        
         // 判断库房是否绑定电池
-    
+        
         // 判断库房是否绑定车辆
-    
+        
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetWarehouse.DEL_DEL)
-                .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId().longValue()).build();
+                .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
@@ -112,7 +141,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
         BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
-        warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
+        warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         return assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel);
     }

@@ -67,7 +67,7 @@ public class AssetInventoryDetailController {
         }
         
         AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().franchiseeId(franchiseeId).orderNo(orderNo).status(status).build();
-        return R.ok(assetInventoryDetailService.queryCount(assetInventoryRequest));
+        return R.ok(assetInventoryDetailService.countTotal(assetInventoryRequest));
     }
     
     /***

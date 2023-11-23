@@ -13,7 +13,7 @@ public class AssetWarehouseQueryModel {
     /**
      * 租户ID
      */
-    private Long tenantId;
+    private Integer tenantId;
     
     /**
      * 加盟商ID

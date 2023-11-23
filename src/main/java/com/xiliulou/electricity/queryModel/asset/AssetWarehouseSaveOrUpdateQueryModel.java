@@ -65,5 +65,5 @@ public class AssetWarehouseSaveOrUpdateQueryModel {
     /**
      * 租户ID
      */
-    private Long tenantId;
+    private Integer tenantId;
 }

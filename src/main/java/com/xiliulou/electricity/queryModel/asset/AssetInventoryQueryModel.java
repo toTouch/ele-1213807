@@ -28,7 +28,7 @@ public class AssetInventoryQueryModel {
     /**
      * 租户ID
      */
-    private Long tenantId;
+    private Integer tenantId;
     
     private Long size;
     

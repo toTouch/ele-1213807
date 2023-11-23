@@ -85,7 +85,7 @@ public class AssetInventoryController {
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status) {
         
         AssetInventoryRequest assetInventoryRequest = AssetInventoryRequest.builder().orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
-        return R.ok(assetInventoryService.queryCount(assetInventoryRequest));
+        return R.ok(assetInventoryService.countTotal(assetInventoryRequest));
     }
     
     /**

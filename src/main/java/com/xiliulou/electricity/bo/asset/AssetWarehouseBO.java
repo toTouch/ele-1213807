@@ -1,23 +1,15 @@
-package com.xiliulou.electricity.entity.asset;
+package com.xiliulou.electricity.bo.asset;
+
+import lombok.Data;
 
 /**
  * @author HeYafeng
- * @description 库房
- * @date 2023/11/21 16:07:02
+ * @description 库房BO
+ * @date 2023/11/21 20:20:13
  */
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_asset_warehouse")
-public class AssetWarehouse {
+public class AssetWarehouseBO {
     
     /**
      * 主键Id
@@ -69,11 +61,4 @@ public class AssetWarehouse {
      */
     private Integer tenantId;
     
-    public static final Integer ASSET_WAREHOUSE_STATUS_ENABLE = 0;
-    
-    public static final Integer ASSET_WAREHOUSE_STATUS_DISABLE = 1;
-    
-    public static final Integer DEL_NORMAL = 0;
-    
-    public static final Integer DEL_DEL = 1;
 }

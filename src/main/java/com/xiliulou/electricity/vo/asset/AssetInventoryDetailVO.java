@@ -6,7 +6,7 @@ import lombok.Data;
 
 /**
  * @author HeYafeng
- * @description 盘点资产详情VO
+ * @description 盘点资产详情BO
  * @date 2023/11/20 17:23:58
  */
 
@@ -55,7 +55,7 @@ public class AssetInventoryDetailVO {
     /**
      * 租户ID
      */
-    private Long tenantId;
+    private Integer tenantId;
     
     /**
      * 是否删除（0-正常，1-删除）

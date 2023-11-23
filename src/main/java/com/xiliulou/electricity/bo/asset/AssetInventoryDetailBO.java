@@ -1,37 +1,27 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.bo.asset;
 
+import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 新增和更新资产盘点model
- * @date 2023/11/22 09:39:03
+ * @description 盘点资产详情BO
+ * @date 2023/11/20 17:23:58
  */
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class AssetInventorySaveOrUpdateQueryModel {
+public class AssetInventoryDetailBO {
     
     /**
-     * 主键Id
+     * 主键ID
      */
-    private Long id;
+    private Integer id;
     
     /**
-     * 盘点单号
+     * 编号(电池，电柜，车辆)
      */
-    private String orderNo;
-    
-    /**
-     * 盘点加盟商ID
-     */
-    private Long franchiseeId;
+    private String sn;
     
     /**
      * 资产类型 (1-电柜, 2-电池, 3-车辆)
@@ -41,24 +31,21 @@ public class AssetInventorySaveOrUpdateQueryModel {
     private Integer type;
     
     /**
-     * 盘点状态(0-进行中,1-完成)
+     * 所属加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 盘点状态(0-正常,1-故障, 2-库存, 3-丢失, 4-报废)
+     *
+     * @see AssetInventoryDetailStatusEnum
      */
     private Integer status;
     
     /**
-     * 已盘点数
+     * 出库时间
      */
-    private Integer inventoriedTotal;
-    
-    /**
-     * 待盘点数
-     */
-    private Integer pendingTotal;
-    
-    /**
-     * 盘点结束时间
-     */
-    private Long finishTime;
+    private Long outWarehouseTime;
     
     /**
      * 操作人

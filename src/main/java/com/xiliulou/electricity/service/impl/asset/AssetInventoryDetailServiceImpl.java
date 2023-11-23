@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
+import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
@@ -14,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,7 +36,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Override
     public R listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
-        Long tenantId = TenantContextHolder.getTenantId().longValue();
+        Integer tenantId = TenantContextHolder.getTenantId();
         
         // 模型转换
         AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
@@ -41,8 +44,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         assetInventoryDetailQueryModel.setTenantId(tenantId);
         
         //如果详情表中没有电池数据，需同步电池信息到资产盘点详情表中
-        List<AssetInventoryDetailVO> inventoryDetailVOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
-        if (CollectionUtils.isEmpty(inventoryDetailVOList)) {
+        List<AssetInventoryDetailVO> inventoryDetailVOList = new ArrayList<>();
+        List<AssetInventoryDetailBO> inventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
+        if (CollectionUtils.isEmpty(inventoryDetailBOList)) {
             inventoryDetailVOList = syncBatteryToInventoryDetail(assetInventoryRequest, tenantId);
         }
         
@@ -54,7 +58,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
      * @date 2023/11/21 14:40:16
      * @author HeYafeng
      */
-    private List<AssetInventoryDetailVO> syncBatteryToInventoryDetail(AssetInventoryDetailRequest assetInventoryRequest, Long tenantId) {
+    private List<AssetInventoryDetailVO> syncBatteryToInventoryDetail(AssetInventoryDetailRequest assetInventoryRequest, Integer tenantId) {
         /*List<AssetInventoryDetailVO> inventoryDetailVOList = new ArrayList<>();
         Long franchiseeId = assetInventoryRequest.getFranchiseeId();
         
@@ -91,20 +95,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     }
     
     @Override
-    public Integer queryCount(AssetInventoryDetailRequest assetInventoryRequest) {
-        Long tenantId = TenantContextHolder.getTenantId().longValue();
-    
-        // 模型转换
-        AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
-        BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
-        assetInventoryDetailQueryModel.setTenantId(tenantId);
-    
-        //如果详情表中没有电池数据，需同步电池信息到资产盘点详情表中
-        List<AssetInventoryDetailVO> inventoryDetailVOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
-        if (CollectionUtils.isEmpty(inventoryDetailVOList)) {
-            inventoryDetailVOList = syncBatteryToInventoryDetail(assetInventoryRequest, tenantId);
-        }
-        
-        return inventoryDetailVOList.size();
+    public Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest) {
+        ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(assetInventoryRequest.getFranchiseeId()).build();
+        Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
+        return (Integer) data;
     }
 }

@@ -67,7 +67,7 @@ public class AssetInventoryDetail {
     /**
      * 租户ID
      */
-    private Long tenantId;
+    private Integer tenantId;
     
     /**
      * 是否删除（0-正常，1-删除）
