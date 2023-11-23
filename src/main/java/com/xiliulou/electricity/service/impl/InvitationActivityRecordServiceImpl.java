@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -182,13 +180,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
-        //获取当前用户所绑定的套餐返现活动
-        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
-        //        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
-        //            log.warn("INVITATION ACTIVITY WARN! not found invitationActivityUserList,uid={}", userInfo.getUid());
-        //            return Triple.of(true, null, null);
-        //        }
     
         List<InvitationActivityRecord> recordList = selectByUid(userInfo.getUid());
         List<Long> activityIds = recordList.stream().map(InvitationActivityRecord::getActivityId).collect(Collectors.toList());
@@ -642,7 +633,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
                 activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
                 activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
-                activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
+                activityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
                 activityJoinHistoryInsert.setPayCount(payCount);
                 activityJoinHistoryInsert.setMoney(rewardAmount);
                 activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
