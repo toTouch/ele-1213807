@@ -28,6 +28,12 @@ public class ElectricityCabinetBatchOutWarehouseRequest {
     private Long storeId;
     
     /**
+     * 换电柜名称
+     */
+    @NotEmpty(message = "换电柜名称不能为空!", groups = {UpdateGroup.class})
+    private String name;
+    
+    /**
      * 换电柜地址
      */
     @NotEmpty(message = "换电柜地址不能为空!", groups = {UpdateGroup.class})

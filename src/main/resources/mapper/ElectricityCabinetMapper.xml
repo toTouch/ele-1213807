@@ -859,6 +859,7 @@
     <update id="batchOutWarehouse">
         update t_electricity_cabinet set
         franchisee_id = #{franchiseeId},
+        name = #{name},
         store_id= #{storeId},
         address = #{address},
         longitude = #{longitude},

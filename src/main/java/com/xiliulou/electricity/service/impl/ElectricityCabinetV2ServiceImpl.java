@@ -22,9 +22,9 @@ import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +86,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "ELECTRICITY.0002", "换电柜的三元组已存在");
         }
         
-        //换电柜
+        // 换电柜
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddRequest, electricityCabinet);
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
@@ -95,15 +95,24 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         electricityCabinet.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         electricityCabinet.setStockStatus(StockStatusEnum.STOCK.getCode());
         
+        // 下列字段设置默认
+        electricityCabinet.setName(StringUtils.EMPTY);
+        electricityCabinet.setLongitude(0.0);
+        electricityCabinet.setLatitude(0.0);
+        electricityCabinet.setServicePhone(StringUtils.EMPTY);
+        electricityCabinet.setBusinessTime(StringUtils.EMPTY);
+        electricityCabinet.setStoreId(0L);
+        electricityCabinet.setFullyCharged(0.00);
+        
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
             
-            //新增缓存
+            // 新增缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
             
-            //添加格挡
+            // 添加格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
-            //添加服务时间记录
+            // 添加服务时间记录
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
         });
         
@@ -178,7 +187,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         }
         
         Integer update = electricityCabinetMapper.batchOutWarehouse(eleIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude());
+                batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(),batchOutWarehouseRequest.getName());
         
         electricityCabinetList.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
