@@ -10,13 +10,60 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.CarDepositOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.UnionPayOrder;
+import com.xiliulou.electricity.entity.UnionTradeOrder;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserCarDeposit;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.EleUserOperateRecordService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.MemberCardFailureRecordService;
+import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.UnionTradeOrderService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -2164,5 +2211,55 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer existByOrderIdAndStatus(String orderId, List<Integer> statusList) {
         return eleRefundOrderMapper.existByOrderIdAndStatus(orderId, statusList);
+    }
+    
+    /**
+     * 退款测试接口
+     */
+    @Override
+    public Triple<Boolean, String, Object> refund(BigDecimal refundAmount, Long uid, String orderId, HttpServletRequest request) {
+        WechatJsapiRefundResultDTO refund = null;
+        
+        try {
+            RefundOrder refundOrder = RefundOrder.builder().orderId(orderId).refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
+                    .payAmount(refundAmount).refundAmount(refundAmount).build();
+            
+            ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderIdV2(refundOrder.getOrderId());
+            String tradeOrderNo = null;
+            Integer total = null;
+            if (Objects.isNull(electricityTradeOrder)) {
+                log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
+                throw new CustomBusinessException("未找到交易订单!");
+            }
+            tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+            total = refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
+            
+            if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
+                UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
+                if (Objects.nonNull(unionTradeOrder)) {
+                    tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+                    total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
+                }
+            }
+            
+            //退款
+            WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
+            wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
+            wechatV3RefundQuery.setTotal(total);
+            wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+            wechatV3RefundQuery.setReason("退款");
+            wechatV3RefundQuery.setOrderId(tradeOrderNo);
+            wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+            wechatV3RefundQuery.setCurrency("CNY");
+            wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
+            
+            refund = wechatV3JsapiService.refund(wechatV3RefundQuery);
+            
+            return Triple.of(true, "", JsonUtil.toJson(refund));
+        } catch (WechatPayException e) {
+            log.error("REFUND ORDER ERROR! wechat v3 refund  error! ", e);
+        }
+        
+        return Triple.of(true, null, "退款失败");
     }
 }

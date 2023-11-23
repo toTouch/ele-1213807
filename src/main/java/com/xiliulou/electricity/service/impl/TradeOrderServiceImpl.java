@@ -794,7 +794,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //套餐过期电池服务费
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects
+                .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
             //1.获取滞纳金订单
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
             if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {//兼容2.0版本小程序
@@ -860,6 +861,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
             allPayAmount.add(expireBatteryServiceFee);
+    
+            log.info("BATTERY SERVICE FEE INFO!user exist battery expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
         }
 
         //暂停套餐电池服务费
@@ -942,6 +945,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
 
                 pauseBatteryServiceFee = eleBatteryServiceFeeOrder.getPayAmount();
+    
+                log.info("BATTERY SERVICE FEE INFO!user exist pauseBatteryServiceFee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             }
 
             if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
