@@ -1,11 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.entity.InvitationActivity;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.InvitationActivityUser;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityUserMapper;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
+import com.xiliulou.electricity.query.InvitationActivityUserSaveQuery;
+import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -37,12 +42,21 @@ import java.util.stream.Collectors;
 public class InvitationActivityUserServiceImpl implements InvitationActivityUserService {
     @Resource
     private InvitationActivityUserMapper invitationActivityUserMapper;
+    
     @Autowired
     private UserInfoService userInfoService;
+    
     @Autowired
     private UserService userService;
+    
     @Autowired
     private InvitationActivityService invitationActivityService;
+    
+    @Autowired
+    private InvitationActivityMemberCardService invitationActivityMemberCardService;
+    
+    @Autowired
+    private RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -126,10 +140,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         return list.parallelStream().peek(item -> {
             User user = userService.queryByUidFromCache(item.getOperator());
             item.setOperatorName(Objects.nonNull(user) ? user.getName() : "");
-
-            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
-            item.setActivityName(Objects.nonNull(invitationActivity) ? invitationActivity.getName() : "");
-
+            
         }).collect(Collectors.toList());
     }
 
@@ -139,39 +150,66 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
-    public Triple<Boolean, String, Object> save(InvitationActivityUserQuery query) {
+    public Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query) {
+        
+        if (!redisService.setNx(CacheConstant.CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK + query.getUid(), NumberConstant.ONE.toString(), TimeConstant.THREE_SECOND_MILLISECOND, false)) {
+            return Triple.of(false, "100002", "操作频繁");
+        }
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+    
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-
+    
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-
+    
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-
-//        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-//            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
-//        }
-
-        InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
-        if (Objects.nonNull(invitationActivityUser1)) {
-            return Triple.of(false, "", "用户已存在");
+    
+        // 所选活动id
+        List<Long> activityIds = query.getActivityIds();
+        if (CollectionUtils.isEmpty(activityIds)) {
+            return Triple.of(false, "100396", "请选择活动名称");
         }
-
-        InvitationActivityUser invitationActivityUser = new InvitationActivityUser();
-        invitationActivityUser.setUid(query.getUid());
-        invitationActivityUser.setActivityId(query.getActivityId());
-        invitationActivityUser.setOperator(SecurityUtils.getUid());
-        invitationActivityUser.setCreateTime(System.currentTimeMillis());
-        invitationActivityUser.setUpdateTime(System.currentTimeMillis());
-        invitationActivityUser.setTenantId(TenantContextHolder.getTenantId());
-
-        this.invitationActivityUserMapper.insertOne(invitationActivityUser);
-
+    
+        // 获取所选活动对应的套餐id
+        List<Long> memberCardIdsByActivityIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(activityIds);
+        if (CollectionUtils.isEmpty(memberCardIdsByActivityIds)) {
+            return Triple.of(false, "100393", "所选活动未绑定套餐");
+        }
+    
+        // 判断所选活动是否包含相同的套餐
+        if (memberCardIdsByActivityIds.stream().distinct().count() < memberCardIdsByActivityIds.size()) {
+            return Triple.of(false, "100395", "邀请人参加的活动中不允许包含相同的套餐，请修改后提交");
+        }
+    
+        // 获取该邀请人已绑定的活动
+        List<InvitationActivityUser> invitationActivityUserList = this.selectByUid(query.getUid());
+        
+        if(CollectionUtils.isNotEmpty(invitationActivityUserList)) {
+            // 获取已绑定的活动对应的套餐id
+            List<Long> boundActivityIds = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toList());
+            List<Long> boundMemberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityIds(boundActivityIds);
+    
+            // 所选活动的套餐不能包含已绑定的活动的套餐
+            if (CollectionUtils.isNotEmpty(boundMemberCardIds)) {
+                if (memberCardIdsByActivityIds.stream().anyMatch(boundMemberCardIds::contains)) {
+                    return Triple.of(false, "100394", "该活动配置的套餐，邀请人已参加，请重新选择");
+                }
+            }
+        }
+    
+        List<InvitationActivityUser> invitationActivityUsers = activityIds.stream()
+                .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
+                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
+                .collect(Collectors.toList());
+    
+        invitationActivityUserMapper.batchInsert(invitationActivityUsers);
+    
         return Triple.of(true, null, null);
     }
 
@@ -188,7 +226,8 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
-    public InvitationActivityUser selectByUid(Long uid) {
+    public List<InvitationActivityUser> selectByUid(Long uid) {
         return this.invitationActivityUserMapper.selectByUid(uid);
     }
+    
 }

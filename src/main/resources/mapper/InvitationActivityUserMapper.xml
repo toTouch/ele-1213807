@@ -11,14 +11,13 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
     </resultMap>
-
-
-    <select id="selectByUid" resultMap="InvitationActivityUserMap">
-        select  id, activity_id, uid
+    
+    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.InvitationActivityUser">
+        select id, activity_id, uid
         from t_invitation_activity_user
         where uid = #{uid}
     </select>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityUserMap">
         select
@@ -30,8 +29,10 @@
     <select id="selectByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityUserVO">
         select
           iau.id id, iau.activity_id , iau.uid uid, iau.operator operator, iau.create_time create_time, iau.update_time update_time,
-          tui.name as userName ,tui.phone as phone
-        from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
+          tui.name as userName ,tui.phone as phone, ia.name as activityName
+        from t_invitation_activity_user iau
+            left join t_user_info tui on tui.uid=iau.uid
+            left join t_invitation_activity ia on ia.id=iau.activity_id
         <where>
             <if test="uid != null">
                 and tui.uid = #{uid}
@@ -41,6 +42,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and ia.name like concat('%', #{activityName}, '%')
             </if>
             <if test="tenantId != null">
                 and tui.tenant_id = #{tenantId}
@@ -64,7 +68,9 @@
 
     <select id="selectByPageCount" resultType="int">
         select count(1)
-        from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
+        from t_invitation_activity_user iau
+            left join t_user_info tui on tui.uid=iau.uid
+            left join t_invitation_activity ia on ia.id=iau.activity_id
         <where>
             <if test="uid != null">
                 and tui.uid = #{uid}
@@ -74,6 +80,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="activityName != null and activityName != ''">
+                and ia.name like concat('%', #{activityName}, '%')
             </if>
             <if test="tenantId != null">
                 and tui.tenant_id = #{tenantId}
@@ -92,14 +101,20 @@
             </if>
         </where>
     </select>
-
-
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id)
         values (#{activityId}, #{uid}, #{operator},  #{createTime}, #{updateTime}, #{tenantId})
     </insert>
-
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_invitation_activity_user(activity_id, uid, operator, create_time, update_time, tenant_id) values
+        <foreach item="item" index="index" collection="invitationActivityUsers" separator=",">
+            (#{item.activityId}, #{item.uid}, #{item.operator}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+        </foreach>
+    </insert>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_invitation_activity_user

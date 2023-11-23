@@ -22,6 +22,7 @@ public class InvitationActivityUserQuery {
 
     private Long uid;
     private Long activityId;
+    private String activityName;
 
     private List<Long> franchiseeIds;
 

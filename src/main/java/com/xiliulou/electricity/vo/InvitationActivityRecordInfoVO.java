@@ -1,33 +1,32 @@
 package com.xiliulou.electricity.vo;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * @author zzlong
- * @email zhaozhilong@xiliulou.com
- * @date 2023-06-07-16:18
+ * @description 小程序端 我的记录VO
+ * @date 2023/11/17 17:58:56
+ * @author HeYafeng
  */
+@Builder
 @Data
 public class InvitationActivityRecordInfoVO {
-
-    private Long id;
     /**
-     * 分享人数
+     * 总的已赚金额
      */
-    private Integer shareCount;
+    private BigDecimal totalMoney;
+    
     /**
-     * 邀请成功人数
+     * 总的邀请人数
      */
-    private Integer invitationCount;
+    private Integer totalInvitationCount;
+    
     /**
-     * 分享状态 1--初始化，2--已分享，3--分享失败
+     * 小程序端 我的记录集合
      */
-    private Integer status;
-
-    private BigDecimal money;
-
-
-
+    List<InvitationActivityRecordInfoListVO> invitationActivityRecordInfoList;
+    
 }
