@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -171,5 +172,16 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         invitationActivityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_FAIL);
         invitationActivityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
         invitationActivityJoinHistoryMapper.updateExpired(invitationActivityJoinHistoryUpdate);
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId) {
+        return invitationActivityJoinHistoryMapper.existsByJoinUidAndActivityId(joinUid, activityId);
+    }
+    
+    @Override
+    public List<InvitationActivityJoinHistory> listByJoinUid(Long uid) {
+        return invitationActivityJoinHistoryMapper.selectListByJoinUid(uid);
     }
 }
