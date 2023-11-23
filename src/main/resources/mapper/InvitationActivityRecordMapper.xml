@@ -29,7 +29,7 @@
         from t_invitation_activity_record
         <where>
             <if test="uid != null">
-                and and uid=#{uid}
+                and uid=#{uid}
             </if>
             <if test="activityIds != null and activityIds.size()>0">
                 and activity_id in

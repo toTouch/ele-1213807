@@ -248,7 +248,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Set<Long> activityIdList = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         
         //过滤后的
-        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdList.contains(activityUser)).collect(Collectors.toList());
+        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityIdList::contains).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(newInvitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! all activities bound user is invalid,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
