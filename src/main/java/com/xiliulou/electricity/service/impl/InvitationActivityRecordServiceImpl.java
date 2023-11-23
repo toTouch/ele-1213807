@@ -236,13 +236,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivities is empty,uid={}", userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivityUserList is empty,uid={}", userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         Set<Long> activityIdList = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
@@ -251,7 +251,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdList.contains(activityUser.getActivityId())).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(newInvitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! all activities bound user is invalid,uid={}", userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
         List<InvitationActivityRecord> invitationActivityRecordList = new ArrayList<>();
@@ -354,13 +354,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(invitationUid);
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             log.error("INVITATION ACTIVITY ERROR! joinActivity invitationActivityUserList is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         Set<Long> invitationActivitiesSet =  invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
@@ -370,14 +370,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Set<Long> newActivityIdSet1 = activityIdList.stream().filter(invitationActivitiesSet::contains).collect(Collectors.toSet());
         if(CollectionUtils.isEmpty(newActivityIdSet1)) {
             log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet1 are all down,uid={}", userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
     
         //过滤掉邀请人解绑的活动
         Set<Long> newActivityIdSet2 =  newActivityIdSet1.stream().filter(invitationActivityUserSet::contains).collect(Collectors.toSet());
         if(CollectionUtils.isEmpty(newActivityIdSet2)) {
             log.error("INVITATION ACTIVITY ERROR! joinActivity activities in newActivityIdSet2 are all down,uid={}", userInfo.getUid());
-            return Triple.of(false, "100463", "二维码已失效");
+            return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
         
         for (Long activityId : newActivityIdSet2) {

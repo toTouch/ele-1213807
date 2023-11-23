@@ -333,12 +333,24 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Override
     public Triple<Boolean, String, Object> activityInfo() {
+        List<InvitationActivity> invitationActivities = selectUsableActivity(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(invitationActivities)) {
+            return Triple.of(true, null, null);
+        }
+        
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             return Triple.of(true, null, null);
         }
+
+        //过滤掉未上架的
+        Set<Long> activityIdSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
+        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdSet.contains(activityUser.getActivityId())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(newInvitationActivityUserList)) {
+            return Triple.of(true, null, null);
+        }
         
-        List<InvitationActivityVO> invitationActivityVOList = invitationActivityUserList.stream().map(invitationActivityUser -> {
+        List<InvitationActivityVO> invitationActivityVOList = newInvitationActivityUserList.stream().map(invitationActivityUser -> {
             InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
             InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
             if (Objects.nonNull(invitationActivity)) {
