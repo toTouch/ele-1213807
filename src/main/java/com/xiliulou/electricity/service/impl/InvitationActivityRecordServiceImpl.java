@@ -300,7 +300,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //3.0 判断用户是否购买套餐(包含换电, 租车, 车电一体套餐)
         if (userInfo.getPayCount() > NumberConstant.ZERO) {
             log.info("Exist package pay count for current user, uid = {}", userInfo.getUid());
-            return Triple.of(false, "100398", "您已参与过该活动，无法重复参加");
+            return Triple.of(true, null, null);
         }
     
         String decrypt = null;
