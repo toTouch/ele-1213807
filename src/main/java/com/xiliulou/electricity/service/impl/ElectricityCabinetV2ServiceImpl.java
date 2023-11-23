@@ -188,23 +188,24 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
-        electricityCabinetList.forEach(item -> {
-            if (StringUtils.isBlank(item.getName())) {
-                item.setName(batchOutWarehouseRequest.getName());
-            }
-            item.setFranchiseeId(batchOutWarehouseRequest.getFranchiseeId());
-            item.setStoreId(batchOutWarehouseRequest.getStoreId());
-            item.setAddress(batchOutWarehouseRequest.getAddress());
-            item.setLatitude(batchOutWarehouseRequest.getLatitude());
-            item.setLongitude(batchOutWarehouseRequest.getLongitude());
-        });
+        List<Integer> emptyNameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isBlank(electricityCabinet.getName()))
+                .map(ElectricityCabinet::getId).collect(Collectors.toList());
+        List<Integer> nameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isNotBlank(electricityCabinet.getName()))
+                .map(ElectricityCabinet::getId).collect(Collectors.toList());
+        if(CollectionUtils.isNotEmpty(emptyNameIdList)){
+            electricityCabinetMapper.batchOutWarehouse(emptyNameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
+                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(),batchOutWarehouseRequest.getLatitude(),batchOutWarehouseRequest.getName());
+        }
         
-        Integer update = electricityCabinetMapper.batchOutWarehouse(electricityCabinetList);
-log.info("test update={}",update);
-        electricityCabinetList.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+        if(CollectionUtils.isNotEmpty(nameIdList)){
+            electricityCabinetMapper.batchOutWarehouse(nameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
+                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(),batchOutWarehouseRequest.getLatitude(),null);
+        }
+
+        electricityCabinetList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
-        }));
+        });
         
         return Triple.of(true, null, null);
     }

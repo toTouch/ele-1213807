@@ -84,5 +84,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     Integer existByProductKeyAndDeviceName(@Param("productKey") String productKey, @Param("deviceName") String deviceName);
     
-    Integer batchOutWarehouse(@Param("eleList") List<ElectricityCabinet> electricityCabinetList);
+    Integer batchOutWarehouse(@Param("idList") List<Integer> idList, @Param("franchiseeId") Long franchiseeId, @Param("storeId") Long storeId, @Param("address") String address,
+            @Param("longitude") Double longitude, @Param("latitude") Double latitude, @Param("name")  String name);
 }

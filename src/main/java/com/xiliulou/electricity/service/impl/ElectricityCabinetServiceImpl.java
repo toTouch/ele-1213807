@@ -795,11 +795,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 e.setIsLock(isLock);
                 
-                ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
+               /* ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
                 if (Objects.nonNull(electricityCabinetServer)) {
                     e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
                     e.setServerEndTime(electricityCabinetServer.getServerEndTime());
-                }
+                }*/
                 
                 //设置运营商名称
                 if (Objects.nonNull(e.getFranchiseeId())) {
