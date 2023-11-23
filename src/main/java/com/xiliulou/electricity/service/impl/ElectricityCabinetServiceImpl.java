@@ -688,7 +688,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
+                if (Objects.nonNull(e.getBusinessTime()) && StringUtils.isNotBlank(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
                     if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
                         e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);

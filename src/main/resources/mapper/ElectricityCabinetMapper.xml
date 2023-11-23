@@ -857,17 +857,18 @@
     </select>
     
     <update id="batchOutWarehouse">
-        update t_electricity_cabinet set
-        franchisee_id = #{franchiseeId},
-        name = #{name},
-        store_id= #{storeId},
-        address = #{address},
-        longitude = #{longitude},
-        latitude = #{latitude},
-        stock_status = 1
-        where id in
-        <foreach collection="idList" item="id" open="(" close=")" separator=",">
-            #{id}
+        <foreach collection="eleList" item="item" index="index" open="" close="" separator=";">
+            update t_electricity_cabinet
+            <set>
+                franchisee_id = #{item.franchiseeId},
+                name = #{item.name},
+                store_id = #{storeId},
+                address = #{item.address},v
+                longitude = #{item.longitude},
+                latitude = #{item.latitude},
+                stock_status = 1
+            </set>
+            where id = ${item.id}
         </foreach>
     </update>
 </mapper>

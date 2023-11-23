@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -103,6 +104,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         electricityCabinet.setBusinessTime(StringUtils.EMPTY);
         electricityCabinet.setStoreId(0L);
         electricityCabinet.setFullyCharged(0.00);
+        electricityCabinet.setExchangeType(NumberConstant.MINUS_ONE);
         
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
             
@@ -186,9 +188,19 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
-        Integer update = electricityCabinetMapper.batchOutWarehouse(eleIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(),batchOutWarehouseRequest.getName());
+        electricityCabinetList.forEach(item -> {
+            if (StringUtils.isBlank(item.getName())) {
+                item.setName(batchOutWarehouseRequest.getName());
+            }
+            item.setFranchiseeId(batchOutWarehouseRequest.getFranchiseeId());
+            item.setStoreId(batchOutWarehouseRequest.getStoreId());
+            item.setAddress(batchOutWarehouseRequest.getAddress());
+            item.setLatitude(batchOutWarehouseRequest.getLatitude());
+            item.setLongitude(batchOutWarehouseRequest.getLongitude());
+        });
         
+        Integer update = electricityCabinetMapper.batchOutWarehouse(electricityCabinetList);
+log.info("test update={}",update);
         electricityCabinetList.forEach(item -> DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());

@@ -115,7 +115,7 @@ public class ElectricityCabinet {
     private Integer stockStatus;
     
     /**
-     * 换电方式 1：有屏，2：无屏，3：单片机
+     * 换电方式 1：有屏，2：无屏，3：单片机  -1:电柜类型为空
      */
     private Integer exchangeType;
 
