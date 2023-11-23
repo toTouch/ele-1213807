@@ -36,7 +36,8 @@ public class JsonAdminBatteryModelController extends BaseController {
      */
     @GetMapping("/admin/battery/model/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-                  @RequestParam(value = "batteryType", required = false) String batteryType) {
+                  @RequestParam(value = "batteryType", required = false) String batteryType,
+                  @RequestParam(value = "brandName", required = false) String brandName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -59,6 +60,7 @@ public class JsonAdminBatteryModelController extends BaseController {
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .batteryType(batteryType)
+                .brandName(brandName)
                 .build();
 
         return R.ok(batteryModelService.selectByPage(query));
