@@ -2852,6 +2852,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             return Pair.of(false, "未找到租车会员记录信息");
         }
+        log.info("before update data for transaction testing, memberTermEntity = {}", JsonUtil.toJson(memberTermEntity));
         
         // 待生效的数据，直接更改状态
         if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {

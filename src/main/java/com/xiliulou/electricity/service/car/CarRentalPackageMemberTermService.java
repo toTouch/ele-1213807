@@ -155,4 +155,12 @@ public interface CarRentalPackageMemberTermService {
      * @return
      */
     List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList);
+    
+    /**
+     * 删除缓存信息
+     * @param tenantId
+     * @param uid
+     */
+    void deleteCache(Integer tenantId, Long uid);
+    
 }

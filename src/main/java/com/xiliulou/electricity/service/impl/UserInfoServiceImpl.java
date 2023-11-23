@@ -2806,4 +2806,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         return R.ok(count);
     }
+    
+    @Override
+    public void deleteCache(Long uid) {
+        redisService.delete(CacheConstant.CACHE_USER_INFO + uid);
+    }
+    
 }
