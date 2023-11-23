@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.car;
 
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
@@ -204,6 +205,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             tenantId = dbEntity.getTenantId();
             uid = dbEntity.getUid();
         }
+       
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
         redisService.delete(cacheKey);
 
@@ -347,6 +349,13 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Override
     public List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList){
         return carRentalPackageMemberTermMapper.selectListUserPayCount(uidList);
+    }
+    
+    @Override
+    public void deleteCache(Integer tenantId, Long uid) {
+        // 清空缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
     }
     
 }
