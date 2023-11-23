@@ -175,9 +175,6 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         // 清空缓存
         CarRentalPackageMemberTermPo dbEntity = carRentalPackageMemberTermMapper.selectById(id);
-    
-        log.info("after update status by id for transaction testing, memberTermEntity = {}", JsonUtil.toJson(dbEntity));
-        
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, dbEntity.getTenantId(), dbEntity.getUid());
         redisService.delete(cacheKey);
 
@@ -207,7 +204,6 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             CarRentalPackageMemberTermPo dbEntity = carRentalPackageMemberTermMapper.selectById(entity.getId());
             tenantId = dbEntity.getTenantId();
             uid = dbEntity.getUid();
-            log.info("after update by id for transaction testing, memberTermEntity = {}", JsonUtil.toJson(dbEntity));
         }
        
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
