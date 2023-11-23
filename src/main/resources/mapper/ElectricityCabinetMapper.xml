@@ -862,7 +862,7 @@
             <set>
                 franchisee_id = #{item.franchiseeId},
                 name = #{item.name},
-                store_id = #{storeId},
+                store_id = #{item.storeId},
                 address = #{item.address},
                 longitude = #{item.longitude},
                 latitude = #{item.latitude},
