@@ -3123,6 +3123,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userBatteryTypeService.synchronizedUserBatteryType(uid, tenantId, batteryTypes);
                     }
                 }
+    
+                //fix 回调后事务未提交导致缓存清除失败的问题
+                carRentalPackageMemberTermService.deleteCache(tenantId, uid);
+                userInfoService.deleteCache(uid);
                 
             }
         });

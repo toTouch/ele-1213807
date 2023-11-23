@@ -285,11 +285,6 @@ public class ElectricityTradeOrderServiceImpl extends
      */
     private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId) {
         Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid, null);
-        
-        //fix 回调后事务未提交导致缓存清除失败的问题
-        carRentalPackageMemberTermService.deleteCache(tenantId, uid);
-        userInfoService.deleteCache(uid);
-        
         if (!pair.getLeft()) {
             return pair;
         }
