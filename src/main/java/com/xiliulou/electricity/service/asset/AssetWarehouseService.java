@@ -21,7 +21,7 @@ public interface AssetWarehouseService {
     
     Integer queryCount(AssetWarehouseRequest assetInventoryRequest);
     
-    List<AssetWarehouseNameVO> listWarehouseNameByTenantId();
+    List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest);
     
     AssetWarehouseNameVO queryById(Long id);
     

@@ -53,8 +53,21 @@ public class AssetInventoryDetailController {
         }
         
         AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().size(size).offset(offset).franchiseeId(franchiseeId).orderNo(orderNo)
-                .status(status).uid(user.getUid()).build();
+                .status(status).build();
         return assetInventoryDetailService.listByOrderNo(assetInventoryRequest);
+    }
+    
+    @GetMapping("/admin/asset/inventoryDetail/pageCount")
+    public R pageCount(@RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "orderNo") String orderNo,
+            @RequestParam(value = "status", required = false) Integer status) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().franchiseeId(franchiseeId).orderNo(orderNo).status(status).build();
+        return R.ok(assetInventoryDetailService.queryCount(assetInventoryRequest));
     }
     
     /***
@@ -73,6 +86,8 @@ public class AssetInventoryDetailController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+    
+        assetInventoryDetailBatchInventoryRequest.setUid(user.getUid());
         
         return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest);
         

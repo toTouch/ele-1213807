@@ -13,4 +13,6 @@ public interface ElectricityCabinetV2Service {
     Triple<Boolean, String, Object> outWarehouse(ElectricityCabinetOutWarehouseRequest outWarehouseRequest);
     
     Triple<Boolean, String, Object> batchOutWarehouse(ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
 }

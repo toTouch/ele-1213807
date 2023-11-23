@@ -209,4 +209,10 @@ log.info("test update={}",update);
         return Triple.of(true, null, null);
     }
     
+    @Override
+    public Integer existsByWarehouseId(Long wareHouseId) {
+    
+        return electricityCabinetMapper.existsByWarehouseId(wareHouseId);
+    }
+    
 }

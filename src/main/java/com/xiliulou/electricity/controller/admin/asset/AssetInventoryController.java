@@ -69,6 +69,8 @@ public class AssetInventoryController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+    
+        assetInventorySaveOrUpdateRequest.setUid(user.getUid());
         
         return R.ok(assetInventoryService.updateById(assetInventorySaveOrUpdateRequest));
     }

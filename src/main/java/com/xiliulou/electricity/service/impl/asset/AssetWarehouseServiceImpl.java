@@ -10,6 +10,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQuery
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
+import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -33,6 +35,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Autowired
     private AssetWarehouseMapper assetWarehouseMapper;
+    
+    @Autowired
+    private ElectricityCabinetV2Service electricityCabinetV2Service;
     
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
@@ -70,9 +75,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     }
     
     @Override
-    public List<AssetWarehouseNameVO> listWarehouseNameByTenantId() {
+    public List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest){
+        AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
+        BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
+        assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
         
-        return assetWarehouseMapper.selectListWarehouseNameByTenantId(TenantContextHolder.getTenantId().longValue());
+        return assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
     }
     
     @Override
@@ -84,6 +92,16 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public R deleteById(Long id) {
         //TODO 该库房有电柜/电池/车辆正在使用，请先解绑后操作
         
+        // 判断库房是否绑定柜机
+        Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
+        if(Objects.isNull(existsElectricityCabinet)) {
+            return R.fail("300800", "该库房有电柜正在使用,请解绑后操作");
+        }
+    
+        // 判断库房是否绑定电池
+    
+        // 判断库房是否绑定车辆
+    
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetWarehouse.DEL_DEL)
                 .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId().longValue()).build();
         

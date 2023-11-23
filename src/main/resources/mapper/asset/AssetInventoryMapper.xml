@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.asset.AssetInventoryMapper">
-    
-    <resultMap type="com.xiliulou.electricity.entity.asset.AssetInventory" id="assetInventoryMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="orderNo" column="order_no " jdbcType="VARCHAR"/>
-        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
-        <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="inventoriedTotal" column="inventoried_total" jdbcType="INTEGER"/>
-        <result property="pendingTotal" column="pending_total" jdbcType="INTEGER"/>
-        <result property="finishTime" column="finish_time" jdbcType="INTEGER"/>
-        <result property="operator" column="operator" jdbcType="INTEGER"/>
-        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
-        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="remark" column="remark" jdbcType="INTEGER"/>
-    </resultMap>
-    
     <!-- 基础字段 -->
     <sql id="basic_field">
         id,
@@ -80,6 +62,9 @@
             </if>
             <if test="finishTime != null">
                 finish_time = #{finishTime},
+            </if>
+            <if test="operator != null">
+                operator = #{operator},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
