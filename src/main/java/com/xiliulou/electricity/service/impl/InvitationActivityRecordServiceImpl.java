@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -525,8 +526,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return;
         }
     
-        // 邀请-活动-状态 解析并保存用于后面判断非首次购买是否成功
-        List<Triple<Long, Long, Integer>> tripleList = activityJoinHistoryList.stream().map(history -> Triple.of(history.getUid(), history.getActivityId(), history.getStatus())).collect(Collectors.toList());
+        // 解析状态 用于后面判断非首次购买是否成功
+        Set<Integer> activityJoinHistoryStatusSet = activityJoinHistoryList.stream().map(InvitationActivityJoinHistory::getStatus).collect(Collectors.toSet());
     
         // 根据activityId去重
         activityJoinHistoryList = new ArrayList<>(
@@ -624,20 +625,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
             } else {
                 //非首次购买需要判断 首次购买是否成功（同一个邀请人下 所有活动的首次）
-                boolean isSuccess = false;
-                for (Triple<Long, Long, Integer> triple : tripleList) {
-                    if(triple.getRight().equals(InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                        isSuccess = true;
-                        break;
-                    }
-                }
-                
-                if (!isSuccess) {
+                if (!activityJoinHistoryStatusSet.contains(InvitationActivityJoinHistory.STATUS_SUCCESS)) {
                     log.error("Invitation activity error! Unsuccessful join the first activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
                             userInfo.getUid());
                     return;
                 }
-            
+                
                 log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
                         activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
                 rewardAmount = invitationActivity.getOtherReward();
@@ -649,7 +642,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
                 activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
                 activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
-                activityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
+                activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
                 activityJoinHistoryInsert.setPayCount(payCount);
                 activityJoinHistoryInsert.setMoney(rewardAmount);
                 activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
@@ -661,9 +654,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
             
             }
-        
+    
             //处理返现
-            userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
+            if (!BigDecimal.ZERO.equals(rewardAmount)) {
+                userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
+            }
             log.info("handle invitation activity for package end. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
                     activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
         });
