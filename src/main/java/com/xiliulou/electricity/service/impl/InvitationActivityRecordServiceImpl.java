@@ -279,6 +279,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         invitationActivityCodeVO.setTenantCode(tenant.getCode());
         invitationActivityCodeVO.setPhone(userInfo.getPhone());
     
+        log.info("INVITATION ACTIVITY INFO! codeEnCoder activityIdsStr={}, uid={}", activityIdsStr, userInfo.getUid());
+        
         return Triple.of(true, null, invitationActivityCodeVO);
     }
 
