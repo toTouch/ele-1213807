@@ -589,7 +589,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             //本次购买套餐的活动
             Long activityId = entry.getKey();
             InvitationActivityJoinHistory activityJoinHistory = entry.getValue();
-        
+    
+            //获取邀请人绑定的所有活动，判断当前活动是否已解绑，如果解绑，直接返回
+            List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(activityJoinHistory.getUid());
+            Set<Long> activityIdUserSet = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+            if (!activityIdUserSet.contains(activityId)) {
+                log.info("Invitation activity info! the activity is bound from inviter, inviter uid={}", activityJoinHistory.getUid());
+                return;
+            }
+    
             // 获取购买套餐的活动
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
         
