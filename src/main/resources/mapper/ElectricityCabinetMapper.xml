@@ -863,7 +863,7 @@
                 franchisee_id = #{item.franchiseeId},
                 name = #{item.name},
                 store_id = #{storeId},
-                address = #{item.address},v
+                address = #{item.address},
                 longitude = #{item.longitude},
                 latitude = #{item.latitude},
                 stock_status = 1
