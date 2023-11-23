@@ -232,7 +232,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
 
             query.setDeposit(batteryMemberCard.getDeposit());
-            query.setLimitCount(batteryMemberCard.getLimitCount());
+          //  query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
         }
@@ -415,7 +415,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
 
             query.setDeposit(batteryMemberCard.getDeposit());
-            query.setLimitCount(batteryMemberCard.getLimitCount());
+           // query.setLimitCount(batteryMemberCard.getLimitCount());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
         }

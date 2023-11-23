@@ -135,6 +135,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Autowired
+    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
     /**
      * 新增数据
@@ -1776,6 +1779,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
             return R.fail("ELECTRICITY.0044", "退款金额不符");
+        }
+        
+        //退押时校验是否有在退租的订单
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)){
+            log.warn("BATTERY DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+            return R.fail(false,"100018", "套餐租金退款审核中");
         }
 
         //退款中

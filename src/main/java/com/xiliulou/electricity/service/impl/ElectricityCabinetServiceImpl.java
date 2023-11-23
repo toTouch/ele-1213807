@@ -2248,7 +2248,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //动态查询在线状态
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
-            log.error("queryByRentBattery  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
         

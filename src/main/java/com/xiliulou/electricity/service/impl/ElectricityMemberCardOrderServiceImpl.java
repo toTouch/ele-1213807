@@ -1041,7 +1041,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             vo.setRentUnit(batteryMemberCard.getRentUnit());
             vo.setValidDays(batteryMemberCard.getValidDays());
             vo.setUseCount(batteryMemberCard.getUseCount());
-            vo.setIsRefund(batteryMemberCard.getIsRefund());
+            if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
+                    + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
+                vo.setIsRefund(BatteryMemberCard.YES);
+            } else {
+                vo.setIsRefund(BatteryMemberCard.NO);
+            }
+            vo.setRefundLimit(batteryMemberCard.getRefundLimit());
             vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
             
             BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
@@ -1845,13 +1851,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             //用户绑定的电池型号
             List<String> userBatteryType = userBatteryTypeService.selectByUid(userInfo.getUid());
+            Set<String> batteryTypeSet = null;
+            if (CollectionUtils.isNotEmpty(userBatteryType)) {
+                batteryTypeSet = new HashSet<>(userBatteryType);
+            }
             
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                     .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).batteryServiceFeeGenerateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                     .storeId(userInfo.getStoreId()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).modelType(franchisee.getModelType())
-                    .batteryType(CollectionUtils.isEmpty(userBatteryType) ? "" : JsonUtil.toJson(userBatteryType))
+                    .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                     .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
             
@@ -4048,9 +4058,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard);
         
-        //更新用户电池型号
-        //        userBatteryTypeService.updateUserBatteryType(memberCardOrder, userInfo);
-        
         ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(channelActivityHistory) && Objects.equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
             ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
@@ -4235,6 +4242,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderUpdateUseStatus.setUpdateTime(System.currentTimeMillis());
                 electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
             }
+    
+            //更新用户电池型号
+            userBatteryTypeService.updateUserBatteryType(memberCardOrder, userInfo);
         } else {
             
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
@@ -4392,6 +4402,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        userBatteryMemberCardInfoVO.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
         userBatteryMemberCardInfoVO.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
