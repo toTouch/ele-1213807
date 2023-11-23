@@ -300,7 +300,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //3.0 判断用户是否购买套餐(包含换电, 租车, 车电一体套餐)
         if (userInfo.getPayCount() > NumberConstant.ZERO) {
             log.info("Exist package pay count for current user, uid = {}", userInfo.getUid());
-            return Triple.of(true, null, null);
+            return Triple.of(false, "100398", "您已参与过该活动，无法重复参加");
         }
     
         String decrypt = null;
@@ -315,6 +315,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100463", "二维码已失效");
         }
     
+        log.info("INVITATION ACTIVITY INFO! joinActivity decrypt={}", decrypt);
+    
         String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
         if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.TWO) {
             log.error("INVITATION ACTIVITY ERROR! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
@@ -326,8 +328,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.error("INVITATION ACTIVITY ERROR! not found invitationActivity, uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
-        log.info("INVITATION ACTIVITY INFO! joinActivity activityIdStr={}", activityIdStr);
     
         Long invitationUid = Long.parseLong(split[NumberConstant.ONE]);
         if (Objects.equals(userInfo.getUid(), invitationUid)) {
