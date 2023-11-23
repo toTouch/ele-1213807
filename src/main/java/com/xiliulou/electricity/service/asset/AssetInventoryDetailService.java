@@ -15,5 +15,5 @@ public interface AssetInventoryDetailService {
     
     R batchInventory(AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest);
     
-    Integer queryCount(AssetInventoryDetailRequest assetInventoryRequest);
+    Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest);
 }

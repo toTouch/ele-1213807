@@ -20,7 +20,7 @@ public interface AssetInventoryService {
     
     List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest);
     
-    Integer queryCount(AssetInventoryRequest assetInventoryRequest);
+    Integer countTotal(AssetInventoryRequest assetInventoryRequest);
     
     AssetInventoryVO queryById(Long id);
     

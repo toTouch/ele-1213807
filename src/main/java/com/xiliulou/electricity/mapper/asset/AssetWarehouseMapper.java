@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
+import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
-import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,13 +20,13 @@ public interface AssetWarehouseMapper {
     
     Integer insertOne(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     
-    List<AssetWarehouseVO> selectListByFranchiseeId(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    List<AssetWarehouseBO> selectListByFranchiseeId(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
-    Integer queryCount(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    Integer countTotal(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
-    List<AssetWarehouseNameVO> selectListWarehouseNames(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    List<AssetWarehouseNameBO> selectListWarehouseNames(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
     Integer updateById(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     
-    AssetWarehouseNameVO selectById(Long id);
+    AssetWarehouseNameBO selectById(Long id);
 }

@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.mapper.asset;
 
-import com.xiliulou.electricity.entity.asset.AssetInventory;
+import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
-import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,11 +18,11 @@ public interface AssetInventoryMapper {
     
     Integer insertOne(AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel);
     
-    List<AssetInventoryVO> selectListByFranchiseeId(AssetInventoryQueryModel assetInventoryQueryModel);
+    List<AssetInventoryBO> selectListByFranchiseeId(AssetInventoryQueryModel assetInventoryQueryModel);
     
-    Integer queryCount(AssetInventoryQueryModel assetInventoryQueryModel);
+    Integer countTotal(AssetInventoryQueryModel assetInventoryQueryModel);
     
     Integer updateById(AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel);
     
-    AssetInventoryVO selectById(Long id);
+    AssetInventoryBO selectById(Long id);
 }

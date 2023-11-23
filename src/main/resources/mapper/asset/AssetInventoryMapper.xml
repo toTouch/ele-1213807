@@ -73,7 +73,7 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
-    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.vo.asset.AssetInventoryVO">
+    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryBO">
         select
         <include refid="basic_field"/>
         from t_asset_inventory
@@ -93,7 +93,7 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="queryCount" resultType="java.lang.Integer">
+    <select id="countTotal" resultType="java.lang.Integer">
         select count(1)
         from t_asset_inventory
         <where>
@@ -110,7 +110,7 @@
         </where>
     </select>
     
-    <select id="selectById" resultType="com.xiliulou.electricity.vo.asset.AssetInventoryVO">
+    <select id="selectById" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryBO">
         select
         <include refid="basic_field"/>
         from t_asset_inventory where del_flag = 0 and id = #{id}

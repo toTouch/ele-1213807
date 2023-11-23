@@ -45,8 +45,6 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        assetWarehouseSaveOrUpdateRequest.setUid(user.getUid());
-        
         return assetWarehouseService.save(assetWarehouseSaveOrUpdateRequest);
     }
     
@@ -57,7 +55,7 @@ public class JsonAdminWarehouseController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -90,11 +88,11 @@ public class JsonAdminWarehouseController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
         
         return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
@@ -108,7 +106,7 @@ public class JsonAdminWarehouseController {
     @GetMapping("/admin/asset/warehouse/pageCount")
     public R pageCount(@RequestParam(value = "name", required = false) String name) {
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().name(name).build();
-        return R.ok(assetWarehouseService.queryCount(assetInventoryRequest));
+        return R.ok(assetWarehouseService.countTotal(assetInventoryRequest));
     }
     
     /**

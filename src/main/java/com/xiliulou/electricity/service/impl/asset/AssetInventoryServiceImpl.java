@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.asset;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.asset.AssetInventory;
@@ -19,11 +20,15 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -49,8 +54,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
-    
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         Long franchiseeId = assetInventorySaveOrUpdateRequest.getFranchiseeId();
         // 默认资产类型是电池,获取查询电池数量
@@ -59,18 +63,10 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
         // 生成资产盘点订单
         AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder()
-                .orderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, assetInventorySaveOrUpdateRequest.getUid()))
-                .franchiseeId(franchiseeId)
-                .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())
-                .status(AssetInventory.ASSET_INVENTORY_STATUS_TAKING)
-                .inventoriedTotal(NumberConstant.ZERO).pendingTotal((Integer) data)
-                .finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
-                .operator(assetInventorySaveOrUpdateRequest.getUid())
-                .tenantId(tenantId.longValue())
-                .delFlag(AssetInventory.DEL_NORMAL)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .build();
+                .orderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, assetInventorySaveOrUpdateRequest.getUid())).franchiseeId(franchiseeId)
+                .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetInventory.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
+                .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(assetInventorySaveOrUpdateRequest.getUid()).tenantId(tenantId)
+                .delFlag(AssetInventory.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
     }
@@ -79,38 +75,49 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     public Integer updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
         
         AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder()
-                .franchiseeId(assetInventorySaveOrUpdateRequest.getFranchiseeId())
-                .finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
-                .operator(assetInventorySaveOrUpdateRequest.getUid())
-                .updateTime(System.currentTimeMillis())
-                .build();
+                .franchiseeId(assetInventorySaveOrUpdateRequest.getFranchiseeId()).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
+                .operator(assetInventorySaveOrUpdateRequest.getUid()).updateTime(System.currentTimeMillis()).build();
         return assetInventoryMapper.updateById(assetInventorySaveOrUpdateQueryModel);
     }
     
     @Slave
     @Override
     public List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest) {
-        //模型转换
         AssetInventoryQueryModel assetInventoryQueryModel = new AssetInventoryQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
-        assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
+        assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetInventoryMapper.selectListByFranchiseeId(assetInventoryQueryModel);
+        List<AssetInventoryVO> rspList = new ArrayList<>();
+        List<AssetInventoryBO> assetInventoryBOList = assetInventoryMapper.selectListByFranchiseeId(assetInventoryQueryModel);
+        if (CollectionUtils.isNotEmpty(assetInventoryBOList)) {
+            rspList = assetInventoryBOList.stream().map(item -> {
+                AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
+                BeanUtils.copyProperties(item, assetInventoryVO);
+                return assetInventoryVO;
+            }).collect(Collectors.toList());
+        }
+        
+        return rspList;
     }
     
     @Override
-    public Integer queryCount(AssetInventoryRequest assetInventoryRequest) {
+    public Integer countTotal(AssetInventoryRequest assetInventoryRequest) {
         //模型转换
         AssetInventoryQueryModel assetInventoryQueryModel = new AssetInventoryQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
-        assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId().longValue());
-    
-        return assetInventoryMapper.queryCount(assetInventoryQueryModel);
+        assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        return assetInventoryMapper.countTotal(assetInventoryQueryModel);
     }
     
     @Override
     public AssetInventoryVO queryById(Long id) {
-        return assetInventoryMapper.selectById(id);
+        AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
+        AssetInventoryBO assetInventoryBO = assetInventoryMapper.selectById(id);
+        if (Objects.nonNull(assetInventoryBO)) {
+            BeanUtils.copyProperties(assetInventoryBO, assetInventoryVO);
+        }
+        return assetInventoryVO;
     }
     
     
