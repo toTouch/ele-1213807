@@ -123,7 +123,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
         // 判断库房是否绑定柜机
         Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
-        if (Objects.isNull(existsElectricityCabinet)) {
+        if (Objects.nonNull(existsElectricityCabinet)) {
             return R.fail("300800", "该库房有电柜正在使用,请解绑后操作");
         }
         
