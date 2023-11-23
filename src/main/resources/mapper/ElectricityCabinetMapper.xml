@@ -863,15 +863,25 @@
     <update id="batchOutWarehouse">
         update t_electricity_cabinet
         <set>
-            franchisee_id = #{franchiseeId},
+            <if test="franchiseeId != null and franchiseeId != ''">
+                franchisee_id = #{name},
+            </if>
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
-            store_id= #{storeId},
-            address = #{address},
-            longitude = #{longitude},
-            latitude = #{latitude},
-            stock_status = 1,
+            <if test="storeId != null and storeId != ''">
+                store_id = #{storeId},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="longitude != null and longitude != ''">
+                longitude = #{longitude},
+            </if>
+            <if test="latitude != null and latitude != ''">
+                latitude = #{latitude},
+            </if>
+            stock_status = 1
         </set>
         where id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
