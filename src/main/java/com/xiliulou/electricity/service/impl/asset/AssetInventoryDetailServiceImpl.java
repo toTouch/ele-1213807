@@ -104,5 +104,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         if (CollectionUtils.isEmpty(inventoryDetailVOList)) {
             inventoryDetailVOList = syncBatteryToInventoryDetail(assetInventoryRequest, tenantId);
         }
+        
+        return inventoryDetailVOList.size();
     }
 }
