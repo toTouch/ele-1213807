@@ -14,4 +14,6 @@ public interface AssetInventoryDetailService {
     R listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest);
     
     R batchInventory(AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest);
+    
+    Integer queryCount(AssetInventoryDetailRequest assetInventoryRequest);
 }

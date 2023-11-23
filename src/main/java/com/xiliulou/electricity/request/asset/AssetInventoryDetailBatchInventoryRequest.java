@@ -28,5 +28,10 @@ public class AssetInventoryDetailBatchInventoryRequest {
      * 盘点的电池sn码
      */
     private List<String> snList;
+    
+    /**
+     * 操作者
+     */
+    private Long uid;
  
 }

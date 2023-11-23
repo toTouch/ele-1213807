@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper">
-    
-    <resultMap type="com.xiliulou.electricity.entity.asset.AssetInventoryDetail" id="assetInventoryDetailMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="orderNo" column="order_no" jdbcType="INTEGER"/>
-        <result property="sn" column="sn " jdbcType="VARCHAR"/>
-        <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
-        <result property="inventoryStatus" column="inventory_status" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="operator" column="operator" jdbcType="INTEGER"/>
-        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
-        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="remark" column="remark" jdbcType="INTEGER"/>
-    </resultMap>
-    
     <!-- 基础字段 -->
     <sql id="basic_field">
         id,
@@ -37,7 +20,7 @@
     
     <update id="batchInventoryBySnList">
         update t_asset_inventory_detail
-        set inventoryStatus = 1, status = #{status}
+        set inventoryStatus = 1, operator = #{uid}, status = #{status}
         where sn in
         <foreach collection="snList" item="item" index="index" separator=",">
             #{item}

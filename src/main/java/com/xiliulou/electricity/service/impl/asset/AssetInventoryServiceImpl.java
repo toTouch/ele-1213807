@@ -81,6 +81,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder()
                 .franchiseeId(assetInventorySaveOrUpdateRequest.getFranchiseeId())
                 .finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
+                .operator(assetInventorySaveOrUpdateRequest.getUid())
                 .updateTime(System.currentTimeMillis())
                 .build();
         return assetInventoryMapper.updateById(assetInventorySaveOrUpdateQueryModel);

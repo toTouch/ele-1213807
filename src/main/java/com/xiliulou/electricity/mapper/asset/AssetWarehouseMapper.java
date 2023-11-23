@@ -4,6 +4,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface AssetWarehouseMapper {
     
     Integer queryCount(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
-    List<AssetWarehouseNameVO> selectListWarehouseNameByTenantId(Long tenantId);
+    List<AssetWarehouseNameVO> selectListWarehouseNames(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
     Integer updateById(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     

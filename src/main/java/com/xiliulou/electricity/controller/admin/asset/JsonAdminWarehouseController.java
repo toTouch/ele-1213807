@@ -86,8 +86,18 @@ public class JsonAdminWarehouseController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/warehouse/names")
-    public R listWarehouseNameByTenantId() {
-        return R.ok(assetWarehouseService.listWarehouseNameByTenantId());
+    public R listWarehouseNames(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
+        
+        return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
     }
     
     /**
@@ -97,7 +107,6 @@ public class JsonAdminWarehouseController {
      */
     @GetMapping("/admin/asset/warehouse/pageCount")
     public R pageCount(@RequestParam(value = "name", required = false) String name) {
-        
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().name(name).build();
         return R.ok(assetWarehouseService.queryCount(assetInventoryRequest));
     }

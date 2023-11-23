@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
+import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -18,5 +19,5 @@ public interface AssetInventoryDetailMapper {
     
     List<AssetInventoryDetailVO> selectListByOrderNo(AssetInventoryDetailQueryModel assetInventoryQueryDetailModel);
     
-    Integer batchInventoryBySnList(@Param("status") Integer status, @Param("snList") List<String> snList, @Param("tenantId") Long tenantId);
+    Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryRequest inventoryRequest);
 }

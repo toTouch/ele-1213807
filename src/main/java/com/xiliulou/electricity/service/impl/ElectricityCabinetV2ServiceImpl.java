@@ -210,4 +210,10 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         return Triple.of(true, null, null);
     }
     
+    @Override
+    public Integer existsByWarehouseId(Long wareHouseId) {
+    
+        return electricityCabinetMapper.existsByWarehouseId(wareHouseId);
+    }
+    
 }

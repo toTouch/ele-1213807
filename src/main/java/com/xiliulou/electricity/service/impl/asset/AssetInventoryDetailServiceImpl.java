@@ -87,6 +87,22 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest) {
-        return R.ok(assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest.getStatus(), inventoryRequest.getSnList(), TenantContextHolder.getTenantId().longValue()));
+        return R.ok(assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest));
+    }
+    
+    @Override
+    public Integer queryCount(AssetInventoryDetailRequest assetInventoryRequest) {
+        Long tenantId = TenantContextHolder.getTenantId().longValue();
+    
+        // 模型转换
+        AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
+        BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
+        assetInventoryDetailQueryModel.setTenantId(tenantId);
+    
+        //如果详情表中没有电池数据，需同步电池信息到资产盘点详情表中
+        List<AssetInventoryDetailVO> inventoryDetailVOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
+        if (CollectionUtils.isEmpty(inventoryDetailVOList)) {
+            inventoryDetailVOList = syncBatteryToInventoryDetail(assetInventoryRequest, tenantId);
+        }
     }
 }
