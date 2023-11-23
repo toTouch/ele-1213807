@@ -325,6 +325,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "100463", "二维码已失效");
         }
     
+        log.info("INVITATION ACTIVITY INFO! joinActivity activityIdStr={}", activityIdStr);
+    
         Long invitationUid = Long.parseLong(split[NumberConstant.ONE]);
         if (Objects.equals(userInfo.getUid(), invitationUid)) {
             log.info("INVITATION ACTIVITY INFO! illegal operate! invitationUid={}, uid={}", invitationUid, userInfo.getUid());
