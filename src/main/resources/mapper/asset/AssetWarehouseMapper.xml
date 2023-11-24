@@ -115,7 +115,7 @@
     </select>
     
     <select id="existsByName" resultType="java.lang.Integer">
-        select 1 from t_asset_warehouse where name = #{name} and tenant_id = #{tenantId} and del_flag = 0;
+        select 1 from t_asset_warehouse where name = #{name} and tenant_id = #{tenantId} and del_flag = 0 limit 1;
     </select>
 
 </mapper>
