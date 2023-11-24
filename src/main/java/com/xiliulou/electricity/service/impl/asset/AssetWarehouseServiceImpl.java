@@ -52,7 +52,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
-        if (Objects.isNull(exists)) {
+        if (Objects.nonNull(exists)) {
             return R.fail("300803", "库房名称已存在");
         }
     
@@ -144,7 +144,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Override
     public R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
         Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
-        if (Objects.isNull(exists)) {
+        if (Objects.nonNull(exists)) {
             return R.fail("300803", "库房名称已存在");
         }
         
