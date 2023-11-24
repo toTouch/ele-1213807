@@ -346,7 +346,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         BatteryModel batteryModel = new BatteryModel();
         BeanUtils.copyProperties(batteryModelQuery, batteryModel);
         batteryModel.setUpdateTime(System.currentTimeMillis());
-        
+        batteryModel.setSize(batteryModelQuery.getBatterySize());
         this.update(batteryModel);
         
         return Triple.of(true, null, null);
