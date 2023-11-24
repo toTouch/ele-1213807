@@ -37,6 +37,7 @@ public class AssetInventoryDetailBatchInventoryRequest {
     /**
      * 盘点的电池sn码
      */
+    @NotEmpty(message = "盘点资产不能为空", groups = {UpdateGroup.class})
     private List<String> snList;
     
     /**

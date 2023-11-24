@@ -143,9 +143,12 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Override
     public R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
-        Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
-        if (Objects.nonNull(exists)) {
-            return R.fail("300803", "库房名称已存在");
+        AssetWarehouseNameBO assetWarehouseNameBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
+        if (Objects.nonNull(assetWarehouseNameBO) && !Objects.equals(assetWarehouseNameBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
+            Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
+            if (Objects.nonNull(exists)) {
+                return R.fail("300803", "库房名称已存在");
+            }
         }
         
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
