@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class JsonAdminBatteryController {
     
-    @PostMapping(value = "/admin/electricityCabinet/save")
+    @PostMapping(value = "/admin/battery/saveV1")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCabinetAddRequest electricityCabinetAddRequest) {
      
         return null;
