@@ -23,7 +23,7 @@ public class BatteryBrandModelVo {
     /**
      * 充电电压
      */
-    private Integer chargeV;
+    private Double chargeV;
     
     /**
      * 串数

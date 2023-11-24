@@ -854,7 +854,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         BatteryBrandModelVo brandModelVo = new BatteryBrandModelVo();
         BeanUtils.copyProperties(batteryModel, brandModelVo);
         String batteryType = batteryModel.getBatteryType();
-        
+        brandModelVo.setChargeV(batteryModel.getBatteryV());
         try {
             if (StringUtils.isNotBlank(batteryType)) {
                 String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
