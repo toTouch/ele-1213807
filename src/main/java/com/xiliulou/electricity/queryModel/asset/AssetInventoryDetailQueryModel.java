@@ -1,12 +1,19 @@
 package com.xiliulou.electricity.queryModel.asset;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
  * @description 资产盘点详情model
  * @date 2023/11/20 16:40:54
  */
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class AssetInventoryDetailQueryModel {
     

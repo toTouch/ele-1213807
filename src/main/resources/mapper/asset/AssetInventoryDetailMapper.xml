@@ -18,6 +18,15 @@
         remark
     </sql>
     
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_inventory_detail(order_no, sn, type, franchisee_id, inventory_status, status, operator, tenant_id, del_flag, create_time, update_time, remark)
+        values
+        <foreach item="item" index="index" collection="inventoryDetailSaveQueryModelList" separator=",">
+            (#{item.orderNo},#{item.sn},#{item.type}, #{item.franchiseeId}, #{item.inventoryStatus}, #{item.status}, #{item.operator}, #{item.tenantId}, #{item.delFlag},
+            #{item.createTime}, #{item.updateTime}, #{item.remark})
+        </foreach>
+    </insert>
+    
     <update id="batchInventoryBySnList">
         update t_asset_inventory_detail
         set inventoryStatus = 1, operator = #{uid}, status = #{status}

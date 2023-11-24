@@ -2,11 +2,15 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
+import com.xiliulou.electricity.entity.asset.AssetInventoryDetail;
+import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -65,44 +70,46 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
      * @author HeYafeng
      */
     private List<AssetInventoryDetailVO> syncBatteryToInventoryDetail(AssetInventoryDetailRequest assetInventoryRequest, Integer tenantId) {
-        /*List<AssetInventoryDetailVO> inventoryDetailVOList = new ArrayList<>();
         Long franchiseeId = assetInventoryRequest.getFranchiseeId();
+        List<AssetInventoryDetailVO> inventoryDetailVOList = new ArrayList<>();
+        List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = new ArrayList<>();
         
         ElectricityBatteryListSnByFranchiseeQueryModel queryModel = ElectricityBatteryListSnByFranchiseeQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                 .size(assetInventoryRequest.getSize()).offset(assetInventoryRequest.getOffset()).build();
         List<String> snList = electricityBatteryService.listSnByFranchiseeId(queryModel);
         if (CollectionUtils.isNotEmpty(snList)) {
-            List<AssetInventoryDetail> syncBatteryList = snList.stream().map(sn -> {
+            inventoryDetailVOList = snList.stream().map(sn -> {
                 AssetInventoryDetailVO inventoryDetailVO = new AssetInventoryDetailVO();
                 
-                AssetInventoryDetail assetInventoryDetail = AssetInventoryDetail.builder().orderNo(assetInventoryRequest.getOrderNo()).sn(sn)
+                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(assetInventoryRequest.getOrderNo()).sn(sn)
                         .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(franchiseeId).inventoryStatus(AssetInventoryDetail.INVENTORY_STATUS_NO)
                         .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(assetInventoryRequest.getUid()).tenantId(tenantId)
                         .delFlag(AssetInventoryDetail.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
                 
-                BeanUtils.copyProperties(assetInventoryDetail, inventoryDetailVO);
-                inventoryDetailVOList.add(inventoryDetailVO);
+                inventoryDetailSaveQueryModelList.add(inventoryDetailSaveQueryModel);
+                BeanUtils.copyProperties(inventoryDetailSaveQueryModel, inventoryDetailVO);
                 
-                return assetInventoryDetail;
+                return inventoryDetailVO;
                 
             }).collect(Collectors.toList());
             
             // 批量新增
-            assetInventoryDetailMapper.batchInsert(syncBatteryList);
+            if (CollectionUtils.isNotEmpty(inventoryDetailSaveQueryModelList)) {
+                assetInventoryDetailMapper.batchInsert(inventoryDetailSaveQueryModelList);
+            }
         }
         
-        return inventoryDetailVOList;*/
-        return null;
+        return inventoryDetailVOList;
     }
     
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest) {
-    
+        
         Integer count = 0;
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
             //批量盘点
             count = assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest);
-        
+            
             //同步盘点数据
             AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
                     .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(inventoryRequest.getUid())

@@ -70,10 +70,10 @@ public class AssetInventoryController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
+        
         assetInventorySaveOrUpdateRequest.setUid(user.getUid());
         
-        return R.ok(assetInventoryService.updateById(assetInventorySaveOrUpdateRequest));
+        return assetInventoryService.updateById(assetInventorySaveOrUpdateRequest);
     }
     
     /**
@@ -82,14 +82,14 @@ public class AssetInventoryController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/inventory/pageCount")
-    public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status) {
+    public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "status", required = false) Integer status) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -114,13 +114,13 @@ public class AssetInventoryController {
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
