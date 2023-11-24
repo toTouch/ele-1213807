@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -135,4 +136,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     
     Integer existBySn(String sn);
+    
+    List<String> selectListSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
 }

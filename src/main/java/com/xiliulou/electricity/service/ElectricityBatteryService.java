@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
@@ -115,4 +116,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void export(ElectricityBatteryQuery query, HttpServletResponse response);
     
     R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid);
+    
+    List<String> listSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
 }

@@ -34,6 +34,11 @@ public class AssetInventorySaveOrUpdateRequest {
     private Long finishTime;
     
     /**
+     * 资产类型(1-电柜, 2-电池, 3-车辆)
+     */
+    private Integer type;
+    
+    /**
      * 操作人uid
      */
     private Long uid;

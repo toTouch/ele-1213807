@@ -1117,7 +1117,17 @@
         </if>
         order by teb.create_time desc
     </select>
+    
     <select id="existBySn" resultType="Integer">
         select 1 from t_electricity_battery where del_flag = 0 and sn = #{sn} limit 1
+    </select>
+    
+    <select id="selectListSnByFranchiseeId" resultType="java.lang.String">
+        select sn
+        from t_electricity_battery
+        where del_flag = 0
+          and tenant_id = #{tenantId}
+          and franchisee_id = #{franchiseeId}
+        order by id desc limit #{offset}, #{size}
     </select>
 </mapper>

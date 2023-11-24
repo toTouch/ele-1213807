@@ -36,6 +36,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
@@ -304,6 +305,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         // 保存到本地数据库
         insertBatch(saveList);
         return R.ok();
+    }
+    
+    @Override
+    public List<String> listSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel) {
+        return electricitybatterymapper.selectListSnByFranchiseeId(queryModel);
     }
     
     private Pair<Boolean, String> callBatteryPlatSaveSn(List<String> list, Integer isNeedSync) {

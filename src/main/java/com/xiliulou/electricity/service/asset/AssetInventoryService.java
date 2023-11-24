@@ -17,7 +17,7 @@ public interface AssetInventoryService {
     
     R save(AssetInventorySaveOrUpdateRequest assetInventorySaveRequest);
     
-    Integer updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest);
+    R updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest);
     
     List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest);
     

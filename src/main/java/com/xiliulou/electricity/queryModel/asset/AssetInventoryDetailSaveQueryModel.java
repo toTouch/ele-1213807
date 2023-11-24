@@ -1,29 +1,18 @@
-package com.xiliulou.electricity.entity.asset;
+package com.xiliulou.electricity.queryModel.asset;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 资产盘点详情信息表
+ * @description 新增资产盘点详情信息model
  * @date 2023/11/20 11:25:58
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-@TableName("t_asset_inventory_detail")
-public class AssetInventoryDetail {
-    
-    /**
-     * 主键ID
-     */
-    private Integer id;
+public class AssetInventoryDetailSaveQueryModel {
     
     /**
      * 盘点单号
@@ -89,14 +78,9 @@ public class AssetInventoryDetail {
      */
     private String remark;
     
-    /**
-     * 0-未盘点
-     */
+    
     public static final Integer INVENTORY_STATUS_NO = 0;
     
-    /**
-     * 1-已盘点
-     */
     public static final Integer INVENTORY_STATUS_YES = 1;
     
     public static final Integer DEL_NORMAL = 0;
