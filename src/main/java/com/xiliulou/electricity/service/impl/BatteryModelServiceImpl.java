@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.asset.BatteryBrandModelVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -331,6 +332,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         batteryModel.setCreateTime(System.currentTimeMillis());
         batteryModel.setUpdateTime(System.currentTimeMillis());
         batteryModel.setBrandName(batteryModelQuery.getBrandName());
+        batteryModel.setCapacity(batteryModelQuery.getCapacity());
         batteryModel.setAccessProtocol(batteryModelQuery.getAccessProtocol());
         batteryModel.setSize(batteryModelQuery.getBatterySize());
         batteryModel.setWeight(batteryModelQuery.getWeight());
@@ -847,6 +849,24 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (Objects.isNull(batteryModel)) {
             return Triple.of(false, "100560", "电池型号不存在");
         }
-        return Triple.of(true, null, batteryModel);
+        
+        //
+        BatteryBrandModelVo brandModelVo = new BatteryBrandModelVo();
+        BeanUtils.copyProperties(batteryModel, brandModelVo);
+        String batteryType = batteryModel.getBatteryType();
+        
+        try {
+            if (StringUtils.isNotBlank(batteryType)) {
+                String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                String standV = batteryV.substring(0, batteryV.length() - 1);
+                String num = batteryType.substring(batteryType.lastIndexOf("_") + 1);
+                brandModelVo.setNumber(Integer.parseInt(num));
+                brandModelVo.setStandardV(Integer.parseInt(standV));
+            }
+        } catch (NumberFormatException e) {
+            return Triple.of(true, null, brandModelVo);
+        }
+        
+        return Triple.of(true, null, brandModelVo);
     }
 }
