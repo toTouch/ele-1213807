@@ -73,6 +73,14 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
+    <update id="updateByOrderNo">
+        update t_asset_inventory
+        set inventoried_total = inventoried_total + #{inventoryCount},
+            pending_total = pending_total - #{inventoryCount}
+        where tenant_id = #{tenantId}
+          and order_no = #{orderNo};
+    </update>
+    
     <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryBO">
         select
         <include refid="basic_field"/>
@@ -114,6 +122,10 @@
         select
         <include refid="basic_field"/>
         from t_asset_inventory where del_flag = 0 and id = #{id}
+    </select>
+    
+    <select id="selectInventoryStatusByFranchiseeId" resultType="java.lang.Integer">
+        select status from t_asset_inventory where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId}  and type = #{type} order by id desc limit 1;
     </select>
 
 </mapper>

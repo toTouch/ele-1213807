@@ -7,6 +7,7 @@ import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,15 +46,19 @@ public class AssetInventoryDetailController {
         if (offset < 0) {
             offset = 0L;
         }
-        
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
         
-        AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().size(size).offset(offset).franchiseeId(franchiseeId).orderNo(orderNo)
-                .status(status).build();
+        AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().size(size).offset(offset).franchiseeId(franchiseeId).orderNo(orderNo).status(status).build();
+        
         return assetInventoryDetailService.listByOrderNo(assetInventoryRequest);
     }
     
@@ -65,8 +70,13 @@ public class AssetInventoryDetailController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
         
         AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().franchiseeId(franchiseeId).orderNo(orderNo).status(status).build();
+        
         return R.ok(assetInventoryDetailService.countTotal(assetInventoryRequest));
     }
     
@@ -76,7 +86,7 @@ public class AssetInventoryDetailController {
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/inventoryDetail/batchInventory")
-    public R batchUpdate(@RequestBody @Validated(value = CreateGroup.class) AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest) {
+    public R batchUpdate(@RequestBody @Validated(value = UpdateGroup.class) AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");

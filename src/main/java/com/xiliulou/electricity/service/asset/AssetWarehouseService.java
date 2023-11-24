@@ -27,5 +27,7 @@ public interface AssetWarehouseService {
     
     R deleteById(Long id);
     
-    Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
+    R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
+    
+    Integer existsByName(String name);
 }

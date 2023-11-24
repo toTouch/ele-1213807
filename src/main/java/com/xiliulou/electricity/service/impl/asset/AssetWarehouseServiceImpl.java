@@ -51,7 +51,11 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        
+        Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
+        if (Objects.isNull(exists)) {
+            return R.fail("300803", "库房名称已存在");
+        }
+    
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
                 .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName())
                 .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetWarehouse.DEL_NORMAL)
@@ -124,7 +128,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         // 判断库房是否绑定柜机
         Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityCabinet)) {
-            return R.fail("300800", "该库房有电柜正在使用,请解绑后操作");
+            return R.fail("300800", "该库房有电柜正在使用,请先解绑后操作");
         }
         
         // 判断库房是否绑定电池
@@ -138,11 +142,22 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     }
     
     @Override
-    public Integer updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
+    public R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
+        Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
+        if (Objects.isNull(exists)) {
+            return R.fail("300803", "库房名称已存在");
+        }
+        
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
         BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
         warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel);
+        return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
+    
+    @Override
+    public Integer existsByName(String name) {
+        return assetWarehouseMapper.existsByName(TenantContextHolder.getTenantId(), name);
+    }
+    
 }

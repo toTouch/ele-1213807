@@ -5,10 +5,13 @@ import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
+import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
 import org.apache.commons.collections.CollectionUtils;
@@ -33,6 +36,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
+    
+    @Autowired
+    private AssetInventoryService assetInventoryService;
     
     @Override
     public R listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
@@ -91,7 +97,21 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest) {
-        return R.ok(assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest));
+    
+        Integer count = 0;
+        if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+            //批量盘点
+            count = assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest);
+        
+            //同步盘点数据
+            AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(inventoryRequest.getUid())
+                    .updateTime(System.currentTimeMillis()).build();
+            
+            assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
+        }
+        
+        return R.ok(count);
     }
     
     @Override

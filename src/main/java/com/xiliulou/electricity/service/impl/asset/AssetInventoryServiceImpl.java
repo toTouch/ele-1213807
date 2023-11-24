@@ -13,6 +13,7 @@ import com.xiliulou.electricity.mapper.asset.AssetInventoryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -73,10 +74,10 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
     @Override
     public Integer updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
-        
-        AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder()
+        AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(assetInventorySaveOrUpdateRequest.getFranchiseeId()).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
                 .operator(assetInventorySaveOrUpdateRequest.getUid()).updateTime(System.currentTimeMillis()).build();
+        
         return assetInventoryMapper.updateById(assetInventorySaveOrUpdateQueryModel);
     }
     
@@ -118,6 +119,17 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
             BeanUtils.copyProperties(assetInventoryBO, assetInventoryVO);
         }
         return assetInventoryVO;
+    }
+    
+    @Override
+    public Integer queryInventoryStatusByFranchiseeId(Long franchiseeId, Integer type) {
+        
+        return assetInventoryMapper.selectInventoryStatusByFranchiseeId(TenantContextHolder.getTenantId(), franchiseeId, type);
+    }
+    
+    @Override
+    public Integer updateByOrderNo(AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel) {
+        return assetInventoryMapper.updateByOrderNo(assetInventoryUpdateDataQueryModel);
     }
     
     

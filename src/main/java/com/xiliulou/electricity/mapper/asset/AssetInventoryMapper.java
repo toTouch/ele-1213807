@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper.asset;
 import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,4 +27,9 @@ public interface AssetInventoryMapper {
     Integer updateById(AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel);
     
     AssetInventoryBO selectById(Long id);
+    
+    Integer selectInventoryStatusByFranchiseeId(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("type") Integer type);
+    
+    Integer updateByOrderNo(AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel);
+    
 }

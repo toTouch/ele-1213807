@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.request.asset;
 
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -20,8 +23,15 @@ import java.util.List;
 public class AssetInventoryDetailBatchInventoryRequest {
     
     /**
+     * 盘点单号
+     */
+    @NotEmpty(message = "盘点单号不能为空", groups = {UpdateGroup.class})
+    private String orderNo;
+    
+    /**
      * 盘点状态
      */
+    @NotNull(message = "盘点状态不能为空", groups = {UpdateGroup.class})
     private Integer status;
     
     /**
@@ -33,5 +43,5 @@ public class AssetInventoryDetailBatchInventoryRequest {
      * 操作者
      */
     private Long uid;
- 
+    
 }
