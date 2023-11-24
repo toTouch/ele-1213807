@@ -83,7 +83,7 @@ public class JsonAdminWarehouseController {
      * @date 2023/11/21 20:49:07
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/warehouse/names")
+    @GetMapping("/admin/warehouse/nameSearch")
     public R listWarehouseNames(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
