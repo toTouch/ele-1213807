@@ -850,11 +850,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Triple.of(false, "100560", "电池型号不存在");
         }
         
-        //
         BatteryBrandModelVo brandModelVo = new BatteryBrandModelVo();
         BeanUtils.copyProperties(batteryModel, brandModelVo);
         String batteryType = batteryModel.getBatteryType();
         brandModelVo.setChargeV(batteryModel.getBatteryV());
+        brandModelVo.setBatterySize(batteryModel.getSize());
         try {
             if (StringUtils.isNotBlank(batteryType)) {
                 String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));

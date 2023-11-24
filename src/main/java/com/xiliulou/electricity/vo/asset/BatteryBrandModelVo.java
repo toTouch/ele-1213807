@@ -74,7 +74,7 @@ public class BatteryBrandModelVo {
     /**
      * 电池尺寸
      */
-    private String size;
+    private String batterySize;
     
     /**
      * 电池重量（Kg)
