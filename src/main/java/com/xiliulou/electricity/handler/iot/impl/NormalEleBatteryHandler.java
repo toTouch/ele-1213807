@@ -132,13 +132,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     electricityCabinet.getId(), sessionId, cellNO);
             return;
         }
-
+    
         Long reportTime = eleBatteryVO.getReportTime();
         //若上报时间为空  或者  上报时间小于上次上报时间，不处理
-        if (Objects.nonNull(reportTime) && Objects.nonNull(eleBox.getReportTime())
-                && eleBox.getReportTime() >= reportTime) {
-            log.warn("ELE BATTERY REPORT ERROR! reportTime is empty,electricityCabinetId={},sessionId={}",
-                    electricityCabinet.getId(), sessionId);
+        if (Objects.nonNull(reportTime) && Objects.nonNull(eleBox.getReportTime()) && eleBox.getReportTime() >= reportTime) {
+            log.warn("ELE BATTERY REPORT ERROR! reportTime is less box reportTime,boxReportTime={},eid={},sessionId={},", eleBox.getReportTime(), electricityCabinet.getId(),
+                    sessionId);
             return;
         }
 
