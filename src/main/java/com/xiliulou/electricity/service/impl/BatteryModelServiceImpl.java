@@ -1,15 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.BatteryModelMapper;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -18,6 +22,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.BatteryBrandModelVo;
+import com.xiliulou.electricity.vo.asset.BrandNameAndBatteryVShortVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -868,5 +873,34 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }
         
         return Triple.of(true, null, brandModelVo);
+    }
+    
+    @Override
+    public List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel) {
+        List<BatteryModel> modelList = batteryModelMapper.selectListBrandAndModel(batteryModelQueryModel);
+        if (CollectionUtils.isEmpty(modelList)) {
+            return Lists.newArrayList();
+        }
+        
+        return modelList.stream().map(batteryModel -> {
+            BrandNameAndBatteryVShortVO vo = new BrandNameAndBatteryVShortVO();
+            BeanUtil.copyProperties(batteryModel, vo);
+            
+            // 赋值复合字段
+            StringBuilder brandAndModelName = new StringBuilder();
+            if (StringUtils.isNotBlank(batteryModel.getBrandName())) {
+                brandAndModelName.append(batteryModel.getBrandName());
+            }
+            
+            if (StringUtils.isNotBlank(brandAndModelName.toString())) {
+                brandAndModelName.append(StringConstant.FORWARD_SLASH);
+            }
+            
+            if (StringUtils.isNotBlank(batteryModel.getBatteryVShort())) {
+                brandAndModelName.append(batteryModel.getBatteryVShort());
+            }
+            vo.setBrandNameAndVShort(brandAndModelName.toString());
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

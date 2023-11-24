@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -188,5 +189,31 @@ public class JsonAdminBatteryModelController extends BaseController {
         
         return returnTripleResult(batteryModelService.queryBatteryModelById(id));
     }
-
+    
+    /**
+     * 根据modelId查询电池
+     */
+    @GetMapping("/admin/battery/brandAndModel/list")
+    public R queryBatteryBrandAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        BatteryModelQueryModel batteryModelQueryModel = BatteryModelQueryModel.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(batteryModelService.listBatteryBrandAndModel(batteryModelQueryModel));
+    }
 }

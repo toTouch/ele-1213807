@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryModel;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -66,4 +67,6 @@ public interface BatteryModelMapper extends BaseMapper<BatteryModel> {
     Integer batchInsertDefaultBatteryModel(List<BatteryModel> generateDefaultBatteryModel);
 
     List<String> selectShortBatteryType(@Param("batteryTypes") List<String> batteryTypes, @Param("tenantId") Integer tenantId);
+    
+    List<BatteryModel> selectListBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
 }
