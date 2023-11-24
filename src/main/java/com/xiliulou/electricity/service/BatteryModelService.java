@@ -2,9 +2,11 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.vo.BatteryModelAndMaterialVO;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import com.xiliulou.electricity.vo.BatteryTypeVO;
+import com.xiliulou.electricity.vo.asset.BrandNameAndBatteryVShortVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -119,4 +121,6 @@ public interface BatteryModelService {
     List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId);
     
     Triple<Boolean, String, Object> queryBatteryModelById(Long id);
+    
+    List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
 }

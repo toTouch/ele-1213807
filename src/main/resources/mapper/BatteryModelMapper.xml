@@ -14,6 +14,11 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="brandName" column="brand_name" jdbcType="VARCHAR"/>
+        <result property="capacity" column="capacity" jdbcType="INTEGER"/>
+        <result property="accessProtocol" column="access_protocol" jdbcType="INTEGER"/>
+        <result property="size" column="size" jdbcType="VARCHAR"/>
+        <result property="weight" column="weight" jdbcType="DOUBLE"/>
     </resultMap>
 
     <!--查询单个-->
@@ -198,4 +203,8 @@
         delete from t_battery_model where id = #{id}
     </delete>
 
+    <select id="selectListBrandAndModel" resultMap="BatteryModelMap">
+        select id, brand_name ,battery_v_short from t_battery_model order by id desc
+        limit #{offset}, #{size}
+    </select>
 </mapper>
