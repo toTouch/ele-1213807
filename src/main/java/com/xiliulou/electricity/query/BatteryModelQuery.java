@@ -61,30 +61,28 @@ public class BatteryModelQuery {
     /**
      * 品牌名称
      */
-    @NotEmpty(message = "品牌名称不能为空!", groups = {CreateGroup.class})
+    @NotEmpty(message = "品牌名称不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private String brandName;
     
     /**
      * 电池容量
      */
-    @NotNull(message = "电池容量不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "电池容量不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer capacity;
     
     /**
      * 电池接入协议 0：未知 1：铁塔
      */
-    @NotNull(message = "电池接入协议不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "电池接入协议不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer accessProtocol;
     
     /**
      * 电池尺寸
      */
-    @NotEmpty(message = "电池尺寸不能为空!", groups = {CreateGroup.class})
     private String batterySize;
     
     /**
      * 电池重量（Kg)
      */
-    @NotNull(message = "电池重量不能为空!", groups = {CreateGroup.class})
     private Double weight;
 }

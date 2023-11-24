@@ -171,6 +171,22 @@ public class JsonAdminBatteryModelController extends BaseController {
 
         return returnTripleResult(batteryModelService.delete(id));
     }
-
+    
+    /**
+     * 根据modelId查询电池
+     */
+    @GetMapping("/admin/battery/model/{id}")
+    public R queryBatteryModelById(@PathVariable("id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return returnTripleResult(batteryModelService.queryBatteryModelById(id));
+    }
 
 }

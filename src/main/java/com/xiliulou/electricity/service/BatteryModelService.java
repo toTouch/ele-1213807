@@ -117,4 +117,6 @@ public interface BatteryModelService {
     List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes);
 
     List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId);
+    
+    Triple<Boolean, String, Object> queryBatteryModelById(Long id);
 }
