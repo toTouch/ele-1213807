@@ -228,5 +228,15 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
          * 电池激活电流
          */
         private Integer chargeActivationA;
+    
+        /**
+         * 气溶胶检测(1 关闭 0 开启)
+         */
+        private Integer checkFireWarning;
+    
+        /**
+         * 水消防检测(1 关闭 0 开启)
+         */
+        private Integer checkWaterFireWarning;
     }
 }
