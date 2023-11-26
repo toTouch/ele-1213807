@@ -66,6 +66,8 @@ public interface InvitationActivityRecordService {
     Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query);
 
     Triple<Boolean, String, Object> generateCode();
+    
+    Triple<Boolean, String, Object> generateCodeV2();
 
     List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query);
 
@@ -76,6 +78,8 @@ public interface InvitationActivityRecordService {
     Integer addMoneyByRecordId( BigDecimal rewardAmount, Long recordId);
 
     Triple<Boolean, String, Object> selectUserInvitationDetail();
+    
+    Triple<Boolean, String, Object> selectUserInvitationDetailV2();
     
     List<InvitationActivityRecord> selectByActivityIdAndUid(List<Long> activityIds, Long uid);
     

@@ -30,13 +30,29 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     public R selectUserInvitationDetail() {
         return returnTripleResult(invitationActivityRecordService.selectUserInvitationDetail());
     }
-
+    
+    /**
+     * 获取用户邀请信息(多活动)
+     */
+    @GetMapping("/user/invitation/activity/record/detail/v2")
+    public R selectUserInvitationDetailV2() {
+        return returnTripleResult(invitationActivityRecordService.selectUserInvitationDetailV2());
+    }
+    
     /**
      * 生成邀请活动二维码
      */
     @GetMapping("/user/invitation/activity/generateCode")
     public R generateCode() {
         return returnTripleResult(invitationActivityRecordService.generateCode());
+    }
+    
+    /**
+     * 生成邀请活动二维码（多个活动）
+     */
+    @GetMapping("/user/invitation/activity/generateCode/v2")
+    public R generateCodeV2() {
+        return returnTripleResult(invitationActivityRecordService.generateCodeV2());
     }
 
     /**
