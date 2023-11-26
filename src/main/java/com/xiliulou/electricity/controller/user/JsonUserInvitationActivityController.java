@@ -28,6 +28,13 @@ public class JsonUserInvitationActivityController extends BaseController {
     public R activityInfo() {
         return returnTripleResult(invitationActivityService.activityInfo());
     }
-
+    
+    /**
+     * 获取活动详情（多个活动）
+     */
+    @GetMapping("/user/invitation/activity/info/v2")
+    public R activityInfoV2() {
+        return returnTripleResult(invitationActivityService.activityInfoV2());
+    }
 
 }

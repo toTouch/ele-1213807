@@ -73,7 +73,9 @@ public interface InvitationActivityService {
     Integer checkUsableActivity(Integer tenantId);
 
     Triple<Boolean, String, Object> activityInfo();
-
+    
+    Triple<Boolean, String, Object> activityInfoV2();
+    
     Triple<Boolean, String, Object> findActivityById(Long id);
     
     Triple<Boolean, String, Object> selectActivityByUser(InvitationActivityQuery query, Long uid);

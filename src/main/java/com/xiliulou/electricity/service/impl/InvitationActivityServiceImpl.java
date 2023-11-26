@@ -330,9 +330,51 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     public List<InvitationActivity> selectUsableActivity(Integer tenantId) {
         return invitationActivityMapper.selectUsableActivity(tenantId);
     }
-
+    
     @Override
     public Triple<Boolean, String, Object> activityInfo() {
+        //        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        //        if(Objects.isNull(invitationActivityUser)){
+        //            return Triple.of(true, null, null);
+        //        }
+        
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        if (CollectionUtils.isEmpty(invitationActivityUserList)) {
+            return Triple.of(true, null, null);
+        }
+        // 因为线上小程序版本问题，回退改接口，此处临时解决处理：返回第一个
+        InvitationActivityUser invitationActivityUser = invitationActivityUserList.get(0);
+        
+        InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
+        if(Objects.isNull(invitationActivity)){
+            return Triple.of(true, null, null);
+        }
+        
+        InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
+        BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
+
+        /*List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivity.getId());
+        if (!CollectionUtils.isEmpty(membercardIds)) {
+            List<ElectricityMemberCard> memberCardList = Lists.newArrayList();
+            for (Long membercardId : membercardIds) {
+                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercardId.intValue());
+                if (Objects.nonNull(electricityMemberCard)) {
+                    memberCardList.add(electricityMemberCard);
+                }
+            }
+
+//            invitationActivityVO.setMemberCardList(memberCardList);
+        }*/
+        
+        invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
+        invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+        invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+        
+        return Triple.of(true, null, invitationActivityVO);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> activityInfoV2() {
         List<InvitationActivity> invitationActivities = selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             return Triple.of(true, null, null);
@@ -342,7 +384,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             return Triple.of(true, null, null);
         }
-
+        
         //过滤掉未上架的
         Set<Long> activityIdSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdSet.contains(activityUser.getActivityId())).collect(Collectors.toList());
