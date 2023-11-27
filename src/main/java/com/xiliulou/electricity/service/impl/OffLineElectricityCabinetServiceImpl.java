@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.OffLineElectricityCabinetService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserFrontDetectionVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -48,6 +49,8 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
+    @Autowired
+    CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     /**
      * 生成离线换电验证码
@@ -82,20 +85,16 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             log.error("OffLINE ELECTRICITY  ERROR! user not auth!  uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-    
-        Triple<Boolean, String, Object> result = null;
+        
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            //处理单电
-            result = handlerSingleExchangeBattery(userInfo);
+            //单电
+            Triple<Boolean, String, Object> result = verifySingleExchangeBattery(userInfo);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return R.fail(result.getMiddle(), (String) result.getRight());
             }
         } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            //处理车电一体
-//            result = handlerExchangeBatteryCar(userInfo);
-//            if (Boolean.FALSE.equals(result.getLeft())) {
-//                return R.fail(result.getMiddle(), (String) result.getRight());
-//            }
+            //车电一体
+            carRentalPackageMemberTermBizService.verifyMemberSwapBattery(userInfo.getTenantId(),userInfo.getUid());
         } else {
             log.error("OffLINE ELECTRICITY ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail( "ELECTRICITY.0042", "未缴纳押金");
@@ -103,7 +102,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
         //未租电池
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid:{} ", user.getUid());
+            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
@@ -117,7 +116,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         return R.ok(TotpUtils.generateTotp(key, System.currentTimeMillis() / 1000, 6, step, t0));
     }
     
-    private Triple<Boolean, String, Object> handlerSingleExchangeBattery(UserInfo userInfo) {
+    private Triple<Boolean, String, Object> verifySingleExchangeBattery(UserInfo userInfo) {
         //判断用户套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
