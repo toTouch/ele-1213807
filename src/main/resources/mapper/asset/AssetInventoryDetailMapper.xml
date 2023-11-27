@@ -43,13 +43,13 @@
         from t_asset_inventory_detail
         <where>
             <if test="orderNo != null and orderNo != ''">
-                and order_no={orderNo}
+                and order_no=#{orderNo}
             </if>
             <if test="status != null ">
-                and status={status}
+                and status=#{status}
             </if>
             <if test="franchiseeId != null ">
-                and franchisee_id={franchiseeId}
+                and franchisee_id=#{franchiseeId}
             </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
@@ -62,13 +62,13 @@
         from t_asset_inventory_detail
         <where>
             <if test="orderNo != null and orderNo != ''">
-                and order_no={orderNo}
+                and order_no=#{orderNo}
             </if>
             <if test="status != null ">
-                and status={status}
+                and status=#{status}
             </if>
             <if test="franchiseeId != null ">
-                and franchisee_id={franchiseeId}
+                and franchisee_id=#{franchiseeId}
             </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
