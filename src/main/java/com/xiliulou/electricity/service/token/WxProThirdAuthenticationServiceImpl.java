@@ -104,7 +104,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId())
                 || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())) {
             log.warn("TOKEN ERROR! not found appId,appSecret! authMap={}, params={}, tenantId={}", authMap, electricityPayParams, tenantId);
-            throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            throw new AuthenticationServiceException("网络不佳，请重试");
         }
 
         try {
