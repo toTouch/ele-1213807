@@ -67,7 +67,10 @@ public enum BusinessType {
     CLOUD_BEAN(62),
     
     // 资产盘点
-    ASSET_INVENTORY(70);
+    ASSET_INVENTORY(70),
+    
+    // 资产退库
+    ASSET_EXIT_WAREHOUSE(71);
 
     private final Integer business;
 

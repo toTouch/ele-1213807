@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        franchisee_id,
+        store_id,
+        type,
+        warehouse_id,
+        operator,
+        tenant_id,
+        del_flag,
+        create_time,
+        update_time,
+        remark
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_exit_warehouse_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_no,
+            franchisee_id,
+            store_id,
+            type,
+            warehouse_id,
+            operator,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+            remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderNo},
+            #{franchiseeId},
+            #{storeId},
+            #{type},
+            #{warehouseId},
+            #{operator},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+            #{remark}
+        </trim>
+    </insert>
+
+</mapper>
+
+
+
+

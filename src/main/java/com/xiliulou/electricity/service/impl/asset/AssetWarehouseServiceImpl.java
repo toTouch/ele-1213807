@@ -3,8 +3,8 @@ package com.xiliulou.electricity.service.impl.asset;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
-import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
+import com.xiliulou.electricity.bo.asset.warehouse.AssetWarehouseBO;
+import com.xiliulou.electricity.bo.asset.warehouse.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.asset.AssetWarehouse;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
@@ -167,5 +167,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public Integer existsByName(String name) {
         return assetWarehouseMapper.existsByName(TenantContextHolder.getTenantId(), name);
     }
+    
+    
     
 }

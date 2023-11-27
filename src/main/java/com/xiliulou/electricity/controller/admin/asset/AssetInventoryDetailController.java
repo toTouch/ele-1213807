@@ -36,7 +36,7 @@ public class AssetInventoryDetailController {
      * @date 2023/11/21 13:21:30
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/inventoryDetail/page")
+    @GetMapping("/admin/asset/inventory/detail/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
             @RequestParam(value = "orderNo") String orderNo, @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
@@ -62,7 +62,7 @@ public class AssetInventoryDetailController {
         return assetInventoryDetailService.listByOrderNo(assetInventoryRequest);
     }
     
-    @GetMapping("/admin/asset/inventoryDetail/pageCount")
+    @GetMapping("/admin/asset/inventory/detail/pageCount")
     public R pageCount(@RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "orderNo") String orderNo,
             @RequestParam(value = "status", required = false) Integer status) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -85,7 +85,7 @@ public class AssetInventoryDetailController {
      * @date 2023/11/21 13:23:50
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/inventoryDetail/batchInventory")
+    @GetMapping("/admin/asset/inventory/detail/batchInventory")
     public R batchUpdate(@RequestBody @Validated(value = UpdateGroup.class) AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

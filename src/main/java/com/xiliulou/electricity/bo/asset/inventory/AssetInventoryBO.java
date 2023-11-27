@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.asset;
+package com.xiliulou.electricity.bo.asset.inventory;
 
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.Data;

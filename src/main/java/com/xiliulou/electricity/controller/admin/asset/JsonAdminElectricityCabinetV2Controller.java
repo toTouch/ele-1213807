@@ -7,6 +7,7 @@ import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -106,5 +107,27 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
         
         return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
+    }
+    
+    @GetMapping("/admin/electricityCabinet/snSearch")
+    public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        ElectricityCabinetSnSearchRequest electricityCabinetSnSearchRequest = ElectricityCabinetSnSearchRequest.builder().franchiseeId(franchiseeId).size(size).offset(offset).build();
+        
+        return R.ok(electricityCabinetV2Service.listByFranchiseeIdAndStockStatus(electricityCabinetSnSearchRequest));
+        
     }
 }
