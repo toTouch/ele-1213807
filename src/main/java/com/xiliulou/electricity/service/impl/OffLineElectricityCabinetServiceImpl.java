@@ -85,6 +85,12 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             log.error("OffLINE ELECTRICITY  ERROR! user not auth!  uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
+    
+        //未租电池
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             //单电
@@ -98,12 +104,6 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         } else {
             log.error("OffLINE ELECTRICITY ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail( "ELECTRICITY.0042", "未缴纳押金");
-        }
-
-        //未租电池
-        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //生成验证码key
