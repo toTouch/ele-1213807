@@ -32,6 +32,11 @@ public class AssetInventoryDetailQueryModel {
      */
     private Integer tenantId;
     
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    
     
     private Long size;
     

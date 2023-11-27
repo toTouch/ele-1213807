@@ -9,6 +9,7 @@ import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
@@ -47,14 +48,23 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     @Slave
     @Override
     public R listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
         // 模型转换
         AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
-        assetInventoryDetailQueryModel.setTenantId(tenantId);
+        assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         return R.ok(assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel));
+    }
+    
+    @Slave
+    @Override
+    public Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest) {
+        // 模型转换
+        AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
+        BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
+        assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        return assetInventoryDetailMapper.countTotal(assetInventoryDetailQueryModel);
     }
     
     /**
@@ -103,14 +113,5 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         }
         
         return R.ok(count);
-    }
-    
-    @Slave
-    @Override
-    public Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest) {
-        ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(assetInventoryRequest.getFranchiseeId()).build();
-        Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
-        return (Integer) data;
     }
 }
