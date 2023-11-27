@@ -267,7 +267,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setSn(batteryAddRequest.getSn());
         saveBattery.setModel(batteryAddRequest.getBatteryType());
         saveBattery.setFranchiseeId(franchiseeId);
-        saveBattery.setStockStatus(StockStatusEnum.STOCK.getCode());
+        
+        // 如果绑定了加盟商 则库存状态为已出库；未绑定则为在库
+        if (Objects.nonNull(franchiseeId)) {
+            saveBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+        } else {
+            saveBattery.setStockStatus(StockStatusEnum.STOCK.getCode());
+        }
+        
         saveBattery.setWarehouseId(batteryAddRequest.getWarehouseId());
         saveBattery.setCreateTime(System.currentTimeMillis());
         saveBattery.setUpdateTime(System.currentTimeMillis());
