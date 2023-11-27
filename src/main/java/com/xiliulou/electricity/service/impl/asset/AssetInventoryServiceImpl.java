@@ -16,9 +16,11 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -41,7 +43,8 @@ import java.util.stream.Collectors;
 @Service
 public class AssetInventoryServiceImpl implements AssetInventoryService {
     
-    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ASSET_INVENTORY_BATTERY_HANDLE_THREAD_POOL", 2, "asset_inventory_battery_handle_thread");
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ASSET_INVENTORY_BATTERY_HANDLE_THREAD_POOL", 3,
+            "asset_inventory_battery_handle_thread");
     
     @Autowired
     private AssetInventoryMapper assetInventoryMapper;
@@ -51,6 +54,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
+    
+    @Autowired
+    private AssetInventoryDetailService assetInventoryDetailService;
     
     @Override
     public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
@@ -62,26 +68,28 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         Long franchiseeId = assetInventorySaveOrUpdateRequest.getFranchiseeId();
+        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, assetInventorySaveOrUpdateRequest.getUid());
+        Long operator = assetInventorySaveOrUpdateRequest.getUid();
         // 默认资产类型是电池,获取查询电池数量
         ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
         Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
         
         // 生成资产盘点订单
-        AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder()
-                .orderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, assetInventorySaveOrUpdateRequest.getUid())).franchiseeId(franchiseeId)
+        AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
                 .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetInventory.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
-                .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(assetInventorySaveOrUpdateRequest.getUid()).tenantId(tenantId)
-                .delFlag(AssetInventory.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId).delFlag(AssetInventory.DEL_NORMAL)
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         //异步执行将电池数据导入到资产详情表
-        //executorService.execute();
-        
-        
+        if ((Integer) data > NumberConstant.ZERO) {
+            ElectricityBatteryListSnByFranchiseeQueryModel queryModel = ElectricityBatteryListSnByFranchiseeQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
+            executorService.execute(() -> {
+                assetInventoryDetailService.asyncBatteryProcess(queryModel, orderNo, operator);
+            });
+        }
         
         return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
     }
-    
-    
     
     @Slave
     @Override

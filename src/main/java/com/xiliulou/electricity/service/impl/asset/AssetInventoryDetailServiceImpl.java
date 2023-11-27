@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +62,8 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
      * @date 2023/11/21 14:40:16
      * @author HeYafeng
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer asyncBatteryProcess(ElectricityBatteryListSnByFranchiseeQueryModel queryModel, String orderNo, Long operator) {
         List<String> snList = electricityBatteryService.listSnByFranchiseeId(queryModel);
         if (CollectionUtils.isNotEmpty(snList)) {

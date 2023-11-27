@@ -1140,7 +1140,7 @@
         where del_flag = 0
         and tenant_id = #{tenantId}
         and franchisee_id = #{franchiseeId}
-        order by id desc
+        order by id
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
