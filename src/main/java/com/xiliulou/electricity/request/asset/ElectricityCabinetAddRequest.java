@@ -40,7 +40,7 @@ public class ElectricityCabinetAddRequest {
     /**
      * 库房Id
      */
-    private String warehouseId;
+    private Long warehouseId;
     
     /**
      * 创建时间

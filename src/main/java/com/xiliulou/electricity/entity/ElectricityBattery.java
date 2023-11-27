@@ -132,9 +132,17 @@ public class ElectricityBattery {
      * 加盟商id
      */
     private Long franchiseeId;
-
-
-
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+    
+    /**
+     * 库房Id
+     */
+    private Long warehouseId;
+    
     /**
      * 删除状态 0：正常，1：删除
      */

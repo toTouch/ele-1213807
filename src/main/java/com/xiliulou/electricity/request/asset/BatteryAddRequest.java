@@ -19,21 +19,31 @@ public class BatteryAddRequest {
      */
     @NotEmpty(message = "电池编码不能不能为空!", groups = {CreateGroup.class})
     private String sn;
+    
     /**
      * 电池型号
      */
-    private String model;
+    private String batteryType;
+    
     /**
-     * 电压
+     * 加盟商id
      */
-    private Integer voltage;
+    private Long franchiseeId;
+    
     /**
-     * 电池容量,单位(mah)
+     * 库房Id
      */
-    private Integer capacity;
+    private Long warehouseId;
     
     /**
      * 物联网卡号
      */
     private String iotCardNumber;
+    
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
+    
+    private Integer isNeedSync;
 }

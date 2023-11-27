@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
@@ -32,9 +33,11 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      * @return 电池信息集
      */
     List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList);
-
+    
     R saveElectricityBattery(EleBatteryQuery electricityBattery);
-
+    
+    R saveElectricityBatteryV2(BatteryAddRequest batteryAddRequest);
+    
     Integer update(ElectricityBattery electricityBattery);
     
     R updateForAdmin(EleBatteryQuery electricityBattery);

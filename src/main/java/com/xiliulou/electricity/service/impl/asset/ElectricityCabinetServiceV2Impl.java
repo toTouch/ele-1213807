@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service.impl;
+package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  */
 @Service("electricityCabinetV2Service")
 @Slf4j
-public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Service {
+public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Service {
     
     @Resource
     private ElectricityCabinetModelService electricityCabinetModelService;
@@ -75,50 +75,55 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        // 获取型号
-        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinetAddRequest.getModelId());
-        
-        // 厂家名称和型号都存在
-        if (Objects.isNull(electricityCabinetModel)) {
-            return Triple.of(false, "100558", "型号不存在");
-        }
-        
-        if (existByProductKeyAndDeviceName(electricityCabinetAddRequest.getProductKey(), electricityCabinetAddRequest.getDeviceName())) {
-            return Triple.of(false, "ELECTRICITY.0002", "换电柜的三元组已存在");
-        }
-        
-        // 换电柜
-        ElectricityCabinet electricityCabinet = new ElectricityCabinet();
-        BeanUtil.copyProperties(electricityCabinetAddRequest, electricityCabinet);
-        electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
-        electricityCabinet.setCreateTime(System.currentTimeMillis());
-        electricityCabinet.setUpdateTime(System.currentTimeMillis());
-        electricityCabinet.setDelFlag(ElectricityCabinet.DEL_NORMAL);
-        electricityCabinet.setStockStatus(StockStatusEnum.STOCK.getCode());
-        
-        // 下列字段设置默认
-        electricityCabinet.setName(StringUtils.EMPTY);
-        electricityCabinet.setLongitude(0.0);
-        electricityCabinet.setLatitude(0.0);
-        electricityCabinet.setServicePhone(StringUtils.EMPTY);
-        electricityCabinet.setBusinessTime(StringUtils.EMPTY);
-        electricityCabinet.setStoreId(0L);
-        electricityCabinet.setFullyCharged(0.00);
-        electricityCabinet.setExchangeType(NumberConstant.MINUS_ONE);
-        
-        DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
+        try {
+            // 获取型号
+            ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinetAddRequest.getModelId());
             
-            // 新增缓存
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
+            // 厂家名称和型号都存在
+            if (Objects.isNull(electricityCabinetModel)) {
+                return Triple.of(false, "100558", "型号不存在");
+            }
             
-            // 添加格挡
-            electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
-            // 添加服务时间记录
-            electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
-        });
-        
-        return Triple.of(true, null, electricityCabinet.getId());
+            if (existByProductKeyAndDeviceName(electricityCabinetAddRequest.getProductKey(), electricityCabinetAddRequest.getDeviceName())) {
+                return Triple.of(false, "ELECTRICITY.0002", "换电柜的三元组已存在");
+            }
+            
+            // 换电柜
+            ElectricityCabinet electricityCabinet = new ElectricityCabinet();
+            BeanUtil.copyProperties(electricityCabinetAddRequest, electricityCabinet);
+            electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
+            electricityCabinet.setCreateTime(System.currentTimeMillis());
+            electricityCabinet.setUpdateTime(System.currentTimeMillis());
+            electricityCabinet.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+            electricityCabinet.setStockStatus(StockStatusEnum.STOCK.getCode());
+            
+            // 下列字段设置默认
+            electricityCabinet.setName(StringUtils.EMPTY);
+            electricityCabinet.setLongitude(0.0);
+            electricityCabinet.setLatitude(0.0);
+            electricityCabinet.setServicePhone(StringUtils.EMPTY);
+            electricityCabinet.setBusinessTime(StringUtils.EMPTY);
+            electricityCabinet.setStoreId(0L);
+            electricityCabinet.setFullyCharged(0.00);
+            electricityCabinet.setExchangeType(NumberConstant.MINUS_ONE);
+            
+            DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
+                
+                // 新增缓存
+                redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+                redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(),
+                        electricityCabinet);
+                
+                // 添加格挡
+                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+                // 添加服务时间记录
+                electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+            });
+            
+            return Triple.of(true, null, electricityCabinet.getId());
+        } finally {
+            redisService.delete(CacheConstant.ELE_SAVE_UID + SecurityUtils.getUid());
+        }
     }
     
     @Override
@@ -190,18 +195,18 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
         
         List<Integer> emptyNameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isBlank(electricityCabinet.getName()))
                 .map(ElectricityCabinet::getId).collect(Collectors.toList());
-        List<Integer> nameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isNotBlank(electricityCabinet.getName()))
-                .map(ElectricityCabinet::getId).collect(Collectors.toList());
-        if(CollectionUtils.isNotEmpty(emptyNameIdList)){
+        List<Integer> nameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isNotBlank(electricityCabinet.getName())).map(ElectricityCabinet::getId)
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(emptyNameIdList)) {
             electricityCabinetMapper.batchOutWarehouse(emptyNameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(),batchOutWarehouseRequest.getLatitude(),batchOutWarehouseRequest.getName());
+                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(), batchOutWarehouseRequest.getName());
         }
         
-        if(CollectionUtils.isNotEmpty(nameIdList)){
+        if (CollectionUtils.isNotEmpty(nameIdList)) {
             electricityCabinetMapper.batchOutWarehouse(nameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(),batchOutWarehouseRequest.getLatitude(),null);
+                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(), null);
         }
-
+        
         electricityCabinetList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
@@ -212,7 +217,7 @@ public class ElectricityCabinetV2ServiceImpl implements ElectricityCabinetV2Serv
     
     @Override
     public Integer existsByWarehouseId(Long wareHouseId) {
-    
+        
         return electricityCabinetMapper.existsByWarehouseId(wareHouseId);
     }
     
