@@ -5,7 +5,10 @@ import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
@@ -20,11 +23,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserFrontDetectionVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 @Service("offLineElectricityCabinetService")
@@ -51,6 +56,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
     @Autowired
     CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+    
+    @Autowired
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
     /**
      * 生成离线换电验证码
@@ -138,6 +146,12 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         if (Objects.isNull(batteryMemberCard)) {
             log.error("OffLINE ELECTRICITY ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+        }
+    
+        List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+        if (CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)) {
+            log.warn("OffLINE ELECTRICITY WARN! battery membercard refund review,uid={}", userInfo.getUid());
+            return Triple.of(false, "100018", "套餐租金退款审核中");
         }
         
         //判断用户电池服务费
