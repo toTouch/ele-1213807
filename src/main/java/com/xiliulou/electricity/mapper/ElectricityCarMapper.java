@@ -141,5 +141,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<CarDataVO> queryCarPageByCondition(@Param("query") CarDataQuery carDataQuery,@Param("offset") Long offset, @Param("size") Long size);
 
     Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);
-
+    
+    List<ElectricityCarVO> selectListBySnList(@Param("snList")List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId")Long franchiseeId);
 }

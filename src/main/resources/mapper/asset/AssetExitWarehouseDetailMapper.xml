@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        type,
+        sn,
+        tenant_id,
+        del_flag,
+        create_time,
+        update_time,
+        remark
+    </sql>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_inventory_detail(order_no, type, sn, tenant_id, del_flag, create_time, update_time, remark)
+        values
+        <foreach item="item" index="index" collection="detailSaveQueryModelList" separator=",">
+            (#{item.orderNo},#{item.type},#{item.sn}, #{item.tenantId}, #{item.delFlag},
+            #{item.createTime}, #{item.updateTime}, #{item.remark})
+        </foreach>
+    </insert>
+
+</mapper>
+
+
+
+

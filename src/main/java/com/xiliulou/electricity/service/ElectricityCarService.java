@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 
 import java.util.List;
 
@@ -129,5 +130,6 @@ public interface ElectricityCarService {
     R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
     
     Boolean retryCarLockCtrl(String str, Integer lockType, Integer retryCount);
-
+    
+    List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
 }

@@ -2,6 +2,9 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.electrcityCabinet.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -10,9 +13,12 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
@@ -23,6 +29,7 @@ import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +37,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -219,6 +227,45 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     public Integer existsByWarehouseId(Long wareHouseId) {
         
         return electricityCabinetMapper.existsByWarehouseId(wareHouseId);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetVO> listByFranchiseeIdAndStockStatus(ElectricityCabinetSnSearchRequest electricityCabinetSnSearchRequest) {
+    
+        ElectricityCabinetListSnByFranchiseeQueryModel electricityCabinetListSnByFranchiseeQueryModel = new ElectricityCabinetListSnByFranchiseeQueryModel();
+        BeanUtil.copyProperties(electricityCabinetSnSearchRequest, electricityCabinetListSnByFranchiseeQueryModel);
+        electricityCabinetListSnByFranchiseeQueryModel.setTenantId(TenantContextHolder.getTenantId());
+    
+        List<ElectricityCabinetVO> rspList = new ArrayList<>();
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByFranchiseeIdAndStockStatus(electricityCabinetListSnByFranchiseeQueryModel);
+        if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+            rspList = electricityCabinetBOList.stream().map(item -> {
+                ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+                BeanUtil.copyProperties(item, electricityCabinetVO);
+            
+                return electricityCabinetVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        return rspList;
+    }
+    
+    @Override
+    public R batchExitWarehouseBySn(ElectricityCabinetBatchExitWarehouseBySnQueryModel exitWarehouseBySnQueryModel) {
+    
+        if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        return R.ok(electricityCabinetMapper.batchExitWarehouseBySn(exitWarehouseBySnQueryModel));
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
+    
+        return electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
     }
     
 }

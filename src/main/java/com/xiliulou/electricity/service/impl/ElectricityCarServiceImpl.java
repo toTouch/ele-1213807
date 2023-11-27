@@ -1034,4 +1034,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         return false;
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
+        return electricityCarMapper.selectListBySnList(snList, tenantId, franchiseeId);
+    }
 }

@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.asset;
 
-import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
+import com.xiliulou.electricity.bo.asset.invantoryDetail.AssetInventoryDetailBO;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;

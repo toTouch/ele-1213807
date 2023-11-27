@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.asset;
+package com.xiliulou.electricity.bo.asset.warehouse;
 
 import lombok.Data;
 

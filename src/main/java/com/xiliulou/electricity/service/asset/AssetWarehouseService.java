@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.asset;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseVO;
 
