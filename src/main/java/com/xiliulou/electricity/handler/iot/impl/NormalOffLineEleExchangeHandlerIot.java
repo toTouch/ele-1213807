@@ -237,10 +237,15 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 }
             }
         } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
+            try {
+                carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
+            } catch (Exception e) {
+                log.error("OFFLINE EXCHANGE ERROR! carRentalPackageMember error, uid={}", user.getUid(), e);
+                return;
+            }
         } else {
-            log.warn("OFFLINE EXCHANGE ERROR! user not pay deposit uid={}", user.getUid());
-            return ;
+            log.warn("OFFLINE EXCHANGE WARN! user not pay deposit uid={}", user.getUid());
+            return;
         }
         
         //查询当前归还的电池信息
