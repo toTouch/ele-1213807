@@ -17,8 +17,6 @@ public interface AssetInventoryService {
     
     R save(AssetInventorySaveOrUpdateRequest assetInventorySaveRequest);
     
-    R updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest);
-    
     List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest);
     
     Integer countTotal(AssetInventoryRequest assetInventoryRequest);
@@ -26,11 +24,11 @@ public interface AssetInventoryService {
     AssetInventoryVO queryById(Long id);
     
     /**
-     * @description 资产盘点状态查询
      * @param type 资产类型(1-电柜, 2-电池, 3-车辆)
+     * @return 盘点状态 (0-进行中,1-完成)
+     * @description 资产盘点状态查询
      * @date 2023/11/24 09:10:35
      * @author HeYafeng
-     * @return 盘点状态 (0-进行中,1-完成)
      */
     Integer queryInventoryStatusByFranchiseeId(Long franchiseeId, Integer type);
     

@@ -54,25 +54,6 @@
         </trim>
     </insert>
     
-    <update id="updateById">
-        update t_asset_inventory
-        <set>
-            <if test="franchiseeId != null">
-                franchisee_id = #{franchiseeId},
-            </if>
-            <if test="finishTime != null">
-                finish_time = #{finishTime},
-            </if>
-            <if test="operator != null">
-                operator = #{operator},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-        </set>
-        where id = #{id} and tenant_id = #{tenantId}
-    </update>
-    
     <update id="updateByOrderNo">
         update t_asset_inventory
         set inventoried_total = inventoried_total + #{inventoryCount},

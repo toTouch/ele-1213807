@@ -24,8 +24,6 @@ public interface AssetInventoryMapper {
     
     Integer countTotal(AssetInventoryQueryModel assetInventoryQueryModel);
     
-    Integer updateById(AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel);
-    
     AssetInventoryBO selectById(Long id);
     
     Integer selectInventoryStatusByFranchiseeId(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("type") Integer type);

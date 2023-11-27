@@ -77,32 +77,6 @@ public class JsonAdminWarehouseController {
         
         return assetWarehouseService.updateById(assetWarehouseSaveOrUpdateRequest);
     }
-
-    /**
-     * @description 查询租户下的库房名称
-     * @date 2023/11/21 20:49:07
-     * @author HeYafeng
-     */
-    @GetMapping("/admin/warehouse/nameSearch")
-    public R listWarehouseNames(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
-        
-        return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
-    }
     
     /**
      * @description 库房数量统计

@@ -39,7 +39,7 @@ public class AssetWarehouseSaveOrUpdateRequest {
     /**
      * 库房地址
      */
-    @Length(min = 1, max = 100, message = "库房地址不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Length(max = 100, message = "库房地址不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String address;
     
     /**
@@ -51,13 +51,13 @@ public class AssetWarehouseSaveOrUpdateRequest {
     /**
      * 库房管理员
      */
-    @Length(min = 1, max = 50, message = "名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Length(max = 50, message = "名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String managerName;
     
     /**
      * 联系方式
      */
-    @Length(min = 1, max = 50, message = "名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Length(max = 50, message = "名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String managerPhone;
     
     private Long uid;

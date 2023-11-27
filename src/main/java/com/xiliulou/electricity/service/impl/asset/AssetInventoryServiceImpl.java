@@ -72,21 +72,6 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
     }
     
-    @Override
-    public R updateById(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
-        AssetInventoryBO assetInventoryBO = assetInventoryMapper.selectById(assetInventorySaveOrUpdateRequest.getId());
-        if (Objects.nonNull(assetInventoryBO) && assetInventoryBO.equals(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()) && (assetInventoryBO.getStatus()
-                .equals(AssetInventory.ASSET_INVENTORY_STATUS_TAKING)) && !assetInventoryBO.getFranchiseeId().equals(assetInventorySaveOrUpdateRequest.getFranchiseeId())) {
-            return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
-        }
-        
-        AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(assetInventorySaveOrUpdateRequest.getFranchiseeId()).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime())
-                .operator(assetInventorySaveOrUpdateRequest.getUid()).updateTime(System.currentTimeMillis()).build();
-        
-        return R.ok(assetInventoryMapper.updateById(assetInventorySaveOrUpdateQueryModel));
-    }
-    
     @Slave
     @Override
     public List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest) {

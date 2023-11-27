@@ -7,7 +7,6 @@ import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,28 +51,6 @@ public class AssetInventoryController {
         assetInventorySaveRequest.setUid(user.getUid());
         
         return assetInventoryService.save(assetInventorySaveRequest);
-    }
-    
-    /**
-     * @description 编辑资产盘点
-     * @date 2023/11/21 13:15:41
-     * @author HeYafeng
-     */
-    @PostMapping("/admin/asset/inventory/update")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        
-        assetInventorySaveOrUpdateRequest.setUid(user.getUid());
-        
-        return assetInventoryService.updateById(assetInventorySaveOrUpdateRequest);
     }
     
     /**
