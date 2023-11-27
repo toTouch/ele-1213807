@@ -15,6 +15,11 @@ import lombok.Data;
 public class AssetInventoryDetailSaveQueryModel {
     
     /**
+     * 主键id
+     */
+    private Long id;
+    
+    /**
      * 盘点单号
      */
     private String orderNo;
