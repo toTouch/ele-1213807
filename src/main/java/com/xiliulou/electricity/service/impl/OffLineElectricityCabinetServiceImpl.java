@@ -8,14 +8,22 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.OffLineElectricityCabinetService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserFrontDetectionVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Service("offLineElectricityCabinetService")
@@ -36,6 +44,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+    
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
 
     /**
@@ -71,52 +82,23 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             log.error("OffLINE ELECTRICITY  ERROR! user not auth!  uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-
-        //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("OffLINE ELECTRICITY  ERROR! not pay deposit,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-
-        if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
-            log.error("OffLINE ELECTRICITY  ERROR! disable memberCard ! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.100002", "月卡停卡");
-        }
-
-        BatteryMemberCard electricityMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(electricityMemberCard)) {
-            log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
-            return R.fail("ELECTRICITY.00121", "套餐不存在");
-        }
-
-        Long now = System.currentTimeMillis();
-        if (Objects.equals(electricityMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
-            log.warn("order WARN! memberCard  is Expire ! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0023", "月卡已过期");
-        }
-
-        if (!Objects.equals(electricityMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT)) {
-            if (userBatteryMemberCard.getRemainingNumber() < 0) {
-                //用户需购买相同套餐，补齐所欠换电次数
-                log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
-                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负", userBatteryMemberCard.getMemberCardId());
+    
+        Triple<Boolean, String, Object> result = null;
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            //处理单电
+            result = handlerSingleExchangeBattery(userInfo);
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                return R.fail(result.getMiddle(), (String) result.getRight());
             }
-
-            if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                log.warn("order WARN! memberCard  is Expire ! uid:{} ", user.getUid());
-                return R.fail("ELECTRICITY.0023", "月卡已过期");
-            }
-
-            if (userBatteryMemberCard.getRemainingNumber() == 0) {
-                log.error("order  ERROR! not found memberCard uid={}", user.getUid());
-                return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
-            }
+        } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            //处理车电一体
+//            result = handlerExchangeBatteryCar(userInfo);
+//            if (Boolean.FALSE.equals(result.getLeft())) {
+//                return R.fail(result.getMiddle(), (String) result.getRight());
+//            }
+        } else {
+            log.error("OffLINE ELECTRICITY ERROR! not pay deposit,uid={}", user.getUid());
+            return R.fail( "ELECTRICITY.0042", "未缴纳押金");
         }
 
         //未租电池
@@ -134,7 +116,48 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
         return R.ok(TotpUtils.generateTotp(key, System.currentTimeMillis() / 1000, 6, step, t0));
     }
-
+    
+    private Triple<Boolean, String, Object> handlerSingleExchangeBattery(UserInfo userInfo) {
+        //判断用户套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("OffLINE ELECTRICITY WARN! user haven't memberCard uid={}", userInfo.getUid());
+            return Triple.of(false, "100210", "用户未开通套餐");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.warn("OffLINE ELECTRICITY WARN! user's member card is stop! uid={}", userInfo.getUid());
+            return Triple.of(false, "100211", "换电套餐停卡审核中");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("OffLINE ELECTRICITY WARN! user's member card is stop! uid={}", userInfo.getUid());
+            return Triple.of(false, "100211", "换电套餐已暂停");
+        }
+        
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.error("OffLINE ELECTRICITY ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+        }
+        
+        //判断用户电池服务费
+        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("OffLINE ELECTRICITY WARN! user exist battery service fee,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+        
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
+                && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+            log.warn("OffLINE ELECTRICITY WARN! battery memberCard is Expire,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0023", "套餐已过期");
+        }
+        
+        return Triple.of(true, null, null);
+    }
+    
     @Override
     public R frontDetection() {
 
