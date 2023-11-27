@@ -51,13 +51,13 @@
             <if test="status != null">
                 status = #{status},
             </if>
-            <if test="managerName != null and managerName != ''">
+            <if test="managerName != null">
                 manager_name = #{managerName},
             </if>
-            <if test="managerPhone != null and managerPhone != ''">
+            <if test="managerPhone != null">
                 manager_phone = #{managerPhone},
             </if>
-            <if test="address != null and address != ''">
+            <if test="address != null">
                 address = #{address},
             </if>
             <if test="delFlag != null">

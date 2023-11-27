@@ -2,16 +2,19 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
+import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
+import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -22,15 +25,18 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
-public class AssetExitWarehouseRecord {
+public class AssetExitWarehouseRecordController {
+    
+    @Autowired
+    private AssetExitWarehouseRecordService assetExitWarehouseRecordService;
     
     /**
      * @description 新增退库
      * @date 2023/11/21 13:15:41
      * @author HeYafeng
      */
-    /*@PostMapping("/admin/asset/exitWarehouse/save")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetExitWarehouseSaveOrUpdateRequest assetInventorySaveRequest) {
+    @PostMapping("/admin/asset/exitWarehouse/save")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -40,10 +46,10 @@ public class AssetExitWarehouseRecord {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+    
+        assetExitWarehouseSaveRequest.setUid(user.getUid());
         
-        assetInventorySaveRequest.setUid(user.getUid());
-        
-        return assetInventoryService.save(assetInventorySaveRequest);
-    }*/
+        return assetExitWarehouseRecordService.save(assetExitWarehouseSaveRequest);
+    }
     
 }
