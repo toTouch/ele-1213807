@@ -90,5 +90,4 @@ public class CarRentalPackageDepositRefundPo extends BasicCarPo {
      */
     private Long auditTime;
 
-
 }

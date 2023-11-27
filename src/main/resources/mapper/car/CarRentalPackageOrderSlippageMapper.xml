@@ -182,6 +182,15 @@
             `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 1 AND `del_flag` = 0
         </where>
     </select>
+    
+    <!-- 是否存在未缴纳的逾期订单 -->
+    <select id="isExitUnpaidByRentalPackageType" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `late_fee_start_time` <![CDATA[<=]]> #{time} AND `pay_state` NOT IN (2, 5) AND `rental_package_type` = #{rentalPackageType} AND `del_flag` = 0
+        </where>
+    </select>
+    
 
     <!-- 是否存在未缴纳的逾期订单 -->
     <select id="isExitUnpaid" resultType="java.lang.Integer">
