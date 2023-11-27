@@ -4982,7 +4982,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
-            excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
+           
+            // 获取柜机类型
+            Integer exchangeType = null;
+            if (Objects.nonNull(cabinetModel.getExchangeType())){
+                exchangeType = cabinetModel.getExchangeType();
+            }
+            
+            if (Objects.isNull(exchangeType)){
+                exchangeType = cabinetVO.getExchangeType();
+            }
+            
+            excelVO.setExchangeType(acquireExchangeType(exchangeType));
             
             ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(),
                     cabinetVO.getDeviceName());
