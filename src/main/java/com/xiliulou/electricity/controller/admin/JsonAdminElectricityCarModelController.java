@@ -103,6 +103,7 @@ public class JsonAdminElectricityCarModelController {
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "manufacturerName", required = false) String manufacturerName,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "uid", required = false) Long uid) {
@@ -140,6 +141,7 @@ public class JsonAdminElectricityCarModelController {
                 .offset(offset)
                 .size(size)
                 .name(name)
+                .manufacturerName(manufacturerName)
                 .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .storeId(storeId)

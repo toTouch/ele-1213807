@@ -32,11 +32,14 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
         select
         tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id,
-        tecm.store_id, tecm.rent_type, tecm.car_deposit, tecm.other_properties, tecm.`rented_quantity`
+        tecm.store_id, tecm.rent_type, tecm.car_deposit, tecm.other_properties, tecm.`rented_quantity`, tecm.manufacturer_name
         from t_electricity_car_model tecm
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tecm.name = #{query.name}
+        </if>
+        <if test="query.manufacturerName != null and query.manufacturerName != ''">
+            and manufacturer_name like concat('%', #{manufacturerName}, '%')
         </if>
         <if test="query.tenantId != null">
             and tecm.tenant_id = #{query.tenantId}
