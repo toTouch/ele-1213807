@@ -241,7 +241,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
             } catch (Exception e) {
                 log.error("OFFLINE EXCHANGE ERROR! carRentalPackageMember error, uid={}", user.getUid(), e);
-                return;
             }
         } else {
             log.warn("OFFLINE EXCHANGE WARN! user not pay deposit uid={}", user.getUid());
