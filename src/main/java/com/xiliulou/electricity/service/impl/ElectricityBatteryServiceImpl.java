@@ -234,9 +234,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, batteryAddRequest.getSn())
-                .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
-        if (count > 0) {
+        Integer count = electricitybatterymapper.existBySn(batteryAddRequest.getSn());
+        if (Objects.nonNull(count)) {
             return R.fail("100224", "该电池SN已存在!无法重复创建");
         }
         
@@ -266,6 +265,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         saveBattery.setWarehouseId(batteryAddRequest.getWarehouseId());
+        saveBattery.setVoltage(NumberConstant.ZERO);
+        saveBattery.setCapacity(NumberConstant.ZERO);
         saveBattery.setCreateTime(System.currentTimeMillis());
         saveBattery.setUpdateTime(System.currentTimeMillis());
         saveBattery.setTenantId(TenantContextHolder.getTenantId());
