@@ -307,6 +307,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return R.ok();
     }
     
+    @Slave
     @Override
     public List<String> listSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel) {
         return electricitybatterymapper.selectListSnByFranchiseeId(queryModel);

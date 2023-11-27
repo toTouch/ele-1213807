@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
 @Service
 public class AssetInventoryServiceImpl implements AssetInventoryService {
     
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ASSET_INVENTORY_BATTERY_HANDLE_THREAD_POOL", 2, "asset_inventory_battery_handle_thread");
+    
     @Autowired
     private AssetInventoryMapper assetInventoryMapper;
     
@@ -69,8 +73,15 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(assetInventorySaveOrUpdateRequest.getUid()).tenantId(tenantId)
                 .delFlag(AssetInventory.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
+        //异步执行将电池数据导入到资产详情表
+        //executorService.execute();
+        
+        
+        
         return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
     }
+    
+    
     
     @Slave
     @Override
@@ -92,6 +103,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return rspList;
     }
     
+    @Slave
     @Override
     public Integer countTotal(AssetInventoryRequest assetInventoryRequest) {
         //模型转换
@@ -102,6 +114,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return assetInventoryMapper.countTotal(assetInventoryQueryModel);
     }
     
+    @Slave
     @Override
     public AssetInventoryVO queryById(Long id) {
         AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
@@ -112,6 +125,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return assetInventoryVO;
     }
     
+    @Slave
     @Override
     public Integer queryInventoryStatusByFranchiseeId(Long franchiseeId, Integer type) {
         

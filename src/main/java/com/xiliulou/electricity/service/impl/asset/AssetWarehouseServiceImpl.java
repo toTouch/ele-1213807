@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -84,6 +85,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         return rspList;
     }
     
+    @Slave
     public Integer countTotal(AssetWarehouseRequest assetInventoryRequest) {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
@@ -92,6 +94,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         return assetWarehouseMapper.countTotal(assetWarehouseQueryModel);
     }
     
+    @Slave
     @Override
     public List<AssetWarehouseNameVO> listWarehouseNames(AssetWarehouseRequest assetInventoryRequest) {
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
@@ -111,6 +114,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         return rspList;
     }
     
+    @Slave
     @Override
     public AssetWarehouseNameVO queryById(Long id) {
         AssetWarehouseNameVO assetWarehouseNameVO = new AssetWarehouseNameVO();
@@ -158,6 +162,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
     
+    @Slave
     @Override
     public Integer existsByName(String name) {
         return assetWarehouseMapper.existsByName(TenantContextHolder.getTenantId(), name);
