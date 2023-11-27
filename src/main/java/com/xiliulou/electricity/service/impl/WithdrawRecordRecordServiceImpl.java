@@ -401,7 +401,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		//校验姓名
 		if (!Objects.equals(bankCard.getEncBindUserName(), query.getName())) {
 			log.error("phone is not equal! uName:{} ,qName:{},uid:{}", bankCard.getEncBindUserName(), query.getName(), query.getUid());
-			return R.fail("PAY_TRANSFER.0010", "姓名与本人姓名不符");
+			return R.fail("PAY_TRANSFER.0010", "姓名与绑定人不符");
 		}
 
 		if (!bankCard.getEncBindIdNumber().contains(query.getIdNumber())) {
