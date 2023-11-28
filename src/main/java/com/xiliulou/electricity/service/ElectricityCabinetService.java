@@ -242,4 +242,6 @@ public interface ElectricityCabinetService {
     void batchUpdate(List<ElectricityCabinet> list);
     
     R queryElectricityCabinetExtendData(Integer electricityCabinetId);
+    
+    R showBatteryVAndCapacity(Integer electricityCabinetId);
 }

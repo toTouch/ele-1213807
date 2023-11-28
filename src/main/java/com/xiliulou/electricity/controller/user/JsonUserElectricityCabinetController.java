@@ -103,6 +103,16 @@ public class JsonUserElectricityCabinetController extends BaseController {
 
 		return electricityCabinetService.showInfoByDistanceV2(electricityCabinetQuery);
 	}
+	
+	/**
+	 * 柜机电压容量适配修改
+	 * @param electricityCabinetId
+	 * @return
+	 */
+	@GetMapping(value = "/outer/electricityCabinet/showBatteryVAndCapacity")
+	public R showBatteryVAndCapacity(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId) {
+		return electricityCabinetService.showBatteryVAndCapacity(electricityCabinetId);
+	}
 
 	/**
 	 * 根据柜机位置搜索 TODO 优化
