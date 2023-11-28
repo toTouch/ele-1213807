@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.asset.invantoryDetail;
+package com.xiliulou.electricity.bo.asset;
 
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;

@@ -2,8 +2,8 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
-import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -60,9 +58,9 @@ public class AssetExitWarehouseRecordController {
      * @date 2023/11/21 18:17:54
      * @author HeYafeng
      */
-    /*@GetMapping("/admin/asset/warehouse/exit/pageCount")
+    @GetMapping("/admin/asset/warehouse/exit/pageCount")
     public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "type", required = false) Integer status) {
+            @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -73,17 +71,22 @@ public class AssetExitWarehouseRecordController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        assetExitWarehouseRequest assetInventoryRequest = AssetInventoryRequest.builder().orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
+        AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest = AssetExitWarehouseRecordRequest
+                .builder()
+                .orderNo(orderNo)
+                .franchiseeId(franchiseeId)
+                .type(type)
+                .build();
         
-        return R.ok(assetInventoryService.countTotal(assetInventoryRequest));
-    }*/
+        return R.ok(assetExitWarehouseRecordService.countTotal(assetExitWarehouseRecordRequest));
+    }
     
     /**
      * @description 资产退库分页
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */
-   /* @GetMapping("/admin/asset/warehouse/exit/page")
+    @GetMapping("/admin/asset/warehouse/exit/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo", required = false) String orderNo,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "type", required = false) Integer type) {
         if (size < 0 || size > 50) {
@@ -103,10 +106,17 @@ public class AssetExitWarehouseRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+    
+        AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest = AssetExitWarehouseRecordRequest
+                .builder()
+                .size(size)
+                .offset(offset)
+                .orderNo(orderNo)
+                .franchiseeId(franchiseeId)
+                .type(type)
+                .build();
         
-        AssetInventoryRequest assetInventoryRequest = AssetInventoryRequest.builder().size(size).offset(offset).orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
-        
-        return R.ok(assetInventoryService.listByFranchiseeId(assetInventoryRequest));
-    }*/
+        return R.ok(assetExitWarehouseRecordService.listByFranchiseeId(assetExitWarehouseRecordRequest));
+    }
     
 }

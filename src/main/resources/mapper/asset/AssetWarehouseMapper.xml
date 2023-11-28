@@ -70,7 +70,7 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
-    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.warehouse.AssetWarehouseBO">
+    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseBO">
         SELECT
         <include refid="basic_field"/>
         FROM t_asset_warehouse
@@ -95,7 +95,7 @@
         </where>
     </select>
     
-    <select id="selectListWarehouseNames" resultType="com.xiliulou.electricity.bo.asset.warehouse.AssetWarehouseNameBO">
+    <select id="selectListWarehouseNames" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO">
         select id, name
         from t_asset_warehouse
         <where>
@@ -108,7 +108,7 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectById" resultType="com.xiliulou.electricity.bo.asset.warehouse.AssetWarehouseNameBO">
+    <select id="selectById" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO">
         select
         <include refid="basic_field"/>
         from t_asset_warehouse where del_flag = 0 and id = #{id}

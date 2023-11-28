@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
+import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -13,4 +17,8 @@ import org.springframework.stereotype.Repository;
 public interface AssetExitWarehouseRecordMapper {
     
     Integer insertOne(AssetExitWarehouseSaveQueryModel assetExitWarehouseSaveQueryModel);
+    
+    List<AssetExitWarehouseBO> selectListByFranchiseeId(AssetExitWarehouseQueryModel assetExitWarehouseQueryModel);
+    
+    Integer countTotal(AssetExitWarehouseQueryModel assetExitWarehouseQueryModel);
 }

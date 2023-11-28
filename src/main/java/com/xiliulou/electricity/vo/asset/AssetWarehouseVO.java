@@ -1,13 +1,18 @@
 package com.xiliulou.electricity.vo.asset;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
  * @description 库房VO
  * @date 2023/11/21 20:20:13
  */
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
 public class AssetWarehouseVO {
     
