@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
@@ -91,8 +94,8 @@ public class ActivityServiceImpl implements ActivityService {
     public Triple<Boolean, String, Object> userActivityInfo() {
         ActivityUserInfoVO activityUserInfoVO = new ActivityUserInfoVO();
 
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
-        activityUserInfoVO.setInvitationActivity(Objects.isNull(invitationActivityUser) ? Boolean.FALSE : Boolean.TRUE);
+        List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        activityUserInfoVO.setInvitationActivity(CollectionUtils.isEmpty(invitationActivityUserList) ? Boolean.FALSE : Boolean.TRUE);
 
         return Triple.of(true, "", activityUserInfoVO);
     }
@@ -131,94 +134,92 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleActivityByPackage(ActivityProcessDTO activityProcessDTO) {
-
+    
         String orderNo = activityProcessDTO.getOrderNo();
         Integer packageType = activityProcessDTO.getType();
         MDC.put(CommonConstant.TRACE_ID, activityProcessDTO.getTraceId());
         log.info("Activity by package flow start, orderNo = {}, package type = {}", orderNo, packageType);
-
+    
         String value = orderNo + "_" + packageType;
-        if (!redisService
-                .setNx(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value, value, 10 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value, value, TimeConstant.TEN_SECOND_MILLISECOND, false)) {
             log.error("Handle activity by purchase package error, operations frequently, order number = {}, package type = {}", orderNo, packageType);
         }
-
-        try{
-
-            if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)){
+    
+        try {
+        
+            if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)) {
                 log.info("Activity flow for battery package, orderNo = {}", orderNo);
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
-
-                if(Objects.isNull(electricityMemberCardOrder)){
+            
+                if (Objects.isNull(electricityMemberCardOrder)) {
                     log.info("Activity flow for battery package error, Not found for battery package order, order number = {}", orderNo);
                     return Triple.of(false, "110001", "当前换电套餐订单不存在");
                 }
-
+            
                 Long uid = electricityMemberCardOrder.getUid();
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
-
+            
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.info("handle activity error ! package invalid! uid = {}, order no = {}", uid, orderNo);
                     return Triple.of(false, "110002", "当前换电套餐已暂停");
                 }
-                //判断当前用户是否购买过套餐，如果买过任意套餐，则为老用户,若是第一次购买，则为新用户
-                //Boolean isOldUser = userBizService.isOldUser(electricityMemberCardOrder.getTenantId(), uid);
+            
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-
+            
                 log.info("Activity flow for battery package, is old user= {}", userInfo.getPayCount());
+            
                 //是否是新用户
-                //if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
-                if(userInfo.getPayCount() == 1){
+                if (NumberUtil.equals(userInfo.getPayCount(), NumberConstant.ONE)) {
                     //处理邀请活动
                     userBizService.joinShareActivityProcess(uid, electricityMemberCardOrder.getMemberCardId());
-
+                
                     //处理返现邀请
                     userBizService.joinShareMoneyActivityProcess(uid, electricityMemberCardOrder.getMemberCardId(), electricityMemberCardOrder.getTenantId());
                 }
-
+            
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, electricityMemberCardOrder.getOrderId(), packageType);
                 //处理渠道活动
                 userBizService.joinChannelActivityProcess(uid);
-
-            }else{
+            
+            } else {
                 //开始处理租车，车电一体购买套餐后的活动
                 log.info("Activity flow for car Rental or car with battery package, orderNo = {}", orderNo);
-                CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
-                if(Objects.isNull(carRentalPackageOrderPO)){
+                CarRentalPackageOrderPo carRentalPackageOrderPo = carRentalPackageOrderService.selectByOrderNo(orderNo);
+                if (Objects.isNull(carRentalPackageOrderPo)) {
                     log.info("Activity flow for car Rental or car with battery package error, Not found for car rental package, order number = {}", orderNo);
                     return Triple.of(false, "110003", "当前租车/车电一体套餐订单不存在");
                 }
-
-                Long uid = carRentalPackageOrderPO.getUid();
+            
+                Long uid = carRentalPackageOrderPo.getUid();
                 UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-
+            
                 log.info("Activity flow for car Rental or car with battery package, is old user= {}", userInfo.getPayCount());
-                if(userInfo.getPayCount() == 1){
+                if (userInfo.getPayCount() == 1) {
                     //处理邀请活动
-                    userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId());
-
+                    userBizService.joinShareActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId());
+                
                     //处理返现邀请
-                    userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPO.getRentalPackageId(), carRentalPackageOrderPO.getTenantId());
+                    userBizService.joinShareMoneyActivityProcess(uid, carRentalPackageOrderPo.getRentalPackageId(), carRentalPackageOrderPo.getTenantId());
                 }
-
+            
                 //处理套餐返现活动
                 invitationActivityRecordService.handleInvitationActivityByPackage(userInfo, orderNo, packageType);
                 //处理渠道活动
                 userBizService.joinChannelActivityProcess(uid);
-
+            
             }
-
-        }catch(Exception e){
+        
+        } catch (Exception e) {
             log.error("handle activity for purchase package error, order number = {}, package type = {}", orderNo, packageType, e);
             throw new BizException("110004", e.getMessage());
-        }finally {
+        } finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value);
             MDC.clear();
         }
-
+    
         log.info("Activity by package flow end, orderNo = {}, package type = {}", orderNo, packageType);
-
+    
         return Triple.of(true, "", null);
     }
 

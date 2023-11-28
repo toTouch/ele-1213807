@@ -80,4 +80,8 @@ public interface InvitationActivityJoinHistoryService {
     List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query);
 
     void handelActivityJoinHistoryExpired();
+    
+    Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId);
+    
+    List<InvitationActivityJoinHistory> listByJoinUid(Long uid);
 }

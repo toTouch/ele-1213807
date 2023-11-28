@@ -17,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -369,6 +371,23 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                                   @RequestParam("uid") Long uid,
                                   @RequestParam("refundType") Integer refundType) {
         return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
+    }
+    
+    @PostMapping("/admin/test/refund")
+    public R refund(@RequestParam(value = "refundAmount") BigDecimal refundAmount,
+            @RequestParam(value = "uid") Long uid,
+            @RequestParam(value = "orderId") String orderId,
+            HttpServletRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok();
+        }
+        
+        return returnTripleResult(eleRefundOrderService.refund(refundAmount,uid,orderId,request));
     }
 
     /**

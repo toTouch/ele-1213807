@@ -106,6 +106,44 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private EleUserOperateRecordService eleUserOperateRecordService;
     
     /**
+     * 校验会员状态，是否能够正常租换电<br />
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户UID
+     * @return true(正常)、false(异常)
+     */
+    @Override
+    public boolean verifyMemberSwapBattery(Integer tenantId, Long uid) {
+        long now = System.currentTimeMillis();
+        
+        boolean exitUnpaid = carRentalPackageOrderSlippageService.isExitUnpaidByRentalPackageType(tenantId, uid, RentalPackageTypeEnum.CAR_BATTERY.getCode());
+        if (exitUnpaid) {
+            log.error("verifyMemberSwapBattery, There is a late fee, please pay it first. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
+        }
+        
+        // 查询会员当前信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.error("verifyMemberSwapBattery, not found t_car_rental_package_member_term. uid is {}", uid);
+            throw new BizException("300057", "数据有误");
+        }
+        
+        if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            log.error("verifyMemberSwapBattery. t_car_rental_package_member_term status is {}. uid is {}", memberTermEntity.getStatus(), uid);
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        }
+        
+        if (now >= memberTermEntity.getDueTimeTotal() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
+                && memberTermEntity.getResidue() <= 0L)) {
+            log.error("verifyMemberSwapBattery. t_car_rental_package_member_term time or residue is expire.");
+            throw new BizException("300065", "套餐已过期");
+        }
+        
+        return true;
+    }
+    
+    /**
      * 增加余量次数<br /> 只有状态正常，增加成功返回为true
      *
      * @param tenantId 租户ID

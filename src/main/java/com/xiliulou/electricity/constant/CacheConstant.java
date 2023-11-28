@@ -496,6 +496,8 @@ public interface CacheConstant {
     
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
+    String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
+    
     String CACHE_ASSET_WAREHOUSE_LOCK = "cache_asset_warehouse_lock:";
     String CACHE_ASSET_INVENTORY_LOCK="cache_asset_inventory_lock:";
     String CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK="cache_asset_exit_warehouse_record_lock:";

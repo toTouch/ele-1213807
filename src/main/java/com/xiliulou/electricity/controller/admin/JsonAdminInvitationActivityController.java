@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -49,6 +50,9 @@ public class JsonAdminInvitationActivityController extends BaseController {
 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/admin/invitationActivity/search")
     public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
@@ -65,6 +69,46 @@ public class JsonAdminInvitationActivityController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).name(name).build();
 
         return R.ok(invitationActivityService.selectBySearch(query));
+    }
+    
+    /**
+     * @description 根据邀请人uid获取可参加的活动列表
+     * @param uid 邀请人uid
+     *  @param activityName 活动名称
+     * @date 2023/11/13 15:43:36
+     * @author HeYafeng
+     */
+    @GetMapping("/admin/invitationActivity/searchByUser")
+    public R searchByUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid") Long uid,
+            @RequestParam(value = "activityName", required = false) String activityName) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        User invitationUser = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(invitationUser)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        InvitationActivityQuery query = InvitationActivityQuery
+                .builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .status(NumberConstant.ONE)
+                .name(activityName)
+                .build();
+    
+        return returnTripleResult(invitationActivityService.selectActivityByUser(query, uid));
     }
 
     /**

@@ -215,6 +215,11 @@ public class ElectricityCabinetVO {
      * 柜机中可换电电池型号统计
      */
     private Map<String,Integer> exchangebleMapes;
+    
+    /**
+     * 柜机中可换电电池电压/容量统计
+     */
+    private Map<String,Integer> voltageAndCapacityMapes;
 
     //全天
     public static final String ALL_DAY = "-1";

@@ -8,11 +8,37 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryTrackRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOfflineReportOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOfflineReportOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.vo.OperateMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -23,7 +49,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +124,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
     
+    @Autowired
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+    
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
@@ -135,20 +163,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("OFFLINE EXCHANGE ERROR! userInfo is null! userId={}", user.getUid());
-            return;
-        }
-        
-        //如果用户不是送的套餐
-        //判断用户套餐
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
-                userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("OFFLINE EXCHANGE ERROR! user haven't memberCard uid={}", user.getUid());
-            return;
-        }
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.warn("OFFLINE EXCHANGE ERROR! user haven't memberCard uid={}", user.getUid());
             return;
         }
         
@@ -195,20 +209,44 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             return;
         }
+    
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryMemberCard)) {
+                log.warn("OFFLINE EXCHANGE ERROR! not found userBatteryMemberCard,uid={}", user.getUid());
+                return;
+            }
         
-        if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
-            //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
-            if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
-                //扣除月卡
-                userBatteryMemberCardService.minCount(userBatteryMemberCard);
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("OFFLINE EXCHANGE ERROR! not found batteryMemberCard,uid={}", user.getUid());
+                return;
             }
+        
+            if (!Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.UN_LIMIT) && Objects.nonNull(userBatteryMemberCard.getOrderEffectiveTime())) {
+                //如果换电订单的时间在当前套餐生效时间之后，则扣减次数
+                if (offlineEleOrderVo.getEndTime() > userBatteryMemberCard.getOrderEffectiveTime() && userBatteryMemberCard.getOrderExpireTime() > System.currentTimeMillis()) {
+                    //扣除月卡
+                    userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                }
             
-            //如果套餐没过期并且剩余次数为1
-            if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects.equals(userBatteryMemberCard.getOrderRemainingNumber(),
-                    UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
-                updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineEleOrderVo.getEndTime());
+                //如果套餐没过期并且剩余次数为1
+                if ((userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis()) || Objects
+                        .equals(userBatteryMemberCard.getOrderRemainingNumber(), UserBatteryMemberCard.MEMBER_CARD_ONE_REMAINING)) {
+                    updateUserBatteryMemberCardInfo(userBatteryMemberCard, userInfo, offlineEleOrderVo.getEndTime());
+                }
             }
+        } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            try {
+                carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
+            } catch (Exception e) {
+                log.error("OFFLINE EXCHANGE ERROR! carRentalPackageMember error, uid={}", user.getUid(), e);
+            }
+        } else {
+            log.warn("OFFLINE EXCHANGE WARN! user not pay deposit uid={}", user.getUid());
+            return;
         }
+        
         //查询当前归还的电池信息
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
         //更新旧电池为在仓
@@ -230,7 +268,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         
         ElectricityBattery inWarehouseElectricityBattery = new ElectricityBattery();
         inWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
-        //        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
         inWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
         inWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         inWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());

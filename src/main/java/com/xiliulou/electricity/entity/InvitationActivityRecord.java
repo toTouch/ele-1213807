@@ -27,6 +27,7 @@ public class InvitationActivityRecord {
      * 活动id
      */
     private Long activityId;
+    
     /**
      * 加密code
      */
