@@ -41,6 +41,11 @@ public class AssetInventoryDetailVO {
     private Long franchiseeId;
     
     /**
+     * 所属加盟商名称
+     */
+    private String franchiseeName;
+    
+    /**
      * 是否已盘点(0-未盘点,1-已盘点)
      */
     private Integer inventoryStatus;

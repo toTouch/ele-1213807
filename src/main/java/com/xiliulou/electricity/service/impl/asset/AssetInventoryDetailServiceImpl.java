@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.constant.AssetConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBattery
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -50,6 +52,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     @Autowired
     private AssetInventoryService assetInventoryService;
     
+    @Autowired
+    private FranchiseeService franchiseeService;
+    
     @Slave
     @Override
     public List<AssetInventoryDetailVO> listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
@@ -60,13 +65,15 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         assetInventoryDetailQueryModel.setInventoryStatus(assetInventoryRequest.getStatus());
     
         List<AssetInventoryDetailVO> rspList = new ArrayList<>();
-        
+    
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-                
+            
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
+                assetInventoryDetailVO.setFranchiseeName(franchisee.getName());
             
                 return assetInventoryDetailVO;
             
@@ -175,7 +182,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
             
             // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
-            if(Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getInventoriedTotal(), count)){
+            if(Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)){
                 status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
             }
     
