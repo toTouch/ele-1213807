@@ -54,7 +54,7 @@
         from t_asset_exit_warehouse_record taewr
         left join t_asset_warehouse taw
         <where>
-            taw.id = taw.warehouse_id
+            taw.id = taewr.warehouse_id
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
