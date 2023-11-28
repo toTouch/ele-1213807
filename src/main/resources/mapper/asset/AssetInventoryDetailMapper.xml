@@ -33,8 +33,10 @@
         <where>
             <if test="snList != null and snList.size() > 0">
                 and sn in
-                <foreach collection="snList" item="item" index="index" separator=",">
-                    #{item}
+                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+                    <if test="item != null and item != ''">
+                        #{item}
+                    </if>
                 </foreach>
             </if>
             and tenant_id = #{tenantId} and del_flag=0
