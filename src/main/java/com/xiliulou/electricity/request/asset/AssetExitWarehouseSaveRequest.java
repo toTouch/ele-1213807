@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ public class AssetExitWarehouseSaveRequest {
     /**
      * 退库类型 (1-电柜, 2-电池, 3-车辆)
      */
+    @Range(min = 1, max = 3, message = "退库类型内容不合法")
     @NotNull(message = "退库类型不能为空", groups = {CreateGroup.class})
     private Integer type;
     
@@ -37,7 +39,6 @@ public class AssetExitWarehouseSaveRequest {
     /**
      * 退库门店
      */
-    @NotNull(message = "退库门店不能为空", groups = {CreateGroup.class})
     private Long storeId;
     
     /**
