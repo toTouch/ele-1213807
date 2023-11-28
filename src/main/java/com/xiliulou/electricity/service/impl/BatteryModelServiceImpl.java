@@ -884,9 +884,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         
         return modelList.stream().map(batteryModel -> {
             BrandNameAndBatteryVShortVO vo = new BrandNameAndBatteryVShortVO();
-            vo.setBatteryType(batteryModel.getBatteryType());
-            vo.setBrandName(batteryModel.getBrandName());
-            vo.setBatteryVShort(batteryModel.getBatteryVShort());
+            BeanUtils.copyProperties(batteryModel,vo);
             
             // 赋值复合字段
             StringBuilder brandAndModelName = new StringBuilder();
