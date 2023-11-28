@@ -91,19 +91,4 @@ public class AssetInventory {
      */
     private String remark;
     
-    
-    /**
-     * 盘点状态：进行中
-     */
-    public static final Integer ASSET_INVENTORY_STATUS_TAKING=0;
-    
-    /**
-     * 盘点状态：完成
-     */
-    public static final Integer ASSET_INVENTORY_STATUS_FINISHED=1;
-    
-    public static final Integer DEL_NORMAL = 0;
-    
-    public static final Integer DEL_DEL = 1;
-    
 }

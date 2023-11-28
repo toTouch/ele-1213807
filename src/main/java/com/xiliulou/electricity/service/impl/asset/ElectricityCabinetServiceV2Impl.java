@@ -35,6 +35,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -223,6 +224,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         return Triple.of(true, null, null);
     }
     
+    @Slave
     @Override
     public Integer existsByWarehouseId(Long wareHouseId) {
         
@@ -254,6 +256,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         return rspList;
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public R batchExitWarehouseBySn(ElectricityCabinetBatchExitWarehouseBySnQueryModel exitWarehouseBySnQueryModel) {
     

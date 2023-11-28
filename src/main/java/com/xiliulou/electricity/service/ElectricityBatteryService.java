@@ -123,4 +123,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid);
     
     List<String> listSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
 }

@@ -69,11 +69,4 @@ public class AssetWarehouse {
      */
     private Integer tenantId;
     
-    public static final Integer ASSET_WAREHOUSE_STATUS_ENABLE = 0;
-    
-    public static final Integer ASSET_WAREHOUSE_STATUS_DISABLE = 1;
-    
-    public static final Integer DEL_NORMAL = 0;
-    
-    public static final Integer DEL_DEL = 1;
 }

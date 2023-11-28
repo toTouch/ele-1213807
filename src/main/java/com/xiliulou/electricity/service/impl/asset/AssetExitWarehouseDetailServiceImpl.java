@@ -13,6 +13,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDe
         return assetExitWarehouseDetailMapper.selectListSnByOrderNoAndType(assetExitWarehouseDetailQueryModel);
     }
     
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator, "1", 3 * 1000L, false);

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.asset;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @TableName("t_asset_exit_warehouse_detail")
 public class AssetExitWarehouseDetail {
+    
     /**
      * 主键Id
      */
@@ -29,7 +31,9 @@ public class AssetExitWarehouseDetail {
     private String orderNo;
     
     /**
-     * 退库类型(1-电柜, 2-电池, 3-车辆)
+     * 退库类型 (1-电柜, 2-电池, 3-车辆)
+     *
+     * @see AssetTypeEnum
      */
     private Integer type;
     
@@ -63,7 +67,4 @@ public class AssetExitWarehouseDetail {
      */
     private String remark;
     
-    public static final Integer DEL_NORMAL = 0;
-    
-    public static final Integer DEL_DEL = 1;
 }

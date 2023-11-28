@@ -1343,5 +1343,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, null, electricitybatterymapper.queryPartAttrList(offset, size, franchiseeIds, TenantContextHolder.getTenantId()));
     }
     
+    @Slave
+    @Override
+    public Integer existsByWarehouseId(Long wareHouseId) {
+        
+        return electricitybatterymapper.existsByWarehouseId(wareHouseId);
+    }
     
 }

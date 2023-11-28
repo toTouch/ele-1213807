@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl.asset;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
-import com.xiliulou.electricity.entity.asset.AssetInventoryDetail;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
@@ -96,9 +96,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = snList.stream().map(sn -> {
                 
                 AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(sn)
-                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(queryModel.getFranchiseeId()).inventoryStatus(AssetInventoryDetail.INVENTORY_STATUS_NO)
+                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(queryModel.getFranchiseeId()).inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO)
                         .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(operator).tenantId(queryModel.getTenantId())
-                        .delFlag(AssetInventoryDetail.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                        .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
                 
                 return inventoryDetailSaveQueryModel;
                 

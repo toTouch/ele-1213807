@@ -6,10 +6,10 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.asset.AssetInventory;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryMapper;
@@ -81,9 +81,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
             // 生成资产盘点订单
             AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
-                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetInventory.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
+                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
                     .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId)
-                    .delFlag(AssetInventory.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
             //异步执行将电池数据导入到资产详情表
             if ((Integer) data > NumberConstant.ZERO) {

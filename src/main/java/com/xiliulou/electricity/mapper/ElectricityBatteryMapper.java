@@ -140,4 +140,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer existBySn(String sn);
     
     List<String> selectListSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
 }

@@ -1155,4 +1155,7 @@
             limit #{offset}, #{size}
         </if>
     </select>
+    <select id="existsByWarehouseId" resultType="java.lang.Integer">
+        select 1 from t_electricity_battery where warehouse_id = #{wareHouseId} limit 1;
+    </select>
 </mapper>

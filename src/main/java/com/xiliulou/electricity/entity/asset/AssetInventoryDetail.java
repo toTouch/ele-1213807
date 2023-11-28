@@ -89,18 +89,4 @@ public class AssetInventoryDetail {
      */
     private String remark;
     
-    /**
-     * 0-未盘点
-     */
-    public static final Integer INVENTORY_STATUS_NO = 0;
-    
-    /**
-     * 1-已盘点
-     */
-    public static final Integer INVENTORY_STATUS_YES = 1;
-    
-    public static final Integer DEL_NORMAL = 0;
-    
-    public static final Integer DEL_DEL = 1;
-    
 }

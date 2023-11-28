@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.asset.AssetWarehouse;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -45,6 +47,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Autowired
     private ElectricityCabinetV2Service electricityCabinetV2Service;
     
+    @Autowired
+    private ElectricityBatteryService electricityBatteryService;
+    
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
     
@@ -61,7 +66,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
                     .status(assetWarehouseSaveOrUpdateRequest.getStatus()).managerName(assetWarehouseSaveOrUpdateRequest.getManagerName())
-                    .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetWarehouse.DEL_NORMAL)
+                    .managerPhone(assetWarehouseSaveOrUpdateRequest.getManagerPhone()).address(assetWarehouseSaveOrUpdateRequest.getAddress()).delFlag(AssetConstant.DEL_NORMAL)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
         
             return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
@@ -136,8 +141,6 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Override
     public R deleteById(Long id) {
-        //TODO 该库房有电柜/电池/车辆正在使用，请先解绑后操作
-        
         // 判断库房是否绑定柜机
         Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityCabinet)) {
@@ -145,10 +148,15 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         }
         
         // 判断库房是否绑定电池
+        Integer existsElectricityBattery = electricityBatteryService.existsByWarehouseId(id);
+        if (Objects.nonNull(existsElectricityBattery)) {
+            return R.fail("300801", "该库房有电池正在使用,请先解绑后操作");
+        }
         
-        // 判断库房是否绑定车辆
+        // 判断库房是否绑定车辆 TODO
         
-        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetWarehouse.DEL_DEL)
+        
+        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
                 .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));

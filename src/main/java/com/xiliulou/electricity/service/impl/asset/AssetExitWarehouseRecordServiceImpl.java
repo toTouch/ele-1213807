@@ -4,9 +4,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.asset.AssetExitWarehouseDetail;
-import com.xiliulou.electricity.entity.asset.AssetExitWarehouseRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
@@ -87,7 +86,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         .warehouseId(warehouseId)
                         .operator(operator)
                         .tenantId(tenantId)
-                        .delFlag(AssetExitWarehouseRecord.DEL_NORMAL)
+                        .delFlag(AssetConstant.DEL_NORMAL)
                         .createTime(nowTime)
                         .updateTime(nowTime)
                         .build();
@@ -98,7 +97,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         .orderNo(orderNo)
                         .type(type)
                         .tenantId(tenantId)
-                        .delFlag(AssetExitWarehouseDetail.DEL_NORMAL)
+                        .delFlag(AssetConstant.DEL_NORMAL)
                         .createTime(nowTime)
                         .updateTime(nowTime)
                         .build();
