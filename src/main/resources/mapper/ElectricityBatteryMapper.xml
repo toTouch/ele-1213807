@@ -733,7 +733,7 @@
             (#{c.sn}, #{c.longitude}, #{c.latitude}, #{c.power}, #{c.voltage}, #{c.capacity}, #{c.model}, #{c.status},
             #{c.electricityCabinetId}, #{c.electricityCabinetName}, #{c.uid}, #{c.createTime}, #{c.updateTime},
             #{c.delFlag}, #{c.chargeStatus}, #{c.healthStatus}, #{c.tenantId}, #{c.borrowExpireTime}, #{c.iotCardNumber},
-            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}), #{c.stockStatus})
+            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}, #{c.stockStatus})
         
         </foreach>
     </insert>
