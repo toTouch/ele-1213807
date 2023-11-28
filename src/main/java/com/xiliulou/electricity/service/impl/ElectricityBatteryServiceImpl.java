@@ -22,6 +22,7 @@ import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
@@ -41,6 +43,7 @@ import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
@@ -148,6 +151,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     AssetWarehouseService assetWarehouseService;
     
+    @Autowired
+    AssetInventoryService assetInventoryService;
+    
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
     /**
@@ -250,6 +256,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryAddRequest.getFranchiseeId());
             if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
+                
+                // 校验加盟商是否正在进行资产盘点
+                Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+                if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING )) {
+                    return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+                }
             }
         }
         
@@ -707,7 +719,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getOriginalModel());
-            log.info("batteryModel={}",JsonUtil.toJson(batteryModel));
             if (Objects.nonNull(batteryModel)) {
                 // 赋值复合字段
                 StringBuilder brandAndModelName = new StringBuilder();
@@ -1177,6 +1188,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.isNull(franchisee)) {
                 log.error("Franchisee id is invalid! franchisee id = {}", batteryQuery.getFranchiseeId());
                 return R.fail("000038", "未找到加盟商!");
+            }
+            
+            // 校验加盟商是否正在进行资产盘点
+            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING )) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
             }
             stockStatus = StockStatusEnum.UN_STOCK.getCode();
         } else {
