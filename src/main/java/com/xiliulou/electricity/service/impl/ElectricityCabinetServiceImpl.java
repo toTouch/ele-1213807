@@ -979,7 +979,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
                 assignExchangeableBatteyType(exchangeableList, e);
-                assignExchangeableVoltageAndCapacity(exchangeableList, e);
+               // assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
             
