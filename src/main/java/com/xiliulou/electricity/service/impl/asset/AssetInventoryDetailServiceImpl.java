@@ -10,6 +10,7 @@ import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailBatchInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
+import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -117,21 +120,37 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         
         Integer count = 0;
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+            String orderNo = inventoryRequest.getOrderNo();
+            Integer tenantId = TenantContextHolder.getTenantId();
+            
             AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel
                     .builder()
-                    .orderNo(inventoryRequest.getOrderNo())
+                    .orderNo(orderNo)
                     .status(inventoryRequest.getStatus())
                     .snList(inventoryRequest.getSnList())
                     .operator(operator)
-                    .tenantId(TenantContextHolder.getTenantId())
+                    .tenantId(tenantId)
                     .updateTime(System.currentTimeMillis())
                     .build();
             //批量盘点
             count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
             
+            AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel
+                    .builder()
+                    .orderNo(orderNo)
+                    .tenantId(tenantId)
+                    .build();
+            AssetInventoryVO assetInventoryVO = assetInventoryService.queryByOrderNo(assetInventoryQueryModel);
+            Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
+            
+            // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
+            if(Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getInventoriedTotal(), count)){
+                status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
+            }
+    
             //同步盘点数据
             AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator)
+                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)
                     .updateTime(System.currentTimeMillis()).build();
             
             assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
