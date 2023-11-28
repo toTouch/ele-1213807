@@ -29,15 +29,17 @@
     
     <update id="batchInventoryBySnList">
         update t_asset_inventory_detail
-        set inventoryStatus = 1, operator = #{uid}, status = #{status}
+        set inventory_status = 1, operator = #{operator}, status = #{status}, update_time = #{updateTime}
         <where>
             <if test="snList != null and snList.size() > 0">
                 and sn in
-                <foreach collection="snList" item="item" index="index" separator=",">
-                    #{item}
+                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+                    <if test="item != null and item != ''">
+                        #{item}
+                    </if>
                 </foreach>
             </if>
-            and tenant_id = #{tenantId} and del_flag=0
+            and tenant_id = #{tenantId} and order_no = #{orderNo}
         </where>
     </update>
     
