@@ -706,7 +706,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setModel(batteryShortType);
             }
             
-            BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getModel());
+            BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getOriginalModel());
             log.info("batteryModel={}",JsonUtil.toJson(batteryModel));
             if (Objects.nonNull(batteryModel)) {
                 // 赋值复合字段
