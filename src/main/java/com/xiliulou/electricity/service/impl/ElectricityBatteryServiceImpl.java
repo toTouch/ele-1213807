@@ -339,6 +339,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             electricityBattery.setTenantId(TenantContextHolder.getTenantId());
             electricityBattery.setFranchiseeId(franchiseeId);
             
+            electricityBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
             saveList.add(electricityBattery);
         }
         
