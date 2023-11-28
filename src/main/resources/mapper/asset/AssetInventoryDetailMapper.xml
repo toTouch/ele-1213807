@@ -29,7 +29,7 @@
     
     <update id="batchInventoryBySnList">
         update t_asset_inventory_detail
-        set inventoryStatus = 1, operator = #{operator}, status = #{status}, update_time = #{updateTime}
+        set inventory_status = 1, operator = #{operator}, status = #{status}, update_time = #{updateTime}
         <where>
             <if test="snList != null and snList.size() > 0">
                 and sn in
