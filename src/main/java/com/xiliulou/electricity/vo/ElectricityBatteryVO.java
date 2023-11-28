@@ -149,5 +149,24 @@ public class ElectricityBatteryVO {
      * gps
      */
     private Double sumV;
-
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+    
+    /**
+     * 库房Id
+     */
+    private Long warehouseId;
+    
+    /**
+     * 库房Id
+     */
+    private String warehouseName;
+    
+    /**
+     * 品牌型号
+     */
+    private String brandAndModelName;
 }

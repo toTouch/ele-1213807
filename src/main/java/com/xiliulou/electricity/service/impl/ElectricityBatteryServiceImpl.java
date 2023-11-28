@@ -26,6 +26,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
@@ -40,12 +41,14 @@ import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryLocationTrackQuery;
@@ -141,6 +144,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Autowired
     TenantService tenantService;
+    
+    @Autowired
+    AssetWarehouseService assetWarehouseService;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -697,6 +703,33 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             electricityBatteryVO.setOriginalModel(electricityBatteryVO.getModel());
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 electricityBatteryVO.setModel(batteryShortType);
+            }
+            
+            if(StringUtils.isNotBlank(electricityBatteryVO.getModel())){
+                BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getModel());
+                
+                // 赋值复合字段
+                StringBuilder brandAndModelName = new StringBuilder();
+                if (StringUtils.isNotBlank(batteryModel.getBrandName())) {
+                    brandAndModelName.append(batteryModel.getBrandName());
+                }
+                
+                if (StringUtils.isNotBlank(brandAndModelName.toString())) {
+                    brandAndModelName.append(StringConstant.FORWARD_SLASH);
+                }
+                
+                if (StringUtils.isNotBlank(batteryModel.getBatteryVShort())) {
+                    brandAndModelName.append(batteryModel.getBatteryVShort());
+                }
+                electricityBatteryVO.setBrandAndModelName(brandAndModelName.toString());
+            }
+            
+            //设置仓库名称
+            if (Objects.nonNull(electricityBatteryVO.getWarehouseId())) {
+                AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(electricityBatteryVO.getWarehouseId());
+                if (Objects.nonNull(assetWarehouseNameVO)) {
+                    electricityBatteryVO.setWarehouseName(assetWarehouseNameVO.getName());
+                }
             }
             
             return electricityBatteryVO;
