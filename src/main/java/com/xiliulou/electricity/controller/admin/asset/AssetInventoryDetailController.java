@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,7 +86,7 @@ public class AssetInventoryDetailController {
      * @date 2023/11/21 13:23:50
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/inventory/detail/batchInventory")
+    @PostMapping("/admin/asset/inventory/detail/batchInventory")
     public R batchUpdate(@RequestBody @Validated(value = UpdateGroup.class) AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -97,9 +98,7 @@ public class AssetInventoryDetailController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        assetInventoryDetailBatchInventoryRequest.setUid(user.getUid());
-        
-        return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest);
+        return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest, user.getUid());
         
     }
     

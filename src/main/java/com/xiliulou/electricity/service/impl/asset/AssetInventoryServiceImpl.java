@@ -64,9 +64,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     private FranchiseeService franchiseeService;
     
     @Override
-    public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest) {
+    public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest, Long operator) {
     
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + assetInventorySaveOrUpdateRequest.getUid(), "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -74,8 +74,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         try {
             Integer tenantId = TenantContextHolder.getTenantId();
             Long franchiseeId = assetInventorySaveOrUpdateRequest.getFranchiseeId();
-            String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, assetInventorySaveOrUpdateRequest.getUid());
-            Long operator = assetInventorySaveOrUpdateRequest.getUid();
+            String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, operator);
             // 默认资产类型是电池,获取查询电池数量
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
@@ -97,7 +96,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
             return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
         } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + assetInventorySaveOrUpdateRequest.getUid());
+            redisService.delete(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator);
         }
     }
     

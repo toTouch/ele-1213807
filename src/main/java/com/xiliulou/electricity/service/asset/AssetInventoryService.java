@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface AssetInventoryService {
     
-    R save(AssetInventorySaveOrUpdateRequest assetInventorySaveRequest);
+    R save(AssetInventorySaveOrUpdateRequest assetInventorySaveRequest, Long operator);
     
     List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest);
     

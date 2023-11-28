@@ -48,9 +48,7 @@ public class AssetExitWarehouseRecordController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        assetExitWarehouseSaveRequest.setUid(user.getUid());
-        
-        return assetExitWarehouseRecordService.save(assetExitWarehouseSaveRequest);
+        return assetExitWarehouseRecordService.save(assetExitWarehouseSaveRequest, user.getUid());
     }
     
     /**

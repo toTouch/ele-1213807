@@ -48,9 +48,7 @@ public class AssetInventoryController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        assetInventorySaveRequest.setUid(user.getUid());
-        
-        return assetInventoryService.save(assetInventorySaveRequest);
+        return assetInventoryService.save(assetInventorySaveRequest, user.getUid());
     }
     
     /**

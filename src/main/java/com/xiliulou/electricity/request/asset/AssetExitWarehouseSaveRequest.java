@@ -52,9 +52,4 @@ public class AssetExitWarehouseSaveRequest {
     @NotNull(message = "退库库房不能为空", groups = {CreateGroup.class})
     private Long warehouseId;
     
-    /**
-     * 操作人
-     */
-    private Long uid;
-    
 }

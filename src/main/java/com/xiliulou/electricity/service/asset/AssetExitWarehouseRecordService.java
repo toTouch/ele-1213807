@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface AssetExitWarehouseRecordService {
     
-    R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest);
+    R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator);
     
     List<AssetExitWarehouseVO> listByFranchiseeId(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
     

@@ -112,7 +112,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     }
     
     @Override
-    public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest) {
+    public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest, Long operator) {
         
         Integer count = 0;
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
@@ -121,7 +121,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             
             //同步盘点数据
             AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(inventoryRequest.getUid())
+                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator)
                     .updateTime(System.currentTimeMillis()).build();
             
             assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
