@@ -73,7 +73,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId,
             @Param("updateBattery") ElectricityBattery updateBattery);
     
-    int bindFranchiseeId(@Param("batteryQuery") BindElectricityBatteryQuery batteryQuery);
+    int bindFranchiseeId(@Param("batteryQuery") BindElectricityBatteryQuery batteryQuery, @Param("stockStatus") Integer stockStatus);
     
     List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
     

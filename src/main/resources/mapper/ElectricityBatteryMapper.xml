@@ -544,7 +544,8 @@
     <update id="bindFranchiseeId">
         update t_electricity_battery
         set
-        franchisee_id=#{batteryQuery.franchiseeId}
+        franchisee_id=#{batteryQuery.franchiseeId},
+        stock_status = #{stockStatus}
         where id in
         <foreach collection="batteryQuery.electricityBatteryIdList" item="id" index="index" open="(" close=")"
             separator=",">

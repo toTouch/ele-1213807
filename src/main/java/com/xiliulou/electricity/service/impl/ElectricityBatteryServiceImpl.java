@@ -1166,6 +1166,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.ok();
         }
         
+        Integer stockStatus = null;
         if (Objects.nonNull(batteryQuery.getFranchiseeId())) {
             //进入电池绑定流程
             log.info("bind franchisee for battery. franchisee id: {}", batteryQuery.getFranchiseeId());
@@ -1174,13 +1175,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 log.error("Franchisee id is invalid! franchisee id = {}", batteryQuery.getFranchiseeId());
                 return R.fail("000038", "未找到加盟商!");
             }
+            stockStatus = StockStatusEnum.UN_STOCK.getCode();
         } else {
             //进入电池解绑流程
             log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
             batteryQuery.setFranchiseeId(null);
+            stockStatus = StockStatusEnum.STOCK.getCode();
         }
         
-        return R.ok(electricitybatterymapper.bindFranchiseeId(batteryQuery));
+        return R.ok(electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus));
     }
     
     @Override
