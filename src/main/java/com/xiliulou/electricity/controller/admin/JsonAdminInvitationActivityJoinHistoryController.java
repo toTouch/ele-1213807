@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -57,23 +54,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
+        
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
                 .size(size)
                 .offset(offset)
@@ -86,8 +67,6 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .activityName(activityName)
                 .status(status)
                 .payCount(payCount)
-                .storeIds(storeIds)
-                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .phone(joinUserPhone).build();
 
@@ -110,23 +89,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-
+        
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
                 .joinUid(joinUid)
                 .userName(joinUserName)
@@ -137,8 +100,6 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .activityName(activityName)
                 .status(status)
                 .payCount(payCount)
-                .storeIds(storeIds)
-                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .phone(joinUserPhone)
                 .build();
