@@ -8,14 +8,14 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 资产盘点VO
- * @date 2023/11/20 16:28:28
+ * @description 退库详情VO
+ * @date 2023/11/28 08:46:16
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class AssetInventoryVO {
+public class AssetExitWarehouseVO {
     
     /**
      * 主键Id
@@ -23,46 +23,41 @@ public class AssetInventoryVO {
     private Long id;
     
     /**
-     * 盘点单号
+     * 退库单号
      */
     private String orderNo;
     
     /**
-     * 盘点加盟商ID
+     * 退库加盟商
      */
     private Long franchiseeId;
     
     /**
-     * 资产类型 (1-电柜, 2-电池, 3-车辆)
+     * 退库门店
+     */
+    private Long storeId;
+    
+    /**
+     * 退库类型(1-电柜, 2-电池, 3-车辆)
      *
      * @see AssetTypeEnum
      */
     private Integer type;
     
     /**
-     * 盘点状态(0-进行中,1-完成)
+     * 退库仓库ID
      */
-    private Integer status;
+    private Long warehouseId;
     
     /**
-     * 已盘点数
+     * 退库仓库名称
      */
-    private Integer inventoriedTotal;
+    private Long warehouseName;
     
     /**
-     * 待盘点数
+     * 备注
      */
-    private Integer pendingTotal;
-    
-    /**
-     * 盘点结束时间
-     */
-    private Long finishTime;
-    
-    /**
-     * 操作人
-     */
-    private Long operator;
+    private String remark;
     
     /**
      * 租户ID
@@ -85,10 +80,8 @@ public class AssetInventoryVO {
     private Long updateTime;
     
     /**
-     * 备注
+     * 操作人
      */
-    private String remark;
-    
-    private String franchiseeName;
+    private Long operator;
     
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * @author HeYafeng
- * @description 资产盘点服务
+ * @description 资产盘点业务
  * @date 2023/11/20 13:21:26
  */
 public interface AssetInventoryService {

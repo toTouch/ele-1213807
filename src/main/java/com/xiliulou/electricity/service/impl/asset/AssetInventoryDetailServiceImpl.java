@@ -2,14 +2,13 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.entity.asset.AssetInventoryDetail;
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
-import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
@@ -18,18 +17,20 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
- * @description 资产盘点详情服务
+ * @description 资产盘点详情业务
  * @date 2023/11/20 17:25:44
  */
 
@@ -47,13 +48,27 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Slave
     @Override
-    public R listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
+    public List<AssetInventoryDetailVO> listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest) {
         // 模型转换
         AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
         assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
+    
+        List<AssetInventoryDetailVO> rspList = new ArrayList<>();
         
-        return R.ok(assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel));
+        List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
+        if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
+            rspList = assetInventoryDetailBOList.stream().map(item -> {
+                
+                AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
+                BeanUtils.copyProperties(item, assetInventoryDetailVO);
+            
+                return assetInventoryDetailVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        return rspList;
     }
     
     @Slave

@@ -238,9 +238,11 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         electricityCabinetListSnByFranchiseeQueryModel.setTenantId(TenantContextHolder.getTenantId());
     
         List<ElectricityCabinetVO> rspList = new ArrayList<>();
+        
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByFranchiseeIdAndStockStatus(electricityCabinetListSnByFranchiseeQueryModel);
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
             rspList = electricityCabinetBOList.stream().map(item -> {
+               
                 ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
                 BeanUtil.copyProperties(item, electricityCabinetVO);
             

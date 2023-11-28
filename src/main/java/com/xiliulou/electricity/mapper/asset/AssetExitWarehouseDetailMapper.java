@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
 import org.apache.ibatis.annotations.Param;
@@ -17,4 +18,6 @@ import java.util.List;
 public interface AssetExitWarehouseDetailMapper {
     
     Integer batchInsert(@Param("detailSaveQueryModelList") List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList);
+    
+    List<String> selectListSnByOrderNoAndType(AssetExitWarehouseDetailQueryModel assetExitWarehouseDetailQueryModel);
 }

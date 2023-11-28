@@ -59,7 +59,7 @@ public class AssetInventoryDetailController {
         
         AssetInventoryDetailRequest assetInventoryRequest = AssetInventoryDetailRequest.builder().size(size).offset(offset).franchiseeId(franchiseeId).orderNo(orderNo).status(status).build();
         
-        return assetInventoryDetailService.listByOrderNo(assetInventoryRequest);
+        return R.ok(assetInventoryDetailService.listByOrderNo(assetInventoryRequest));
     }
     
     @GetMapping("/admin/asset/inventory/detail/pageCount")

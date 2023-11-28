@@ -3,7 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id,
+        id
+        ,
         order_no,
         type,
         sn,
@@ -15,13 +16,24 @@
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_asset_inventory_detail(order_no, type, sn, tenant_id, del_flag, create_time, update_time, remark)
+        insert into t_asset_exit_warehouse_detail(order_no, type, sn, tenant_id, del_flag, create_time, update_time, remark)
         values
         <foreach item="item" index="index" collection="detailSaveQueryModelList" separator=",">
             (#{item.orderNo},#{item.type},#{item.sn}, #{item.tenantId}, #{item.delFlag},
             #{item.createTime}, #{item.updateTime}, #{item.remark})
         </foreach>
     </insert>
+    
+    <select id="selectListSnByOrderNoAndType" resultType="java.lang.String">
+        select sn
+        from t_asset_exit_warehouse_detail
+        where del_flag = 0
+          and tenant_id = #{tenantId}
+          and order_no = #{orderNo}
+          and type = #{type}
+        order by id desc
+            limit #{offset}, #{size}
+    </select>
 
 </mapper>
 

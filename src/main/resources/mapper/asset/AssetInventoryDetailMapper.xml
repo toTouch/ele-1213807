@@ -37,7 +37,7 @@
         and tenant_id = #{tenantId} and del_flag=0
     </update>
     
-    <select id="selectListByOrderNo" resultType="com.xiliulou.electricity.bo.asset.invantoryDetail.AssetInventoryDetailBO">
+    <select id="selectListByOrderNo" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO">
         select
         <include refid="basic_field"/>
         from t_asset_inventory_detail

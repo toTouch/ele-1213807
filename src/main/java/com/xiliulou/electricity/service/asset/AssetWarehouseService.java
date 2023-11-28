@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * @author HeYafeng
- * @description 库房服务
+ * @description 库房业务
  * @date 2023/11/21 15:56:29
  */
 public interface AssetWarehouseService {
