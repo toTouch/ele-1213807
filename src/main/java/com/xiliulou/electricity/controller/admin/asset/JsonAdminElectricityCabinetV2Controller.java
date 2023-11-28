@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.asset;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
@@ -125,7 +126,8 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        ElectricityCabinetSnSearchRequest electricityCabinetSnSearchRequest = ElectricityCabinetSnSearchRequest.builder().franchiseeId(franchiseeId).size(size).offset(offset).build();
+        ElectricityCabinetSnSearchRequest electricityCabinetSnSearchRequest = ElectricityCabinetSnSearchRequest.builder().franchiseeId(franchiseeId)
+                .stockStatus(StockStatusEnum.UN_STOCK.getCode()).size(size).offset(offset).build();
         
         return R.ok(electricityCabinetV2Service.listByFranchiseeIdAndStockStatus(electricityCabinetSnSearchRequest));
         

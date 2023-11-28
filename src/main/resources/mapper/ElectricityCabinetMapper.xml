@@ -867,6 +867,9 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
+        <if test="stockStatus != null">
+            and stock_status = #{stockStatus}
+        </if>
         order by id
         <if test="offset != null and size!= null">
             limit #{offset}, #{size}

@@ -106,7 +106,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList;
                 detailSaveQueryModelList = snList.stream().map(sn -> {
                     AssetExitWarehouseDetailSaveQueryModel assetExitWarehouseDetailSaveQueryModel = new AssetExitWarehouseDetailSaveQueryModel();
-                    BeanUtils.copyProperties(assetExitWarehouseDetailSaveQueryModel, detailSaveQueryModel);
+                    BeanUtils.copyProperties(detailSaveQueryModel, assetExitWarehouseDetailSaveQueryModel);
                     assetExitWarehouseDetailSaveQueryModel.setSn(sn);
                     
                     return assetExitWarehouseDetailSaveQueryModel;
@@ -122,7 +122,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         .snList(snList)
                         .build();
                 
-                // 入库
+                // 持久化
                 handleExitWarehouse(assetExitWarehouseSaveQueryModel, detailSaveQueryModelList, exitWarehouseBySnQueryModel, operator);
                 
                 // 清理缓存
