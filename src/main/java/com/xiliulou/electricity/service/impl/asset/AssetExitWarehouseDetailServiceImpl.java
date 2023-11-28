@@ -41,8 +41,8 @@ public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDe
         return assetExitWarehouseDetailMapper.selectListSnByOrderNoAndType(assetExitWarehouseDetailQueryModel);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
