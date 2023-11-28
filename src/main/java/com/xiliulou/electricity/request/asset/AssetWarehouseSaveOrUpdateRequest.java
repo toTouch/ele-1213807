@@ -60,5 +60,4 @@ public class AssetWarehouseSaveOrUpdateRequest {
     @Length(max = 50, message = "名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String managerPhone;
     
-    private Long uid;
 }

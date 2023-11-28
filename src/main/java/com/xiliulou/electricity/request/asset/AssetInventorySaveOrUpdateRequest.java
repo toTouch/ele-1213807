@@ -38,9 +38,4 @@ public class AssetInventorySaveOrUpdateRequest {
      */
     private Integer type;
     
-    /**
-     * 操作人uid
-     */
-    private Long uid;
-    
 }

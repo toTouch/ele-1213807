@@ -45,7 +45,7 @@ public class JsonAdminWarehouseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return assetWarehouseService.save(assetWarehouseSaveOrUpdateRequest);
+        return assetWarehouseService.save(assetWarehouseSaveOrUpdateRequest, user.getUid());
     }
     
     @PostMapping(value = "/admin/asset/warehouse/delete/{id}")

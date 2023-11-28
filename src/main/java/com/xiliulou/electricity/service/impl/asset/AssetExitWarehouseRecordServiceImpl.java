@@ -59,9 +59,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     private ElectricityCarService electricityCarService;
     
     @Override
-    public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest) {
+    public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
         
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + assetExitWarehouseSaveRequest.getUid(), "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -73,9 +73,8 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 Long storeId = assetExitWarehouseSaveRequest.getStoreId();
                 Integer type = assetExitWarehouseSaveRequest.getType();
                 Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
-                Long operator = assetExitWarehouseSaveRequest.getUid();
                 List<String> snList = assetExitWarehouseSaveRequest.getSnList();
-                String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, assetExitWarehouseSaveRequest.getUid());
+                String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
                 Long nowTime = System.currentTimeMillis();
                 
                 // 封装资产退库记录数据
@@ -131,7 +130,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             }
             return R.ok();
         } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + assetExitWarehouseSaveRequest.getUid());
+            redisService.delete(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + operator);
         }
     }
     

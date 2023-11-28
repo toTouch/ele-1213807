@@ -29,7 +29,7 @@ public class AssetInventoryDetailBatchInventoryRequest {
     private String orderNo;
     
     /**
-     * 盘点状态
+     * '盘点状态(0-正常,1-故障, 2-库存, 3-丢失, 4-报废)',
      */
     @NotNull(message = "盘点状态不能为空", groups = {UpdateGroup.class})
     private Integer status;
@@ -39,10 +39,4 @@ public class AssetInventoryDetailBatchInventoryRequest {
      */
     @NotEmpty(message = "盘点资产不能为空", groups = {UpdateGroup.class})
     private List<String> snList;
-    
-    /**
-     * 操作者
-     */
-    private Long uid;
-    
 }

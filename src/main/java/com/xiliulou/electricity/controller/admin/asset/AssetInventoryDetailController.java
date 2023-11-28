@@ -97,9 +97,7 @@ public class AssetInventoryDetailController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        assetInventoryDetailBatchInventoryRequest.setUid(user.getUid());
-        
-        return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest);
+        return assetInventoryDetailService.batchInventory(assetInventoryDetailBatchInventoryRequest, user.getUid());
         
     }
     

@@ -46,9 +46,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     private ElectricityCabinetV2Service electricityCabinetV2Service;
     
     @Override
-    public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
+    public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
     
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_WAREHOUSE_LOCK + assetWarehouseSaveOrUpdateRequest.getUid(), "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_WAREHOUSE_LOCK + uid, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -66,7 +66,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         
             return R.ok(assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_WAREHOUSE_LOCK + assetWarehouseSaveOrUpdateRequest.getUid());
+            redisService.delete(CacheConstant.CACHE_ASSET_WAREHOUSE_LOCK + uid);
         }
     }
     

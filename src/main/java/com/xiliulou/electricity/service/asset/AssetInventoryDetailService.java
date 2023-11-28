@@ -17,7 +17,7 @@ public interface AssetInventoryDetailService {
     
     List<AssetInventoryDetailVO> listByOrderNo(AssetInventoryDetailRequest assetInventoryRequest);
     
-    R batchInventory(AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest);
+    R batchInventory(AssetInventoryDetailBatchInventoryRequest assetInventoryDetailBatchInventoryRequest, Long operator);
     
     Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest);
     

@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface AssetWarehouseService {
 
-    R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
+    R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid);
     
     List<AssetWarehouseVO> listByFranchiseeId(AssetWarehouseRequest assetInventoryRequest);
     
