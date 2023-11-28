@@ -169,4 +169,9 @@ public class ElectricityBatteryVO {
      * 品牌型号
      */
     private String brandAndModelName;
+    
+    /**
+     * 电池型号ID
+     */
+    private Long modelId;
 }

@@ -707,6 +707,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getModel());
+            log.info("batteryModel={}",JsonUtil.toJson(batteryModel));
             if (Objects.nonNull(batteryModel)) {
                 // 赋值复合字段
                 StringBuilder brandAndModelName = new StringBuilder();
@@ -722,6 +723,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     brandAndModelName.append(batteryModel.getBatteryVShort());
                 }
                 electricityBatteryVO.setBrandAndModelName(brandAndModelName.toString());
+                electricityBatteryVO.setModelId(batteryModel.getId());
             }
             
             //设置仓库名称
