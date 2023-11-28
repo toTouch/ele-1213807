@@ -256,8 +256,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         return rspList;
     }
     
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R batchExitWarehouseBySn(ElectricityCabinetBatchExitWarehouseBySnQueryModel exitWarehouseBySnQueryModel) {
     
         if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {

@@ -922,13 +922,19 @@
     </update>
     
     <update id="batchExitWarehouseBySn">
-        update t_electricity_cabinet set stock_status = 0, warehouse_id = #{warehouseId}
+        update t_electricity_cabinet
+        <set>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
+                stock_status = 0
+            </if>
+        </set>
         <where>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
             <if test="franchiseeId != null">
-                franchisee_id = #{franchiseeId}
+                and franchisee_id = #{franchiseeId}
             </if>
             <if test="snList != null and snList.size() > 0">
                 and sn in
