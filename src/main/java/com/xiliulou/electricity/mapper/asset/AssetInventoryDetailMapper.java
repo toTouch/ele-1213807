@@ -26,4 +26,6 @@ public interface AssetInventoryDetailMapper {
     Integer batchInsert(@Param("inventoryDetailSaveQueryModelList") List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList);
     
     Integer countTotal(AssetInventoryDetailQueryModel assetInventoryDetailQueryModel);
+    
+    List<AssetInventoryDetailBO> selectListBySnListAndOrderNo(@Param("snList") List<String> snList, @Param("orderNo") String orderNo);
 }

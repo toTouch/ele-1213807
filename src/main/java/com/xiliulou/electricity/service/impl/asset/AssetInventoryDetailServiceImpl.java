@@ -115,6 +115,26 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         return snList.size();
     }
     
+    @Slave
+    @Override
+    public List<AssetInventoryDetailVO> listBySnListAndOrderNo(List<String> snList, String orderNo) {
+        List<AssetInventoryDetailVO> rspList = new ArrayList<>();
+        
+        List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListBySnListAndOrderNo(snList, orderNo);
+        if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
+            rspList = assetInventoryDetailBOList.stream().map(item -> {
+            
+                AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
+                BeanUtils.copyProperties(item, assetInventoryDetailVO);
+            
+                return assetInventoryDetailVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        return rspList;
+    }
+    
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest, Long operator) {
         
@@ -122,7 +142,16 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
             String orderNo = inventoryRequest.getOrderNo();
             Integer tenantId = TenantContextHolder.getTenantId();
-            
+    
+            List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
+            if(CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
+                for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
+                    if(Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
+                        return R.fail("300808", "所选资产已盘点，请修改后再操作");
+                    }
+                }
+            }
+    
             AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel
                     .builder()
                     .orderNo(orderNo)

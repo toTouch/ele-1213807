@@ -41,6 +41,11 @@ public class AssetInventoryDetailVO {
     private Long franchiseeId;
     
     /**
+     * 是否已盘点(0-未盘点,1-已盘点)
+     */
+    private Integer inventoryStatus;
+    
+    /**
      * 盘点状态(0-正常,1-故障, 2-库存, 3-丢失, 4-报废)
      *
      * @see AssetInventoryDetailStatusEnum

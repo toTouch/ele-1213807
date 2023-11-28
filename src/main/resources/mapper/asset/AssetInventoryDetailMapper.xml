@@ -79,6 +79,25 @@
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
     </select>
+    
+    <select id="selectListBySnListAndOrderNo" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO">
+        select
+        <include refid="basic_field"/>
+        from t_asset_inventory_detail
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no=#{orderNo}
+            </if>
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+                    <if test="item != null and item != ''">
+                        #{item}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>
 
