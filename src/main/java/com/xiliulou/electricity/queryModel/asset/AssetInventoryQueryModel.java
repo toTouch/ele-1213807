@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.queryModel.asset;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
@@ -8,6 +11,9 @@ import lombok.Data;
  * @date 2023/11/20 16:40:54
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AssetInventoryQueryModel {
     
     /**
@@ -21,7 +27,7 @@ public class AssetInventoryQueryModel {
     private Long franchiseeId;
     
     /**
-     * 盘点状态
+     * 盘点状态(0-进行中,1-完成)
      */
     private Integer status;
     

@@ -43,7 +43,7 @@ public class AssetWarehouseSaveOrUpdateRequest {
     private String address;
     
     /**
-     * 库房状态
+     * 库房状态(0-启用， 1-禁用)
      */
     @NotNull(message = "库房状态不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer status;

@@ -4,6 +4,7 @@ import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -30,4 +31,5 @@ public interface AssetInventoryMapper {
     
     Integer updateByOrderNo(AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel);
     
+    AssetInventoryVO selectByOrderNo(AssetInventoryQueryModel assetInventoryQueryModel);
 }

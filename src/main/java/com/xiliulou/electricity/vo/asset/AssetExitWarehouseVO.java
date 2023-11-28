@@ -28,14 +28,24 @@ public class AssetExitWarehouseVO {
     private String orderNo;
     
     /**
-     * 退库加盟商
+     * 退库加盟商id
      */
     private Long franchiseeId;
     
     /**
-     * 退库门店
+     * 退库加盟商名称
+     */
+    private String franchiseeName;
+    
+    /**
+     * 退库门店id
      */
     private Long storeId;
+    
+    /**
+     * 退库门店名称
+     */
+    private String storeName;
     
     /**
      * 退库类型(1-电柜, 2-电池, 3-车辆)

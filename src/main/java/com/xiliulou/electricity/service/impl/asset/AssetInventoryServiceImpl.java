@@ -160,4 +160,10 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return assetInventoryMapper.updateByOrderNo(assetInventoryUpdateDataQueryModel);
     }
     
+    @Slave
+    @Override
+    public AssetInventoryVO queryByOrderNo(AssetInventoryQueryModel assetInventoryQueryModel) {
+        return assetInventoryMapper.selectByOrderNo(assetInventoryQueryModel);
+    }
+    
 }

@@ -6,6 +6,8 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
@@ -16,6 +18,8 @@ import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinet
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
@@ -56,6 +60,12 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Autowired
     private ElectricityCarService electricityCarService;
+    
+    @Autowired
+    private FranchiseeService franchiseeService;
+    
+    @Autowired
+    private StoreService storeService;
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -186,10 +196,15 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         List<AssetExitWarehouseBO> assetExitWarehouseBOList = assetExitWarehouseRecordMapper.selectListByFranchiseeId(assetExitWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetExitWarehouseBOList)){
             rspList = assetExitWarehouseBOList.stream().map(item -> {
+    
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
                 
                 AssetExitWarehouseVO assetExitWarehouseVO = new AssetExitWarehouseVO();
                 BeanUtils.copyProperties(item, assetExitWarehouseVO);
-        
+                assetExitWarehouseVO.setFranchiseeName(franchisee.getName());
+                assetExitWarehouseVO.setStoreName(store.getName());
+    
                 return assetExitWarehouseVO;
         
             }).collect(Collectors.toList());
