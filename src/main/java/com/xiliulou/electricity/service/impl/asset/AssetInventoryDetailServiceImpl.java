@@ -57,6 +57,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
         assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        assetInventoryDetailQueryModel.setInventoryStatus(assetInventoryRequest.getStatus());
     
         List<AssetInventoryDetailVO> rspList = new ArrayList<>();
         
@@ -82,6 +83,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         AssetInventoryDetailQueryModel assetInventoryDetailQueryModel = new AssetInventoryDetailQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
         assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        assetInventoryDetailQueryModel.setInventoryStatus(assetInventoryRequest.getStatus());
         
         return assetInventoryDetailMapper.countTotal(assetInventoryDetailQueryModel);
     }

@@ -51,8 +51,8 @@
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
-            <if test="status != null ">
-                and status=#{status}
+            <if test="inventoryStatus != null ">
+                and inventory_status=#{inventoryStatus}
             </if>
             <if test="franchiseeId != null ">
                 and franchisee_id=#{franchiseeId}
@@ -70,8 +70,8 @@
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
-            <if test="status != null ">
-                and status=#{status}
+            <if test="inventoryStatus != null ">
+                and inventory_status=#{inventoryStatus}
             </if>
             <if test="franchiseeId != null ">
                 and franchisee_id=#{franchiseeId}
