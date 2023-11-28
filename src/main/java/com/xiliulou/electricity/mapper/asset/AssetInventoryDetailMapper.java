@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailBatchInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
@@ -20,7 +21,7 @@ public interface AssetInventoryDetailMapper {
     
     List<AssetInventoryDetailBO> selectListByOrderNo(AssetInventoryDetailQueryModel assetInventoryQueryDetailModel);
     
-    Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryRequest inventoryRequest);
+    Integer batchInventoryBySnList(AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel);
     
     Integer batchInsert(@Param("inventoryDetailSaveQueryModelList") List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList);
     

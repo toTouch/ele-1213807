@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.asset.AssetInventoryDetail;
 import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
+import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailBatchInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
@@ -116,8 +117,17 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         
         Integer count = 0;
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+            AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel
+                    .builder()
+                    .orderNo(inventoryRequest.getOrderNo())
+                    .status(inventoryRequest.getStatus())
+                    .snList(inventoryRequest.getSnList())
+                    .operator(operator)
+                    .tenantId(TenantContextHolder.getTenantId())
+                    .updateTime(System.currentTimeMillis())
+                    .build();
             //批量盘点
-            count = assetInventoryDetailMapper.batchInventoryBySnList(inventoryRequest);
+            count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
             
             //同步盘点数据
             AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
