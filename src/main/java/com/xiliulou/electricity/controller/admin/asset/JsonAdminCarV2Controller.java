@@ -3,9 +3,11 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,11 @@ public class JsonAdminCarV2Controller {
     @Autowired
     ElectricityCarService electricityCarService;
     
+    /**
+     *
+     * @param carAddRequest 车辆新增参数
+     * @return 返回参数
+     */
     @PostMapping(value = "/admin/electricityCar/save")
     public R save(@RequestBody @Validated(value = CreateGroup.class) CarAddRequest carAddRequest) {
         // 用户校验
@@ -31,4 +38,20 @@ public class JsonAdminCarV2Controller {
         }
         return electricityCarService.saveV2(carAddRequest);
     }
+    
+    /**
+     *
+     * @param carOutWarehouseRequest 车辆出库参数
+     * @return 返回参数
+     */
+    @PostMapping(value = "/admin/electricityCar/outWarehouse")
+    public R outWareHouse(@RequestBody @Validated(value = UpdateGroup.class) CarOutWarehouseRequest carOutWarehouseRequest) {
+        // 用户校验
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return electricityCarService.updateFranchiseeIdAndStoreId(carOutWarehouseRequest);
+    }
+    
 }

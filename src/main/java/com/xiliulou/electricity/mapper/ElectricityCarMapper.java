@@ -150,4 +150,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<ElectricityCarBO> selectListByFranchiseeIdAndStockStatus(ElectricityCarListSnByFranchiseeQueryModel queryModel);
     
     Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
+    
+    List<ElectricityCar> selectListCar(List<Integer> idList);
 }

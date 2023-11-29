@@ -23,6 +23,7 @@ import com.xiliulou.electricity.entity.asset.AssetAllocateRecord;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryMod
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
@@ -1168,5 +1170,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         return R.ok(electricityCarMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
+    }
+    
+    @Override
+    public R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest){
+        List<Integer> idList = carOutWarehouseRequest.getIdList();
+        return null;
     }
 }

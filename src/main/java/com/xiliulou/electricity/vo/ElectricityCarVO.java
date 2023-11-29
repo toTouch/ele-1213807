@@ -75,6 +75,11 @@ public class ElectricityCarVO {
     private Long warehouseId;
     
     /**
+     * 库房名称
+     */
+    private Long warehouseName;
+    
+    /**
      * 库存状态；0,库存；1,已出库
      */
     private Integer stockStatus;

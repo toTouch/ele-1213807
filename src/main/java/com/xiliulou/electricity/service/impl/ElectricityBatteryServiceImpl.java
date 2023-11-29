@@ -934,6 +934,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("100226", "电池正在租用中,无法删除!");
         }
         
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityBattery.getFranchiseeId());
+        if (Objects.nonNull(franchisee)) {
+            // 校验加盟商是否正在进行资产盘点
+            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+            }
+        }
+        
         Pair<Boolean, String> result = callBatteryPlatDeleteSn(Collections.singletonList(electricityBattery.getSn()), isNeedSync);
         if (!result.getKey()) {
             return R.fail("200005", result.getRight());
