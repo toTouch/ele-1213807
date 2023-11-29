@@ -5,6 +5,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQuer
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -28,4 +29,6 @@ public interface ElectricityCabinetV2Service {
     R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest);
     
     List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
+    
+    Integer batchUpdateFranchiseeIdAndStoreId(List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList);
 }

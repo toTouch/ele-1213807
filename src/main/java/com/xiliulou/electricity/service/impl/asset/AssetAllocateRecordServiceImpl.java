@@ -11,22 +11,25 @@ import com.xiliulou.electricity.mapper.asset.AssetAllocateDetailMapper;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordCabinetRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
+import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -55,6 +58,9 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     @Autowired
     private StoreService storeService;
     
+    @Autowired
+    private ElectricityCabinetV2Service electricityCabinetV2Service;
+    
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -76,11 +82,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             } else {
                 // 电池调拨/电柜调拨
                 Integer tenantId = TenantContextHolder.getTenantId();
-                
-                List<Long> idList = assetAllocateRecordRequest.getIdList();
-                if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
-                    return R.fail("300811", "资产调拨数量过多");
-                }
                 
                 Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
                 if (Objects.isNull(sourceFranchisee)) {
@@ -109,6 +110,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 // 电柜调拨
                 if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
+                    List<AssetAllocateRecordCabinetRequest> cabinetList = assetAllocateRecordRequest.getCabinetList();
+                    if (CollectionUtils.isNotEmpty(cabinetList) && cabinetList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+                        return R.fail("300811", "资产调拨数量过多");
+                    }
+                    
                     if (Objects.isNull(sourceStore)) {
                         log.error("ASSET_ALLOCATE ERROR! not found source store！storeId={}", assetAllocateRecordRequest.getSourceStoreId());
                         return R.fail("ELECTRICITY.0018", "未找到门店");
@@ -128,17 +134,29 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                     if (!Objects.equals(targetStore.getTenantId(), tenantId) || !Objects.equals(sourceStore.getTenantId(), tenantId)) {
                         return R.ok();
                     }
-                    
+    
                     Franchisee storeFranchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
                     if (Objects.isNull(storeFranchisee)) {
-                        log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", storeFranchisee.getId());
+                        log.error("ASSET_ALLOCATE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
                         return R.fail("ELECTRICITY.0038", "未找到加盟商");
                     }
     
-                    
+                    List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList = cabinetList.stream()
+                            .map(item -> ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest.builder().id(item.getId()).tenantId(tenantId).targetFranchiseeId(targetStore.getFranchiseeId())
+                                    .targetStoreId(targetStore.getId()).sourceFranchiseeId(sourceFranchisee.getId()).sourceStoreId(sourceStore.getId()).build())
+                            .collect(Collectors.toList());
+    
+                    if (CollectionUtils.isNotEmpty(batchUpdateFranchiseeAndStoreRequestList)) {
+                        electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
+                        
+                    }
     
                 } else {
                     //电池调拨
+                    List<Long> idList = assetAllocateRecordRequest.getIdList();
+                    if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+                        return R.fail("300811", "资产调拨数量过多");
+                    }
     
                 }
                 

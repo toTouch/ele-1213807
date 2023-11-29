@@ -14,10 +14,12 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -39,7 +41,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -277,6 +278,20 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
     
         return electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
+    }
+    
+    @Override
+    public Integer batchUpdateFranchiseeIdAndStoreId(List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList) {
+        Integer count = NumberConstant.ZERO;
+        
+        for (ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : batchUpdateFranchiseeAndStoreRequestList) {
+            ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCabinetUpdateFranchiseeAndStoreQueryModel();
+            BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
+            
+            count = electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+        }
+        
+        return count;
     }
     
 }

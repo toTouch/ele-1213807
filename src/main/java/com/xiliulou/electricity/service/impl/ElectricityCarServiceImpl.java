@@ -586,7 +586,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (carIds.size() > 50) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}",
                     electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid(), carIds.size());
-            return R.fail("100270", "迁移车辆数量过多");
+            return R.fail("300811", "资产调拨数量过多");
         }
     
         if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {

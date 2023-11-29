@@ -65,6 +65,11 @@ public class AssetAllocateRecordRequest {
     /**
      * 调拨资产sn列表
      */
-    @NotEmpty(message = "调拨资产不能为空", groups = {CreateGroup.class})
     private List<Long> idList;
+    
+    /**
+     * 换电柜资产列表
+     */
+    private List<AssetAllocateRecordCabinetRequest> cabinetList;
+    
 }
