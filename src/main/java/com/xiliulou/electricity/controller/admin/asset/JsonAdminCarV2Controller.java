@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
-public class JsonAdminCarController {
+public class JsonAdminCarV2Controller {
     @Autowired
     ElectricityCarService electricityCarService;
     
