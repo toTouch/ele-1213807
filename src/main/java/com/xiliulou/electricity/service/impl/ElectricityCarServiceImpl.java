@@ -14,11 +14,13 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
@@ -27,6 +29,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -285,6 +288,47 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             //新增缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId(), electricityCar);
             return electricityCar;
+        });
+        return R.ok(electricityCar.getId());
+    }
+    
+    @Override
+    public R saveV2(CarAddRequest carAddRequest) {
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        //换电柜车辆
+        ElectricityCar electricityCar = new ElectricityCar();
+        BeanUtil.copyProperties(carAddRequest, electricityCar);
+        electricityCar.setTenantId(TenantContextHolder.getTenantId());
+        electricityCar.setCreateTime(System.currentTimeMillis());
+        electricityCar.setUpdateTime(System.currentTimeMillis());
+        electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+        electricityCar.setStoreId(NumberConstant.ZERO_L);
+        electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
+        
+        //查找车辆型号
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
+        if (Objects.isNull(electricityCarModel)) {
+            return R.fail("100005", "未找到车辆型号");
+        }
+        
+        ElectricityCar existElectricityCar = electricityCarMapper.selectBySn(carAddRequest.getSn(),TenantContextHolder.getTenantId());
+        
+        if (Objects.nonNull(existElectricityCar)) {
+            return R.fail("100017", "已存在该编号车辆");
+        }
+        
+        electricityCar.setModel(electricityCarModel.getName());
+        electricityCar.setModelId(electricityCarModel.getId());
+        
+        int insert = electricityCarMapper.insert(electricityCar);
+        DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
+            //新增缓存
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId(), electricityCar);
         });
         return R.ok(electricityCar.getId());
     }

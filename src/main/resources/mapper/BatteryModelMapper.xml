@@ -204,7 +204,7 @@
     </delete>
 
     <select id="selectListBrandAndModel" resultMap="BatteryModelMap">
-        select id, brand_name ,battery_v_short,battery_type from t_battery_model order by id desc
+        select id, brand_name ,battery_v_short,battery_type from t_battery_model where tenant_id = #{tenantId} order by id desc
         limit #{offset}, #{size}
     </select>
 </mapper>

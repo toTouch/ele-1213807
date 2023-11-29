@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -73,6 +74,8 @@ public interface ElectricityCarService {
     ElectricityCar queryByIdFromCache(Integer id);
 
     R save(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
+    
+    R saveV2(CarAddRequest carAddRequest);
 
     R edit(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
 
