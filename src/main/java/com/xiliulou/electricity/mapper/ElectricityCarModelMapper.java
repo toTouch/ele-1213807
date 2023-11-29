@@ -49,4 +49,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     List<Long> selectByStoreIds(@Param("storeIds") List<Long> storeIds);
 
     List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
+    
+    List<ElectricityCarModel> selectListManufactureNameAndModel(ElectricityCarModelQuery query);
 }

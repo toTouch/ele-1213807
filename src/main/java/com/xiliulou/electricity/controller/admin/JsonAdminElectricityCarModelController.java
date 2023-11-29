@@ -249,4 +249,30 @@ public class JsonAdminElectricityCarModelController {
     public R selectListByFranchiseeId(@PathVariable(value = "franchiseeId") Long franchiseeId) {
         return R.ok(electricityCarModelService.selectListByFranchiseeId(franchiseeId));
     }
+    
+    /**
+     *
+     * @param size
+     * @param offset
+     * @return
+     */
+    @GetMapping("/admin/electricityCarModel/brandAndModel/list")
+    public R queryCarManufacturerNameAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        ElectricityCarModelQuery carModelQuery = ElectricityCarModelQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(electricityCarModelService.listCarManufacturerNameAndModel(carModelQuery));
+    }
 }

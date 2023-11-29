@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -7,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
+import com.xiliulou.electricity.vo.asset.CarManufacturerNameAndModelVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -521,5 +524,35 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         return list;
+    }
+    
+    
+    @Override
+    public List<CarManufacturerNameAndModelVo> listCarManufacturerNameAndModel(ElectricityCarModelQuery electricityCarModelQuery) {
+        List<ElectricityCarModel> carModelList = electricityCarModelMapper.selectListManufactureNameAndModel(electricityCarModelQuery);
+        if (CollectionUtils.isEmpty(carModelList)) {
+            return Lists.newArrayList();
+        }
+        
+        return carModelList.stream().map(model -> {
+            CarManufacturerNameAndModelVo modelVo = new CarManufacturerNameAndModelVo();
+            BeanUtil.copyProperties(model, modelVo);
+            
+            // 赋值复合字段
+            StringBuilder manufacturerNameAndModelName = new StringBuilder();
+            if (StringUtils.isNotBlank(model.getManufacturerName())) {
+                manufacturerNameAndModelName.append(model.getManufacturerName());
+            }
+            
+            if (StringUtils.isNotBlank(manufacturerNameAndModelName.toString())) {
+                manufacturerNameAndModelName.append(StringConstant.FORWARD_SLASH);
+            }
+            
+            if (StringUtils.isNotBlank(model.getName())) {
+                manufacturerNameAndModelName.append(model.getName());
+            }
+            modelVo.setManufacturerNameAndModelName(manufacturerNameAndModelName.toString());
+            return modelVo;
+        }).collect(Collectors.toList());
     }
 }
