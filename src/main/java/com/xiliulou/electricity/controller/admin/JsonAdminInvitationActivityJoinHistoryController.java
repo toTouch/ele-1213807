@@ -37,9 +37,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "activityId", required = false) Long activityId,
                   @RequestParam(value = "id", required = false) Long id,
                   @RequestParam(value = "status", required = false) Integer status,
-                  @RequestParam(value = "joinUserPhone", required = false) String joinUserPhone,
                   @RequestParam(value = "joinUid", required = false) Long joinUid,
-                  @RequestParam(value = "joinUserName", required = false) String joinUserName,
                   @RequestParam(value = "activityName", required = false) String activityName,
                   @RequestParam(value = "payCount", required = false) Integer payCount) {
         if (size < 0 || size > 50) {
@@ -59,7 +57,6 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .size(size)
                 .offset(offset)
                 .joinUid(joinUid)
-                .userName(joinUserName)
                 .recordId(id)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -68,7 +65,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .status(status)
                 .payCount(payCount)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(joinUserPhone).build();
+                .build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
     }
@@ -79,9 +76,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                    @RequestParam(value = "beginTime", required = false) Long beginTime,
                    @RequestParam(value = "endTime", required = false) Long endTime,
                    @RequestParam(value = "status", required = false) Integer status,
-                   @RequestParam(value = "joinUserPhone", required = false) String joinUserPhone,
                    @RequestParam(value = "joinUid", required = false) Long joinUid,
-                   @RequestParam(value = "joinUserName", required = false) String joinUserName,
                    @RequestParam(value = "activityName", required = false) String activityName,
                    @RequestParam(value = "payCount", required = false) Integer payCount) {
 
@@ -92,7 +87,6 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
                 .joinUid(joinUid)
-                .userName(joinUserName)
                 .recordId(id)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -101,7 +95,6 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                 .status(status)
                 .payCount(payCount)
                 .tenantId(TenantContextHolder.getTenantId())
-                .phone(joinUserPhone)
                 .build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));

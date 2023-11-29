@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
@@ -129,9 +130,16 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         }
 
         return list.parallelStream().peek(item -> {
+            //查询邀请人信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            item.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
-            item.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
+            item.setUserName(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getName());
+            item.setPhone(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getPhone());
+            
+            //查询参与人信息
+            UserInfo joinUserInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
+            item.setJoinUserName(Objects.isNull(joinUserInfo) ? StringUtils.EMPTY : joinUserInfo.getName());
+            item.setJoinUserPhone(Objects.isNull(joinUserInfo) ?  StringUtils.EMPTY : joinUserInfo.getPhone());
+            
         }).collect(Collectors.toList());
 
     }
@@ -162,8 +170,14 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-
-        return list;
+    
+        return list.parallelStream().peek(item -> {
+            //查询参与人信息
+            UserInfo joinUserInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
+            item.setJoinUserName(Objects.isNull(joinUserInfo) ? StringUtils.EMPTY : joinUserInfo.getName());
+            item.setJoinUserPhone(Objects.isNull(joinUserInfo) ?  StringUtils.EMPTY : joinUserInfo.getPhone());
+        
+        }).collect(Collectors.toList());
     }
 
     @Override
