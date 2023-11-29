@@ -238,5 +238,11 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
          * 水消防检测(1 关闭 0 开启)
          */
         private Integer checkWaterFireWarning;
+    
+        /**
+         * 烟感检测（1 关闭 0 开启）
+         */
+        private Integer checkSmokeSensor;
+        
     }
 }
