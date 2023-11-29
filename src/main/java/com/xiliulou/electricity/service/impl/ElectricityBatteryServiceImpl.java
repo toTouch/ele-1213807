@@ -1064,6 +1064,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Slave
     @Override
     public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
+        //如果按照电池型号搜索，需要进行转换,将短型号转换为数据库存放的原类型。
+        if (StringUtils.isNotEmpty(electricityBatteryQuery.getModel())) {
+            String originalModel = batteryModelService.acquireOriginalModelByShortType(electricityBatteryQuery.getModel(), TenantContextHolder.getTenantId());
+            if (StringUtils.isNotEmpty(originalModel)) {
+                electricityBatteryQuery.setModel(originalModel);
+            }
+        }
         return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
     }
     
