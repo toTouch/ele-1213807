@@ -11,7 +11,6 @@ import java.util.List;
  * @description 资产调拨详情服务
  * @date 2023/11/29 18:01:00
  */
-@Service
 public interface AssetAllocateDetailService {
     
     Integer batchInsert(List<AssetAllocateDetailSaveQueryModel> detailSaveQueryModelList);

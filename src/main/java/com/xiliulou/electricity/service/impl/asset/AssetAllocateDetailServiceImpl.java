@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @description 资产调拨详情服务
  * @date 2023/11/29 18:01:27
  */
+@Service
 public class AssetAllocateDetailServiceImpl implements AssetAllocateDetailService {
     
     @Override
