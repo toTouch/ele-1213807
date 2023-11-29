@@ -155,6 +155,49 @@
             </if>
         </where>
     </select>
+    
+    <!--根据活动查询邀请记录信息-->
+    <select id="selectListByUser" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        tia.name as activityName,
+        iajh.status,
+        iajh.pay_count,
+        iajh.money,
+        iajh.create_time,
+        iajh.join_uid joinUid,
+        tui.name as joinUserName,
+        tui.phone as joinUserPhone
+        from t_invitation_activity_join_history iajh
+        left join t_user_info tui on tui.uid=iajh.join_uid
+        left join t_invitation_activity as tia on tia.id = iajh.activity_id
+        <where>
+            <if test="joinUid != null">
+                and iajh.join_uid = #{joinUid}
+            </if>
+            <if test="activityId != null">
+                and iajh.activity_id = #{activityId}
+            </if>
+            <if test="recordId != null">
+                and iajh.record_id = #{recordId}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="uid != null">
+                and iajh.uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by iajh.id desc
+        limit #{offset}, #{size}
+    </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="InvitationActivityJoinHistoryMap">

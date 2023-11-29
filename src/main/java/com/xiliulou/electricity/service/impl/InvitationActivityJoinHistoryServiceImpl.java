@@ -161,7 +161,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query) {
-        List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectByPage(query);
+        List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectListByUser(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
