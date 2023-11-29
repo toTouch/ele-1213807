@@ -40,7 +40,7 @@
         select
         tec.id,tec.sn,
         tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tui.name as userName,tec.store_id, tec.phone, tec.franchisee_id,
-        tec.create_time,tec.update_time,ts.name as storeName,tec.uid
+        tec.create_time,tec.update_time,ts.name as storeName,tec.uid,tec.warehouse_id,tec.stock_status
         from t_electricity_car tec
         left join t_store ts on tec.store_id=ts.id
         left join t_user_info tui on tui.uid = tec.uid
@@ -53,6 +53,9 @@
         </if>
         <if test="query.status != null ">
             and tec.status = #{query.status}
+        </if>
+        <if test="query.stockStatus != null ">
+            and tec.stock_status = #{query.stockStatus}
         </if>
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
@@ -103,6 +106,9 @@
         </if>
         <if test="query.status != null ">
             and tec.status = #{query.status}
+        </if>
+        <if test="query.stockStatus != null ">
+            and tec.stock_status = #{query.stockStatus}
         </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}

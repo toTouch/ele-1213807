@@ -46,7 +46,12 @@ public class ElectricityCarQuery {
      * 用户ID
      */
     private Long uid;
-
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+   
     /**
      * 电池sn码
      */

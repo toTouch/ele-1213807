@@ -68,7 +68,17 @@ public class ElectricityCarVO {
     private Integer storeId;
 
     private Long franchiseeId;
-
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+    
     /**
      * 门店名称
      */

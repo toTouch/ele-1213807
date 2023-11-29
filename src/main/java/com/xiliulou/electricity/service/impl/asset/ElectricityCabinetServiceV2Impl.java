@@ -124,7 +124,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                         electricityCabinet);
                 
                 // 添加格挡
-                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+                electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
                 // 添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             });
