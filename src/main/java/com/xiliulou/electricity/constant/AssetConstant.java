@@ -41,4 +41,9 @@ public class AssetConstant {
      */
     public static final Integer ASSET_INVENTORY_DETAIL_STATUS_YES = 1;
     
+    /**
+     * 资产调拨数量限制
+     */
+    public static final Integer ASSET_ALLOCATE_LIMIT_NUMBER = 50;
+    
 }
