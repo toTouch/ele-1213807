@@ -54,6 +54,7 @@
         from t_asset_exit_warehouse_record taewr
         left join t_asset_warehouse taw on taw.id = taewr.warehouse_id
         <where>
+            tenant_id = #{tenantId} and del_flag = 0
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
@@ -63,7 +64,6 @@
             <if test="type != null ">
                 and type=#{type}
             </if>
-            and tenant_id = #{tenantId} and del_flag = 0
         </where>
         order by id desc
         limit #{offset}, #{size}
@@ -73,6 +73,7 @@
         select count(1)
         from t_asset_exit_warehouse_record
         <where>
+            tenant_id = #{tenantId} and del_flag = 0
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
@@ -82,7 +83,6 @@
             <if test="type != null ">
                 and type=#{type}
             </if>
-            and tenant_id = #{tenantId} and del_flag = 0
         </where>
     </select>
 

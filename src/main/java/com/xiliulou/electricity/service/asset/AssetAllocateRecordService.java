@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.asset;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
 
 /**
  * @author HeYafeng
@@ -13,5 +14,5 @@ public interface AssetAllocateRecordService {
     
     R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid);
     
-    Integer insertOne(AssetAllocateRecordSaveQueryModel assetAllocateRecordSaveQueryModel);
+    Integer insertOne(AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest);
 }

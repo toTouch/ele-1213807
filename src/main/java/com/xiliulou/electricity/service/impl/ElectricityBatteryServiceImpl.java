@@ -41,6 +41,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.*;
@@ -1429,11 +1430,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
-        
+    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest) {
+    
         if (!redisService.setNx(CacheConstant.ELE_BATTERY_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+    
+        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
+        BeanUtils.copyProperties(assetBatchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+    
         return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
     

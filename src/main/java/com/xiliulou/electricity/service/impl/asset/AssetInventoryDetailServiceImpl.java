@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
         assetInventoryDetailQueryModel.setInventoryStatus(assetInventoryRequest.getStatus());
     
-        List<AssetInventoryDetailVO> rspList = new ArrayList<>();
+        List<AssetInventoryDetailVO> rspList = Collections.emptyList();
     
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
@@ -127,7 +128,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     @Slave
     @Override
     public List<AssetInventoryDetailVO> listBySnListAndOrderNo(List<String> snList, String orderNo) {
-        List<AssetInventoryDetailVO> rspList = new ArrayList<>();
+        List<AssetInventoryDetailVO> rspList = Collections.emptyList();
         
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListBySnListAndOrderNo(snList, orderNo);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {

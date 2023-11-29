@@ -18,8 +18,6 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.asset.AssetAllocateDetail;
-import com.xiliulou.electricity.entity.asset.AssetAllocateRecord;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -31,10 +29,11 @@ import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
@@ -53,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -616,7 +616,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", franchisee.getId());
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
     
@@ -713,20 +713,20 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         Long time = System.currentTimeMillis();
     
         // 封装资产调拨数据
-        AssetAllocateRecordSaveQueryModel assetAllocateRecordSaveQueryModel = AssetAllocateRecordSaveQueryModel.builder().orderNo(orderNo).tenantId(tenantId)
+        AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest = AssetAllocateRecordSaveRequest.builder().orderNo(orderNo).tenantId(tenantId)
                 .assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).oldFranchiseeId(sourceStore.getFranchiseeId()).oldStoreId(sourceStore.getId())
                 .newFranchiseeId(targetStore.getFranchiseeId()).newStoreId(targetStore.getId()).remark(remark).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL)
                 .createTime(time).updateTime(time).build();
     
-        List<AssetAllocateDetailSaveQueryModel> detailSaveQueryModelList = queryList.stream()
-                .map(item -> AssetAllocateDetailSaveQueryModel.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
+        List<AssetAllocateDetailSaveRequest> detailSaveRequestList = queryList.stream()
+                .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
                         .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
                         .updateTime(time).build()).collect(Collectors.toList());
     
-        assetAllocateRecordService.insertOne(assetAllocateRecordSaveQueryModel);
+        assetAllocateRecordService.insertOne(assetAllocateRecordSaveRequest);
     
-        if (CollectionUtils.isNotEmpty(detailSaveQueryModelList)) {
-            assetAllocateDetailService.batchInsert(detailSaveQueryModelList);
+        if (CollectionUtils.isNotEmpty(detailSaveRequestList)) {
+            assetAllocateDetailService.batchInsert(detailSaveRequestList);
         }
     }
 
@@ -1164,11 +1164,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
-        
+    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest) {
+    
         if (!redisService.setNx(CacheConstant.ELE_CAR_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+    
+        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
+        BeanUtils.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+    
         return R.ok(electricityCarMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
     

@@ -7,7 +7,6 @@ import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.asset.AssetWarehouse;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
@@ -25,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -83,7 +83,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<AssetWarehouseVO> rspList = new ArrayList<>();
+        List<AssetWarehouseVO> rspList = Collections.emptyList();
         List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByFranchiseeId(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseBOList)) {
             rspList = assetWarehouseBOList.stream().map(item -> {
@@ -112,7 +112,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<AssetWarehouseNameVO> rspList = new ArrayList<>();
+        List<AssetWarehouseNameVO> rspList = Collections.emptyList();
         
         List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListWarehouseNames(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
