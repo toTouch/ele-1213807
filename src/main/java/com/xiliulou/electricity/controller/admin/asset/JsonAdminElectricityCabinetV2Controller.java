@@ -110,6 +110,11 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
         return R.ok(assetWarehouseService.listWarehouseNames(assetInventoryRequest));
     }
     
+    /**
+     * @description 根据运营商查找sn列表
+     * @date 2023/11/29 08:34:06
+     * @author HeYafeng
+     */
     @GetMapping("/admin/electricityCabinet/snSearch")
     public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId) {
         if (size < 0 || size > 50) {

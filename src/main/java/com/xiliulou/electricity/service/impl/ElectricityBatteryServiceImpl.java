@@ -16,7 +16,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
@@ -40,8 +39,10 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
@@ -387,7 +388,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Slave
     @Override
-    public List<String> listSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel) {
+    public List<String> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest) {
+        ElectricityBatteryListSnByFranchiseeQueryModel queryModel = new ElectricityBatteryListSnByFranchiseeQueryModel();
+        BeanUtils.copyProperties(electricityBatterySnSearchRequest, queryModel);
+        
         return electricitybatterymapper.selectListSnByFranchiseeId(queryModel);
     }
     
@@ -1405,6 +1409,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public Integer existsByWarehouseId(Long wareHouseId) {
         
         return electricitybatterymapper.existsByWarehouseId(wareHouseId);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
+        
+        if (!redisService.setNx(CacheConstant.ELE_BATTERY_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
     
 }

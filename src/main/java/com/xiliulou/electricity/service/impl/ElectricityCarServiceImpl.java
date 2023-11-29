@@ -11,6 +11,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
@@ -24,6 +25,9 @@ import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -1039,5 +1043,40 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
         return electricityCarMapper.selectListBySnList(snList, tenantId, franchiseeId);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest) {
+        
+        ElectricityCarListSnByFranchiseeQueryModel queryModel = new ElectricityCarListSnByFranchiseeQueryModel();
+        BeanUtil.copyProperties(electricityCarSnSearchRequest, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        List<ElectricityCarVO> rspList = new ArrayList<>();
+        
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByFranchiseeIdAndStockStatus(queryModel);
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+    
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtil.copyProperties(item, electricityCarVO);
+                
+                return electricityCarVO;
+                
+            }).collect(Collectors.toList());
+        }
+        
+        return rspList;
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
+        
+        if (!redisService.setNx(CacheConstant.ELE_CAR_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        return R.ok(electricityCarMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
 }

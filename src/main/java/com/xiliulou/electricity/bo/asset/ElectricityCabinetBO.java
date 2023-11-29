@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.electrcityCabinet;
+package com.xiliulou.electricity.bo.asset;
 
 import java.util.Map;
 

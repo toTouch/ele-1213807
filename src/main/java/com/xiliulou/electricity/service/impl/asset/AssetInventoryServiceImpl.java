@@ -17,9 +17,9 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
-import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
@@ -87,10 +87,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
             //异步执行将电池数据导入到资产详情表
             if ((Integer) data > NumberConstant.ZERO) {
-                ElectricityBatteryListSnByFranchiseeQueryModel queryModel = ElectricityBatteryListSnByFranchiseeQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId)
-                        .build();
+                ElectricityBatterySnSearchRequest snSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
                 executorService.execute(() -> {
-                    assetInventoryDetailService.asyncBatteryProcess(queryModel, orderNo, operator);
+                    assetInventoryDetailService.asyncBatteryProcess(snSearchRequest, orderNo, operator);
                 });
             }
         

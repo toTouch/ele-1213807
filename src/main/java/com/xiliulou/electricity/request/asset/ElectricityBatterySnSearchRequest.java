@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.electricityCabinet;
+package com.xiliulou.electricity.request.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,22 +7,24 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 查询柜机sn
- * @date 2023/11/24 14:54:54
+ * @description 查询电池sn
+ * @date 2023/11/27 14:24:36
  */
 
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-public class ElectricityCabinetListSnByFranchiseeQueryModel {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ElectricityBatterySnSearchRequest {
     
     private Integer tenantId;
-    
+    /**
+     * 加盟商id
+     */
     private Long franchiseeId;
     
     /**
-     * 库存状态：0,库存；1,已出库
+     * 库存状态
      */
     private Integer stockStatus;
     

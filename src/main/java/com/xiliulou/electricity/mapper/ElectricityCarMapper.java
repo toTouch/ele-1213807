@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.car.CarDataEntity;
@@ -8,6 +9,8 @@ import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.query.car.CarDataQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -143,4 +146,8 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);
     
     List<ElectricityCarVO> selectListBySnList(@Param("snList")List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId")Long franchiseeId);
+    
+    List<ElectricityCarBO> selectListByFranchiseeIdAndStockStatus(ElectricityCarListSnByFranchiseeQueryModel queryModel);
+    
+    Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
 }

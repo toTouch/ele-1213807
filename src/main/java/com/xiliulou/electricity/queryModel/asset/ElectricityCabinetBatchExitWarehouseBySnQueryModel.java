@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.electricityCabinet;
+package com.xiliulou.electricity.queryModel.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
