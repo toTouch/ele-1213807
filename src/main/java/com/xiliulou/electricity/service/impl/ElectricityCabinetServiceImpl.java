@@ -613,7 +613,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
-                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+                electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
             }
             
             //修改柜机服务时间信息
@@ -4859,7 +4859,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
                 //添加格挡
-                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModelService.queryByIdFromCache(query.getModelId()), electricityCabinet.getId());
+                electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModelService.queryByIdFromCache(query.getModelId()), electricityCabinet.getId());
                 //添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             });
@@ -4960,12 +4960,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setStoreId(query.getStoreId());
         electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setExchangeType(testFactoryCabinet.getExchangeType());
+        electricityCabinetInsert.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
         
         //物理删除工厂测试柜机
         this.physicsDelete(testFactoryCabinet);
         
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinetInsert), i -> {
-            electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinetInsert.getId());
+            electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinetInsert.getId());
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinetInsert, electricityCabinetInsert);
         });
         

@@ -82,6 +82,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
 
     //新增换电柜
+    @Deprecated
     @PostMapping(value = "/admin/electricityCabinet")
     public R save(
             @RequestBody @Validated(value = CreateGroup.class) ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
