@@ -22,9 +22,9 @@ public class AssetInventoryDetailQueryModel {
     private String orderNo;
     
     /**
-     * 盘点状态
+     * 是否已盘点(0-未盘点,1-已盘点)
      */
-    private Integer status;
+    private Integer inventoryStatus;
     
     /**
      * 租户ID

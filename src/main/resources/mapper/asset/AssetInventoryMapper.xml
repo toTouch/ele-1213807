@@ -57,7 +57,7 @@
     <update id="updateByOrderNo">
         update t_asset_inventory
         set inventoried_total = inventoried_total + #{inventoryCount},
-            pending_total = pending_total - #{inventoryCount}
+            pending_total = pending_total - #{inventoryCount},
             status = #{status}
         where tenant_id = #{tenantId}
           and order_no = #{orderNo};

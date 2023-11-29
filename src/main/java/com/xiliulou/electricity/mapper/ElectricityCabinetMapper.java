@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.bo.electrcityCabinet.ElectricityCabinetBO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -94,7 +95,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListByFranchiseeIdAndStockStatus(ElectricityCabinetListSnByFranchiseeQueryModel electricityCabinetListSnByFranchiseeQueryModel);
     
-    Integer batchExitWarehouseBySn(ElectricityCabinetBatchExitWarehouseBySnQueryModel exitWarehouseBySnQueryModel);
+    Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
     
     List<ElectricityCabinetVO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 }

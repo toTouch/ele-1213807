@@ -22,4 +22,6 @@ public interface AssetInventoryDetailService {
     Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest);
     
     Integer asyncBatteryProcess(ElectricityBatteryListSnByFranchiseeQueryModel queryModel, String orderNo, Long operator);
+    
+    List<AssetInventoryDetailVO> listBySnListAndOrderNo(List<String> snList, String orderNo);
 }
