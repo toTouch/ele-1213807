@@ -75,6 +75,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -259,7 +260,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 // 校验加盟商是否正在进行资产盘点
                 Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-                if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING )) {
+                if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                     return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
                 }
             }
@@ -288,6 +289,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setCreateTime(System.currentTimeMillis());
         saveBattery.setUpdateTime(System.currentTimeMillis());
         saveBattery.setTenantId(TenantContextHolder.getTenantId());
+        saveBattery.setIotCardNumber(batteryAddRequest.getIotCardNumber());
+        
         electricitybatterymapper.insert(saveBattery);
         
         return R.ok();
@@ -685,6 +688,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
         
+        // 获取电池的电池型号
+        List<String> batteryTypeList = electricityBatteryList.stream().map(ElectricityBattery::getModel).collect(Collectors.toList());
+        List<BatteryModel> modelList = batteryModelService.selectByBatteryTypes(TenantContextHolder.getTenantId(), batteryTypeList);
+        
+        Map<String, BatteryModel> batteryModelMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(modelList)) {
+            batteryModelMap = modelList.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, Function.identity(), (item1, item2) -> item2));
+        }
+        
+        Map<String, BatteryModel> finalBatteryModelMap = batteryModelMap;
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(item, electricityBatteryVO);
@@ -718,8 +731,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setModel(batteryShortType);
             }
             
-            BatteryModel batteryModel = batteryModelService.selectByBatteryType(TenantContextHolder.getTenantId(), electricityBatteryVO.getOriginalModel());
-            if (Objects.nonNull(batteryModel)) {
+            BatteryModel batteryModel = null;
+            if (finalBatteryModelMap.containsKey(electricityBatteryVO.getOriginalModel())) {
+                batteryModel = finalBatteryModelMap.get(electricityBatteryVO.getOriginalModel());
                 // 赋值复合字段
                 StringBuilder brandAndModelName = new StringBuilder();
                 if (StringUtils.isNotBlank(batteryModel.getBrandName())) {
@@ -737,6 +751,23 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setModelId(batteryModel.getId());
             }
             
+            // 优先从电池型号列表中查询电压和容量 如果不存在则获取电池列表中的电压和容量
+            if (Objects.nonNull(batteryModel) && Objects.nonNull(batteryModel.getBatteryType())) {
+                try {
+                    electricityBatteryVO.setVoltage(Integer.parseInt(Objects.requireNonNull(subStandVoltage(batteryModel.getBatteryType()))));
+                } catch (Exception e) {
+                    electricityBatteryVO.setVoltage(NumberConstant.ZERO);
+                }
+            } else {
+                electricityBatteryVO.setVoltage(Objects.nonNull(item.getVoltage()) ? item.getVoltage() : NumberConstant.ZERO);
+            }
+            
+            if (Objects.nonNull(batteryModel) && Objects.nonNull(batteryModel.getCapacity())) {
+                electricityBatteryVO.setCapacity(batteryModel.getCapacity());
+            } else {
+                electricityBatteryVO.setCapacity(Objects.nonNull(item.getCapacity()) ? item.getCapacity() : NumberConstant.ZERO);
+            }
+            
             //设置仓库名称
             if (Objects.nonNull(electricityBatteryVO.getWarehouseId())) {
                 AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(electricityBatteryVO.getWarehouseId());
@@ -750,6 +781,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         return R.ok(electricityBatteryVOList);
     }
+    
+    private String subStandVoltage(String batteryType) {
+        if (StringUtils.isBlank(batteryType)) {
+            return null;
+        }
+        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+        return batteryV.substring(0, batteryV.length() - 1);
+    }
+    
     
     @Override
     @Slave
@@ -1192,7 +1232,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             // 校验加盟商是否正在进行资产盘点
             Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING )) {
+            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                 return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
             }
             stockStatus = StockStatusEnum.UN_STOCK.getCode();
