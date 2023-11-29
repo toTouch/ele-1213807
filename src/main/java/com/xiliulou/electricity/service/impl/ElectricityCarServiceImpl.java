@@ -12,11 +12,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
+import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.asset.AssetAllocateDetail;
+import com.xiliulou.electricity.entity.asset.AssetAllocateRecord;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -27,11 +30,15 @@ import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
+import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -117,6 +124,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Resource
     private CarMoveRecordMapper carMoveRecordMapper;
+    
+    @Autowired
+    private AssetAllocateRecordService assetAllocateRecordService;
+    
+    @Autowired
+    private AssetAllocateDetailService assetAllocateDetailService;
 
     /**
      * 根据ID更新车辆绑定用户，包含绑定、解绑
@@ -677,10 +690,42 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 this.update(updateElectricityCar);
             });
         });
-
-        saveCarMoveRecords(queryList, sourceStore, targetStore);
+    
+        saveCarAllocateRecords(queryList, sourceStore, targetStore, tenantId, electricityCarMoveQuery.getRemark());
     
         return R.ok();
+    }
+    
+    /**
+     * 保存车辆迁移信息到资产调拨记录表
+     * @param queryList
+     * @param sourceStore
+     * @param targetStore
+     * @param tenantId
+     * @param remark
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveCarAllocateRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore, Integer tenantId, String remark) {
+        //记录迁移的车辆数据信息
+        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_ALLOCATE, SecurityUtils.getUid());
+        Long time = System.currentTimeMillis();
+    
+        // 封装资产调拨数据
+        AssetAllocateRecordSaveQueryModel assetAllocateRecordSaveQueryModel = AssetAllocateRecordSaveQueryModel.builder().orderNo(orderNo).tenantId(tenantId)
+                .assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).oldFranchiseeId(sourceStore.getFranchiseeId()).oldStoreId(sourceStore.getId())
+                .newFranchiseeId(targetStore.getFranchiseeId()).newStoreId(targetStore.getId()).remark(remark).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL)
+                .createTime(time).updateTime(time).build();
+    
+        List<AssetAllocateDetailSaveQueryModel> detailSaveQueryModelList = queryList.stream()
+                .map(item -> AssetAllocateDetailSaveQueryModel.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
+                        .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
+                        .updateTime(time).build()).collect(Collectors.toList());
+    
+        assetAllocateRecordService.insertOne(assetAllocateRecordSaveQueryModel);
+    
+        if (CollectionUtils.isNotEmpty(detailSaveQueryModelList)) {
+            assetAllocateDetailService.batchInsert(detailSaveQueryModelList);
+        }
     }
 
     /**
@@ -689,6 +734,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
      * @param sourceStore
      * @param targetStore
      */
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public void saveCarMoveRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore){
         //记录迁移的车辆数据信息

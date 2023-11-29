@@ -2,25 +2,20 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -59,14 +54,17 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             electricityCarMoveQuery.setSourceSid(assetAllocateRecordRequest.getSourceStoreId());
             electricityCarMoveQuery.setTargetSid(assetAllocateRecordRequest.getTargetStoreId());
             electricityCarMoveQuery.setCarIds(assetAllocateRecordRequest.getIdList());
+            electricityCarMoveQuery.setRemark(assetAllocateRecordRequest.getRemark());
             electricityCarService.electricityCarMove(electricityCarMoveQuery);
+        } else {
+        
         }
         
     
         /*List<String> idList = assetAllocateRecordRequest.getIdList();
         if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
             return R.fail("300811", "资产调拨数量过多");
-        }*/
+        }
     
         Integer tenantId = TenantContextHolder.getTenantId();
     
@@ -120,7 +118,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", storeFranchisee.getId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
-        }
+        }*/
     
        
     
@@ -133,6 +131,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         
     
+        return null;
+    }
+    
+    @Override
+    public Integer insertOne(AssetAllocateRecordSaveQueryModel assetAllocateRecordSaveQueryModel) {
         return null;
     }
 }

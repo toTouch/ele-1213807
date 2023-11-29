@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.entity.asset;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,19 +8,19 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 资产调拨表
- * @date 2023/11/29 11:29:40
+ * @description 资产调拨详情表
+ * @date 2023/11/29 17:39:34
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_asset_allocate_record")
-public class AssetAllocateRecord {
+@TableName("t_asset_allocate_detail")
+public class AssetAllocateDetail {
     
     /**
-     * 操作Id
+     * 主键ID
      */
     private Long id;
     
@@ -36,41 +35,24 @@ public class AssetAllocateRecord {
     private Integer tenantId;
     
     /**
-     * 调拨资产类型 (1-电柜, 2-电池, 3-车辆)
-     *
-     * @see AssetTypeEnum
+     * 资产ID
+     */
+    private Long assetId;
+    
+    /**
+     * 资产SN码
+     */
+    private String assetSn;
+    
+    /**
+     * 资产型号ID
+     */
+    private Long assetModelId;
+    
+    /**
+     * 调拨资产类型(1-电柜, 2-电池, 3-车辆)
      */
     private Integer assetType;
-    
-    /**
-     * 旧加盟商
-     */
-    private Long oldFranchiseeId;
-    
-    /**
-     * 旧门店
-     */
-    private Long oldStoreId;
-    
-    /**
-     * 新加盟商
-     */
-    private Long newFranchiseeId;
-    
-    /**
-     * 新门店
-     */
-    private Long newStoreId;
-    
-    /**
-     * 调拨原因
-     */
-    private String remark;
-    
-    /**
-     * 操作人
-     */
-    private Long operator;
     
     /**
      * 是否删除（0-正常，1-删除）
@@ -88,4 +70,3 @@ public class AssetAllocateRecord {
     private Long updateTime;
     
 }
-

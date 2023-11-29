@@ -303,6 +303,7 @@ public class JsonAdminElectricityCarController {
     /**
      * 车辆迁移
      */
+    @Deprecated
     @PutMapping("/admin/electricityCar/moveCar")
     @Log(title = "车辆迁移")
     public R electricityCarMove(

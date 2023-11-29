@@ -52,9 +52,8 @@
         select taewr.id, taewr.order_no, taewr.franchisee_id, taewr.store_id, taewr.type, taewr.warehouse_id, taewr.operator, taewr.tenant_id, taewr.del_flag, taewr.create_time,
         taewr.update_time, taewr.remark, taw.name as warehouseName
         from t_asset_exit_warehouse_record taewr
-        left join t_asset_warehouse taw
+        left join t_asset_warehouse taw on taw.id = taewr.warehouse_id
         <where>
-            taw.id = taewr.warehouse_id
             <if test="orderNo != null and orderNo != ''">
                 and order_no=#{orderNo}
             </if>
