@@ -135,11 +135,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             item.setUserName(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getName());
             item.setPhone(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getPhone());
             
-            //查询参与人信息
-            UserInfo joinUserInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
-            item.setJoinUserName(Objects.isNull(joinUserInfo) ? StringUtils.EMPTY : joinUserInfo.getName());
-            item.setJoinUserPhone(Objects.isNull(joinUserInfo) ?  StringUtils.EMPTY : joinUserInfo.getPhone());
-            
         }).collect(Collectors.toList());
 
     }
@@ -171,13 +166,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             return Collections.emptyList();
         }
     
-        return list.parallelStream().peek(item -> {
-            //查询参与人信息
-            UserInfo joinUserInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
-            item.setJoinUserName(Objects.isNull(joinUserInfo) ? StringUtils.EMPTY : joinUserInfo.getName());
-            item.setJoinUserPhone(Objects.isNull(joinUserInfo) ?  StringUtils.EMPTY : joinUserInfo.getPhone());
-        
-        }).collect(Collectors.toList());
+        return list;
     }
 
     @Override
