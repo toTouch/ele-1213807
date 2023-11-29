@@ -9,6 +9,8 @@ import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 
@@ -132,4 +134,9 @@ public interface ElectricityCarService {
     Boolean retryCarLockCtrl(String str, Integer lockType, Integer retryCount);
     
     List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
+    
+    List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest);
+    
+    R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
+    
 }

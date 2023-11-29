@@ -13,9 +13,9 @@ import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
-import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
@@ -102,14 +102,14 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer asyncBatteryProcess(ElectricityBatteryListSnByFranchiseeQueryModel queryModel, String orderNo, Long operator) {
-        List<String> snList = electricityBatteryService.listSnByFranchiseeId(queryModel);
+    public Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator) {
+        List<String> snList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(snList)) {
             List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = snList.stream().map(sn -> {
                 
                 AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(sn)
-                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(queryModel.getFranchiseeId()).inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO)
-                        .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(operator).tenantId(queryModel.getTenantId())
+                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId()).inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO)
+                        .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(operator).tenantId(snSearchRequest.getTenantId())
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
                 
                 return inventoryDetailSaveQueryModel;

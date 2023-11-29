@@ -51,6 +51,10 @@ public interface CacheConstant {
     String ELE_BATCH_IMPORT = "ele_batch_import_uid:";
     
     String ELE_BATCH_OUT_WAREHOUSE= "ele_batch_out_warehouse:";
+    
+    String ELE_BATTERY_BATCH_EXIT_WAREHOUSE= "ele_battery_batch_exit_warehouse:";
+    String ELE_CABINET_BATCH_EXIT_WAREHOUSE= "ele_cabinet_batch_exit_warehouse:";
+    String ELE_CAR_BATCH_EXIT_WAREHOUSE= "ele_car_batch_exit_warehouse:";
 
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";

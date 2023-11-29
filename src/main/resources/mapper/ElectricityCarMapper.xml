@@ -664,5 +664,46 @@
             </foreach>
         </if>
     </select>
+    
+    <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        where del_flag=0 and tenant_id = #{tenantId}
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="stockStatus != null">
+            and stock_status = #{stockStatus}
+        </if>
+        order by id
+        <if test="offset != null and size!= null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <update id="batchExitWarehouseBySn">
+        update t_electricity_car
+        <set>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
+                stock_status = 0
+            </if>
+        </set>
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" item="sn" open="(" close=")" separator=",">
+                    <if test="sn != null and sn != ''">
+                        #{sn}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </update>
 
 </mapper>

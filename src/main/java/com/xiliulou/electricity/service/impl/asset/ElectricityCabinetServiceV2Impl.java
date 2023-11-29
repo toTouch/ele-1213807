@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.electrcityCabinet.ElectricityCabinetBO;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -14,8 +14,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
-import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetBatchExitWarehouseBySnQueryModel;
-import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
@@ -261,7 +260,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     @Transactional(rollbackFor = Exception.class)
     public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
     
-        if (!redisService.setNx(CacheConstant.ELE_BATCH_OUT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.ELE_CABINET_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         return R.ok(electricityCabinetMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));

@@ -1,7 +1,9 @@
-package com.xiliulou.electricity.queryModel.electricityBattery;
+package com.xiliulou.electricity.queryModel.asset;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
@@ -10,12 +12,16 @@ import lombok.Data;
  */
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ElectricityBatteryListSnByFranchiseeQueryModel {
     
     private Integer tenantId;
     
     private Long franchiseeId;
+    
+    private Integer stockStatus;
     
     private Long size;
     

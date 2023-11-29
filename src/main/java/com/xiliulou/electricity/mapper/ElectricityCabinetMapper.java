@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.bo.electrcityCabinet.ElectricityCabinetBO;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
-import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetBatchExitWarehouseBySnQueryModel;
-import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;

@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.queryModel.electricityBattery.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailBatchInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventoryDetailRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public interface AssetInventoryDetailService {
     
     Integer countTotal(AssetInventoryDetailRequest assetInventoryRequest);
     
-    Integer asyncBatteryProcess(ElectricityBatteryListSnByFranchiseeQueryModel queryModel, String orderNo, Long operator);
+    Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator);
     
     List<AssetInventoryDetailVO> listBySnListAndOrderNo(List<String> snList, String orderNo);
 }

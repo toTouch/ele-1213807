@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
-import com.xiliulou.electricity.queryModel.electricityCabinet.ElectricityCabinetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;

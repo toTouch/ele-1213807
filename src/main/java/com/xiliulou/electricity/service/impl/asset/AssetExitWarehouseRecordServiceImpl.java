@@ -17,6 +17,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -71,6 +72,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Autowired
     private AssetInventoryService assetInventoryService;
+    
+    @Autowired
+    private ElectricityBatteryService electricityBatteryService;
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -181,10 +185,11 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 电柜批量退库
             electricityCabinetV2Service.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel);
         } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-            //TODO 电池批量退库
-            
+            // 电池批量退库
+            electricityBatteryService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel);
         } else {
-            //TODO 车辆批量退库
+            //车辆批量退库
+            electricityCarService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel);
         }
     }
     
