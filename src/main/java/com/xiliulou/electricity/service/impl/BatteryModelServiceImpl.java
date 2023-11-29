@@ -860,6 +860,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         String batteryType = batteryModel.getBatteryType();
         brandModelVo.setChargeV(batteryModel.getBatteryV());
         brandModelVo.setBatterySize(batteryModel.getSize());
+        
+        // 兼容老数据 如果老数据容量为空 则显示为0
+        if (Objects.isNull(batteryModel.getCapacity())) {
+            brandModelVo.setCapacity(NumberConstant.ZERO);
+        }
+        
         try {
             if (StringUtils.isNotBlank(batteryType)) {
                 String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
@@ -868,7 +874,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
                 brandModelVo.setNumber(Integer.parseInt(num));
                 brandModelVo.setStandardV(Integer.parseInt(standV));
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             return Triple.of(true, null, brandModelVo);
         }
         
