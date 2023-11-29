@@ -36,7 +36,7 @@ public class AssetExitWarehouseRecordController {
      * @date 2023/11/21 13:15:41
      * @author HeYafeng
      */
-    @PostMapping("/admin/asset/warehouse/exit/save")
+    @PostMapping("/admin/asset/exit/warehouse/save")
     public R save(@RequestBody @Validated(value = CreateGroup.class) AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -56,7 +56,7 @@ public class AssetExitWarehouseRecordController {
      * @date 2023/11/21 18:17:54
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/warehouse/exit/pageCount")
+    @GetMapping("/admin/asset/exit/warehouse/pageCount")
     public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -84,7 +84,7 @@ public class AssetExitWarehouseRecordController {
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/warehouse/exit/page")
+    @GetMapping("/admin/asset/exit/warehouse/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo", required = false) String orderNo,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "type", required = false) Integer type) {
         if (size < 0 || size > 50) {

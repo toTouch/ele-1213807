@@ -613,7 +613,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @date 2023/11/29 08:34:06
      * @author HeYafeng
      */
-    @GetMapping("/admin/electricityBattery/snSearch")
+    @GetMapping("/admin/battery/snSearch")
     public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
