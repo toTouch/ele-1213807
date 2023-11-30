@@ -14,9 +14,12 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -38,7 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -239,12 +242,11 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         BeanUtil.copyProperties(electricityCabinetSnSearchRequest, electricityCabinetListSnByFranchiseeQueryModel);
         electricityCabinetListSnByFranchiseeQueryModel.setTenantId(TenantContextHolder.getTenantId());
     
-        List<ElectricityCabinetVO> rspList = null;
-        
+        List<ElectricityCabinetVO> rspList = Collections.emptyList();
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByFranchiseeIdAndStockStatus(electricityCabinetListSnByFranchiseeQueryModel);
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
             rspList = electricityCabinetBOList.stream().map(item -> {
-               
+            
                 ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
                 BeanUtil.copyProperties(item, electricityCabinetVO);
             
@@ -253,16 +255,24 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             }).collect(Collectors.toList());
         }
     
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+    
         return rspList;
     }
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel) {
+    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest) {
     
         if (!redisService.setNx(CacheConstant.ELE_CABINET_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+    
+        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
+        BeanUtil.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+        
         return R.ok(electricityCabinetMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
     
@@ -271,6 +281,24 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
     
         return electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
+    }
+    
+    @Override
+    public Integer batchUpdateFranchiseeIdAndStoreId(List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList) {
+        Integer count = NumberConstant.ZERO;
+        
+        for (ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : batchUpdateFranchiseeAndStoreRequestList) {
+            ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCabinetUpdateFranchiseeAndStoreQueryModel();
+            BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
+            
+            count = electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+    
+            //清理缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + updateFranchiseeAndStoreRequest.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + updateFranchiseeAndStoreRequest.getProductKey() + updateFranchiseeAndStoreRequest.getDeviceName());
+        }
+        
+        return count;
     }
     
 }

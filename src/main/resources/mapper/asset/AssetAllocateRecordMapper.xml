@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        tenant_id,
+        asset_type,
+        old_franchisee_id,
+        old_store_id,
+        new_franchisee_id,
+        new_store_id,
+        remark,
+        operator,
+        del_flag,
+        create_time,
+        update_time
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_allocate_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_no,
+            tenant_id,
+            asset_type,
+            old_franchisee_id,
+            old_store_id,
+            new_franchisee_id,
+            new_store_id,
+            remark,
+            operator,
+            del_flag,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderNo},
+            #{tenantId},
+            #{assetType},
+            #{oldFranchiseeId},
+            #{oldStoreId},
+            #{newFranchiseeId},
+            #{newStoreId},
+            #{remark},
+            #{operator},
+            #{delFlag},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+
+</mapper>
+
+
+
+

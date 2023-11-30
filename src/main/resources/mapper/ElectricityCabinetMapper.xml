@@ -946,4 +946,8 @@
             </if>
         </where>
     </update>
+    
+    <update id="updateFranchiseeIdAndStoreId">
+        update t_electricity_cabinet set franchisee_id = #{targetFranchiseeId}, store_id = #{targetStoreId} where franchisee_id = #{sourceFranchiseeId} and store_id = #{sourceStoreId} and tenant_id = #{tenantId} and id = #{id}
+    </update>
 </mapper>

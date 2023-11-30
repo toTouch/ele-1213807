@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -106,7 +107,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
         assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<AssetInventoryVO> rspList = new ArrayList<>();
+        List<AssetInventoryVO> rspList = Collections.emptyList();
         
         List<AssetInventoryBO> assetInventoryBOList = assetInventoryMapper.selectListByFranchiseeId(assetInventoryQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryBOList)) {
@@ -120,6 +121,10 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 
                 return assetInventoryVO;
             }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
         }
         
         return rspList;
