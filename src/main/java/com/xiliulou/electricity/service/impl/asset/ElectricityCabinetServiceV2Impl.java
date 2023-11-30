@@ -243,17 +243,20 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         electricityCabinetListSnByFranchiseeQueryModel.setTenantId(TenantContextHolder.getTenantId());
     
         List<ElectricityCabinetVO> rspList = Collections.emptyList();
-        
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByFranchiseeIdAndStockStatus(electricityCabinetListSnByFranchiseeQueryModel);
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
             rspList = electricityCabinetBOList.stream().map(item -> {
-               
+            
                 ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
                 BeanUtil.copyProperties(item, electricityCabinetVO);
             
                 return electricityCabinetVO;
             
             }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
         }
     
         return rspList;
@@ -289,6 +292,10 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
             
             count = electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+    
+            //清理缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + updateFranchiseeAndStoreRequest.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + updateFranchiseeAndStoreRequest.getProductKey() + updateFranchiseeAndStoreRequest.getDeviceName());
         }
         
         return count;

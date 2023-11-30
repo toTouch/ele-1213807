@@ -245,6 +245,10 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         
             }).collect(Collectors.toList());
         }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
         
         return rspList;
     }

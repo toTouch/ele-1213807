@@ -122,6 +122,10 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 return assetInventoryVO;
             }).collect(Collectors.toList());
         }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
         
         return rspList;
     }

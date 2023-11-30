@@ -2,7 +2,6 @@ package com.xiliulou.electricity.request.asset;
 
 import lombok.Builder;
 import lombok.Data;
-
 /**
  * @author HeYafeng
  * @description 资产调拨：柜机调拨request
@@ -40,4 +39,11 @@ public class ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest {
      * 调入门店id
      */
     private Long targetStoreId;
+    
+    private String sn;
+    
+    private String productKey;
+    
+    private String deviceName;
+    
 }

@@ -81,6 +81,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             }).collect(Collectors.toList());
         }
     
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+    
         return rspList;
     }
     
@@ -140,6 +144,10 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 return assetInventoryDetailVO;
             
             }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
         }
     
         return rspList;

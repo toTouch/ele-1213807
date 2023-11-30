@@ -92,6 +92,10 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 return assetWarehouseVO;
             }).collect(Collectors.toList());
         }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
         
         return rspList;
     }
@@ -123,6 +127,10 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 
                 return assetWarehouseNameVO;
             }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
         }
         
         return rspList;
