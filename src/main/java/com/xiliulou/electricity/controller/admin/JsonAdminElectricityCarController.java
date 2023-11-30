@@ -55,6 +55,7 @@ public class JsonAdminElectricityCarController {
     CarMoveRecordService carMoveRecordService;
 
     //新增换电柜车辆
+    @Deprecated
     @PostMapping(value = "/admin/electricityCar")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
         return electricityCarService.save(electricityCarAddAndUpdate);

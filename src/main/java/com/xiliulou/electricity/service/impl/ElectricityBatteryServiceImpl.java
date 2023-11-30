@@ -1264,11 +1264,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 校验解绑的加盟商是否正在进行资产盘点
             List<Long> electricityBatteryIdList = batteryQuery.getElectricityBatteryIdList();
             List<ElectricityBattery> electricityBatteries = electricitybatterymapper.selectByBatteryIds(electricityBatteryIdList);
-            log.info("electricityBatteries={}", JsonUtil.toJson(electricityBatteries));
             List<Long> franchisseeIdList = electricityBatteries.stream()
-                    .filter(item -> Objects.nonNull(item.getFranchiseeId()) && Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L))
+                    .filter(item -> Objects.nonNull(item.getFranchiseeId()) && !Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L))
                     .map(ElectricityBattery::getFranchiseeId).collect(Collectors.toList());
-            log.info("franchisseeIdList={}", JsonUtil.toJson(franchisseeIdList));
             if (CollectionUtils.isNotEmpty(franchisseeIdList)) {
                 Integer exist = assetInventoryService.existInventoryByFranchiseeIdList(franchisseeIdList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
                 if (Objects.nonNull(exist)) {
