@@ -1170,7 +1170,7 @@
         select 1 from t_electricity_battery where warehouse_id = #{wareHouseId} limit 1;
     </select>
     
-    <select id="selectListCanAllocateBattery" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
+    <select id="selectListEnableAllocateBattery" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
         <include refid="selectElectricityBattery"/>
         <where>
             del_flag = 0 and tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and physics_status = #{physicsStatus}
@@ -1183,6 +1183,9 @@
                 <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
             </if>
         </where>
         order by id

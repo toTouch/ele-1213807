@@ -7,6 +7,7 @@ import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
@@ -138,4 +139,37 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
         return R.ok(electricityCabinetV2Service.listByFranchiseeIdAndStockStatus(electricityCabinetSnSearchRequest));
     
     }
+    
+    /**
+     * @description 查询可调拨的柜机
+     * @date 2023/11/30 18:49:01
+     * @author HeYafeng
+     */
+    @GetMapping("/admin/electricityCabinet/enableAllocate")
+    public R listEnableAllocate(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "storeId") Long storeId, @RequestParam(value = "sn", required = false) String sn) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+    
+        ElectricityCabinetEnableAllocateRequest enableAllocateRequest = ElectricityCabinetEnableAllocateRequest.builder().franchiseeId(franchiseeId).storeId(storeId).sn(sn)
+                .size(size).offset(offset).build();
+    
+        return R.ok(electricityCabinetV2Service.listEnableAllocateCabinet(enableAllocateRequest));
+    }
+    
 }

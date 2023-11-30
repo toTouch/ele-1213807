@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.request.asset;
+package com.xiliulou.electricity.queryModel.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,16 +9,14 @@ import java.util.List;
 
 /**
  * @author HeYafeng
- * @description 电池调拨request
- * @date 2023/11/30 14:56:06
+ * @description 电池调拨查询model
+ * @date 2023/11/30 14:54:29
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ElectricityBatteryCanAllocateRequest {
-    
+public class ElectricityBatteryEnableAllocateQueryModel {
     private Integer tenantId;
     
     /**
@@ -27,12 +25,11 @@ public class ElectricityBatteryCanAllocateRequest {
     private Long franchiseeId;
     
     /**
-     * 电池物理状态 0：在仓，1：不在仓 此处选择：在仓
+     * 电池物理状态 0：在仓，1：不在仓
      */
     private Integer physicsStatus;
-    
     /**
-     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换 此处选择：已录入、归还
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
      */
     private List<Integer> businessStatusList;
     
