@@ -19,5 +19,5 @@ public interface AssetExitWarehouseDetailMapper {
     
     Integer batchInsert(@Param("detailSaveQueryModelList") List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList);
     
-    List<String> selectListSnByOrderNoAndType(AssetExitWarehouseDetailQueryModel assetExitWarehouseDetailQueryModel);
+    List<String> selectListSnByOrderNo(AssetExitWarehouseDetailQueryModel assetExitWarehouseDetailQueryModel);
 }

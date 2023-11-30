@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -217,8 +219,16 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     }
     
     private R electricityBatteryMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Franchisee sourceFranchisee, Integer tenantId) {
-        // 根据id集获取电池信息
-        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.selectByBatteryIds(assetAllocateRecordRequest.getIdList());
+        // 获取可调拨的电池
+        List<Integer> businessStatusList = List.of(ElectricityBattery.BUSINESS_STATUS_INPUT, ElectricityBattery.BUSINESS_STATUS_RETURN);
+        ElectricityBatteryCanAllocateRequest electricityBatteryCanAllocateRequest = ElectricityBatteryCanAllocateRequest
+                .builder()
+                .tenantId(tenantId)
+                .franchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId())
+                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
+                .businessStatusList(businessStatusList)
+                .build();
+        List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listCanAllocateBattery(electricityBatteryCanAllocateRequest);
         
         
         

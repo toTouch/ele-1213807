@@ -22,11 +22,6 @@ public class AssetExitWarehouseDetailRequest {
      */
     private String orderNo;
     
-    /**
-     * 资产类型(1-电柜, 2-电池, 3-车辆)
-     */
-    private Integer type;
-    
     private Long size;
     
     private Long offset;

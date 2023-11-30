@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -239,7 +238,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 AssetExitWarehouseVO assetExitWarehouseVO = new AssetExitWarehouseVO();
                 BeanUtils.copyProperties(item, assetExitWarehouseVO);
                 assetExitWarehouseVO.setFranchiseeName(franchisee.getName());
-                assetExitWarehouseVO.setStoreName(store.getName());
+                if(Objects.nonNull(store)) {
+                    assetExitWarehouseVO.setStoreName(store.getName());
+                }
     
                 return assetExitWarehouseVO;
         

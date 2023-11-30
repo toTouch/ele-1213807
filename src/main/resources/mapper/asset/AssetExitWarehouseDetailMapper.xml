@@ -24,13 +24,15 @@
         </foreach>
     </insert>
     
-    <select id="selectListSnByOrderNoAndType" resultType="java.lang.String">
+    <select id="selectListSnByOrderNo" resultType="java.lang.String">
         select sn
         from t_asset_exit_warehouse_detail
         where del_flag = 0
           and tenant_id = #{tenantId}
           and order_no = #{orderNo}
-          and type = #{type}
+          <if test="type != null">
+              and type = #{type}
+          </if>
         order by id desc
             limit #{offset}, #{size}
     </select>
