@@ -781,7 +781,21 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
             return checkUserCanFreeDepositResult;
         }
-        
+    
+        //检查用户是否已经进行过免押操作，且已免押成功
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(userInfo, pxzConfig);
+        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+            return useFreeDepositStatusResult;
+        }
+    
+        //查看缓存中的免押链接信息是否还存在，若存在，直接返回
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+        if (freeOrderCacheResult) {
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), PxzCommonRsp.class);
+            log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), pxzCacheData);
+            return Triple.of(true, null, pxzCacheData.getData());
+        }
+    
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeQuery);
         if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
             return generateDepositOrderResult;
@@ -841,6 +855,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+    
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp, 300 * 1000L, false);
         
         return Triple.of(true, null, callPxzRsp.getData());
         

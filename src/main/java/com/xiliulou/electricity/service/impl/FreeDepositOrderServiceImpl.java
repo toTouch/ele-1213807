@@ -1103,6 +1103,20 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
             return checkUserCanFreeDepositResult;
         }
+    
+        //检查用户是否已经进行过免押操作，且已免押成功
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(userInfo, pxzConfig);
+        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+            return useFreeDepositStatusResult;
+        }
+    
+        //查看缓存中的免押链接信息是否还存在，若存在，直接返回
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        if (freeOrderCacheResult) {
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
+            log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
+            return Triple.of(true, null, pxzCacheData.getData());
+        }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
         if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
@@ -1174,8 +1188,53 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+    
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
 
         return Triple.of(true, null, callPxzRsp.getData());
+    }
+    
+    /**
+     * 检查用户在拍小租侧免押是否成功
+     * @param userInfo
+     * @param pxzConfig
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(UserInfo userInfo, PxzConfig pxzConfig){
+        UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(batteryDeposit)) {
+            String orderId = batteryDeposit.getOrderId();
+        
+            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+            query.setAesSecret(pxzConfig.getAesKey());
+            query.setDateTime(System.currentTimeMillis());
+            query.setSessionId(orderId);
+            query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+            request.setTransId(orderId);
+            query.setData(request);
+        
+            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+            try {
+                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+            } catch (PxzFreeDepositException e) {
+                log.error("query free deposit status from pxz error! uid = {}, orderId = {}", userInfo.getUid(), orderId, e);
+                //return Triple.of(false, "100402", "免押查询失败！");
+            }
+        
+            if (Objects.nonNull(pxzQueryOrderRsp) && Objects.nonNull(pxzQueryOrderRsp.getData())) {
+                PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+                if (PxzQueryOrderRsp.AUTH_FROZEN.equals(queryOrderRspData.getAuthStatus())) {
+                    log.info("query free deposit status from pxz success! uid = {}, orderId = {}", userInfo.getUid(), orderId);
+                    return Triple.of(false, "100400", "免押已成功，请勿重复操作");
+                }
+            }
+        }
+        
+        return Triple.of(true, null, null);
     }
 
     /**

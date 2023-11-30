@@ -443,6 +443,11 @@ public interface CacheConstant {
      * 免押电池套餐押金支付缓存锁
      */
     String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
+    
+    /**
+     * 免押订单创建缓存
+     */
+    String ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "free_deposit_order_generate_lock_key:";
     /**
      * 用户活跃缓存
      */

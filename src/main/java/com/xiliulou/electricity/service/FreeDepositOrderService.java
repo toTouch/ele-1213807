@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -92,6 +94,8 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> selectFreeDepositOrderDetail();
 
     Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 query);
+    
+    Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(UserInfo userInfo, PxzConfig pxzConfig);
 
     Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
     
