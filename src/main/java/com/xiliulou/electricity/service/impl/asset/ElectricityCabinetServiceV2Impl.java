@@ -291,7 +291,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCabinetUpdateFranchiseeAndStoreQueryModel();
             BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
             
-            count = electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+            electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+            count += 1;
     
             //清理缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + updateFranchiseeAndStoreRequest.getId());

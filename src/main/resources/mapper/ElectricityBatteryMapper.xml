@@ -1178,6 +1178,12 @@
             <foreach collection="businessStatusList" item="businessStatus" index="index" open="(" close=")" separator=",">
                 #{businessStatus}
             </foreach>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by id
         <if test="offset != null and size!= null">
@@ -1209,5 +1215,9 @@
                 </foreach>
             </if>
         </where>
+    </update>
+    
+    <update id="updateFranchiseeId">
+        update t_electricity_battery set franchisee_id = #{targetFranchiseeId} where id = #{id} and franchisee_id = #{sourceFranchiseeId}
     </update>
 </mapper>

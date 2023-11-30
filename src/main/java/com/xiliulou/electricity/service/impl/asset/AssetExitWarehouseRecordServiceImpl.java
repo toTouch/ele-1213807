@@ -6,6 +6,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -114,7 +115,11 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 List<String> snList = assetExitWarehouseSaveRequest.getSnList();
                 String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
                 Long nowTime = System.currentTimeMillis();
-                
+    
+                // sn合法性校验
+                //snValidation(snList, type, franchiseeId, storeId);
+    
+    
                 // 封装资产退库记录数据
                 AssetExitWarehouseSaveQueryModel assetExitWarehouseSaveQueryModel = AssetExitWarehouseSaveQueryModel
                         .builder()
@@ -172,15 +177,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-    @Transactional(rollbackFor = Exception.class)
-    public void handleExitWarehouse(AssetExitWarehouseSaveQueryModel exitWarehouseSaveQueryModel, List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList,
-            AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest, Long operator, Integer type) {
-        // 新增资产退库记录
-        assetExitWarehouseRecordMapper.insertOne(exitWarehouseSaveQueryModel);
-    
-        // 新增资产退库详情
-        assetExitWarehouseDetailService.batchInsert(detailSaveQueryModelList, operator);
-    
+/*    R snValidation(List<String>snList, Integer type, Long franchiseeId, Long storeId){
         if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
             // 电柜批量退库
             electricityCabinetV2Service.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
@@ -190,6 +187,30 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         } else {
             //车辆批量退库
             electricityCarService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
+        }
+    }*/
+    
+    @Transactional(rollbackFor = Exception.class)
+    public void handleExitWarehouse(AssetExitWarehouseSaveQueryModel exitWarehouseSaveQueryModel, List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList,
+            AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest, Long operator, Integer type) {
+        R result = null;
+        if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+            // 电柜批量退库
+            result = electricityCabinetV2Service.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
+        } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
+            // 电池批量退库
+            result = electricityBatteryService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
+        } else {
+            //车辆批量退库
+            result = electricityCarService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
+        }
+    
+        if (Objects.nonNull(result) && (Integer) result.getData() > NumberConstant.ZERO) {
+            // 新增资产退库记录
+            assetExitWarehouseRecordMapper.insertOne(exitWarehouseSaveQueryModel);
+        
+            // 新增资产退库详情
+            assetExitWarehouseDetailService.batchInsert(detailSaveQueryModelList, operator);
         }
     }
     

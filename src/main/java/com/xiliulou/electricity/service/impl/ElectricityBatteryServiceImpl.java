@@ -41,12 +41,16 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryBatchUpdateFranchiseeQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryCanAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
@@ -1512,6 +1516,25 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     
         return rspList;
+    }
+    
+    @Override
+    public Integer batchUpdateFranchiseeId(List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList) {
+        Integer count = NumberConstant.ZERO;
+    
+        for (ElectricityBatteryBatchUpdateFranchiseeRequest updateFranchiseeRequest : batchUpdateFranchiseeRequestList) {
+            ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel = new ElectricityBatteryBatchUpdateFranchiseeQueryModel();
+            BeanUtils.copyProperties(updateFranchiseeRequest, updateFranchiseeQueryModel);
+        
+            electricitybatterymapper.updateFranchiseeId(updateFranchiseeQueryModel);
+        
+            count += 1;
+        
+            //清除缓存
+            redisService.delete(CacheConstant.CACHE_BT_ATTR + updateFranchiseeRequest.getSn());
+        }
+    
+        return count;
     }
     
 }

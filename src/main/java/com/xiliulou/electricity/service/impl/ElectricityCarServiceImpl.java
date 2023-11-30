@@ -623,7 +623,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                         TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
-            return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
+            return R.fail("100262", "部分车辆不符合调拨条件，请检查后重试");
         }
     
         Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
