@@ -198,6 +198,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     public List<AssetWarehouseNameVO> selectByIdList(List<Long> list){
         List<AssetWarehouseNameVO> resultList = Collections.emptyList();
         List<Long> idList = list.stream().filter(Objects::isNull).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(idList)){
+            return resultList;
+        }
         List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListByIdList(TenantContextHolder.getTenantId(), idList);
         if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
             resultList = assetWarehouseNameBOList.stream().map(item -> {
