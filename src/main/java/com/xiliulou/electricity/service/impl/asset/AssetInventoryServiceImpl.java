@@ -170,6 +170,8 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return assetInventoryMapper.selectByOrderNo(assetInventoryQueryModel);
     }
     
+    @Slave
+    @Override
     public Integer existInventoryByFranchiseeIdList(List<Long> franchiseeIdList, Integer type) {
         return assetInventoryMapper.existInventoryByFranchiseeIdList(TenantContextHolder.getTenantId(), franchiseeIdList, type);
     }

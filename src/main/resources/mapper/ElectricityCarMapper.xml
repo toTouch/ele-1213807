@@ -713,7 +713,7 @@
     </update>
     
     <select id="existOutWarehouse" resultType="java.lang.Integer">
-        select 1 from t_electricity_car where id in
+        select 1 from t_electricity_car where tenant_id =#{tenantId} and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             <if test="id != null and id != ''">
                 #{id}
@@ -722,7 +722,7 @@
         and stock_status = 1 limit 1;
     </select>
     
-    <update id="batchUpdataFranchiseeIdAndStoreByIdList">
+    <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>
             <if test="franchiseeId != null and franchiseeId != ''">
@@ -732,10 +732,21 @@
                 store_id = #{storeId},
             </if>
         </set>
-        where id in
+        where tenant_id =#{tenantId} and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </update>
+    
+    <insert id="batchInsertCar" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_car(sn, model, longitude, latitude, status, uid, phone, user_info_id,
+        user_name, store_id, model_id, battery_sn, create_time, update_time,
+        del_flag, tenant_id, lock_type, franchisee_id) values
+        <foreach item="c" index="index" collection="list" separator=",">
+            (#{c.sn}, #{model}, #{c.longitude}, #{c.latitude}, #{c.status}, #{c.uid}, #{c.phone}, #{c.userInfoId},
+            #{c.userName}, #{c.storeId}, #{c.modelId}, #{c.batterySn}, #{c.createTime},
+            #{c.updateTime}, #{c.delFlag}, #{c.tenantId}, #{c.lockType}, #{c.franchiseeId})
+        </foreach>
+    </insert>
 
 </mapper>

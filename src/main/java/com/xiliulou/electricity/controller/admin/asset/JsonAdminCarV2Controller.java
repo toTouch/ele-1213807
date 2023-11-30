@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -55,5 +56,18 @@ public class JsonAdminCarV2Controller {
     }
     
     
-    
+    /**
+     *
+     * @param carBatchSaveRequest 车辆参数
+     * @return 返回参数
+     */
+    @PostMapping(value = "/admin/electricityCar/batchSave")
+    public R batchSave(@RequestBody @Validated(value = CreateGroup.class) CarBatchSaveRequest carBatchSaveRequest) {
+        // 用户校验
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return electricityCarService.bathSaveCar(carBatchSaveRequest);
+    }
 }

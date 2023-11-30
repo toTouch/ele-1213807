@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
@@ -340,11 +342,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setModel(electricityCarModel.getName());
         electricityCar.setModelId(electricityCarModel.getId());
         
-        int insert = electricityCarMapper.insert(electricityCar);
-        DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
-            //新增缓存
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId(), electricityCar);
-        });
+        electricityCarMapper.insert(electricityCar);
         return R.ok(electricityCar.getId());
     }
 
@@ -1183,17 +1181,73 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
         List<Integer> idList = carOutWarehouseRequest.getIdList();
-        Integer exist = electricityCarMapper.existOutWarehouse(idList);
+        Integer exist = electricityCarMapper.existOutWarehouse(idList,TenantContextHolder.getTenantId());
         if (Objects.nonNull(exist)) {
             return R.fail("100561", "已选择项中有已出库车辆，请重新选择后操作");
         }
         
-        Integer count = electricityCarMapper.batchUpdataFranchiseeIdAndStoreByIdList(idList,carOutWarehouseRequest.getFranchiseeId(),carOutWarehouseRequest.getStoreId());
+        Integer count = electricityCarMapper.batchUpdateFranchiseeIdAndStoreByIdList(idList,carOutWarehouseRequest.getFranchiseeId(),carOutWarehouseRequest.getStoreId(),TenantContextHolder.getTenantId());
         log.info("updateFranchiseeIdAndStoreId count={}",count);
         
         idList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);
         });
+        return R.ok();
+    }
+    
+    @Override
+    public  R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest){
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + SecurityUtils.getUid(), "1", 5 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        // 校验车辆型号是否存在
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carBatchSaveRequest.getModelId());
+        if (Objects.isNull(electricityCarModel)) {;
+            return R.fail("100005", "未找到车辆型号");
+        }
+        
+        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getSnList().size()) {
+            return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
+        }
+        
+        List<String> carSnList = carBatchSaveRequest.getSnList();
+        
+        //过滤重复的sn
+        List<String> snList = carSnList.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
+        
+        List<ElectricityCarVO> electricityCarVOList = electricityCarMapper.selectListBySnList(snList, TenantContextHolder.getTenantId(), null);
+        
+        // 已存在的sn
+        List<String> existSnList = electricityCarVOList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
+     
+        // 准备新增的车辆
+        List<ElectricityCar> electricityCarList = Lists.newArrayList();
+        
+        for (String sn:snList) {
+            // 校验数据库中是否已存在该sn
+            if(existSnList.contains(sn)){
+                continue;
+            }
+            //换电柜车辆
+            ElectricityCar electricityCar = new ElectricityCar();
+            electricityCar.setSn(sn);
+            electricityCar.setTenantId(TenantContextHolder.getTenantId());
+            electricityCar.setCreateTime(System.currentTimeMillis());
+            electricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+            electricityCar.setStoreId(NumberConstant.ZERO_L);
+            electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
+            
+            electricityCar.setModel(electricityCarModel.getName());
+            electricityCar.setModelId(electricityCarModel.getId());
+            electricityCarList.add(electricityCar);
+        }
+        
+        // 保存到本地数据库
+        electricityCarMapper.batchInsertCar(electricityCarList);
         return R.ok();
     }
 }
