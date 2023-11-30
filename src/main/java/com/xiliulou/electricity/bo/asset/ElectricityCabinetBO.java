@@ -1,5 +1,10 @@
 package com.xiliulou.electricity.bo.asset;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 
 /**
@@ -7,6 +12,10 @@ import java.util.Map;
  * @description 柜机BO
  * @date 2023/11/27 14:02:43
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ElectricityCabinetBO {
     /**
      * 换电柜Id
