@@ -716,7 +716,7 @@
         and stock_status = 1 limit 1;
     </select>
     
-    <update id="batchUpdataFranchiseeIdAndStoreByIdList" resultType="java.lang.Integer" >
+    <update id="batchUpdataFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>
             <if test="franchiseeId != null and franchiseeId != ''">
