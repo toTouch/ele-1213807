@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
@@ -140,7 +141,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer existBySn(String sn);
     
-    List<String> selectListSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
+    List<ElectricityBatteryBO> selectListSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
     
     Integer existsByWarehouseId(Long wareHouseId);
     

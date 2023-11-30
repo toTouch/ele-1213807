@@ -18,15 +18,23 @@ import lombok.NoArgsConstructor;
 public class ElectricityBatterySnSearchRequest {
     
     private Integer tenantId;
+    
     /**
      * 加盟商id
      */
     private Long franchiseeId;
     
     /**
+     * 门店id
+     */
+    private Long storeId;
+    
+    /**
      * 库存状态
      */
     private Integer stockStatus;
+    
+    private String sn;
     
     private Long size;
     

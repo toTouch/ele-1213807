@@ -21,6 +21,10 @@ public class ElectricityCabinetListSnByFranchiseeQueryModel {
     
     private Long franchiseeId;
     
+    private Long storeId;
+    
+    private String sn;
+    
     /**
      * 库存状态：0,库存；1,已出库
      */

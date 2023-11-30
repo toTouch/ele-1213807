@@ -1145,7 +1145,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         BeanUtil.copyProperties(electricityCarSnSearchRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        List<ElectricityCarVO> rspList = new ArrayList<>();
+        List<ElectricityCarVO> rspList = null;
         
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByFranchiseeIdAndStockStatus(queryModel);
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
@@ -1157,6 +1157,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 return electricityCarVO;
                 
             }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
         }
         
         return rspList;

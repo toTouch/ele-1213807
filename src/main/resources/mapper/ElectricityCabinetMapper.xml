@@ -870,6 +870,12 @@
         <if test="stockStatus != null">
             and stock_status = #{stockStatus}
         </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="sn != null and sn != ''">
+            and sn = #{sn}
+        </if>
         order by id
         <if test="offset != null and size!= null">
             limit #{offset}, #{size}

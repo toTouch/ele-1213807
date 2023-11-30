@@ -21,7 +21,11 @@ public class ElectricityCarListSnByFranchiseeQueryModel {
     
     private Long franchiseeId;
     
+    private Long storeId;
+    
     private Integer stockStatus;
+    
+    private String sn;
     
     private Long size;
     

@@ -22,9 +22,16 @@ public class ElectricityCabinetSnSearchRequest {
     private Long franchiseeId;
     
     /**
+     * 门店id
+     */
+    private Long storeId;
+    
+    /**
      * 库存状态
      */
     private Integer stockStatus;
+    
+    private String sn;
     
     private Long size;
     

@@ -22,9 +22,19 @@ public class ElectricityCarSnSearchRequest {
     private Long franchiseeId;
     
     /**
+     * 门店id
+     */
+    private Long storeId;
+    
+    /**
      * 库存状态
      */
     private Integer stockStatus;
+    
+    /**
+     * 车辆sn
+     */
+    private String sn;
     
     private Long size;
     

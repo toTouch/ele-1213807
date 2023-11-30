@@ -21,6 +21,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetInventoryDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import org.apache.commons.collections.CollectionUtils;
@@ -108,11 +109,11 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer asyncBatteryProcess(ElectricityBatterySnSearchRequest snSearchRequest, String orderNo, Long operator) {
-        List<String> snList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
-        if (CollectionUtils.isNotEmpty(snList)) {
-            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = snList.stream().map(sn -> {
+        List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
+        if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
+            List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> {
                 
-                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(sn)
+                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
                         .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId()).inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO)
                         .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(operator).tenantId(snSearchRequest.getTenantId())
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
@@ -126,7 +127,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
                 assetInventoryDetailMapper.batchInsert(inventoryDetailSaveQueryModelList);
             }
         }
-        return snList.size();
+        return electricityBatteryVOList.size();
     }
     
     @Slave
