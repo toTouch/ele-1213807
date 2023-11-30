@@ -26,7 +26,7 @@ public class AssetExitWarehouseDetailController {
     @Autowired
     private AssetExitWarehouseDetailService assetExitWarehouseDetailService;
     
-    @GetMapping("/admin/asset/exit/warehouse/detail/search")
+    @GetMapping("/admin/asset/exit/warehouse/detail")
     public R exitWarehouseSnSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo") String orderNo,
             @RequestParam(value = "type") Integer type) {
         if (size < 0 || size > 50) {
