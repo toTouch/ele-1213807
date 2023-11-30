@@ -289,6 +289,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         saveBattery.setWarehouseId(batteryAddRequest.getWarehouseId());
+        saveBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
+        saveBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
         saveBattery.setVoltage(NumberConstant.ZERO);
         saveBattery.setCapacity(NumberConstant.ZERO);
         saveBattery.setCreateTime(System.currentTimeMillis());
