@@ -193,6 +193,20 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         return assetWarehouseMapper.existsByName(TenantContextHolder.getTenantId(), name);
     }
     
-    
-    
+    @Slave
+    @Override
+    public List<AssetWarehouseNameVO> selectByIdList(List<Long> idList){
+        List<AssetWarehouseNameVO> resultList = Collections.emptyList();
+        List<AssetWarehouseNameBO> assetWarehouseNameBOList = assetWarehouseMapper.selectListByIdList(TenantContextHolder.getTenantId(), idList);
+        if (CollectionUtils.isNotEmpty(assetWarehouseNameBOList)) {
+            resultList = assetWarehouseNameBOList.stream().map(item -> {
+                AssetWarehouseNameVO assetWarehouseNameVO = new AssetWarehouseNameVO();
+                BeanUtils.copyProperties(item, assetWarehouseNameVO);
+                
+                return assetWarehouseNameVO;
+            }).collect(Collectors.toList());
+        }
+        
+        return resultList;
+    }
 }

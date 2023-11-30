@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
@@ -42,12 +43,14 @@ import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
+import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +64,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -134,6 +138,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     private AssetAllocateDetailService assetAllocateDetailService;
+    
+    @Autowired
+    private AssetWarehouseService assetWarehouseService;
 
     /**
      * 根据ID更新车辆绑定用户，包含绑定、解绑
@@ -454,11 +461,26 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-        List<ElectricityCarVO> carVOList = electricityCarVOS.parallelStream().peek(item -> {
+        // 获取库房名称列表
+        List<Long> warehouseIdList = electricityCarVOS.stream().filter(Objects::nonNull).map(ElectricityCarVO::getWarehouseId).collect(Collectors.toList());
+        List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
+        
+        Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(assetWarehouseNameVOS)){
+            warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
+        }
+        
+        Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+        List<ElectricityCarVO> carVOList = electricityCarVOS.stream().peek(item -> {
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
             if (Objects.nonNull(electricityBattery)) {
                 item.setBatterySn(electricityBattery.getSn());
             }
+            
+            if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
+                item.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
+            }
+            
         }).collect(Collectors.toList());
 
         return R.ok(carVOList);
@@ -1179,7 +1201,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
+    public R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
         List<Integer> idList = carOutWarehouseRequest.getIdList();
         Integer exist = electricityCarMapper.existOutWarehouse(idList,TenantContextHolder.getTenantId());
         if (Objects.nonNull(exist)) {
@@ -1203,14 +1225,14 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
+        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getSnList().size()) {
+            return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
+        }
+        
         // 校验车辆型号是否存在
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carBatchSaveRequest.getModelId());
         if (Objects.isNull(electricityCarModel)) {;
             return R.fail("100005", "未找到车辆型号");
-        }
-        
-        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getSnList().size()) {
-            return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
         }
         
         List<String> carSnList = carBatchSaveRequest.getSnList();
@@ -1228,7 +1250,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         for (String sn:snList) {
             // 校验数据库中是否已存在该sn
-            if(existSnList.contains(sn)){
+            if (existSnList.contains(sn)) {
                 continue;
             }
             //换电柜车辆

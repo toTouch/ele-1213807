@@ -31,4 +31,6 @@ public interface AssetWarehouseMapper {
     AssetWarehouseNameBO selectById(Long id);
     
     Integer existsByName(@Param("tenantId") Integer tenantId, @Param("name") String name);
+    
+    List<AssetWarehouseNameBO> selectListByIdList(@Param("tenantId") Integer tenantId,@Param("idList") List<Long> idList);
 }

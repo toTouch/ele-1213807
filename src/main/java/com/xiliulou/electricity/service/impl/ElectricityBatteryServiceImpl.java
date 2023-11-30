@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -731,6 +732,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         Map<String, BatteryModel> finalBatteryModelMap = batteryModelMap;
+        
+        // 获取库房名称列表
+        List<Long> warehouseIdList = electricityBatteryList.stream().filter(Objects::nonNull).map(ElectricityBattery::getWarehouseId).collect(Collectors.toList());
+        List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
+        
+        Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(assetWarehouseNameVOS)){
+            warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
+        }
+        
+        Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(item, electricityBatteryVO);
@@ -801,12 +813,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setCapacity(Objects.nonNull(item.getCapacity()) ? item.getCapacity() : NumberConstant.ZERO);
             }
             
-            //设置仓库名称
-            if (Objects.nonNull(electricityBatteryVO.getWarehouseId())) {
-                AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(electricityBatteryVO.getWarehouseId());
-                if (Objects.nonNull(assetWarehouseNameVO)) {
-                    electricityBatteryVO.setWarehouseName(assetWarehouseNameVO.getName());
-                }
+            if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
+                electricityBatteryVO.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
             }
             
             return electricityBatteryVO;

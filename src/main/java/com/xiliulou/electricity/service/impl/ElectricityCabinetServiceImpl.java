@@ -681,7 +681,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
-            electricityCabinetList.parallelStream().forEach(e -> {
+            // 获取库房名称列表
+            List<Long> warehouseIdList = electricityCabinetList.stream().filter(Objects::nonNull).map(ElectricityCabinetVO::getWarehouseId).collect(Collectors.toList());
+            List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
+            
+            Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
+            if(!CollectionUtils.isEmpty(assetWarehouseNameVOS)){
+                warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
+            }
+            
+            Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+            electricityCabinetList.stream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
                     Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
@@ -811,11 +821,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 //设置仓库名称
-                if (Objects.nonNull(e.getWarehouseId())) {
-                    AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(e.getWarehouseId());
-                    if (Objects.nonNull(assetWarehouseNameVO)) {
-                        e.setWarehouseName(assetWarehouseNameVO.getName());
-                    }
+                if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
+                    e.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
                 }
             });
         }

@@ -118,6 +118,13 @@
         select 1 from t_asset_warehouse where name = #{name} and tenant_id = #{tenantId} and del_flag = 0 limit 1;
     </select>
 
+    <select id="selectListByIdList" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO">
+        select id,name from from t_asset_warehouse where tenant_id = #{tenantId} and del_flag = 0
+        and status = 0 and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>
 
 

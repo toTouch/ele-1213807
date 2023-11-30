@@ -31,4 +31,6 @@ public interface AssetWarehouseService {
     R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest);
     
     Integer existsByName(String name);
+    
+    List<AssetWarehouseNameVO> selectByIdList(List<Long> idList);
 }

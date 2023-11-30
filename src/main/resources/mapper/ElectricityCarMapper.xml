@@ -732,7 +732,7 @@
                 store_id = #{storeId},
             </if>
         </set>
-        where tenant_id =#{tenantId} and id in
+        where tenant_id = #{tenantId} and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>

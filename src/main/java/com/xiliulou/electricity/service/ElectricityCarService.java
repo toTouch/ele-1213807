@@ -144,7 +144,7 @@ public interface ElectricityCarService {
     
     R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest);
     
-    R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest);
+    R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest);
     
     R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest);
 }

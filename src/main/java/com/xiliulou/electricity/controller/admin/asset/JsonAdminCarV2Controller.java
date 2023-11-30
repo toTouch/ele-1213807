@@ -52,9 +52,8 @@ public class JsonAdminCarV2Controller {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return electricityCarService.updateFranchiseeIdAndStoreId(carOutWarehouseRequest);
+        return electricityCarService.batchUpdateFranchiseeIdAndStoreId(carOutWarehouseRequest);
     }
-    
     
     /**
      *
