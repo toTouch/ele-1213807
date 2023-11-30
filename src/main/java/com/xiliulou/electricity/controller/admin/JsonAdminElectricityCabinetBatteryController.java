@@ -5,7 +5,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
@@ -14,7 +13,6 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
-import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -25,7 +23,6 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -631,7 +628,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         }
     
         ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).stockStatus(StockStatusEnum.UN_STOCK.getCode()).storeId(storeId).sn(sn).size(size).offset(offset).build();
+                .franchiseeId(franchiseeId).stockStatus(StockStatusEnum.UN_STOCK.getCode()).sn(sn).size(size).offset(offset).build();
     
         return R.ok(electricityBatteryService.listSnByFranchiseeId(electricityBatterySnSearchRequest));
     
