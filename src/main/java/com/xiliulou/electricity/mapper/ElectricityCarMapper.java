@@ -151,5 +151,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
     
-    List<ElectricityCar> selectListCar(List<Integer> idList);
+    Integer existOutWarehouse(List<Integer> idList);
+    
+    Integer batchUpdataFranchiseeIdAndStoreByIdList(List<Integer> idList,Long franchiseeId,Integer storeId);
 }

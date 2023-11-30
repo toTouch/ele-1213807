@@ -1173,8 +1173,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest){
+    public R updateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
         List<Integer> idList = carOutWarehouseRequest.getIdList();
-        return null;
+        Integer exist = electricityCarMapper.existOutWarehouse(idList);
+        if (Objects.nonNull(exist)) {
+            return R.fail("100561", "已选择项中有已出库车辆，请重新选择后操作");
+        }
+        
+        Integer count = electricityCarMapper.batchUpdataFranchiseeIdAndStoreByIdList(idList,carOutWarehouseRequest.getFranchiseeId(),carOutWarehouseRequest.getStoreId());
+        log.info("updateFranchiseeIdAndStoreId count={}",count);
+        
+        idList.forEach(item -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);
+        });
+        return R.ok();
     }
 }

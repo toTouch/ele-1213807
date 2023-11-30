@@ -124,6 +124,16 @@
             and del_flag = 0
         </where>
     </select>
+    
+    <select id="existInventoryByFranchiseeIdList" resultType="java.lang.Integer">
+        select 1 from t_asset_inventory where tenant_id = #{tenantId} and franchisee_id in
+        <foreach collection="franchiseeIdList" item="item" open="(" close=")" separator=",">
+            <if test="item != null and item != ''">
+                #{item}
+            </if>
+        </foreach>
+          and type = #{type} and status = 0 order by id desc limit 1;
+    </select>
 
 </mapper>
 

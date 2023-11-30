@@ -32,4 +32,6 @@ public interface AssetInventoryMapper {
     Integer updateByOrderNo(AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel);
     
     AssetInventoryVO selectByOrderNo(AssetInventoryQueryModel assetInventoryQueryModel);
+    
+    Integer existInventoryByFranchiseeIdList(@Param("tenantId")Integer tenantId,@Param("franchiseeIdList")List<Long> franchiseeIdList, @Param("type") Integer type);
 }

@@ -36,4 +36,6 @@ public interface AssetInventoryService {
     Integer updateByOrderNo(AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel);
     
     AssetInventoryVO queryByOrderNo(AssetInventoryQueryModel assetInventoryQueryModel);
+    
+    Integer existInventoryByFranchiseeIdList(List<Long> franchiseeIdList, Integer type);
 }

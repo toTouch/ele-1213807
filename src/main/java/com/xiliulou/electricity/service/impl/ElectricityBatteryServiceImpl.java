@@ -1259,6 +1259,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         } else {
             //进入电池解绑流程
             log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
+            
+            // 校验解绑的加盟商是否正在进行资产盘点
+            List<Long> electricityBatteryIdList = batteryQuery.getElectricityBatteryIdList();
+            List<ElectricityBattery> electricityBatteries = electricitybatterymapper.selectByBatteryIds(electricityBatteryIdList);
+            List<Long> franchisseeIdList = electricityBatteries.stream()
+                    .filter(item -> Objects.nonNull(item.getFranchiseeId()) && Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L))
+                    .map(ElectricityBattery::getFranchiseeId).collect(Collectors.toList());
+            Integer exist = assetInventoryService.existInventoryByFranchiseeIdList(franchisseeIdList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+            if (Objects.nonNull(exist)) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+            }
+            
             batteryQuery.setFranchiseeId(null);
             stockStatus = StockStatusEnum.STOCK.getCode();
         }

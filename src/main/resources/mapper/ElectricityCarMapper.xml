@@ -706,8 +706,30 @@
         </where>
     </update>
     
-    <select id="selectListCar" resultType="com.xiliulou.electricity.entity.ElectricityCar">
-        select id,model from t_electricity_car where del_flag = 0
+    <select id="existOutWarehouse" resultType="java.lang.Integer">
+        select 1 from t_electricity_car where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            <if test="id != null and id != ''">
+                #{id}
+            </if>
+        </foreach>
+        and stock_status = 1 limit 1;
     </select>
+    
+    <update id="batchUpdataFranchiseeIdAndStoreByIdList" resultType="java.lang.Integer" >
+        update t_electricity_car
+        <set>
+            <if test="franchiseeId != null and franchiseeId != ''">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null and storeId != ''">
+                store_id = #{storeId},
+            </if>
+        </set>
+        where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 
 </mapper>

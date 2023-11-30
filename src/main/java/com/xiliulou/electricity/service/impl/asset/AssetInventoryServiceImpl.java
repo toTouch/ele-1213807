@@ -65,12 +65,12 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
     @Override
     public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest, Long operator) {
-    
+        
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         try {
             Integer tenantId = TenantContextHolder.getTenantId();
             Long franchiseeId = assetInventorySaveOrUpdateRequest.getFranchiseeId();
@@ -78,13 +78,13 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
             // 默认资产类型是电池,获取查询电池数量
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
-        
+            
             // 生成资产盘点订单
             AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
                     .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
                     .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId)
                     .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
+            
             //异步执行将电池数据导入到资产详情表
             if ((Integer) data > NumberConstant.ZERO) {
                 ElectricityBatterySnSearchRequest snSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
@@ -92,7 +92,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                     assetInventoryDetailService.asyncBatteryProcess(snSearchRequest, orderNo, operator);
                 });
             }
-        
+            
             return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator);
@@ -114,7 +114,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 
                 AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
                 BeanUtils.copyProperties(item, assetInventoryVO);
-    
+                
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 assetInventoryVO.setFranchiseeName(franchisee.getName());
                 
@@ -165,4 +165,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         return assetInventoryMapper.selectByOrderNo(assetInventoryQueryModel);
     }
     
+    public Integer existInventoryByFranchiseeIdList(List<Long> franchiseeIdList, Integer type) {
+        return assetInventoryMapper.existInventoryByFranchiseeIdList(TenantContextHolder.getTenantId(), franchiseeIdList, type);
+    }
 }
