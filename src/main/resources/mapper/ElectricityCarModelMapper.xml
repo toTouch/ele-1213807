@@ -188,6 +188,9 @@
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
+            <if test="manufacturerName != null and manufacturerName != ''">
+                manufacturer_name = #{manufacturerName},
+            </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
             </if>
