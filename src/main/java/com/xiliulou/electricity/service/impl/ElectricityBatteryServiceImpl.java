@@ -1264,12 +1264,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 校验解绑的加盟商是否正在进行资产盘点
             List<Long> electricityBatteryIdList = batteryQuery.getElectricityBatteryIdList();
             List<ElectricityBattery> electricityBatteries = electricitybatterymapper.selectByBatteryIds(electricityBatteryIdList);
+            log.info("electricityBatteries={}", JsonUtil.toJson(electricityBatteries));
             List<Long> franchisseeIdList = electricityBatteries.stream()
                     .filter(item -> Objects.nonNull(item.getFranchiseeId()) && Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L))
                     .map(ElectricityBattery::getFranchiseeId).collect(Collectors.toList());
-            Integer exist = assetInventoryService.existInventoryByFranchiseeIdList(franchisseeIdList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-            if (Objects.nonNull(exist)) {
-                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+            log.info("franchisseeIdList={}", JsonUtil.toJson(franchisseeIdList));
+            if (CollectionUtils.isNotEmpty(franchisseeIdList)) {
+                Integer exist = assetInventoryService.existInventoryByFranchiseeIdList(franchisseeIdList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+                if (Objects.nonNull(exist)) {
+                    return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+                }
             }
             
             batteryQuery.setFranchiseeId(null);
@@ -1443,14 +1447,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest) {
-    
+        
         if (!redisService.setNx(CacheConstant.ELE_BATTERY_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
         BeanUtils.copyProperties(assetBatchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
-    
+        
         return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
     

@@ -54,4 +54,6 @@ public class JsonAdminCarV2Controller {
         return electricityCarService.updateFranchiseeIdAndStoreId(carOutWarehouseRequest);
     }
     
+    
+    
 }
