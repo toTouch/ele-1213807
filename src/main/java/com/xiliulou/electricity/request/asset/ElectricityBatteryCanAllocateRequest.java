@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ElectricityBatteryCanAllocateRequest {
+    
     private Integer tenantId;
     
     /**
@@ -26,15 +27,19 @@ public class ElectricityBatteryCanAllocateRequest {
     private Long franchiseeId;
     
     /**
-     * 电池物理状态 0：在仓，1：不在仓
-     * 此处选择：在仓
+     * 电池物理状态 0：在仓，1：不在仓 此处选择：在仓
      */
     private Integer physicsStatus;
+    
     /**
-     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
-     * 此处选择：已录入、归还
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换 此处选择：已录入、归还
      */
     private List<Integer> businessStatusList;
+    
+    /**
+     * 调拨电池的id
+     */
+    private List<Long> idList;
     
     private Long size;
     

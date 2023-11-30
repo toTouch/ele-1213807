@@ -33,6 +33,11 @@ public class ElectricityBatteryCanAllocateQueryModel {
      */
     private List<Integer> businessStatusList;
     
+    /**
+     * 调拨电池的id
+     */
+    private List<Long> idList;
+    
     private Long size;
     
     private Long offset;
