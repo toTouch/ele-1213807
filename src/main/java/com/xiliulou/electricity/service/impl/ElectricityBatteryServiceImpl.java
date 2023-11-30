@@ -308,6 +308,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
+        // 校验加盟商是否正在进行资产盘点
+        Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+        if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+        }
+        
         List<BatteryExcelV3DTO> batteryV3List = batteryExcelV3Query.getBatteryList();
         if (CollectionUtils.isEmpty(batteryV3List)) {
             return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
