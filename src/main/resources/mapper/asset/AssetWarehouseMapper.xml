@@ -119,8 +119,7 @@
     </select>
 
     <select id="selectListByIdList" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO">
-        select id,name from t_asset_warehouse where tenant_id = #{tenantId} and del_flag = 0
-        and status = 0 and id in
+        select id,name from t_asset_warehouse where del_flag = 0 and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
