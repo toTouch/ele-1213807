@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -13,10 +14,11 @@ import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
+import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
-import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -33,7 +35,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -219,9 +220,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                         .deviceName(electricityCabinet.getDeviceName()).build()).collect(Collectors.toList());
         
         if (CollectionUtils.isNotEmpty(batchUpdateFranchiseeAndStoreRequestList)) {
-            electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
+            Integer count = electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
+            if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
+                saveAllocateRecords(assetAllocateRecordRequest, null, electricityCabinetList, tenantId);
+            }
         }
-        
         
         return R.ok();
     }
@@ -231,10 +234,10 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         // 获取可调拨的电池
         List<Integer> businessStatusList = List.of(ElectricityBattery.BUSINESS_STATUS_INPUT, ElectricityBattery.BUSINESS_STATUS_RETURN);
-        ElectricityBatteryCanAllocateRequest electricityBatteryCanAllocateRequest = ElectricityBatteryCanAllocateRequest.builder().tenantId(tenantId)
+        ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest = ElectricityBatteryEnableAllocateRequest.builder().tenantId(tenantId)
                 .franchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId()).physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).businessStatusList(businessStatusList)
                 .idList(idList).build();
-        List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listCanAllocateBattery(electricityBatteryCanAllocateRequest);
+        List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listEnableAllocateBattery(electricityBatteryEnableAllocateRequest);
         if (CollectionUtils.isEmpty(electricityBatteryList) || !Objects.equals(idList.size(), electricityBatteryList.size())) {
             log.error("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
             return R.fail("300812", "部分电池不符合调拨条件，请检查后重试");
@@ -245,52 +248,53 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                         .targetFranchiseeId(assetAllocateRecordRequest.getTargetFranchiseeId()).id(item.getId()).sn(item.getSn()).tenantId(tenantId).build())
                 .collect(Collectors.toList());
         
-        electricityBatteryService.batchUpdateFranchiseeId(batchUpdateFranchiseeRequestList);
+        Integer count = electricityBatteryService.batchUpdateFranchiseeId(batchUpdateFranchiseeRequestList);
+        if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
+            saveAllocateRecords(assetAllocateRecordRequest, electricityBatteryList, null, tenantId);
+        }
         
         return R.ok();
     }
     
     /**
-     * 保存资产调拨记录表
-     * @param queryList
-     * @param sourceStore
-     * @param targetStore
-     * @param tenantId
-     * @param remark
+     * 保存资产调拨记录
      */
-    public void saveAllocateRecords(List<T> queryList, Store sourceStore, Store targetStore, Integer tenantId, String remark, Integer type) {
+    public void saveAllocateRecords(AssetAllocateRecordRequest assetAllocateRecordRequest, List<ElectricityBatteryVO> electricityBatteryList,
+            List<ElectricityCabinet> electricityCabinetList, Integer tenantId) {
         String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_ALLOCATE, SecurityUtils.getUid());
         Long time = System.currentTimeMillis();
-        
-        // 封装资产调拨数据
+    
         AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest = AssetAllocateRecordSaveRequest.builder().orderNo(orderNo).tenantId(tenantId)
-                .assetType(type).oldFranchiseeId(sourceStore.getFranchiseeId())
-                .newFranchiseeId(targetStore.getFranchiseeId()).remark(remark).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL)
-                .createTime(time).updateTime(time).build();
-        if (Objects.nonNull(sourceStore) && Objects.nonNull(targetStore)) {
-            assetAllocateRecordSaveRequest.setOldStoreId(sourceStore.getId());
-            assetAllocateRecordSaveRequest.setNewStoreId(targetStore.getId());
+                .oldFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId()).newFranchiseeId(assetAllocateRecordRequest.getTargetFranchiseeId())
+                .remark(assetAllocateRecordRequest.getRemark()).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build();
+    
+        List<AssetAllocateDetailSaveRequest> detailSaveRequestList = null;
+    
+        // 封装电池调拨记录
+        if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
+            assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+        
+            detailSaveRequestList = electricityBatteryList.stream()
+                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId()).assetSn(item.getSn())
+                            .assetModelId(item.getModelId()).assetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
+                            .updateTime(time).build()).collect(Collectors.toList());
+        } else {
+            // 封装电柜调拨记录
+            assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode());
+            assetAllocateRecordSaveRequest.setOldStoreId(assetAllocateRecordRequest.getSourceStoreId());
+            assetAllocateRecordSaveRequest.setNewStoreId(assetAllocateRecordRequest.getTargetStoreId());
+        
+            detailSaveRequestList = electricityCabinetList.stream()
+                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
+                            .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
+                            .updateTime(time).build()).collect(Collectors.toList());
         }
-        
-       /* List<AssetAllocateDetailSaveRequest> detailSaveRequestList = queryList.stream()
-                .map(item -> AssetAllocateDetailSaveRequest
-                        .builder()
-                        .orderNo(orderNo)
-                        .tenantId(tenantId)
-                        .assetId(item.getId().longValue())
-                        .assetSn(item.getSn())
-                        .assetModelId(item.getModelId().longValue())
-                        .assetType(type)
-                        .delFlag(AssetConstant.DEL_NORMAL).createTime(time)
-                        .updateTime(time)
-                        .build())
-                .collect(Collectors.toList());
-        
+    
         this.insertOne(assetAllocateRecordSaveRequest);
-        
+    
         if (CollectionUtils.isNotEmpty(detailSaveRequestList)) {
             assetAllocateDetailService.batchInsert(detailSaveRequestList);
-        }*/
+        }
     }
     
     @Override

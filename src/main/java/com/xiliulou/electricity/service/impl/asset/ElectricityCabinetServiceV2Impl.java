@@ -14,12 +14,14 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetSnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -300,6 +302,32 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         }
         
         return count;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetVO> listEnableAllocateCabinet(ElectricityCabinetEnableAllocateRequest enableAllocateRequest) {
+        ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel = new ElectricityCabinetEnableAllocateQueryModel();
+        BeanUtil.copyProperties(enableAllocateRequest, enableAllocateQueryModel);
+        enableAllocateQueryModel.setTenantId(TenantContextHolder.getTenantId());
+    
+        List<ElectricityCabinetVO> rspList = null;
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableAllocateCabinet(enableAllocateQueryModel);
+        if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+            rspList = electricityCabinetBOList.stream().map(item -> {
+                ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+                BeanUtil.copyProperties(item, electricityCabinetVO);
+            
+                return electricityCabinetVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
     }
     
 }
