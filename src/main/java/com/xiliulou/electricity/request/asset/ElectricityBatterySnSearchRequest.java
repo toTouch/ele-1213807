@@ -25,11 +25,6 @@ public class ElectricityBatterySnSearchRequest {
     private Long franchiseeId;
     
     /**
-     * 门店id
-     */
-    private Long storeId;
-    
-    /**
      * 库存状态
      */
     private Integer stockStatus;

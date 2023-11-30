@@ -33,12 +33,12 @@ public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDe
     
     @Slave
     @Override
-    public List<String> listSnByOrderNoAndType(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest) {
+    public List<String> listSnByOrderNo(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest) {
         AssetExitWarehouseDetailQueryModel assetExitWarehouseDetailQueryModel = new AssetExitWarehouseDetailQueryModel();
         BeanUtils.copyProperties(assetExitWarehouseDetailRequest, assetExitWarehouseDetailQueryModel);
         assetExitWarehouseDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
-        return assetExitWarehouseDetailMapper.selectListSnByOrderNoAndType(assetExitWarehouseDetailQueryModel);
+        return assetExitWarehouseDetailMapper.selectListSnByOrderNo(assetExitWarehouseDetailQueryModel);
     }
     
     @Override

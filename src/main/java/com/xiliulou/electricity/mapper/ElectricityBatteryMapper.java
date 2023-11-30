@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryCanAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
@@ -147,4 +148,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
     
+    List<ElectricityBatteryBO> selectListCanAllocateBattery(ElectricityBatteryCanAllocateQueryModel queryModel);
 }

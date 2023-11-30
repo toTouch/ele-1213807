@@ -62,7 +62,7 @@ public class AssetExitWarehouseVO {
     /**
      * 退库仓库名称
      */
-    private Long warehouseName;
+    private String warehouseName;
     
     /**
      * 备注

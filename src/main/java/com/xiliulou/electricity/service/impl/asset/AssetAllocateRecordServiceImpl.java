@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -14,14 +15,18 @@ import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
+import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -52,9 +57,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     private AssetAllocateRecordMapper assetAllocateRecordMapper;
     
     @Autowired
-    private AssetAllocateDetailMapper assetAllocateDetailMapper;
-    
-    @Autowired
     private FranchiseeService franchiseeService;
     
     @Autowired
@@ -66,6 +68,12 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
     
+    @Autowired
+    private AssetInventoryService assetInventoryService;
+    
+    @Autowired
+    private ElectricityBatteryService electricityBatteryService;
+    
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -73,12 +81,29 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        
+    
         try {
             Integer type = assetAllocateRecordRequest.getType();
+            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
+            
             // 车辆调拨 复用已实现的 车辆转移功能
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type)) {
+                if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                    return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+                }
+                
                 ElectricityCarMoveQuery electricityCarMoveQuery = new ElectricityCarMoveQuery();
+    
+                if(Objects.isNull(assetAllocateRecordRequest.getSourceStoreId())) {
+                    log.error("ELECTRICITY_CAR_MOVE ERROR! not found source storeId!");
+                    return R.fail("ELECTRICITY.0018", "未找到门店");
+                }
+    
+                if(Objects.isNull(assetAllocateRecordRequest.getTargetStoreId())) {
+                    log.error("ELECTRICITY_CAR_MOVE ERROR! not found target storeId!");
+                    return R.fail("ELECTRICITY.0018", "未找到门店");
+                }
+                
                 electricityCarMoveQuery.setSourceSid(assetAllocateRecordRequest.getSourceStoreId());
                 electricityCarMoveQuery.setTargetSid(assetAllocateRecordRequest.getTargetStoreId());
                 electricityCarMoveQuery.setCarIds(assetAllocateRecordRequest.getIdList());
@@ -115,15 +140,20 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                     return R.ok();
                 }
                 
-                Store sourceStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceStoreId());
-                Store targetStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetStoreId());
-                
                 // 电柜调拨
                 if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
-                    return electricityCabinetMove(assetAllocateRecordRequest, sourceFranchisee, sourceStore, targetStore, tenantId);
+                    if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                        return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+                    }
+                    
+                    return electricityCabinetMove(assetAllocateRecordRequest, sourceFranchisee, tenantId);
                 } else {
                     //电池调拨
-                    
+                    if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                        return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+                    }
+    
+                    //return electricityBatteryMove();
                 }
                 return R.ok();
             }
@@ -132,19 +162,32 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         }
     }
     
-    private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Franchisee sourceFranchisee, Store sourceStore, Store targetStore, Integer tenantId) {
+    private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Franchisee sourceFranchisee, Integer tenantId) {
+        if(Objects.isNull(assetAllocateRecordRequest.getSourceStoreId())) {
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found source storeId!");
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+    
+        if(Objects.isNull(assetAllocateRecordRequest.getTargetStoreId())) {
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found target storeId!");
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        Store sourceStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceStoreId());
+        Store targetStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetStoreId());
+        
         if (Objects.isNull(sourceStore)) {
-            log.error("ASSET_ALLOCATE ERROR! not found source store！storeId={}", assetAllocateRecordRequest.getSourceStoreId());
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found source store！storeId={}", assetAllocateRecordRequest.getSourceStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         
         if (Objects.isNull(targetStore)) {
-            log.error("ASSET_ALLOCATE ERROR! not target store！storeId={}", assetAllocateRecordRequest.getTargetStoreId());
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! not target store！storeId={}", assetAllocateRecordRequest.getTargetStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         
         if (Objects.equals(assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId())) {
-            log.error("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
                     assetAllocateRecordRequest.getTargetStoreId());
             return R.fail("300810", "调出门店与调入门店不能相同");
         }
@@ -155,7 +198,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         Franchisee storeFranchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(storeFranchisee)) {
-            log.error("ASSET_ALLOCATE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -172,6 +215,34 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         if (CollectionUtils.isNotEmpty(batchUpdateFranchiseeAndStoreRequestList)) {
             electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
         }
+        return R.ok();
+    }
+    
+    private R electricityBatteryMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Franchisee sourceFranchisee, Integer tenantId) {
+        // 获取可调拨的电池
+        List<Integer> businessStatusList = List.of(ElectricityBattery.BUSINESS_STATUS_INPUT, ElectricityBattery.BUSINESS_STATUS_RETURN);
+        ElectricityBatteryCanAllocateRequest electricityBatteryCanAllocateRequest = ElectricityBatteryCanAllocateRequest
+                .builder()
+                .tenantId(tenantId)
+                .franchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId())
+                .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
+                .businessStatusList(businessStatusList)
+                .build();
+        List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listCanAllocateBattery(electricityBatteryCanAllocateRequest);
+        
+        
+        
+        /*List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
+        
+        List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList = electricityCabinetList.stream()
+                .map(electricityCabinet -> ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest.builder().id(electricityCabinet.getId().longValue()).tenantId(tenantId)
+                        .targetFranchiseeId(targetStore.getFranchiseeId()).targetStoreId(targetStore.getId()).sourceFranchiseeId(sourceFranchisee.getId())
+                        .sourceStoreId(sourceStore.getId()).sn(electricityCabinet.getSn()).productKey(electricityCabinet.getProductKey())
+                        .deviceName(electricityCabinet.getDeviceName()).build()).collect(Collectors.toList());
+        
+        if (CollectionUtils.isNotEmpty(batchUpdateFranchiseeAndStoreRequestList)) {
+            electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
+        }*/
         return R.ok();
     }
     

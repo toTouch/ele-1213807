@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
  * @description 查询电池sn
  * @date 2023/11/24 14:54:54
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,8 +19,6 @@ public class ElectricityBatteryListSnByFranchiseeQueryModel {
     private Integer tenantId;
     
     private Long franchiseeId;
-    
-    private Long storeId;
     
     private Integer stockStatus;
     

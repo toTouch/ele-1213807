@@ -678,7 +678,7 @@
             and stock_status = #{stockStatus}
         </if>
         <if test="sn != null and sn != ''">
-            and sn = #{sn}
+            and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
         </if>
         order by id
         <if test="offset != null and size!= null">

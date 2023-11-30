@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.bo.asset;
 
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
@@ -9,6 +12,9 @@ import lombok.Data;
  * @date 2023/11/28 09:10:18
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AssetExitWarehouseBO {
     
     /**
@@ -46,7 +52,7 @@ public class AssetExitWarehouseBO {
     /**
      * 退库仓库名称
      */
-    private Long warehouseName;
+    private String warehouseName;
     
     /**
      * 备注

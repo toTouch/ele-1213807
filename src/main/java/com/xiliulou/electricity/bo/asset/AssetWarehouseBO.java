@@ -1,14 +1,19 @@
 package com.xiliulou.electricity.bo.asset;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
  * @description 库房BO
  * @date 2023/11/21 20:20:13
  */
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AssetWarehouseBO {
     
     /**

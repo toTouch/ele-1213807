@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
@@ -129,4 +130,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest);
     
+    List<ElectricityBatteryVO> listCanAllocateBattery(ElectricityBatteryCanAllocateRequest electricityBatteryCanAllocateRequest);
 }

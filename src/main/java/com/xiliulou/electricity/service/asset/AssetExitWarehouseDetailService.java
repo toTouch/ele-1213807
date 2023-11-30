@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface AssetExitWarehouseDetailService {
     
-    List<String> listSnByOrderNoAndType(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest);
+    List<String> listSnByOrderNo(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest);
     
     R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator);
 

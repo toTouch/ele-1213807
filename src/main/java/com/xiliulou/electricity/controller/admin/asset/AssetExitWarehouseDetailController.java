@@ -26,9 +26,8 @@ public class AssetExitWarehouseDetailController {
     @Autowired
     private AssetExitWarehouseDetailService assetExitWarehouseDetailService;
     
-    @GetMapping("/admin/asset/exit/warehouse/sn/search")
-    public R exitWarehouseSnSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo") String orderNo,
-            @RequestParam(value = "type") Integer type) {
+    @GetMapping("/admin/asset/exit/warehouse/detail")
+    public R exitWarehouseSnSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo") String orderNo) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -47,9 +46,9 @@ public class AssetExitWarehouseDetailController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().size(size).offset(offset).orderNo(orderNo).type(type).build();
+        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().size(size).offset(offset).orderNo(orderNo).build();
         
-        return R.ok(assetExitWarehouseDetailService.listSnByOrderNoAndType(assetExitWarehouseDetailRequest));
+        return R.ok(assetExitWarehouseDetailService.listSnByOrderNo(assetExitWarehouseDetailRequest));
     }
     
 }

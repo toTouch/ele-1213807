@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.bo.asset;
 
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
  * @description 资产盘点BO
  * @date 2023/11/20 16:28:28
  */
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AssetInventoryBO {
     
     /**

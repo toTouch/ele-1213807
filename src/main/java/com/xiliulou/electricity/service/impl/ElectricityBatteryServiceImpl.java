@@ -41,9 +41,11 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryCanAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryCanAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
@@ -1478,6 +1480,36 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         BeanUtils.copyProperties(assetBatchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
         
         return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
+    }
+    
+    /**
+     * @description 查询可调拨的电池列表
+     * @date 2023/11/30 15:26:02
+     * @author HeYafeng
+     */
+    @Slave
+    @Override
+    public List<ElectricityBatteryVO> listCanAllocateBattery(ElectricityBatteryCanAllocateRequest electricityBatteryCanAllocateRequest) {
+        ElectricityBatteryCanAllocateQueryModel queryModel = new ElectricityBatteryCanAllocateQueryModel();
+        BeanUtils.copyProperties(electricityBatteryCanAllocateRequest, queryModel);
+    
+        List<ElectricityBatteryVO> rspList = null;
+        List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListCanAllocateBattery(queryModel);
+        if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
+            rspList = electricityBatteryBOList.stream().map(item -> {
+                ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+                BeanUtils.copyProperties(item, electricityBatteryVO);
+            
+                return electricityBatteryVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+    
+        return rspList;
     }
     
 }

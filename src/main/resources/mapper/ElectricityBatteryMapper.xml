@@ -1154,14 +1154,11 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
-        <if test="storeId != null">
-            and store_id = #{storeId}
-        </if>
         <if test="stockStatus != null">
             and stock_status = #{stockStatus}
         </if>
         <if test="sn != null and sn != ''">
-            and sn = #{sn}
+            and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
         </if>
         order by id
         <if test="offset != null and size != null">
@@ -1171,6 +1168,21 @@
     
     <select id="existsByWarehouseId" resultType="java.lang.Integer">
         select 1 from t_electricity_battery where warehouse_id = #{wareHouseId} limit 1;
+    </select>
+    
+    <select id="selectListCanAllocateBattery" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
+        <include refid="selectElectricityBattery"/>
+        <where>
+            del_flag = 0 and tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and physics_status = #{physicsStatus}
+            and business_status in
+            <foreach collection="businessStatusList" item="businessStatus" index="index" open="(" close=")" separator=",">
+                #{businessStatus}
+            </foreach>
+        </where>
+        order by id
+        <if test="offset != null and size!= null">
+            limit #{offset}, #{size}
+        </if>
     </select>
     
     <update id="batchExitWarehouseBySn">
