@@ -78,12 +78,12 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
         log.info("WxRefundPayCarDepositServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
-
+        
+        if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
+            return;
+        }
+        
         try {
-            if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
-                return;
-            }
-
             // 押金退款单信息
             CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
