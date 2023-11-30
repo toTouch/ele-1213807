@@ -20,6 +20,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -389,11 +390,28 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Slave
     @Override
-    public List<String> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest) {
+    public List<ElectricityBatteryVO> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest) {
         ElectricityBatteryListSnByFranchiseeQueryModel queryModel = new ElectricityBatteryListSnByFranchiseeQueryModel();
         BeanUtils.copyProperties(electricityBatterySnSearchRequest, queryModel);
-        
-        return electricitybatterymapper.selectListSnByFranchiseeId(queryModel);
+    
+        List<ElectricityBatteryVO> rspList = null;
+    
+        List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListSnByFranchiseeId(queryModel);
+        if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
+            rspList = electricityBatteryBOList.stream().map(item -> {
+                ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+                BeanUtils.copyProperties(item, electricityBatteryVO);
+            
+                return electricityBatteryVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+    
+        return rspList;
     }
     
     private Pair<Boolean, String> callBatteryPlatSaveSn(List<String> list, Integer isNeedSync) {

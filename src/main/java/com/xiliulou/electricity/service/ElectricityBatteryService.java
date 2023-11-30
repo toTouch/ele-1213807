@@ -8,7 +8,6 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
@@ -124,7 +123,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid);
     
-    List<String> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest);
+    List<ElectricityBatteryVO> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest);
     
     Integer existsByWarehouseId(Long wareHouseId);
     

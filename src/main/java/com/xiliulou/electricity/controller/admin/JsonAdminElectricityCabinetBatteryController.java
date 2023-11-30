@@ -614,15 +614,16 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @author HeYafeng
      */
     @GetMapping("/admin/battery/snSearch")
-    public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId) {
+    public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "storeId", required = false) Long storeId, @RequestParam(value = "sn", required = false) String sn) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-        
+    
         if (offset < 0) {
             offset = 0L;
         }
-        
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -630,9 +631,9 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         }
     
         ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).stockStatus(StockStatusEnum.UN_STOCK.getCode()).size(size).offset(offset).build();
-        
+                .franchiseeId(franchiseeId).stockStatus(StockStatusEnum.UN_STOCK.getCode()).storeId(storeId).sn(sn).size(size).offset(offset).build();
+    
         return R.ok(electricityBatteryService.listSnByFranchiseeId(electricityBatterySnSearchRequest));
-        
+    
     }
 }

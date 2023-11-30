@@ -380,26 +380,27 @@ public class JsonAdminElectricityCarController {
      * @author HeYafeng
      */
     @GetMapping("/admin/electricityCar/snSearch")
-    public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId) {
+    public R snSearchByFranchiseeId(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "storeId") Long storeId, @RequestParam(value = "sn", required = false) String sn) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-        
+    
         if (offset < 0) {
             offset = 0L;
         }
-        
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        ElectricityCarSnSearchRequest electricityCarSnSearchRequest = ElectricityCarSnSearchRequest.builder().franchiseeId(franchiseeId)
+    
+        ElectricityCarSnSearchRequest electricityCarSnSearchRequest = ElectricityCarSnSearchRequest.builder().franchiseeId(franchiseeId).storeId(storeId).sn(sn)
                 .stockStatus(StockStatusEnum.UN_STOCK.getCode()).size(size).offset(offset).build();
-        
+    
         return R.ok(electricityCarService.listByFranchiseeIdAndStockStatus(electricityCarSnSearchRequest));
-        
+    
     }
 
 }
