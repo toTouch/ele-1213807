@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -782,15 +783,21 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return checkUserCanFreeDepositResult;
         }
     
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
+                .uid(userInfo.getUid())
+                .realName(freeQuery.getRealName())
+                .phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).build();
+        
         //检查用户是否已经进行过免押操作，且已免押成功
-        Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(userInfo, pxzConfig);
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
         if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
             return useFreeDepositStatusResult;
         }
     
-        //查看缓存中的免押链接信息是否还存在，若存在，直接返回
+        //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
-        if (freeOrderCacheResult) {
+        if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), PxzCommonRsp.class);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());

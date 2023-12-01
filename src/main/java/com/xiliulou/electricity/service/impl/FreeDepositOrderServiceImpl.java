@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.CarDepositOrder;
@@ -1104,15 +1105,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return checkUserCanFreeDepositResult;
         }
     
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
+                .uid(userInfo.getUid())
+                .realName(freeQuery.getRealName())
+                .phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).build();
+        
         //检查用户是否已经进行过免押操作，且已免押成功
-        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(userInfo, pxzConfig);
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
         if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
             return useFreeDepositStatusResult;
         }
-    
-        //查看缓存中的免押链接信息是否还存在，若存在，直接返回
+        
+        //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
-        if (freeOrderCacheResult) {
+        if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());
@@ -1197,40 +1204,48 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     /**
      * 检查用户在拍小租侧免押是否成功
-     * @param userInfo
+     * @param freeDepositUserDTO
      * @param pxzConfig
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(UserInfo userInfo, PxzConfig pxzConfig){
-        UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(batteryDeposit)) {
-            String orderId = batteryDeposit.getOrderId();
+    public Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig){
+        UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(freeDepositUserDTO.getUid());
         
-            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
-            query.setAesSecret(pxzConfig.getAesKey());
-            query.setDateTime(System.currentTimeMillis());
-            query.setSessionId(orderId);
-            query.setMerchantCode(pxzConfig.getMerchantCode());
+        if (Objects.isNull(batteryDeposit)) {
+            return Triple.of(true, null, null);
+        }
+     
+        String orderId = batteryDeposit.getOrderId();
+        //检查传入的用户信息是否和前一次传入的内容一致，若用户名或身份证号存在不一致，则需要生成新码
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())
+                || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())) {
+            return Triple.of(true, null, freeDepositOrder);
+        }
         
-            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
-            request.setTransId(orderId);
-            query.setData(request);
-        
-            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
-            try {
-                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
-            } catch (PxzFreeDepositException e) {
-                log.error("query free deposit status from pxz error! uid = {}, orderId = {}", userInfo.getUid(), orderId, e);
-                //return Triple.of(false, "100402", "免押查询失败！");
-            }
-        
-            if (Objects.nonNull(pxzQueryOrderRsp) && Objects.nonNull(pxzQueryOrderRsp.getData())) {
-                PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
-                if (PxzQueryOrderRsp.AUTH_FROZEN.equals(queryOrderRspData.getAuthStatus())) {
-                    log.info("query free deposit status from pxz success! uid = {}, orderId = {}", userInfo.getUid(), orderId);
-                    return Triple.of(false, "100400", "免押已成功，请勿重复操作");
-                }
+        PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(orderId);
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+    
+        PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(orderId);
+        query.setData(request);
+    
+        PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+        try {
+            pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+        } catch (PxzFreeDepositException e) {
+            log.error("query free deposit status from pxz error! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), orderId, e);
+        }
+    
+        if (Objects.nonNull(pxzQueryOrderRsp) && Objects.nonNull(pxzQueryOrderRsp.getData())) {
+            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+            if (PxzQueryOrderRsp.AUTH_FROZEN.equals(queryOrderRspData.getAuthStatus())) {
+                log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), orderId);
+                return Triple.of(false, "100400", "免押已成功，请勿重复操作");
             }
         }
         
