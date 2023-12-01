@@ -1262,7 +1262,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
             electricityCar.setStoreId(NumberConstant.ZERO_L);
             electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
-            
+            electricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
             electricityCar.setModel(electricityCarModel.getName());
             electricityCar.setModelId(electricityCarModel.getId());
             electricityCarList.add(electricityCar);
