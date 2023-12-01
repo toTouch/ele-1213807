@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
@@ -49,6 +51,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRecordService {
+    
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("ASSET_EXIT_WAREHOUSE_RECORD_HANDLE_THREAD_POOL", 3,
+            "asset_exit_warehouse_record_handle_thread_pool");
     
     @Autowired
     private RedisService redisService;
@@ -116,10 +121,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
                 Long nowTime = System.currentTimeMillis();
     
-                // sn合法性校验
-                //snValidation(snList, type, franchiseeId, storeId);
-    
-    
                 // 封装资产退库记录数据
                 AssetExitWarehouseSaveQueryModel assetExitWarehouseSaveQueryModel = AssetExitWarehouseSaveQueryModel
                         .builder()
@@ -177,23 +178,10 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-/*    R snValidation(List<String>snList, Integer type, Long franchiseeId, Long storeId){
-        if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-            // 电柜批量退库
-            electricityCabinetV2Service.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
-        } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-            // 电池批量退库
-            electricityBatteryService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
-        } else {
-            //车辆批量退库
-            electricityCarService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
-        }
-    }*/
-    
     @Transactional(rollbackFor = Exception.class)
     public void handleExitWarehouse(AssetExitWarehouseSaveQueryModel exitWarehouseSaveQueryModel, List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList,
             AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest, Long operator, Integer type) {
-        R result = null;
+        R result;
         if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
             // 电柜批量退库
             result = electricityCabinetV2Service.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
@@ -205,12 +193,14 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             result = electricityCarService.batchExitWarehouseBySn(assetBatchExitWarehouseBySnRequest);
         }
     
+        //异步记录
         if (Objects.nonNull(result) && (Integer) result.getData() > NumberConstant.ZERO) {
-            // 新增资产退库记录
-            assetExitWarehouseRecordMapper.insertOne(exitWarehouseSaveQueryModel);
-        
-            // 新增资产退库详情
-            assetExitWarehouseDetailService.batchInsert(detailSaveQueryModelList, operator);
+            executorService.execute(() -> {
+                // 新增资产退库记录
+                assetExitWarehouseRecordMapper.insertOne(exitWarehouseSaveQueryModel);
+                // 新增资产退库详情
+                assetExitWarehouseDetailService.batchInsert(detailSaveQueryModelList, operator);
+            });
         }
     }
     

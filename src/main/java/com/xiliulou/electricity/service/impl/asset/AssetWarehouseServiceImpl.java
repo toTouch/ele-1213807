@@ -183,6 +183,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
         BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
         warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        warehouseSaveOrUpdateQueryModel.setUpdateTime(System.currentTimeMillis());
         
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }

@@ -275,6 +275,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
         AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
         BeanUtil.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
         
         return R.ok(electricityCabinetMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
@@ -293,6 +294,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         for (ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : batchUpdateFranchiseeAndStoreRequestList) {
             ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCabinetUpdateFranchiseeAndStoreQueryModel();
             BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
+            updateFranchiseeAndStoreQueryModel.setUpdateTime(System.currentTimeMillis());
             
             electricityCabinetMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
             count += 1;

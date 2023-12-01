@@ -691,7 +691,10 @@
         <set>
             <if test="warehouseId != null">
                 warehouse_id = #{warehouseId},
-                stock_status = 0
+                stock_status = 0,
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
             </if>
         </set>
         <where>

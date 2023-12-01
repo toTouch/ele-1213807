@@ -44,4 +44,9 @@ public class ElectricityCabinetUpdateFranchiseeAndStoreQueryModel {
      * 调入门店id
      */
     private Long targetStoreId;
+    
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
 }

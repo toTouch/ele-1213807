@@ -26,5 +26,7 @@ public class AssetBatchExitWarehouseBySnQueryModel {
     private Long warehouseId;
     
     private List<String> snList;
+    
+    private Long updateTime;
 
 }

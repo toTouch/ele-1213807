@@ -38,4 +38,6 @@ public class ElectricityBatteryBatchUpdateFranchiseeQueryModel {
     
     private String sn;
     
+    private Long updateTime;
+    
 }
