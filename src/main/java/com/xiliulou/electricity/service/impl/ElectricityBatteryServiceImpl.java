@@ -281,7 +281,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         ElectricityBattery saveBattery = new ElectricityBattery();
         saveBattery.setSn(batteryAddRequest.getSn());
-        saveBattery.setModel(batteryAddRequest.getBatteryType());
+        
+        if (Objects.isNull(batteryAddRequest.getModelId())) {
+            return R.fail("200005", "电池型号不存在");
+        }
+        
+        BatteryModel batteryModel = batteryModelService.queryByIdFromDB(batteryAddRequest.getModelId());
+        if (Objects.isNull(batteryModel)) {
+            return R.fail("200005", "电池型号不存在");
+        }
+        saveBattery.setModel(batteryModel.getBatteryType());
         saveBattery.setFranchiseeId(franchiseeId);
         
         // 如果绑定了加盟商 则库存状态为已出库；未绑定则为在库
@@ -406,24 +415,24 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest) {
         ElectricityBatteryListSnByFranchiseeQueryModel queryModel = new ElectricityBatteryListSnByFranchiseeQueryModel();
         BeanUtils.copyProperties(electricityBatterySnSearchRequest, queryModel);
-    
+        
         List<ElectricityBatteryVO> rspList = null;
-    
+        
         List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListSnByFranchiseeId(queryModel);
         if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
             rspList = electricityBatteryBOList.stream().map(item -> {
                 ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item, electricityBatteryVO);
-            
+                
                 return electricityBatteryVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -689,13 +698,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         ElectricityBattery updateBattery = new ElectricityBattery();
         
         // 设置电池短型号
+        String model = StringUtils.EMPTY;
         if (Objects.nonNull(eleQuery.getModelId())) {
             BatteryModel batteryModel = batteryModelService.queryByIdFromDB(eleQuery.getModelId());
             if (Objects.nonNull(batteryModel)) {
-                updateBattery.setModel(batteryModel.getBatteryType());
+                model = batteryModel.getBatteryType();
             }
         }
-        
+        updateBattery.setModel(model);
         BeanUtil.copyProperties(eleQuery, updateBattery);
         updateBattery.setUpdateTime(System.currentTimeMillis());
         updateBattery.setTenantId(TenantContextHolder.getTenantId());
@@ -749,7 +759,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
         
         Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
-        if(CollectionUtils.isNotEmpty(assetWarehouseNameVOS)){
+        if (CollectionUtils.isNotEmpty(assetWarehouseNameVOS)) {
             warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
         }
         
@@ -824,7 +834,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setCapacity(Objects.nonNull(item.getCapacity()) ? item.getCapacity() : NumberConstant.ZERO);
             }
             
-            if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
+            if (finalWarehouseNameVOMap.containsKey(item.getWarehouseId())) {
                 electricityBatteryVO.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
             }
             
@@ -1513,42 +1523,42 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest) {
         ElectricityBatteryEnableAllocateQueryModel queryModel = new ElectricityBatteryEnableAllocateQueryModel();
         BeanUtils.copyProperties(electricityBatteryEnableAllocateRequest, queryModel);
-    
+        
         List<ElectricityBatteryVO> rspList = null;
         List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableAllocateBattery(queryModel);
         if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
             rspList = electricityBatteryBOList.stream().map(item -> {
                 ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item, electricityBatteryVO);
-            
+                
                 return electricityBatteryVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
     @Override
     public Integer batchUpdateFranchiseeId(List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList) {
         Integer count = NumberConstant.ZERO;
-    
+        
         for (ElectricityBatteryBatchUpdateFranchiseeRequest updateFranchiseeRequest : batchUpdateFranchiseeRequestList) {
             ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel = new ElectricityBatteryBatchUpdateFranchiseeQueryModel();
             BeanUtils.copyProperties(updateFranchiseeRequest, updateFranchiseeQueryModel);
-        
+            
             electricitybatterymapper.updateFranchiseeId(updateFranchiseeQueryModel);
-        
+            
             count += 1;
-        
+            
             //清除缓存
             redisService.delete(CacheConstant.CACHE_BT_ATTR + updateFranchiseeRequest.getSn());
         }
-    
+        
         return count;
     }
     

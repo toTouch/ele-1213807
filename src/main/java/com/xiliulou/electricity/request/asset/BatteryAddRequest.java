@@ -23,7 +23,7 @@ public class BatteryAddRequest {
     /**
      * 电池型号
      */
-    private String batteryType;
+    private Long modelId;
     
     /**
      * 加盟商id
