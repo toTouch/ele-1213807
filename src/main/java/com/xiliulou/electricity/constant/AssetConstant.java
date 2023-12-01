@@ -46,4 +46,9 @@ public class AssetConstant {
      */
     public static final Integer ASSET_ALLOCATE_LIMIT_NUMBER = 50;
     
+    /**
+     * 资产退库数量限制
+     */
+    public static final Integer ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER = 50;
+    
 }

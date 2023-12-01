@@ -122,7 +122,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
     
             if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
-                return R.fail("300811", "资产调拨数量过多");
+                return R.fail("300811", "资产调拨数量最大限制50条");
             }
             
             Integer tenantId = TenantContextHolder.getTenantId();

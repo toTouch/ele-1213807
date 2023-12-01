@@ -115,9 +115,14 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             }
             
             if (CollectionUtils.isNotEmpty(assetExitWarehouseSaveRequest.getSnList())) {
+                List<String> snList = assetExitWarehouseSaveRequest.getSnList();
+                
+                if (CollectionUtils.isNotEmpty(snList) && snList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
+                    return R.fail("300813", "资产退库数量最大限制50条");
+                }
+                
                 Integer tenantId = TenantContextHolder.getTenantId();
                 Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
-                List<String> snList = assetExitWarehouseSaveRequest.getSnList();
                 String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
                 Long nowTime = System.currentTimeMillis();
     

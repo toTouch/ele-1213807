@@ -28,14 +28,6 @@ public class AssetExitWarehouseDetailController {
     
     @GetMapping("/admin/asset/exit/warehouse/detail")
     public R exitWarehouseSnSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo") String orderNo) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
@@ -46,7 +38,7 @@ public class AssetExitWarehouseDetailController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().size(size).offset(offset).orderNo(orderNo).build();
+        AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest = AssetExitWarehouseDetailRequest.builder().orderNo(orderNo).build();
         
         return R.ok(assetExitWarehouseDetailService.listSnByOrderNo(assetExitWarehouseDetailRequest));
     }
