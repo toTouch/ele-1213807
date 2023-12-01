@@ -736,7 +736,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Map<String, BatteryModel> finalBatteryModelMap = batteryModelMap;
         
         // 获取库房名称列表
-        List<Long> warehouseIdList = electricityBatteryList.stream().filter(Objects::isNull).map(ElectricityBattery::getWarehouseId).collect(Collectors.toList());
+        List<Long> warehouseIdList = electricityBatteryList.stream().map(ElectricityBattery::getWarehouseId).filter(Objects::nonNull).collect(Collectors.toList());
         List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
         
         Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
