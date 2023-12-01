@@ -283,12 +283,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setSn(batteryAddRequest.getSn());
         
         if (Objects.isNull(batteryAddRequest.getModelId())) {
-            return R.fail("200005", "电池型号不存在");
+            return R.fail("100560", "电池型号不存在");
         }
         
         BatteryModel batteryModel = batteryModelService.queryByIdFromDB(batteryAddRequest.getModelId());
         if (Objects.isNull(batteryModel)) {
-            return R.fail("200005", "电池型号不存在");
+            return R.fail("100560", "电池型号不存在");
         }
         saveBattery.setModel(batteryModel.getBatteryType());
         saveBattery.setFranchiseeId(franchiseeId);
