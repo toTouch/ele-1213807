@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 
 import java.util.List;
 
@@ -15,4 +13,6 @@ import java.util.List;
 public interface AssetAllocateDetailService {
     
     Integer batchInsert(List<AssetAllocateDetailSaveRequest> detailSaveRequestList);
+    
+    List<AssetAllocateDetailVO> listByPage(String orderNo, Integer tenantId);
 }

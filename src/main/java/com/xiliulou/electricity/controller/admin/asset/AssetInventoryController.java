@@ -102,7 +102,7 @@ public class AssetInventoryController {
         
         AssetInventoryRequest assetInventoryRequest = AssetInventoryRequest.builder().size(size).offset(offset).orderNo(orderNo).franchiseeId(franchiseeId).status(status).build();
         
-        return R.ok(assetInventoryService.listByFranchiseeId(assetInventoryRequest));
+        return R.ok(assetInventoryService.listByPage(assetInventoryRequest));
     }
     
 }

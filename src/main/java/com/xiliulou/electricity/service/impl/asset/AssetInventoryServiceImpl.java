@@ -102,7 +102,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
     @Slave
     @Override
-    public List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest) {
+    public List<AssetInventoryVO> listByPage(AssetInventoryRequest assetInventoryRequest) {
         AssetInventoryQueryModel assetInventoryQueryModel = new AssetInventoryQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
         assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());

@@ -5,6 +5,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.AssetAllocateRecordBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -20,8 +22,10 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper;
 import com.xiliulou.electricity.query.PictureQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordPageQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordPageRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
@@ -43,6 +47,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
+import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,7 +101,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     private CarModelTagService carModelTagService;
     @Autowired
     private PictureService pictureService;
-    
     
     @Override
     public R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid) {
@@ -392,4 +398,48 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         return assetAllocateRecordMapper.insertOne(assetAllocateRecordSaveQueryModel);
     }
+    
+    @Slave
+    @Override
+    public List<AssetAllocateRecordVO> listByPage(AssetAllocateRecordPageRequest allocateRecordPageRequest) {
+        List<AssetAllocateRecordVO> rspList = null;
+    
+        AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
+        BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+    
+        List<AssetAllocateRecordBO> allocateRecordBOList = assetAllocateRecordMapper.selectListByPage(queryModel);
+        if (CollectionUtils.isNotEmpty(allocateRecordBOList)) {
+            rspList = allocateRecordBOList.stream().map(item -> {
+                AssetAllocateRecordVO assetAllocateRecordVO = new AssetAllocateRecordVO();
+                BeanUtil.copyProperties(item, assetAllocateRecordVO);
+            
+                List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(allocateRecordPageRequest.getOrderNo(), TenantContextHolder.getTenantId());
+                if (CollectionUtils.isNotEmpty(allocateDetailVOList)) {
+                    Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getAssetSn).collect(Collectors.toSet());
+                    assetAllocateRecordVO.setSnList(new ArrayList<>(snSet));
+                }
+            
+                return assetAllocateRecordVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+    
+        return rspList;
+    }
+    
+    @Slave
+    @Override
+    public Integer countTotal(AssetAllocateRecordPageRequest allocateRecordPageRequest) {
+        AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
+        BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+    
+        return assetAllocateRecordMapper.countTotal(queryModel);
+    }
+    
 }

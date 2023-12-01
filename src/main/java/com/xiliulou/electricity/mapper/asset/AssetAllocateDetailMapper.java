@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetAllocateDetailBO;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailBatchInventoryQueryModel;
@@ -20,4 +21,6 @@ import java.util.List;
 public interface AssetAllocateDetailMapper {
     
     Integer batchInsert(@Param("detailSaveQueryModelList") List<AssetAllocateDetailSaveQueryModel> detailSaveQueryModelList);
+    
+    List<AssetAllocateDetailBO> selectListByPage(@Param("orderNo") String orderNo, @Param("orderNo") Integer tenantId);
 }

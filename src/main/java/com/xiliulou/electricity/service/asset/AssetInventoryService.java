@@ -18,7 +18,7 @@ public interface AssetInventoryService {
     
     R save(AssetInventorySaveOrUpdateRequest assetInventorySaveRequest, Long operator);
     
-    List<AssetInventoryVO> listByFranchiseeId(AssetInventoryRequest assetInventoryRequest);
+    List<AssetInventoryVO> listByPage(AssetInventoryRequest assetInventoryRequest);
     
     Integer countTotal(AssetInventoryRequest assetInventoryRequest);
     

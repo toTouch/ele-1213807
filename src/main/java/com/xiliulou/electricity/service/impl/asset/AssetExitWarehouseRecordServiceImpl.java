@@ -232,7 +232,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Slave
     @Override
-    public List<AssetExitWarehouseVO> listByFranchiseeId(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest) {
+    public List<AssetExitWarehouseVO> listByPage(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest) {
         AssetExitWarehouseQueryModel assetExitWarehouseQueryModel = new AssetExitWarehouseQueryModel();
         BeanUtils.copyProperties(assetExitWarehouseRecordRequest, assetExitWarehouseQueryModel);
         assetExitWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
