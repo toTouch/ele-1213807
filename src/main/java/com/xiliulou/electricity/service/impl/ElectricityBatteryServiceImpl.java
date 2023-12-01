@@ -1509,6 +1509,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
         BeanUtils.copyProperties(assetBatchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
         
         return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
@@ -1550,7 +1551,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         for (ElectricityBatteryBatchUpdateFranchiseeRequest updateFranchiseeRequest : batchUpdateFranchiseeRequestList) {
             ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel = new ElectricityBatteryBatchUpdateFranchiseeQueryModel();
             BeanUtils.copyProperties(updateFranchiseeRequest, updateFranchiseeQueryModel);
-            
+            updateFranchiseeQueryModel.setUpdateTime(System.currentTimeMillis());
+        
             electricitybatterymapper.updateFranchiseeId(updateFranchiseeQueryModel);
             
             count += 1;

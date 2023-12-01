@@ -14,7 +14,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
-import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -23,7 +22,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
@@ -33,8 +31,6 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
-import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
-import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
@@ -64,7 +60,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -606,7 +601,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (carIds.size() > 50) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}",
                     electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid(), carIds.size());
-            return R.fail("300811", "资产调拨数量过多");
+            return R.fail("100270", "迁移车辆数量过多");
         }
     
         if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {
@@ -645,7 +640,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                         TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
-            return R.fail("100262", "部分车辆不符合调拨条件，请检查后重试");
+            return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
         }
     
         Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
@@ -712,42 +707,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 this.update(updateElectricityCar);
             });
         });
-    
-        saveCarAllocateRecords(queryList, sourceStore, targetStore, tenantId, electricityCarMoveQuery.getRemark());
+
+        saveCarMoveRecords(queryList, sourceStore, targetStore);
     
         return R.ok();
-    }
-    
-    /**
-     * 保存车辆迁移信息到资产调拨记录表
-     * @param queryList
-     * @param sourceStore
-     * @param targetStore
-     * @param tenantId
-     * @param remark
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void saveCarAllocateRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore, Integer tenantId, String remark) {
-        //记录迁移的车辆数据信息
-        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_ALLOCATE, SecurityUtils.getUid());
-        Long time = System.currentTimeMillis();
-    
-        // 封装资产调拨数据
-        AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest = AssetAllocateRecordSaveRequest.builder().orderNo(orderNo).tenantId(tenantId)
-                .assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).oldFranchiseeId(sourceStore.getFranchiseeId()).oldStoreId(sourceStore.getId())
-                .newFranchiseeId(targetStore.getFranchiseeId()).newStoreId(targetStore.getId()).remark(remark).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL)
-                .createTime(time).updateTime(time).build();
-    
-        List<AssetAllocateDetailSaveRequest> detailSaveRequestList = queryList.stream()
-                .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
-                        .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
-                        .updateTime(time).build()).collect(Collectors.toList());
-    
-        assetAllocateRecordService.insertOne(assetAllocateRecordSaveRequest);
-    
-        if (CollectionUtils.isNotEmpty(detailSaveRequestList)) {
-            assetAllocateDetailService.batchInsert(detailSaveRequestList);
-        }
     }
 
     /**
@@ -756,7 +719,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
      * @param sourceStore
      * @param targetStore
      */
-    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public void saveCarMoveRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore){
         //记录迁移的车辆数据信息
@@ -1196,6 +1158,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
         BeanUtils.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
+        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
     
         return R.ok(electricityCarMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
     }
@@ -1272,5 +1235,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         // 保存到本地数据库
         electricityCarMapper.batchInsertCar(electricityCarList);
         return R.ok();
+    }
+    
+    @Override
+    public List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId) {
+        return electricityCarMapper.queryModelIdBySidAndIds(carIds, sourceSid, ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
     }
 }

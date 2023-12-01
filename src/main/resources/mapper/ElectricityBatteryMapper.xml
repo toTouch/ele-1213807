@@ -1199,7 +1199,10 @@
         <set>
             <if test="warehouseId != null">
                 warehouse_id = #{warehouseId},
-                stock_status = 0
+                stock_status = 0,
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
             </if>
         </set>
         <where>
@@ -1221,6 +1224,6 @@
     </update>
     
     <update id="updateFranchiseeId">
-        update t_electricity_battery set franchisee_id = #{targetFranchiseeId} where id = #{id} and franchisee_id = #{sourceFranchiseeId}
+        update t_electricity_battery set franchisee_id = #{targetFranchiseeId}, update_time = #{updateTime} where id = #{id} and franchisee_id = #{sourceFranchiseeId}
     </update>
 </mapper>

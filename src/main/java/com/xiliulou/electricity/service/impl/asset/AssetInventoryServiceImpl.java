@@ -86,7 +86,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                     .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId)
                     .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             
-            //异步执行将电池数据导入到资产详情表
+            //异步记录
             if ((Integer) data > NumberConstant.ZERO) {
                 ElectricityBatterySnSearchRequest snSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
                 executorService.execute(() -> {
