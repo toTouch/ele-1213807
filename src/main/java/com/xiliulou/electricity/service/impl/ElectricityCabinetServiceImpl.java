@@ -821,8 +821,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 //设置仓库名称
-                if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
-                    e.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
+                if(finalWarehouseNameVOMap.containsKey(e.getWarehouseId())){
+                    e.setWarehouseName(finalWarehouseNameVOMap.get(e.getWarehouseId()));
                 }
             });
         }
