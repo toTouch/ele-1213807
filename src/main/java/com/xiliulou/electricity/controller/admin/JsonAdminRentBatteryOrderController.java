@@ -11,15 +11,18 @@ import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.RentBatteryOrderVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -275,6 +278,44 @@ public class JsonAdminRentBatteryOrderController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
+    }
+    
+    /**
+     * 根据订单号查询订单
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/admin/rentBatteryOrder/queryOneByOrderId")
+    public R queryOneByOrderId(@RequestParam(value = "orderId", required = true) String orderId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
+        
+        // 进行权限校验
+        if (!Objects.equals(rentBatteryOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("100221", "未找到订单");
+        }
+        
+        RentBatteryOrderVO rentBatteryOrderVO = new RentBatteryOrderVO();
+        BeanUtils.copyProperties(rentBatteryOrder, rentBatteryOrderVO);
+        
+        return R.ok(rentBatteryOrderVO);
+    }
+    
+    /**
+     * 根据租/退电订单，或者换电订单的用户id判断对应的
+     * 单电套餐或者车店一体套餐是否是限制次数的
+     * @param uid
+     * @return 0：不限制次数，1：限制次数
+     */
+    @GetMapping(value = "/admin/rentBatteryOrder/queryRentBatteryOrderLimitCountByUid")
+    public R queryRentBatteryOrderLimitCountByUid(@RequestParam(value = "uid", required = true) Long uid) {
+        return rentBatteryOrderService.queryRentBatteryOrderLimitCountByUid(uid);
     }
 
     //结束异常订单

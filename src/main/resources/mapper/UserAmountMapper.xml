@@ -79,4 +79,24 @@
 		withdraw=withdraw- #{income}
 		where uid = #{uid} and del_flg = 0
     </update>
+	
+	<select id="selectList" resultType="com.xiliulou.electricity.entity.UserAmount">
+		select tua.id as id,tua.uid as uid,tui.name, tua.create_time as createTime,
+		tua.update_time as updateTime,tua.total_income as totalIncome,
+		tua.balance as balance,tua.withdraw as withdraw,tua.tenant_id as tenantId,
+		tua.del_flg as delFlg,tui.phone as phone
+		from t_user_amount as tua
+		<where>
+			tua.del_flg = 0
+			<if test="query.tenantId != null">
+				and tua.tenant_id = #{query.tenantId}
+			</if>
+			<if test="query.uidList != null and !query.uidList.isEmpty()">
+				and tua.uid in
+				<foreach collection="query.uidList" item="uid" separator="," open="(" close=")">
+					#{uid}
+				</foreach>
+			</if>
+		</where>
+	</select>
 </mapper>

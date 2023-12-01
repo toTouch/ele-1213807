@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.query.UserAmountQuery;
 import com.xiliulou.electricity.vo.UserAmountVO;
+import com.xiliulou.electricity.query.UserAmountQueryModel;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -23,4 +25,7 @@ public interface UserAmountMapper extends BaseMapper<UserAmount> {
 	void updateReduceIncome(@Param("uid") Long uid, @Param("income") Double income);
 
 	void updateRollBackIncome(@Param("uid") Long uid,@Param("income") Double income);
+	
+	List<UserAmount> selectList(@Param("query") UserAmountQueryModel userAmountQueryModel);
+	
 }

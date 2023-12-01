@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import org.springframework.beans.BeanUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -155,6 +158,33 @@ public class JsonAdminElectricityCabinetOrderController {
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+    }
+    
+    /**
+     * 根据订单号查询订单
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/admin/electricityCabinetOrder/queryOneByOrderId")
+    public R queryOneByOrderId(@RequestParam(value = "orderId", required = true) String orderId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
+        
+        // 进行权限校验
+        if (!Objects.equals(electricityCabinetOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("100221", "未找到订单");
+        }
+        
+        ElectricityCabinetOrderVO electricityCabinetOrderVO = new ElectricityCabinetOrderVO();
+        BeanUtils.copyProperties(electricityCabinetOrder, electricityCabinetOrderVO);
+        
+        return R.ok(electricityCabinetOrderVO);
     }
 
     //换电柜订单查询
