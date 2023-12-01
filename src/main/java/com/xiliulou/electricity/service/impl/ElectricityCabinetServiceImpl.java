@@ -682,7 +682,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             // 获取库房名称列表
-            List<Long> warehouseIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getWarehouseId).filter(Objects::nonNull).collect(Collectors.toList());
+            List<Long> warehouseIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
             List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
             
             Map<Long, String> warehouseNameVOMap = Maps.newHashMap();

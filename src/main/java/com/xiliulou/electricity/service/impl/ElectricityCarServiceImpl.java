@@ -462,7 +462,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         // 获取库房名称列表
-        List<Long> warehouseIdList = electricityCarVOS.stream().map(ElectricityCarVO::getWarehouseId).filter(Objects::nonNull).collect(Collectors.toList());
+        List<Long> warehouseIdList = electricityCarVOS.stream().map(ElectricityCarVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
         
         Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
