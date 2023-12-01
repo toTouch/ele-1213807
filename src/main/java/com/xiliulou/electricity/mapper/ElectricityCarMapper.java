@@ -157,4 +157,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
             @Param("tenantId") Integer tenantId,@Param("updateTime") Long updateTime,@Param("stockStatus") Integer stockStatus);
     
     Integer batchInsertCar(@Param("list") List<ElectricityCar> saveList);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
 }

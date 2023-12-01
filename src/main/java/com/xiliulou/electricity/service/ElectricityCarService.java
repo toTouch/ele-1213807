@@ -149,4 +149,6 @@ public interface ElectricityCarService {
     R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest);
     
     List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
 }

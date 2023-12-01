@@ -1241,4 +1241,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId) {
         return electricityCarMapper.queryModelIdBySidAndIds(carIds, sourceSid, ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
     }
+    
+    @Slave
+    @Override
+    public Integer existsByWarehouseId(Long wareHouseId) {
+        
+        return electricityCarMapper.existsByWarehouseId(wareHouseId);
+    }
 }

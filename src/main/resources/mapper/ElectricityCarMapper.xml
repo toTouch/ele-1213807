@@ -725,6 +725,10 @@
         and stock_status = 1 limit 1;
     </select>
     
+    <select id="existsByWarehouseId" resultType="java.lang.Integer">
+        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} limit 1;
+    </select>
+    
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>

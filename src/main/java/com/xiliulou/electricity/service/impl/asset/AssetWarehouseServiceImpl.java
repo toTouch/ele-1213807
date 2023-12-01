@@ -13,6 +13,7 @@ import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQuery
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -49,6 +50,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
+    
+    @Autowired
+    private ElectricityCarService electricityCarService;
     
     @Override
     public R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid) {
@@ -161,8 +165,11 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
             return R.fail("300801", "该库房有电池正在使用,请先解绑后操作");
         }
         
-        // 判断库房是否绑定车辆 TODO
-        
+        // 判断库房是否绑定车辆
+        Integer existsElectricityCar = electricityCarService.existsByWarehouseId(id);
+        if (Objects.nonNull(existsElectricityCar)) {
+            return R.fail("300802", "该库房有车辆正在使用,请先解绑后操作");
+        }
         
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
                 .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
