@@ -743,7 +743,7 @@
         user_name, store_id, model_id, battery_sn, create_time, update_time,
         del_flag, tenant_id, lock_type, franchisee_id) values
         <foreach item="c" index="index" collection="list" separator=",">
-            (#{c.sn}, #{model}, #{c.longitude}, #{c.latitude}, #{c.status}, #{c.uid}, #{c.phone}, #{c.userInfoId},
+            (#{c.sn}, #{c.model}, #{c.longitude}, #{c.latitude}, #{c.status}, #{c.uid}, #{c.phone}, #{c.userInfoId},
             #{c.userName}, #{c.storeId}, #{c.modelId}, #{c.batterySn}, #{c.createTime},
             #{c.updateTime}, #{c.delFlag}, #{c.tenantId}, #{c.lockType}, #{c.franchiseeId})
         </foreach>
