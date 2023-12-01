@@ -1263,6 +1263,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             electricityCar.setStoreId(NumberConstant.ZERO_L);
             electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
             electricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
+            electricityCar.setFranchiseeId(NumberConstant.ZERO_L);
             electricityCar.setModel(electricityCarModel.getName());
             electricityCar.setModelId(electricityCarModel.getId());
             electricityCarList.add(electricityCar);
