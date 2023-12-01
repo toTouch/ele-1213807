@@ -197,7 +197,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Override
     public List<AssetWarehouseNameVO> selectByIdList(List<Long> list){
         List<AssetWarehouseNameVO> resultList = Collections.emptyList();
-        List<Long> idList = list.stream().filter(Objects::isNull).collect(Collectors.toList());
+        List<Long> idList = list.stream().filter(Objects::nonNull).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(idList)){
             return resultList;
         }
