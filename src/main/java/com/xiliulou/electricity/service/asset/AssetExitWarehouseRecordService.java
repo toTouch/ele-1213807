@@ -16,7 +16,7 @@ public interface AssetExitWarehouseRecordService {
     
     R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator);
     
-    List<AssetExitWarehouseVO> listByFranchiseeId(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
+    List<AssetExitWarehouseVO> listByPage(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
     
     Integer countTotal(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
 }

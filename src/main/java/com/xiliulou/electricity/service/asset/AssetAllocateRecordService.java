@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordPageRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetAllocateRecordSaveRequest;
+import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -15,4 +18,8 @@ public interface AssetAllocateRecordService {
     R save(AssetAllocateRecordRequest assetAllocateRecordRequest, Long uid);
     
     Integer insertOne(AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest);
+    
+    List<AssetAllocateRecordVO> listByPage(AssetAllocateRecordPageRequest allocateRecordPageRequest);
+    
+    Integer countTotal(AssetAllocateRecordPageRequest allocateRecordPageRequest);
 }

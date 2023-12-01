@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetAllocateRecordBO;
+import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordPageQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -13,4 +17,8 @@ import org.springframework.stereotype.Repository;
 public interface AssetAllocateRecordMapper {
     
     Integer insertOne(AssetAllocateRecordSaveQueryModel assetAllocateRecordSaveQueryModel);
+    
+    List<AssetAllocateRecordBO> selectListByPage(AssetAllocateRecordPageQueryModel queryModel);
+    
+    Integer countTotal(AssetAllocateRecordPageQueryModel queryModel);
 }

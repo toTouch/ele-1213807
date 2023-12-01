@@ -114,7 +114,7 @@ public class AssetExitWarehouseRecordController {
                 .type(type)
                 .build();
         
-        return R.ok(assetExitWarehouseRecordService.listByFranchiseeId(assetExitWarehouseRecordRequest));
+        return R.ok(assetExitWarehouseRecordService.listByPage(assetExitWarehouseRecordRequest));
     }
     
 }
