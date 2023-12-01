@@ -687,6 +687,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         ElectricityBattery updateBattery = new ElectricityBattery();
+        
+        // 设置电池短型号
+        if (Objects.nonNull(eleQuery.getModelId())) {
+            BatteryModel batteryModel = batteryModelService.queryByIdFromDB(eleQuery.getModelId());
+            if (Objects.nonNull(batteryModel)) {
+                updateBattery.setModel(batteryModel.getBatteryType());
+            }
+        }
+        
         BeanUtil.copyProperties(eleQuery, updateBattery);
         updateBattery.setUpdateTime(System.currentTimeMillis());
         updateBattery.setTenantId(TenantContextHolder.getTenantId());

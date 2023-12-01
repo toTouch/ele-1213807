@@ -71,6 +71,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @PostMapping(value = "/admin/battery")
     public R save(@RequestBody @Validated EleBatteryQuery electricityBattery) {
         
