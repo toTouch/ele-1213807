@@ -696,6 +696,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         ElectricityBattery updateBattery = new ElectricityBattery();
+        BeanUtil.copyProperties(eleQuery, updateBattery);
         
         // 设置电池短型号
         String model = StringUtils.EMPTY;
@@ -706,7 +707,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
         }
         updateBattery.setModel(model);
-        BeanUtil.copyProperties(eleQuery, updateBattery);
         updateBattery.setUpdateTime(System.currentTimeMillis());
         updateBattery.setTenantId(TenantContextHolder.getTenantId());
         Integer rows = electricitybatterymapper.update(updateBattery);
