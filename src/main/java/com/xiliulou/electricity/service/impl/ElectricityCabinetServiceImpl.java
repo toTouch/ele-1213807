@@ -1030,7 +1030,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
                 assignExchangeableBatteyType(exchangeableList, e);
-                assignExchangeableVoltageAndCapacity(exchangeableList, e);
+               // assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
             
@@ -1107,6 +1107,38 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         });
         e.setVoltageAndCapacityMapes(voltageAndCapacityMap);
+    }
+    
+    public HashMap<String, Integer> assignExchangeableVoltageAndCapacityV2(List<ElectricityCabinetBox> exchangeableList) {
+        HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
+        // 根据可换电格挡电池的sn列表查询电池列表获取容量
+        List<String> snList = exchangeableList.stream().map(ElectricityCabinetBox::getSn).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
+        
+        Map<String, Integer> capacityMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(batteryList)) {
+            capacityMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getCapacity, (k1, k2) -> k1));
+        }
+        
+        // 获取电池的容量
+        Map<String, Integer> finalCapacityMap = capacityMap;
+        
+        exchangeableList.forEach(electricityCabinetBox -> {
+            String batteryType = electricityCabinetBox.getBatteryType();
+            String sn = electricityCabinetBox.getSn();
+            if (StringUtils.isNotBlank(batteryType)) {
+                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
+                
+                // 统计可换电电池型号
+                if (voltageAndCapacityMap.containsKey(key)) {
+                    Integer count = voltageAndCapacityMap.get(key);
+                    voltageAndCapacityMap.put(key, count + 1);
+                } else {
+                    voltageAndCapacityMap.put(key, 1);
+                }
+            }
+        });
+        return voltageAndCapacityMap;
     }
     
     private void assignBatteryTypes(List<ElectricityCabinetBox> cabinetBoxList, ElectricityCabinetVO e) {
@@ -5158,5 +5190,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         return R.ok(netType);
+    }
+    
+    public R showBatteryVAndCapacity(Integer electricityCabinetId) {
+        //校验柜机Id
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("100003", "柜机不存在");
+        }
+        
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(electricityCabinet.getId());
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return R.ok();
+        }
+        
+        //可换电数量
+        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, electricityCabinet.getFullyCharged()))
+                .collect(Collectors.toList());
+        return R.ok(assignExchangeableVoltageAndCapacityV2(exchangeableList));
     }
 }

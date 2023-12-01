@@ -48,7 +48,7 @@ public class InvitationActivityJoinHistory {
      */
     private Long activityId;
     /**
-     * 参与状态 1--初始化，2--已参与，3--已过期
+     * 参与状态 1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
     private Integer status;
 

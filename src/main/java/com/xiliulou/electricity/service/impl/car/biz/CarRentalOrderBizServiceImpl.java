@@ -240,11 +240,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         }
         
         String cacheKey = CacheConstant.CACHE_USER_RETURN_CAR_LOCK + uid;
+        if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10000L, false)) {
+            throw new BizException("100002", "操作频繁");
+        }
+        
         try {
-            if (!redisService.setNx(cacheKey, String.valueOf(System.currentTimeMillis()), 10000L, false)) {
-                throw new BizException("100002", "操作频繁");
-            }
-            
             // 判定会员
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
