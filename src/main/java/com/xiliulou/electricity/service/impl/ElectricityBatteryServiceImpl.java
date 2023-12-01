@@ -699,14 +699,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         BeanUtil.copyProperties(eleQuery, updateBattery);
         
         // 设置电池短型号
-        String model = StringUtils.EMPTY;
+        String model = eleQuery.getModel();
         if (Objects.nonNull(eleQuery.getModelId())) {
             BatteryModel batteryModel = batteryModelService.queryByIdFromDB(eleQuery.getModelId());
             if (Objects.nonNull(batteryModel)) {
                 model = batteryModel.getBatteryType();
             }
         }
-        updateBattery.setModel(model);
+        updateBattery.setModel(StringUtils.isBlank(model) ? StringUtils.EMPTY : model);
         updateBattery.setUpdateTime(System.currentTimeMillis());
         updateBattery.setTenantId(TenantContextHolder.getTenantId());
         Integer rows = electricitybatterymapper.update(updateBattery);
@@ -1552,7 +1552,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel = new ElectricityBatteryBatchUpdateFranchiseeQueryModel();
             BeanUtils.copyProperties(updateFranchiseeRequest, updateFranchiseeQueryModel);
             updateFranchiseeQueryModel.setUpdateTime(System.currentTimeMillis());
-        
+            
             electricitybatterymapper.updateFranchiseeId(updateFranchiseeQueryModel);
             
             count += 1;
