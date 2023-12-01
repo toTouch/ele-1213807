@@ -876,7 +876,7 @@
         <if test="sn != null and sn != ''">
             and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
         </if>
-        order by id
+        order by id desc
         <if test="offset != null and size!= null">
             limit #{offset}, #{size}
         </if>
