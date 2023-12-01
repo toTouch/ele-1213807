@@ -1208,8 +1208,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100561", "已选择项中有已出库车辆，请重新选择后操作");
         }
         
-        Integer count = electricityCarMapper.batchUpdateFranchiseeIdAndStoreByIdList(idList,carOutWarehouseRequest.getFranchiseeId(),carOutWarehouseRequest.getStoreId(),TenantContextHolder.getTenantId(),System.currentTimeMillis());
-        log.info("updateFranchiseeIdAndStoreId count={}",count);
+        electricityCarMapper.batchUpdateFranchiseeIdAndStoreByIdList(idList, carOutWarehouseRequest.getFranchiseeId(), carOutWarehouseRequest.getStoreId(),
+                TenantContextHolder.getTenantId(), System.currentTimeMillis(), StockStatusEnum.UN_STOCK.getCode());
         
         idList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);

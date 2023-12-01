@@ -731,6 +731,9 @@
             <if test="storeId != null and storeId != ''">
                 store_id = #{storeId},
             </if>
+            <if test="stockStatus != null and stockStatus != ''">
+                stock_status = #{stockStatus},
+            </if>
             <if test="updateTime != null and updateTime != ''">
                 update_time = #{updateTime},
             </if>
