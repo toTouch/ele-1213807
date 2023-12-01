@@ -731,6 +731,9 @@
             <if test="storeId != null and storeId != ''">
                 store_id = #{storeId},
             </if>
+            <if test="updateTime != null and updateTime != ''">
+                update_time = #{updateTime},
+            </if>
         </set>
         where tenant_id = #{tenantId} and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">

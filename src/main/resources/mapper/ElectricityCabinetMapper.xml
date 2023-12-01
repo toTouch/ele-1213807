@@ -939,6 +939,9 @@
             <if test="latitude != null and latitude != ''">
                 latitude = #{latitude},
             </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
             stock_status = 1
         </set>
         where id in
