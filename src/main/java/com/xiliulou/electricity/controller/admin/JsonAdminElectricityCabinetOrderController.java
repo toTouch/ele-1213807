@@ -177,7 +177,7 @@ public class JsonAdminElectricityCabinetOrderController {
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
         
         // 进行权限校验
-        if (!Objects.equals(electricityCabinetOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCabinetOrder) || !Objects.equals(electricityCabinetOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100221", "未找到订单");
         }
         

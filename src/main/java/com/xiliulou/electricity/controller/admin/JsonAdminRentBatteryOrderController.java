@@ -297,7 +297,7 @@ public class JsonAdminRentBatteryOrderController {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
         
         // 进行权限校验
-        if (!Objects.equals(rentBatteryOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(rentBatteryOrder) || !Objects.equals(rentBatteryOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100221", "未找到订单");
         }
         
