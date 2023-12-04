@@ -38,6 +38,8 @@ public class ElectricityBatteryEnableAllocateQueryModel {
      */
     private List<Long> idList;
     
+    private String sn;
+    
     private Long size;
     
     private Long offset;
