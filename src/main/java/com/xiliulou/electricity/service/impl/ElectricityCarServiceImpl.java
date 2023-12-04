@@ -1233,7 +1233,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         
         if(CollectionUtils.isEmpty(electricityCarList)){
-            return R.fail("100007", "未找到车辆");
+            return R.fail("100562", "Excel模版中所有车辆数据均已存在，请勿重复导入");
         }
         // 保存到本地数据库
         electricityCarMapper.batchInsertCar(electricityCarList);
