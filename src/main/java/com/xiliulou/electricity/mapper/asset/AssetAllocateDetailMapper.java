@@ -22,5 +22,5 @@ public interface AssetAllocateDetailMapper {
     
     Integer batchInsert(@Param("detailSaveQueryModelList") List<AssetAllocateDetailSaveQueryModel> detailSaveQueryModelList);
     
-    List<AssetAllocateDetailBO> selectListByPage(@Param("orderNo") String orderNo, @Param("orderNo") Integer tenantId);
+    List<AssetAllocateDetailBO> selectListByPage(@Param("orderNo") String orderNo, @Param("tenantId") Integer tenantId);
 }
