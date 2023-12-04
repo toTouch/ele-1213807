@@ -202,7 +202,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     }
     
     public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList) {
-        List<ElectricityCar> electricityCarList = electricityCarService.queryModelIdBySidAndIds(idList, assetAllocateRecordRequest.getSourceFranchiseeId(),
+        List<ElectricityCar> electricityCarList = electricityCarService.queryModelIdBySidAndIds(idList, assetAllocateRecordRequest.getSourceStoreId(),
                 ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
@@ -264,6 +264,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 ElectricityCar updateElectricityCar = new ElectricityCar();
                 updateElectricityCar.setId(item.getId());
                 updateElectricityCar.setModelId(targetCarModelId);
+                updateElectricityCar.setFranchiseeId(targetStoreFranchisee.getId());
                 updateElectricityCar.setStoreId(targetStore.getId());
                 updateElectricityCar.setUpdateTime(System.currentTimeMillis());
                 electricityCarService.update(updateElectricityCar);
