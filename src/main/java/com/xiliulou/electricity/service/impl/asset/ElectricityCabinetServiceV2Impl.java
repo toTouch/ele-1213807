@@ -254,12 +254,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
         // 名称需要批量修改的（如果没有名称，则统一修改为当前传入的name值）
         if (CollectionUtils.isNotEmpty(emptyNameIdList)) {
+            batchOutWareHouseDTO.setIdList(emptyNameIdList);
             electricityCabinetMapper.batchOutWarehouse(batchOutWareHouseDTO);
         }
         
         // 名称不需要批量修改的（如果有名称，则不需要修改当前的name）
         if (CollectionUtils.isNotEmpty(nameIdList)) {
             batchOutWareHouseDTO.setName(null);
+            batchOutWareHouseDTO.setIdList(nameIdList);
             electricityCabinetMapper.batchOutWarehouse(batchOutWareHouseDTO);
         }
         
