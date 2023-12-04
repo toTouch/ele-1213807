@@ -354,11 +354,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         // 封装电池调拨记录
         if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
             assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-        
+    
             detailSaveRequestList = electricityBatteryList.stream()
                     .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId()).assetSn(item.getSn())
-                            .assetModelId(item.getModelId()).assetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
-                            .updateTime(time).build()).collect(Collectors.toList());
+                            .assetModelId(Objects.isNull(item.getModelId()) ? NumberConstant.ZERO_L : item.getModelId()).assetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())
+                            .delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build()).collect(Collectors.toList());
         } else if (CollectionUtils.isNotEmpty(electricityCabinetList)) {
             // 封装电柜调拨记录
             assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode());
