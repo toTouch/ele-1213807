@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
@@ -172,12 +173,24 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
         
-        electricityCabinet.setName(outWarehouseRequest.getName());
-        electricityCabinet.setFranchiseeId(outWarehouseRequest.getFranchiseeId());
-        electricityCabinet.setStoreId(outWarehouseRequest.getStoreId());
-        electricityCabinet.setAddress(outWarehouseRequest.getAddress());
-        electricityCabinet.setLatitude(outWarehouseRequest.getLatitude());
-        electricityCabinet.setLongitude(outWarehouseRequest.getLongitude());
+        //判断参数
+        if (Objects.nonNull(outWarehouseRequest.getBusinessTimeType())) {
+            if (Objects.equals(outWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
+                electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+            }
+            if (Objects.equals(outWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
+                if (Objects.isNull(outWarehouseRequest.getBeginTime()) || Objects.isNull(outWarehouseRequest.getEndTime())
+                        || outWarehouseRequest.getBeginTime() > outWarehouseRequest.getEndTime()) {
+                    return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+                }
+                electricityCabinet.setBusinessTime(outWarehouseRequest.getBeginTime() + "-" + outWarehouseRequest.getEndTime());
+            }
+            if (Objects.isNull(electricityCabinet.getBusinessTime())) {
+                return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            }
+        }
+        
+        BeanUtil.copyProperties(outWarehouseRequest,electricityCabinet);
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         

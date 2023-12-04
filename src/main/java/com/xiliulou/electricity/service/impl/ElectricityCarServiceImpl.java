@@ -1232,6 +1232,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             electricityCarList.add(electricityCar);
         }
         
+        if(CollectionUtils.isEmpty(electricityCarList)){
+            return R.fail("100007", "未找到车辆");
+        }
         // 保存到本地数据库
         electricityCarMapper.batchInsertCar(electricityCarList);
         return R.ok();
