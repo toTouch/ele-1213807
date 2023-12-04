@@ -18,7 +18,7 @@
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_asset_allocate_detail(order_no, tenant_id, asset_id, asset_sn, asset_model_id, asset_type, del_flag, create_time, update_time)
         values
-        <foreach item="item" index="index" collection="inventoryDetailSaveQueryModelList" separator=",">
+        <foreach item="item" index="index" collection="detailSaveQueryModelList" separator=",">
             (#{item.orderNo},#{item.tenantId},#{item.assetId}, #{item.assetSn}, #{item.assetModelId}, #{item.assetType},  #{item.delFlag},
             #{item.createTime}, #{item.updateTime})
         </foreach>
