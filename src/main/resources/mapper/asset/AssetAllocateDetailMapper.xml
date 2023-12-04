@@ -27,7 +27,7 @@
         select
         <include refid="basic_field"/>
         from t_asset_allocate_detail
-        where order_no=#{orderNo} and tenant_id = #{tenantId} and del_flag = 0
+        where order_no = #{orderNo} and tenant_id = #{tenantId} and del_flag = 0
         order by id desc
     </select>
     

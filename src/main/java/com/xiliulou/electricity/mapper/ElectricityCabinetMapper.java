@@ -103,4 +103,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     Integer updateFranchiseeIdAndStoreId(ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
     
     List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
+    
+    List<ElectricityCabinetBO> selectQueryBySnFromDb(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
 }

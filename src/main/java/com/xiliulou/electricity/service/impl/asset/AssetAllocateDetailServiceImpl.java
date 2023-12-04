@@ -47,7 +47,13 @@ public class AssetAllocateDetailServiceImpl implements AssetAllocateDetailServic
     
         List<AssetAllocateDetailBO> assetAllocateDetailBOList = assetAllocateDetailMapper.selectListByPage(orderNo, tenantId);
         if (CollectionUtils.isNotEmpty(assetAllocateDetailBOList)) {
-            rspList = assetAllocateDetailBOList.stream().map(item -> new AssetAllocateDetailVO()).collect(Collectors.toList());
+            rspList = assetAllocateDetailBOList.stream().map(item -> {
+                AssetAllocateDetailVO assetAllocateDetailVO = new AssetAllocateDetailVO();
+                BeanUtils.copyProperties(item, assetAllocateDetailVO);
+            
+                return assetAllocateDetailVO;
+            
+            }).collect(Collectors.toList());
         }
     
         if (CollectionUtils.isEmpty(rspList)) {

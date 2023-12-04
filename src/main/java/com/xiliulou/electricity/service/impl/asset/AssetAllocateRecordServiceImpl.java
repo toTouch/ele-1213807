@@ -45,7 +45,6 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
@@ -62,7 +61,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -412,11 +410,29 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             rspList = allocateRecordBOList.stream().map(item -> {
                 AssetAllocateRecordVO assetAllocateRecordVO = new AssetAllocateRecordVO();
                 BeanUtil.copyProperties(item, assetAllocateRecordVO);
+                assetAllocateRecordVO.setSourceFranchiseeId(item.getOldFranchiseeId());
+                assetAllocateRecordVO.setTargetFranchiseeId(item.getNewFranchiseeId());
             
-                List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(allocateRecordPageRequest.getOrderNo(), TenantContextHolder.getTenantId());
+                Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(item.getOldFranchiseeId());
+                Franchisee newFranchisee = franchiseeService.queryByIdFromCache(item.getNewFranchiseeId());
+                assetAllocateRecordVO.setSourceFranchiseeName(oldFranchisee.getName());
+                assetAllocateRecordVO.setTargetFranchiseeName(newFranchisee.getName());
+            
+                if (Objects.nonNull(item.getOldStoreId())) {
+                    Store oldStore = storeService.queryByIdFromCache(item.getOldStoreId());
+                    assetAllocateRecordVO.setSourcetoreId(item.getOldStoreId());
+                    assetAllocateRecordVO.setSourceStoreName(oldStore.getName());
+                }
+                if (Objects.nonNull(item.getNewStoreId())) {
+                    Store newStore = storeService.queryByIdFromCache(item.getNewStoreId());
+                    assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
+                    assetAllocateRecordVO.setTargetStoreName(newStore.getName());
+                }
+            
+                List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(item.getOrderNo(), TenantContextHolder.getTenantId());
                 if (CollectionUtils.isNotEmpty(allocateDetailVOList)) {
                     Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getAssetSn).collect(Collectors.toSet());
-                    assetAllocateRecordVO.setSnList(new ArrayList<>(snSet));
+                    assetAllocateRecordVO.setSnSet(snSet);
                 }
             
                 return assetAllocateRecordVO;
