@@ -26,9 +26,13 @@
             tenant_id,
             asset_type,
             old_franchisee_id,
-            old_store_id,
+            <if test="oldStoreId != null">
+                old_store_id,
+            </if>
             new_franchisee_id,
-            new_store_id,
+            <if test="newStoreId != null">
+                new_store_id,
+            </if>
             remark,
             operator,
             del_flag,

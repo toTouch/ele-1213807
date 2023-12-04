@@ -104,5 +104,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
     
-    List<ElectricityCabinetBO> selectQueryBySnFromDb(String sn, Integer tenantId);
+    List<ElectricityCabinetBO> selectQueryBySnFromDb(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
 }

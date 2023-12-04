@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.vo.asset;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,22 +45,22 @@ public class AssetAllocateRecordVO {
     /**
      * 旧加盟商
      */
-    private Long oldFranchiseeId;
+    private Long sourceFranchiseeId;
     
     /**
      * 旧门店
      */
-    private Long oldStoreId;
+    private Long sourcetoreId;
     
     /**
      * 新加盟商
      */
-    private Long newFranchiseeId;
+    private Long targetFranchiseeId;
     
     /**
      * 新门店
      */
-    private Long newStoreId;
+    private Long targetStoreId;
     
     /**
      * 调拨原因
@@ -97,22 +95,22 @@ public class AssetAllocateRecordVO {
     /**
      * 旧加盟商
      */
-    private String oldFranchiseeName;
+    private String sourceFranchiseeName;
     
     /**
      * 旧门店
      */
-    private String oldStoreName;
+    private String sourceStoreName;
     
     /**
      * 新加盟商
      */
-    private String newFranchiseeName;
+    private String targetFranchiseeName;
     
     /**
      * 新门店
      */
-    private String newStoreName;
+    private String targetStoreName;
     
 }
 
