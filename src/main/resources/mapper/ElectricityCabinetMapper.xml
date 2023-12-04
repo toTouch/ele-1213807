@@ -955,7 +955,7 @@
                 fully_charged = #{fullyCharged},
             </if>
             <if test="servicePhone != null and servicePhone != ''">
-                update_time = #{servicePhone},
+                service_phone = #{servicePhone},
             </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
