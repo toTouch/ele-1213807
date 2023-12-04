@@ -5036,6 +5036,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setTenantId(TenantContextHolder.getTenantId());
         cabinetModelInsert.setCreateTime(System.currentTimeMillis());
         cabinetModelInsert.setUpdateTime(System.currentTimeMillis());
+        cabinetModelInsert.setManufacturerName(electricityCabinetModel.getManufacturerName());
         return cabinetModelInsert;
     }
     
