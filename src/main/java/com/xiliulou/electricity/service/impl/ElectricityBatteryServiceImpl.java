@@ -1524,23 +1524,28 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest) {
         ElectricityBatteryEnableAllocateQueryModel queryModel = new ElectricityBatteryEnableAllocateQueryModel();
         BeanUtils.copyProperties(electricityBatteryEnableAllocateRequest, queryModel);
-        
+    
         List<ElectricityBatteryVO> rspList = null;
         List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableAllocateBattery(queryModel);
         if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
             rspList = electricityBatteryBOList.stream().map(item -> {
                 ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item, electricityBatteryVO);
-                
+            
+                BatteryModel batteryModel = batteryModelService.selectByBatteryType(electricityBatteryEnableAllocateRequest.getTenantId(), item.getModel());
+                if (Objects.nonNull(batteryModel)) {
+                    electricityBatteryVO.setModelId(batteryModel.getId());
+                }
+            
                 return electricityBatteryVO;
-                
+            
             }).collect(Collectors.toList());
         }
-        
+    
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-        
+    
         return rspList;
     }
     

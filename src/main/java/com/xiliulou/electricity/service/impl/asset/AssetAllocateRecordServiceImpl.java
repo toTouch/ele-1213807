@@ -354,11 +354,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         // 封装电池调拨记录
         if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
             assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-        
+    
             detailSaveRequestList = electricityBatteryList.stream()
-                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId()).assetSn(item.getSn())
-                            .assetModelId(item.getModelId()).assetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
-                            .updateTime(time).build()).collect(Collectors.toList());
+                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId()).sn(item.getSn())
+                            .modelId(Objects.isNull(item.getModelId()) ? NumberConstant.ZERO_L : item.getModelId()).type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())
+                            .delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build()).collect(Collectors.toList());
         } else if (CollectionUtils.isNotEmpty(electricityCabinetList)) {
             // 封装电柜调拨记录
             assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode());
@@ -366,8 +366,8 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             assetAllocateRecordSaveRequest.setNewStoreId(assetAllocateRecordRequest.getTargetStoreId());
         
             detailSaveRequestList = electricityCabinetList.stream()
-                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
-                            .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
+                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).sn(item.getSn())
+                            .modelId(item.getModelId().longValue()).type(AssetTypeEnum.ASSET_TYPE_CABINET.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
                             .updateTime(time).build()).collect(Collectors.toList());
         } else {
             // 封装车辆调拨记录
@@ -376,8 +376,8 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             assetAllocateRecordSaveRequest.setNewStoreId(assetAllocateRecordRequest.getTargetStoreId());
         
             detailSaveRequestList = electricityCarList.stream()
-                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).assetSn(item.getSn())
-                            .assetModelId(item.getModelId().longValue()).assetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
+                    .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId().longValue()).sn(item.getSn())
+                            .modelId(item.getModelId().longValue()).type(AssetTypeEnum.ASSET_TYPE_CAR.getCode()).delFlag(AssetConstant.DEL_NORMAL).createTime(time)
                             .updateTime(time).build()).collect(Collectors.toList());
         }
     
@@ -431,7 +431,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             
                 List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(item.getOrderNo(), TenantContextHolder.getTenantId());
                 if (CollectionUtils.isNotEmpty(allocateDetailVOList)) {
-                    Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getAssetSn).collect(Collectors.toSet());
+                    Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getSn).collect(Collectors.toSet());
                     assetAllocateRecordVO.setSnSet(snSet);
                 }
             
