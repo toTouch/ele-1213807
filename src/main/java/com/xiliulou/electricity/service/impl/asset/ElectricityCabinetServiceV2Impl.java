@@ -333,4 +333,27 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         return rspList;
     }
     
+    @Override
+    public List<ElectricityCabinetVO> queryBySnFromDb(String sn, Integer tenantId) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectQueryBySnFromDb(sn, tenantId);
+    
+        List<ElectricityCabinetVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+            rspList = electricityCabinetBOList.stream().map(item -> {
+                ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+                BeanUtil.copyProperties(item, electricityCabinetVO);
+            
+                return electricityCabinetVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
+    
+    }
+    
 }

@@ -424,7 +424,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                     assetAllocateRecordVO.setNewStoreName(newStore.getName());
                 }
     
-                List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(allocateRecordPageRequest.getOrderNo(), TenantContextHolder.getTenantId());
+                List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(item.getOrderNo(), TenantContextHolder.getTenantId());
                 if (CollectionUtils.isNotEmpty(allocateDetailVOList)) {
                     Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getAssetSn).collect(Collectors.toSet());
                     assetAllocateRecordVO.setSnSet(snSet);

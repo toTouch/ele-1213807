@@ -17,7 +17,6 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
@@ -90,49 +89,45 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
     
-    @Autowired
-    private ElectricityCabinetService electricityCabinetService;
-    
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
-        
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        
+    
         try {
             Long franchiseeId = assetExitWarehouseSaveRequest.getFranchiseeId();
             Integer type = assetExitWarehouseSaveRequest.getType();
             Long storeId = assetExitWarehouseSaveRequest.getStoreId();
-            
+        
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
                 log.error("ASSET_EXIT_WAREHOUSE ERROR! not found franchise! franchiseId={}", assetExitWarehouseSaveRequest.getFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
-            
+        
             if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
                 return R.ok();
             }
-            
+        
             // 车辆退库类型门店必填
             if (AssetTypeEnum.ASSET_TYPE_CAR.getCode().equals(type)) {
                 if (Objects.isNull(storeId)) {
                     return R.fail("300807", "退库门店不能为空");
                 }
-                
+            
                 Store store = storeService.queryByIdFromCache(storeId);
                 if (Objects.isNull(store)) {
                     log.error("ASSET_EXIT_WAREHOUSE ERROR! not found store! store={}", assetExitWarehouseSaveRequest.getStoreId());
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
-                
+            
                 if (!Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
                     return R.ok();
                 }
             }
-            
+        
             // 校验加盟商是否正在进行资产盘点
             Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
             if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
@@ -144,48 +139,51 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
                 }
             }
-            
+        
             if (CollectionUtils.isNotEmpty(assetExitWarehouseSaveRequest.getSnList())) {
                 List<String> snList = assetExitWarehouseSaveRequest.getSnList();
-                
+            
                 if (CollectionUtils.isNotEmpty(snList) && snList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
                     return R.fail("300813", "资产退库数量最大限制50条");
                 }
-                
+            
                 // 对snList进行有效性校验
                 snList = handleInvalidSnList(snList, franchiseeId, storeId, type);
-                
+                if (CollectionUtils.isEmpty(snList)) {
+                    return R.fail("300814", "无效的sn，请修改后再操作");
+                }
+            
                 Integer tenantId = TenantContextHolder.getTenantId();
                 Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
                 String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_EXIT_WAREHOUSE, operator);
                 Long nowTime = System.currentTimeMillis();
-                
+            
                 // 封装资产退库记录数据
                 AssetExitWarehouseSaveQueryModel assetExitWarehouseSaveQueryModel = AssetExitWarehouseSaveQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
                         .storeId(storeId).type(type).warehouseId(warehouseId).operator(operator).tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime)
                         .updateTime(nowTime).build();
-                
+            
                 // 封装资产退库详情数据
                 AssetExitWarehouseDetailSaveQueryModel detailSaveQueryModel = AssetExitWarehouseDetailSaveQueryModel.builder().orderNo(orderNo).type(type).tenantId(tenantId)
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
-                
+            
                 List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList;
                 detailSaveQueryModelList = snList.stream().map(sn -> {
                     AssetExitWarehouseDetailSaveQueryModel assetExitWarehouseDetailSaveQueryModel = new AssetExitWarehouseDetailSaveQueryModel();
                     BeanUtils.copyProperties(detailSaveQueryModel, assetExitWarehouseDetailSaveQueryModel);
                     assetExitWarehouseDetailSaveQueryModel.setSn(sn);
-                    
-                    return assetExitWarehouseDetailSaveQueryModel;
-                    
-                }).collect(Collectors.toList());
                 
+                    return assetExitWarehouseDetailSaveQueryModel;
+                
+                }).collect(Collectors.toList());
+            
                 // 根据sn封装 电池/电柜/车辆 的库存状态数据
                 AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest = AssetBatchExitWarehouseBySnRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                         .warehouseId(warehouseId).snList(snList).build();
-                
+            
                 // 持久化
                 handleExitWarehouse(assetExitWarehouseSaveQueryModel, detailSaveQueryModelList, assetBatchExitWarehouseBySnRequest, operator, type);
-                
+            
                 // 清理缓存
                 handleClearCache(snList, type, tenantId, franchiseeId);
             }
@@ -203,10 +201,8 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         List<String> removeList = new ArrayList<>();
         if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
             snList.forEach(sn -> {
-                ElectricityCabinetQuery query = ElectricityCabinetQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).storeId(storeId).sn(sn)
-                        .build();
-                List<ElectricityCabinet> electricityCabinets = electricityCabinetService.selectByQuery(query);
-                if (CollectionUtils.isEmpty(electricityCabinets)) {
+                List<ElectricityCabinetVO> electricityCabinetVOList= electricityCabinetV2Service.queryBySnFromDb(sn, TenantContextHolder.getTenantId());
+                if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                     removeList.add(sn);
                 }
             });

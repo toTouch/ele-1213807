@@ -33,4 +33,6 @@ public interface ElectricityCabinetV2Service {
     Integer batchUpdateFranchiseeIdAndStoreId(List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList);
     
     List<ElectricityCabinetVO> listEnableAllocateCabinet(ElectricityCabinetEnableAllocateRequest enableAllocateRequest);
+    
+    List<ElectricityCabinetVO> queryBySnFromDb(String sn, Integer tenantId);
 }
