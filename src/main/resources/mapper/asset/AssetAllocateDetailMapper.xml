@@ -7,19 +7,19 @@
         order_no,
         tenant_id,
         asset_id,
-        asset_sn,
-        asset_model_id,
-        asset_type,
+        sn,
+        model_id,
+        type,
         del_flag,
         create_time,
         update_time
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_asset_allocate_detail(order_no, tenant_id, asset_id, asset_sn, asset_model_id, asset_type, del_flag, create_time, update_time)
+        insert into t_asset_allocate_detail(order_no, tenant_id, asset_id, sn, model_id, type, del_flag, create_time, update_time)
         values
         <foreach item="item" index="index" collection="detailSaveQueryModelList" separator=",">
-            (#{item.orderNo},#{item.tenantId},#{item.assetId}, #{item.assetSn}, #{item.assetModelId}, #{item.assetType},  #{item.delFlag},
+            (#{item.orderNo},#{item.tenantId},#{item.assetId}, #{item.sn}, #{item.modelId}, #{item.type},  #{item.delFlag},
             #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>

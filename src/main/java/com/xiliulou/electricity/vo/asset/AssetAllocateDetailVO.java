@@ -40,17 +40,17 @@ public class AssetAllocateDetailVO {
     /**
      * 资产SN码
      */
-    private String assetSn;
+    private String sn;
     
     /**
      * 资产型号ID
      */
-    private Long assetModelId;
+    private Long modelId;
     
     /**
      * 调拨资产类型(1-电柜, 2-电池, 3-车辆)
      */
-    private Integer assetType;
+    private Integer type;
     
     /**
      * 是否删除（0-正常，1-删除）
