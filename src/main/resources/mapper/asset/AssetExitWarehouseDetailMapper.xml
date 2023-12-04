@@ -3,8 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        ,
+        id,
         order_no,
         type,
         sn,
@@ -33,7 +32,7 @@
         <if test="type != null">
             and type = #{type}
         </if>
-        order by id desc
+        order by id
         <if test="offset != null and size!= null">
             limit #{offset}, #{size}
         </if>
