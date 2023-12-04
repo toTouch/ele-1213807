@@ -484,6 +484,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			return R.fail("100314","参数不合法");
 		}
 		
+		// 判断当前租户是否允许线下提现
+		ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+		if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
+			return R.fail("100422","当前租户不允许线下提现。");
+		}
+		
 		WithdrawRecordQueryModel withdrawRecordQueryModel = WithdrawRecordQueryModel.builder().tenantId(tenantId).idList(batchHandleWithdrawRequest.getIdList()).build();
 		List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.selectList(withdrawRecordQueryModel);
 		if (CollectionUtils.isEmpty(withdrawRecordList) || !Objects.equals(withdrawRecordList.size(), batchHandleWithdrawRequest.getIdList().size())) {
@@ -493,6 +499,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		
 		// 过滤已经审核的提现订单
 		List<WithdrawRecord> alreadyAudit = new ArrayList<>();
+		
 		Set<Long> uidList = new HashSet<>();
 		
 		withdrawRecordList.stream().forEach(withdrawRecord -> {
