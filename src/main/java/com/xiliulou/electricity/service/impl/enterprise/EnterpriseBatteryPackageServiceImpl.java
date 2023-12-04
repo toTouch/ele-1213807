@@ -439,9 +439,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            
+    
+            UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
-            if (Objects.nonNull(userBatteryDeposit)) {
+            if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 query.setDeposit(userBatteryDeposit.getBatteryDeposit());
             }
             
