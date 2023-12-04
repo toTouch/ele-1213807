@@ -27,12 +27,12 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
  * @description 资产盘点业务
  * @date 2023/11/20 13:26:02
  */
+@Slf4j
 @Service
 public class AssetInventoryServiceImpl implements AssetInventoryService {
     
@@ -76,6 +77,17 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
             Integer tenantId = TenantContextHolder.getTenantId();
             Long franchiseeId = assetInventorySaveOrUpdateRequest.getFranchiseeId();
             String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_INVENTORY, operator);
+    
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                log.error("ASSET_INVENTORY ERROR! not found franchise! franchiseId={}", assetInventorySaveOrUpdateRequest.getFranchiseeId());
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+    
+            if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+                return R.ok();
+            }
+            
             // 默认资产类型是电池,获取查询电池数量
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();

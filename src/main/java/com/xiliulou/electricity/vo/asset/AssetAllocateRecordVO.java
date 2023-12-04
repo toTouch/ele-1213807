@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author HeYafeng
@@ -91,7 +92,27 @@ public class AssetAllocateRecordVO {
     /**
      * 调拨资产编码
      */
-    private List<String> snList;
+    private Set<String> snSet;
+    
+    /**
+     * 旧加盟商
+     */
+    private String oldFranchiseeName;
+    
+    /**
+     * 旧门店
+     */
+    private String oldStoreName;
+    
+    /**
+     * 新加盟商
+     */
+    private String newFranchiseeName;
+    
+    /**
+     * 新门店
+     */
+    private String newStoreName;
     
 }
 

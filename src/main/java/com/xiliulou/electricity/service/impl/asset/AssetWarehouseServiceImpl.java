@@ -24,7 +24,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -144,9 +143,9 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     @Override
     public AssetWarehouseNameVO queryById(Long id) {
         AssetWarehouseNameVO assetWarehouseNameVO = new AssetWarehouseNameVO();
-        AssetWarehouseNameBO assetWarehouseNameBO = assetWarehouseMapper.selectById(id);
-        if (Objects.nonNull(assetWarehouseNameBO)) {
-            BeanUtils.copyProperties(assetWarehouseNameBO, assetWarehouseNameVO);
+        AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(id);
+        if (Objects.nonNull(assetWarehouseBO)) {
+            BeanUtils.copyProperties(assetWarehouseBO, assetWarehouseNameVO);
         }
         return assetWarehouseNameVO;
     }
@@ -179,11 +178,15 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Override
     public R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
-        AssetWarehouseNameBO assetWarehouseNameBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
-        if (Objects.nonNull(assetWarehouseNameBO) && !Objects.equals(assetWarehouseNameBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
+        AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
+        if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
             Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
             if (Objects.nonNull(exists)) {
                 return R.fail("300803", "库房名称已存在");
+            }
+        
+            if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {
+                return R.ok();
             }
         }
         

@@ -40,9 +40,13 @@
             #{tenantId},
             #{assetType},
             #{oldFranchiseeId},
-            #{oldStoreId},
+            <if test="oldStoreId != null">
+                #{oldStoreId},
+            </if>
             #{newFranchiseeId},
-            #{newStoreId},
+            <if test="newStoreId != null">
+                #{newStoreId},
+            </if>
             #{remark},
             #{operator},
             #{delFlag},

@@ -108,7 +108,7 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectById" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO">
+    <select id="selectById" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseBO">
         select
         <include refid="basic_field"/>
         from t_asset_warehouse where del_flag = 0 and id = #{id}

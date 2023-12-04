@@ -28,7 +28,7 @@ public interface AssetWarehouseMapper {
     
     Integer updateById(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     
-    AssetWarehouseNameBO selectById(Long id);
+    AssetWarehouseBO selectById(Long id);
     
     Integer existsByName(@Param("tenantId") Integer tenantId, @Param("name") String name);
     

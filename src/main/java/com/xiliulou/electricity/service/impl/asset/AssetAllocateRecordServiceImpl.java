@@ -45,7 +45,6 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import com.xiliulou.electricity.vo.asset.AssetAllocateRecordVO;
@@ -62,7 +61,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -412,11 +410,24 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             rspList = allocateRecordBOList.stream().map(item -> {
                 AssetAllocateRecordVO assetAllocateRecordVO = new AssetAllocateRecordVO();
                 BeanUtil.copyProperties(item, assetAllocateRecordVO);
-            
+    
+                Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordVO.getOldFranchiseeId());
+                Franchisee newFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordVO.getNewFranchiseeId());
+                assetAllocateRecordVO.setOldFranchiseeName(oldFranchisee.getName());
+                assetAllocateRecordVO.setNewFranchiseeName(newFranchisee.getName());
+                if (Objects.nonNull(assetAllocateRecordVO.getOldStoreId())) {
+                    Store oldStore = storeService.queryByIdFromCache(assetAllocateRecordVO.getOldStoreId());
+                    assetAllocateRecordVO.setOldStoreName(oldStore.getName());
+                }
+                if (Objects.nonNull(assetAllocateRecordVO.getNewStoreId())) {
+                    Store newStore = storeService.queryByIdFromCache(assetAllocateRecordVO.getNewStoreId());
+                    assetAllocateRecordVO.setNewStoreName(newStore.getName());
+                }
+    
                 List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(allocateRecordPageRequest.getOrderNo(), TenantContextHolder.getTenantId());
                 if (CollectionUtils.isNotEmpty(allocateDetailVOList)) {
                     Set<String> snSet = allocateDetailVOList.stream().map(AssetAllocateDetailVO::getAssetSn).collect(Collectors.toSet());
-                    assetAllocateRecordVO.setSnList(new ArrayList<>(snSet));
+                    assetAllocateRecordVO.setSnSet(snSet);
                 }
             
                 return assetAllocateRecordVO;
