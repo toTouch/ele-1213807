@@ -183,10 +183,10 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 //车辆调拨 复用以前的车辆迁移
                 if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type)){
-                    return electricityCarMove(assetAllocateRecordRequest, targetStore, franchisee,tenantId, idList);
+                    return electricityCarMove(assetAllocateRecordRequest, targetStore, franchisee,tenantId, idList, uid);
                 } else {
                     // 电柜调拨
-                    return electricityCabinetMove(assetAllocateRecordRequest, targetStore, tenantId, idList);
+                    return electricityCabinetMove(assetAllocateRecordRequest, targetStore, tenantId, idList, uid);
                 }
             } else {
                 //电池调拨
@@ -194,14 +194,14 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                     log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId());
                     return R.fail("300809", "调出加盟商与调入加盟商不能相同");
                 }
-                return electricityBatteryMove(assetAllocateRecordRequest, tenantId);
+                return electricityBatteryMove(assetAllocateRecordRequest, tenantId, idList, uid);
             }
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid);
         }
     }
     
-    public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList) {
+    public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList, Long uid) {
         List<ElectricityCar> electricityCarList = electricityCarService.queryModelIdBySidAndIds(idList, assetAllocateRecordRequest.getSourceStoreId(),
                 ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
@@ -273,13 +273,13 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         // 异步记录
         executorService.execute(() -> {
-            saveAllocateRecords(assetAllocateRecordRequest, null, null, electricityCarList, tenantId);
+            saveAllocateRecords(assetAllocateRecordRequest, null, null, electricityCarList, tenantId, uid);
         });
         
         return R.ok();
     }
     
-    private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Integer tenantId, List<Long> idList) {
+    private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Integer tenantId, List<Long> idList, Long uid) {
         Franchisee storeFranchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(storeFranchisee)) {
             log.error("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
@@ -287,7 +287,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         }
         
         // 根据id集获取柜机信息
-        Set<Integer> idSet = (assetAllocateRecordRequest.getIdList().stream().map(Long::intValue).collect(Collectors.toSet()));
+        Set<Integer> idSet = (idList.stream().map(Long::intValue).collect(Collectors.toSet()));
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
         
         List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList = electricityCabinetList.stream()
@@ -302,7 +302,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
                 // 异步记录
                 executorService.execute(() -> {
-                    saveAllocateRecords(assetAllocateRecordRequest, null, electricityCabinetList, null, tenantId);
+                    saveAllocateRecords(assetAllocateRecordRequest, null, electricityCabinetList, null, tenantId, uid);
                 });
             }
         }
@@ -310,9 +310,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         return R.ok();
     }
     
-    private R electricityBatteryMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Integer tenantId) {
-        List<Long> idList = assetAllocateRecordRequest.getIdList();
-        
+    private R electricityBatteryMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Integer tenantId, List<Long> idList, Long uid) {
         // 获取可调拨的电池
         List<Integer> businessStatusList = List.of(ElectricityBattery.BUSINESS_STATUS_INPUT, ElectricityBattery.BUSINESS_STATUS_RETURN);
         ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest = ElectricityBatteryEnableAllocateRequest.builder().tenantId(tenantId)
@@ -334,7 +332,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
             // 异步记录
             executorService.execute(() -> {
-                saveAllocateRecords(assetAllocateRecordRequest, electricityBatteryList, null, null, tenantId);
+                saveAllocateRecords(assetAllocateRecordRequest, electricityBatteryList, null, null, tenantId, uid);
             });
         }
         
@@ -345,15 +343,15 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
      * 保存资产调拨记录
      */
     public void saveAllocateRecords(AssetAllocateRecordRequest assetAllocateRecordRequest, List<ElectricityBatteryVO> electricityBatteryList,
-            List<ElectricityCabinet> electricityCabinetList, List<ElectricityCar> electricityCarList, Integer tenantId) {
-        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_ALLOCATE, SecurityUtils.getUid());
+            List<ElectricityCabinet> electricityCabinetList, List<ElectricityCar> electricityCarList, Integer tenantId, Long uid) {
+        String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_ALLOCATE, uid);
         Long time = System.currentTimeMillis();
     
         AssetAllocateRecordSaveRequest assetAllocateRecordSaveRequest = AssetAllocateRecordSaveRequest.builder().orderNo(orderNo).tenantId(tenantId)
                 .oldFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId()).newFranchiseeId(assetAllocateRecordRequest.getTargetFranchiseeId())
-                .remark(assetAllocateRecordRequest.getRemark()).operator(SecurityUtils.getUid()).delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build();
+                .remark(assetAllocateRecordRequest.getRemark()).operator(uid).delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build();
     
-        List<AssetAllocateDetailSaveRequest> detailSaveRequestList = null;
+        List<AssetAllocateDetailSaveRequest> detailSaveRequestList;
     
         // 封装电池调拨记录
         if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
