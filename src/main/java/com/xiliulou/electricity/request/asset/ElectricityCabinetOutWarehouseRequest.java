@@ -34,9 +34,9 @@ public class ElectricityCabinetOutWarehouseRequest {
     private String sn;
     
     /**
-     * 厂家名称/型号
+     * 电柜名称
      */
-    @NotEmpty(message = "厂家型号不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "电柜名称不能为空!", groups = {UpdateGroup.class})
     private String name;
     
     /**

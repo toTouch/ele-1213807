@@ -948,6 +948,18 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="businessTime != null and businessTime != ''">
+                business_time = #{businessTime},
+            </if>
+            <if test="fullyCharged != null">
+                fully_charged = #{fullyCharged},
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                update_time = #{servicePhone},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
             stock_status = 1
         </set>
         where id in

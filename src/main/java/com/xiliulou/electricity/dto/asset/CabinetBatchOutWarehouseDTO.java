@@ -49,4 +49,24 @@ public class CabinetBatchOutWarehouseDTO {
      * 门店
      */
     private Long updateTime;
+    
+    /**
+     * 营业时间类型
+     */
+    private String businessTime;
+    
+    /**
+     * 满电标准
+     */
+    private Double fullyCharged;
+    
+    /**
+     * 联系电话
+     */
+    private String servicePhone;
+    
+    /**
+     * 可用状态(0--启用，1--禁用)
+     */
+    private Integer usableStatus;
 }

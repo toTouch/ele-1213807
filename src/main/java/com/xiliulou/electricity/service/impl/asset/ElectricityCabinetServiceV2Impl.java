@@ -213,12 +213,34 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         }
         
         List<Integer> eleIdList = batchOutWarehouseRequest.getIdList();
-        // 校验已出库的不
+        // 校验已出库的
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(eleIdList, TenantContextHolder.getTenantId());
         List<ElectricityCabinet> unStockList = electricityCabinetList.stream()
                 .filter(electricityCabinet -> Objects.equals(StockStatusEnum.UN_STOCK.getCode(), electricityCabinet.getStockStatus())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(unStockList)) {
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
+        }
+        
+        // 设置营业时间参数
+        String businessTime = null;
+        if (Objects.nonNull(batchOutWarehouseRequest.getBusinessTimeType())) {
+            // 设置全天
+            if (Objects.equals(batchOutWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
+                businessTime =ElectricityCabinetAddAndUpdate.ALL_DAY;
+            }
+            
+            // 自定义时间段
+            if (Objects.equals(batchOutWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
+                if (Objects.isNull(batchOutWarehouseRequest.getBeginTime()) || Objects.isNull(batchOutWarehouseRequest.getEndTime())
+                        || batchOutWarehouseRequest.getBeginTime() > batchOutWarehouseRequest.getEndTime()) {
+                    return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+                }
+                businessTime = batchOutWarehouseRequest.getBeginTime() + "-" + batchOutWarehouseRequest.getEndTime();
+            }
+            
+            if (Objects.isNull(businessTime)) {
+                return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            }
         }
         
         List<Integer> emptyNameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isBlank(electricityCabinet.getName()))
