@@ -68,4 +68,33 @@ public class ElectricityCabinetOutWarehouseRequest {
      */
     @NotNull(message = "地址纬度不能为空!", groups = {UpdateGroup.class})
     private Double latitude;
+    
+    /**
+     * 营业时间类型
+     */
+    private String businessTimeType;
+    
+    /**
+     * 营业开始时间
+     */
+    private Long beginTime;
+    /**
+     * 营业结束时间
+     */
+    private Long endTime;
+    
+    /**
+     * 满电标准
+     */
+    private Double fullyCharged;
+    
+    /**
+     * 联系电话
+     */
+    private String servicePhone;
+    
+    /**
+     * 可用状态(0--启用，1--禁用)
+     */
+    private Integer usableStatus;
 }
