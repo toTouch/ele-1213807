@@ -7,6 +7,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -224,15 +225,20 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 .map(ElectricityCabinet::getId).collect(Collectors.toList());
         List<Integer> nameIdList = electricityCabinetList.stream().filter(electricityCabinet -> StringUtils.isNotBlank(electricityCabinet.getName())).map(ElectricityCabinet::getId)
                 .collect(Collectors.toList());
+        
+        CabinetBatchOutWarehouseDTO batchOutWareHouseDTO = new CabinetBatchOutWarehouseDTO();
+        BeanUtil.copyProperties(batchOutWarehouseRequest,batchOutWareHouseDTO);
+        batchOutWareHouseDTO.setUpdateTime(System.currentTimeMillis());
+        
+        // 名称需要批量修改的（如果没有名称，则统一修改为当前传入的name值）
         if (CollectionUtils.isNotEmpty(emptyNameIdList)) {
-            electricityCabinetMapper.batchOutWarehouse(emptyNameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(), batchOutWarehouseRequest.getName(),
-                    System.currentTimeMillis());
+            electricityCabinetMapper.batchOutWarehouse(batchOutWareHouseDTO);
         }
         
+        // 名称不需要批量修改的（如果有名称，则不需要修改当前的name）
         if (CollectionUtils.isNotEmpty(nameIdList)) {
-            electricityCabinetMapper.batchOutWarehouse(nameIdList, batchOutWarehouseRequest.getFranchiseeId(), batchOutWarehouseRequest.getStoreId(),
-                    batchOutWarehouseRequest.getAddress(), batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude(), null, System.currentTimeMillis());
+            batchOutWareHouseDTO.setName(null);
+            electricityCabinetMapper.batchOutWarehouse(batchOutWareHouseDTO);
         }
         
         electricityCabinetList.forEach(item -> {

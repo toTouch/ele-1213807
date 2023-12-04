@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
+import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
@@ -89,8 +90,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     Integer existByProductKeyAndDeviceName(@Param("productKey") String productKey, @Param("deviceName") String deviceName);
     
-    Integer batchOutWarehouse(@Param("idList") List<Integer> idList, @Param("franchiseeId") Long franchiseeId, @Param("storeId") Long storeId, @Param("address") String address,
-            @Param("longitude") Double longitude, @Param("latitude") Double latitude, @Param("name")  String name, @Param("updateTime") Long updateTime);
+    Integer batchOutWarehouse(CabinetBatchOutWarehouseDTO outWarehouseDTO);
     
     Integer existsByWarehouseId(Long wareHouseId);
     

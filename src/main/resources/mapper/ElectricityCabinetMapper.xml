@@ -924,7 +924,7 @@
         where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
     </select>
     
-    <update id="batchOutWarehouse">
+    <update id="batchOutWarehouse" parameterType="com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO">
         update t_electricity_cabinet
         <set>
             <if test="franchiseeId != null and franchiseeId != ''">
