@@ -965,6 +965,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      * @param freeBatteryDepositQuery
      * @return
      */
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> freeBatteryDepositOrder(FreeBatteryDepositQuery freeBatteryDepositQuery) {
         Long uid = SecurityUtils.getUid();
@@ -1142,7 +1143,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .uid(userInfo.getUid())
                 .realName(freeQuery.getRealName())
                 .phoneNumber(freeQuery.getPhoneNumber())
-                .idCard(freeQuery.getIdCard()).build();
+                .idCard(freeQuery.getIdCard())
+                .tenantId(TenantContextHolder.getTenantId())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
+                .build();
         
         //检查用户是否已经进行过免押操作，且已免押成功
         Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
@@ -1154,7 +1158,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
-            log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
+            log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());
         }
 

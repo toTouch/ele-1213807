@@ -679,7 +679,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
-            log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
+            log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, pxzCacheData);
             return pxzCacheData.getData();
         }
 
