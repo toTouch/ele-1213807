@@ -205,7 +205,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
-            return R.fail("300815", "您选择的车辆编码中存在不可调拨的车辆，请刷新页面以获取最新状态后再进行操作");
+            return R.fail("300815", "您选择的车辆编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
         Map<Integer, List<ElectricityCar>> collect = electricityCarList.parallelStream().collect(Collectors.groupingBy(ElectricityCar::getModelId));
@@ -291,7 +291,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     
         if (CollectionUtils.isEmpty(electricityCabinetList) || !Objects.equals(idList.size(), electricityCabinetList.size())) {
             log.error("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
-            return R.fail("300816", "您选择的电柜编码中存在不可调拨的电柜，请刷新页面以获取最新状态后再进行操作");
+            return R.fail("300816", "您选择的电柜编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
         List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList = electricityCabinetList.stream()
@@ -324,7 +324,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listEnableAllocateBattery(electricityBatteryEnableAllocateRequest);
         if (CollectionUtils.isEmpty(electricityBatteryList) || !Objects.equals(idList.size(), electricityBatteryList.size())) {
             log.error("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
-            return R.fail("300812", "您选择的电池编码中存在不可调拨的电池，请刷新页面以获取最新状态后再进行操作");
+            return R.fail("300812", "您选择的电池编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
         List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList = electricityBatteryList.stream()

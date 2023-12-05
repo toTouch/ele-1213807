@@ -1573,8 +1573,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public ElectricityBatteryVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
         ElectricityBatteryBO electricityBatteryBO = electricitybatterymapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
         ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
-        BeanUtils.copyProperties(electricityBatteryBO, electricityBatteryVO);
-    
+        
+        if (Objects.nonNull(electricityBatteryBO)) {
+            BeanUtils.copyProperties(electricityBatteryBO, electricityBatteryVO);
+        }
         return electricityBatteryVO;
     }
     

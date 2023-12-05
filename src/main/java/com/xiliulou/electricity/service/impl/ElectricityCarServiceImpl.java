@@ -1256,7 +1256,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
         ElectricityCarBO electricityCarBO = electricityCarMapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
         ElectricityCarVO electricityCarVO = new ElectricityCarVO();
-        BeanUtils.copyProperties(electricityCarBO, electricityCarVO);
+    
+        if (Objects.nonNull(electricityCarBO)) {
+            BeanUtils.copyProperties(electricityCarBO, electricityCarVO);
+        }
         return electricityCarVO;
     }
 }
