@@ -111,16 +111,16 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
             List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> {
-                
-                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
-                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId()).inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO)
-                        .status(AssetInventoryDetailStatusEnum.ASSET_INVENTORY_DETAIL_STATUS_NORMAL.getCode()).operator(operator).tenantId(snSearchRequest.getTenantId())
-                        .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                return inventoryDetailSaveQueryModel;
-                
-            }).collect(Collectors.toList());
             
+                AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
+                        .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
+                        .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
+                        .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            
+                return inventoryDetailSaveQueryModel;
+            
+            }).collect(Collectors.toList());
+        
             // 批量新增
             if (CollectionUtils.isNotEmpty(inventoryDetailSaveQueryModelList)) {
                 assetInventoryDetailMapper.batchInsert(inventoryDetailSaveQueryModelList);
