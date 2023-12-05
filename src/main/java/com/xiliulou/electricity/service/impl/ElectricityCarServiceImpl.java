@@ -472,7 +472,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 item.setBatterySn(electricityBattery.getSn());
             }
             
-            if(finalWarehouseNameVOMap.containsKey(item.getWarehouseId())){
+            // 设置用户名称
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                item.setUserName(userInfo.getName());
+            }
+            
+            // 设置门店名称
+            Store store = storeService.queryByIdFromCache(Long.valueOf(item.getStoreId()));
+            if (Objects.nonNull(store)) {
+                item.setStoreName(store.getName());
+            }
+            
+            if (finalWarehouseNameVOMap.containsKey(item.getWarehouseId())) {
                 item.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
             }
             

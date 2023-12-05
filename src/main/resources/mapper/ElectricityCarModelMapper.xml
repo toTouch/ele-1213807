@@ -36,10 +36,10 @@
         from t_electricity_car_model tecm
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
-            and tecm.name = #{query.name}
+            and tecm.name like concat('%', #{query.name}, '%')
         </if>
         <if test="query.manufacturerName != null and query.manufacturerName != ''">
-            and manufacturer_name like concat('%', #{query.manufacturerName}, '%')
+            and tecm.manufacturer_name like concat('%', #{query.manufacturerName}, '%')
         </if>
         <if test="query.tenantId != null">
             and tecm.tenant_id = #{query.tenantId}
