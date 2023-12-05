@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -145,13 +146,14 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
                 
                 //如果mode=1,assetList封装的是id，根据id查询sn
+                List<String> snList = assetList;
                 if (Objects.equals(NumberConstant.ONE, assetExitWarehouseSaveRequest.getMode())) {
-                    handleListByIds(assetList, type);
+                    snList = handleListByIds(assetList, type);
                 }
             
                 // 对snList进行有效性校验
-                handleInvalidSnList(assetList, type);
-                if (CollectionUtils.isEmpty(assetList)) {
+                handleInvalidSnList(snList, type);
+                if (CollectionUtils.isEmpty(snList)) {
                     return R.fail("300814", "上传的车辆/电池/电柜编码不存在，请检测后操作");
                 }
             
@@ -170,7 +172,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
             
                 List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList;
-                detailSaveQueryModelList = assetList.stream().map(sn -> {
+                detailSaveQueryModelList = snList.stream().map(sn -> {
                     AssetExitWarehouseDetailSaveQueryModel assetExitWarehouseDetailSaveQueryModel = new AssetExitWarehouseDetailSaveQueryModel();
                     BeanUtils.copyProperties(detailSaveQueryModel, assetExitWarehouseDetailSaveQueryModel);
                     assetExitWarehouseDetailSaveQueryModel.setSn(sn);
@@ -181,13 +183,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             
                 // 根据sn封装 电池/电柜/车辆 的库存状态数据
                 AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest = AssetBatchExitWarehouseBySnRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId)
-                        .warehouseId(warehouseId).snList(assetList).build();
+                        .warehouseId(warehouseId).snList(snList).build();
             
                 // 持久化
                 handleExitWarehouse(assetExitWarehouseSaveQueryModel, detailSaveQueryModelList, assetBatchExitWarehouseBySnRequest, operator, type);
             
                 // 清理缓存
-                handleClearCache(assetList, type, tenantId, franchiseeId);
+                handleClearCache(snList, type, tenantId, franchiseeId);
             }
             return R.ok();
         } finally {
