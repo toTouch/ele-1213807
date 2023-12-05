@@ -5103,6 +5103,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private Triple<Boolean, String, Object> verifyBatchImportParams(List<ElectricityCabinetImportQuery> list) {
+        if (list.size() > 200) {
+            return Triple.of(false, "100563", "Excel模版中电柜数据不能超过200条，请检查修改后再操作");
+        }
+        
         Set<String> deviceNameSet = list.stream().map(ElectricityCabinetImportQuery::getDeviceName).collect(Collectors.toSet());
         if (deviceNameSet.size() != list.size()) {
             return Triple.of(false, "", "三元组重复");
