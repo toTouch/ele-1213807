@@ -686,7 +686,7 @@
             <if test="borrowExpireTime != null">
                 borrow_expire_time = #{borrowExpireTime},
             </if>
-            <if test="iotCardNumber != null and iotCardNumber != ''">
+            <if test="iotCardNumber != null">
                 iot_card_number = #{iotCardNumber},
             </if>
             <if test="exchangeCount != null">
