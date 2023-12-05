@@ -37,7 +37,10 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
@@ -88,6 +91,7 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -263,6 +267,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -997,7 +1004,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .uid(userInfo.getUid())
                 .realName(freeBatteryDepositQuery.getRealName())
                 .phoneNumber(freeBatteryDepositQuery.getPhoneNumber())
-                .idCard(freeBatteryDepositQuery.getIdCard()).build();
+                .idCard(freeBatteryDepositQuery.getIdCard())
+                .tenantId(TenantContextHolder.getTenantId())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
+                .build();
     
         //检查用户是否已经进行过免押操作，且已免押成功
         Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
@@ -1006,9 +1016,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
     
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
-        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());
         }
@@ -1085,7 +1095,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
     
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
 
         return Triple.of(true, null, callPxzRsp.getData());
     }
@@ -1141,9 +1151,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
-        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());
         }
@@ -1190,7 +1200,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         try {
             callPxzRsp = pxzDepositService.freeDepositOrder(query);
         } catch (Exception e) {
-            log.error("Pxz ERROR! freeDepositOrder fail! uid={},orderId={}", uid, freeDepositOrder.getOrderId(), e);
+            log.error("Pxz ERROR! freeDepositOrder fail! uid={},orderId={}", uid, freeDepositOrder.getOrderId(), e); 
             return Triple.of(false, "100401", "免押调用失败！");
         }
 
@@ -1220,7 +1230,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
     
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
 
         return Triple.of(true, null, callPxzRsp.getData());
     }
@@ -1233,13 +1243,24 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      */
     @Override
     public Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig){
-        UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(freeDepositUserDTO.getUid());
+        String orderId;
         
-        if (Objects.isNull(batteryDeposit)) {
-            return Triple.of(true, null, null);
+        //判断当前免押操作是购买换电套餐还是租车套餐
+        if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(freeDepositUserDTO.getPackageType())) {
+            //获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
+            UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(freeDepositUserDTO.getUid());
+            if (Objects.isNull(batteryDeposit) || UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT.equals(batteryDeposit.getDepositType())) {
+                return Triple.of(true, null, null);
+            }
+            orderId = batteryDeposit.getOrderId();
+        } else {
+            //获取购买租车套餐时已存在的免押订单信息
+            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.selectLastByUid(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid());
+            if(Objects.isNull(carRentalPackageDepositPayPo) || YesNoEnum.NO.getCode().equals(carRentalPackageDepositPayPo.getFreeDeposit())){
+                return Triple.of(true, null, null);
+            }
+            orderId = carRentalPackageDepositPayPo.getOrderNo();
         }
-     
-        String orderId = batteryDeposit.getOrderId();
         //检查传入的用户信息是否和前一次传入的内容一致，若用户名或身份证号存在不一致，则需要生成新码
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())

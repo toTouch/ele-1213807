@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
@@ -19,6 +22,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -38,6 +42,8 @@ import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -124,6 +130,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
     @Resource
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+    
+    @Resource
+    RedisService redisService;
 
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
@@ -650,6 +659,29 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             log.warn("CarRenalPackageDepositBizService.createFreeDeposit failed. rentalPackage type mismatch. rentalPackage type is {}", carRentalPackage.getType());
             throw new BizException("300005", "套餐不匹配");
         }
+    
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
+                .uid(userInfo.getUid())
+                .realName(freeDepositOptReq.getRealName())
+                .phoneNumber(freeDepositOptReq.getPhoneNumber())
+                .idCard(freeDepositOptReq.getIdCard())
+                .tenantId(tenantId)
+                .packageType(carRentalPackage.getType())
+                .build();
+    
+        //检查用户是否已经进行过免押操作，且已免押成功
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
+        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+            throw new BizException(useFreeDepositStatusResult.getMiddle(), useFreeDepositStatusResult.getRight().toString());
+        }
+    
+        //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
+            log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
+            return pxzCacheData.getData();
+        }
 
         // 创建押金缴纳订单
         CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(), PayTypeEnum.EXEMPT.getCode());
@@ -695,6 +727,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
 
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
+    
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
 
         return callPxzRsp.getData();
     }

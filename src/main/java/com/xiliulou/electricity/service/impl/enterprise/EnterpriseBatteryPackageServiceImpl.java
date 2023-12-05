@@ -35,6 +35,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
@@ -788,7 +789,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .uid(userInfo.getUid())
                 .realName(freeQuery.getRealName())
                 .phoneNumber(freeQuery.getPhoneNumber())
-                .idCard(freeQuery.getIdCard()).build();
+                .idCard(freeQuery.getIdCard())
+                .tenantId(TenantContextHolder.getTenantId())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
+                .build();
         
         //检查用户是否已经进行过免押操作，且已免押成功
         Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
@@ -797,9 +801,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
     
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
-        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), PxzCommonRsp.class);
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), PxzCommonRsp.class);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), pxzCacheData);
             return Triple.of(true, null, pxzCacheData.getData());
         }
@@ -865,7 +869,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
     
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp, 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp, 300 * 1000L, false);
         
         return Triple.of(true, null, callPxzRsp.getData());
         

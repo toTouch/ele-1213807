@@ -445,9 +445,15 @@ public interface CacheConstant {
     String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
     
     /**
-     * 免押订单创建缓存
+     * 电池免押订单链接缓存
      */
-    String ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "free_deposit_order_generate_lock_key:";
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "battery_free_deposit_order_generate_lock_key:";
+    
+    /**
+     * 租车免押订单链接缓存
+     */
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "car_rental_free_deposit_order_generate_lock_key:";
+    
     /**
      * 用户活跃缓存
      */
