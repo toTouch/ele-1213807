@@ -1569,6 +1569,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return count;
     }
     
+    @Slave
     @Override
     public ElectricityBatteryVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
         ElectricityBatteryBO electricityBatteryBO = electricitybatterymapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);

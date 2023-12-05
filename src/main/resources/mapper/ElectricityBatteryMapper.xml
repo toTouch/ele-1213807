@@ -1148,7 +1148,7 @@
     </select>
     
     <select id="selectListSnByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
-        select sn
+        <include refid="selectElectricityBattery"/>
         from t_electricity_battery
         where del_flag = 0 and tenant_id = #{tenantId}
         <if test="franchiseeId != null">
