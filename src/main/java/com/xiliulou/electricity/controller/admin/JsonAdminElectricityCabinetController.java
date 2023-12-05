@@ -1010,6 +1010,10 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
+        
+        if (list.size() > 200) {
+            return R.fail("100563", "Excel模版中电柜数据不能超过200条，请检查修改后再操作");
+        }
 
         return returnTripleResult(electricityCabinetService.batchImportCabinet(list));
     }
