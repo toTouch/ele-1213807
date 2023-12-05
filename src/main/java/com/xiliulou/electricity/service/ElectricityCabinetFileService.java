@@ -2,6 +2,8 @@
 package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
+
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
@@ -39,4 +41,5 @@ public interface ElectricityCabinetFileService {
     void deleteByDeviceInfo(Long otherId, Integer fileType,Integer  isUseOSS);
 
     List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer typeElectricityCabinet);
+    R batchSaveCabinetPicture(ElectricityCabinetPictureBatchSaveRequest batchSaveRequest);
 }
