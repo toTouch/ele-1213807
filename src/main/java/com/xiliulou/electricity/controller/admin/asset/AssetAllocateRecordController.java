@@ -53,6 +53,7 @@ public class AssetAllocateRecordController {
     
     /**
      * @description 资产调拨数量统计
+     * @param type 调拨资产类型 (1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 18:17:54
      * @author HeYafeng
      */
@@ -76,6 +77,7 @@ public class AssetAllocateRecordController {
     
     /**
      * @description 资产调拨分页
+     * @param type 调拨资产类型 (1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */

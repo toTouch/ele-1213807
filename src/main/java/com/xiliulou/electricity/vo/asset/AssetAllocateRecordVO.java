@@ -40,7 +40,7 @@ public class AssetAllocateRecordVO {
      *
      * @see AssetTypeEnum
      */
-    private Integer assetType;
+    private Integer type;
     
     /**
      * 旧加盟商
@@ -50,7 +50,7 @@ public class AssetAllocateRecordVO {
     /**
      * 旧门店
      */
-    private Long sourcetoreId;
+    private Long sourceStoreId;
     
     /**
      * 新加盟商

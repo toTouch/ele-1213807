@@ -33,6 +33,7 @@ public class AssetInventoryDetailController {
     
     /**
      * @description 资产盘点详情分页
+     * @param status 是否已盘点：0-未盘点,1-已盘点
      * @date 2023/11/21 13:21:30
      * @author HeYafeng
      */
@@ -62,6 +63,12 @@ public class AssetInventoryDetailController {
         return R.ok(assetInventoryDetailService.listByOrderNo(assetInventoryRequest));
     }
     
+    /**
+     * @description 资产盘点详情数量统计
+     * @param status 是否已盘点：0-未盘点,1-已盘点
+     * @date 2023/12/5 14:36:25
+     * @author HeYafeng
+     */
     @GetMapping("/admin/asset/inventory/detail/pageCount")
     public R pageCount(@RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "orderNo") String orderNo,
             @RequestParam(value = "status", required = false) Integer status) {

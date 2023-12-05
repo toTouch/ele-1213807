@@ -54,6 +54,7 @@ public class AssetInventoryController {
     /**
      * @description 资产盘点数量统计
      * @date 2023/11/21 18:17:54
+     * @param status 盘点状态(0-进行中,1-完成)
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/inventory/pageCount")
@@ -77,6 +78,7 @@ public class AssetInventoryController {
     /**
      * @description 资产盘点分页
      * @date 2023/11/21 13:15:54
+     * @param status 盘点状态(0-进行中,1-完成)
      * @author HeYafeng
      */
     @GetMapping("/admin/asset/inventory/page")
