@@ -3303,7 +3303,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<BatteryModel> modelList = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             Map<String, Integer> modelCapacityMap = Maps.newHashMap();
             if (!CollectionUtils.isEmpty(modelList)) {
-                modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()))
+                modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getCapacity()))
                         .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
             }
             
@@ -4177,7 +4177,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<BatteryModel> modelList = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         Map<String, Integer> modelCapacityMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(modelList)) {
-            modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()))
+            modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getCapacity()))
                     .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
         }
         
