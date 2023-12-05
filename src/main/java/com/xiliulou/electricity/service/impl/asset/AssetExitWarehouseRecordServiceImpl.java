@@ -149,7 +149,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
             
                 // 对snList进行有效性校验
-                snList = handleInvalidSnList(snList, franchiseeId, storeId, type);
+                snList = handleInvalidSnList(snList, type);
                 if (CollectionUtils.isEmpty(snList)) {
                     return R.fail("300814", "上传的车辆/电池/电柜编码不存在，请检测后操作");
                 }
@@ -194,7 +194,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-    private List<String> handleInvalidSnList(List<String> snList, Long franchiseeId, Long storeId, Integer type) {
+    private List<String> handleInvalidSnList(List<String> snList, Integer type) {
         // 1.去重
         List<String> uniqueList = snList.stream().distinct().collect(Collectors.toList());
         
