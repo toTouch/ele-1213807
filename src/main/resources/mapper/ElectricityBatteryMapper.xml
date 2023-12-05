@@ -437,9 +437,9 @@
     </select>
     
     <select id="selectListBatteryBySnList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select id, sn, capacity
+        select id, sn, capacity, model
         from t_electricity_battery
-        where sn in
+        where del_flag = 0 and sn in
         <foreach collection="snList" item="sn" open="(" close=")" separator=",">
             #{sn}
         </foreach>
