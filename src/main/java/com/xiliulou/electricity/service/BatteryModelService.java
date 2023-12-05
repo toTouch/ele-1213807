@@ -123,4 +123,6 @@ public interface BatteryModelService {
     Triple<Boolean, String, Object> queryBatteryModelById(Long id);
     
     List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
+    
+    List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId);
 }

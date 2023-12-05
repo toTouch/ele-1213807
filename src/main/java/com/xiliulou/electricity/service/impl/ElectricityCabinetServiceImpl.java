@@ -32,6 +32,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.CabinetMoveHistory;
 import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
@@ -686,7 +687,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
             
             Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
-            if(!CollectionUtils.isEmpty(assetWarehouseNameVOS)){
+            if (!CollectionUtils.isEmpty(assetWarehouseNameVOS)) {
                 warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
             }
             
@@ -821,7 +822,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 //设置仓库名称
-                if(finalWarehouseNameVOMap.containsKey(e.getWarehouseId())){
+                if (finalWarehouseNameVOMap.containsKey(e.getWarehouseId())) {
                     e.setWarehouseName(finalWarehouseNameVOMap.get(e.getWarehouseId()));
                 }
             });
@@ -1030,7 +1031,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
                 assignExchangeableBatteyType(exchangeableList, e);
-               // assignExchangeableVoltageAndCapacity(exchangeableList, e);
+                // assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
             
@@ -1084,18 +1085,35 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
         
         Map<String, Integer> capacityMap = Maps.newHashMap();
+        Map<String, Integer> modelCapacityMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(batteryList)) {
             capacityMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getCapacity, (k1, k2) -> k1));
+            
+            // 根据batteryType获取电池型号列表
+            List<String> batteryTypeList = batteryList.stream().map(ElectricityBattery::getModel).filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(batteryTypeList)) {
+                List<BatteryModel> modelList = batteryModelService.listBatteryModelByBatteryTypeList(batteryTypeList, TenantContextHolder.getTenantId());
+                if (!CollectionUtils.isEmpty(modelList)) {
+                    modelCapacityMap = modelList.stream().filter(item -> Objects.nonNull(item.getCapacity()))
+                            .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
+                }
+            }
         }
         
         // 获取电池的容量
         Map<String, Integer> finalCapacityMap = capacityMap;
+        Map<String, Integer> finalModelCapacityMap = modelCapacityMap;
         
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
             if (StringUtils.isNotBlank(batteryType)) {
-                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
+                Integer capacity = finalModelCapacityMap.get(batteryType);
+                if (Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) {
+                    capacity = finalCapacityMap.get(sn);
+                }
+                
+                String key = subStringVoltageAndCapacity(batteryType, capacity);
                 
                 // 统计可换电电池型号
                 if (voltageAndCapacityMap.containsKey(key)) {
@@ -1116,18 +1134,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
         
         Map<String, Integer> capacityMap = Maps.newHashMap();
+        Map<String, Integer> modelCapacityMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(batteryList)) {
             capacityMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getCapacity, (k1, k2) -> k1));
+            
+            // 根据batteryType获取电池型号列表
+            List<String> batteryTypeList = batteryList.stream().map(ElectricityBattery::getModel).filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(batteryTypeList)) {
+                List<BatteryModel> modelList = batteryModelService.listBatteryModelByBatteryTypeList(batteryTypeList, TenantContextHolder.getTenantId());
+                if (!CollectionUtils.isEmpty(modelList)) {
+                    modelCapacityMap = modelList.stream().filter(item -> Objects.nonNull(item.getCapacity()))
+                            .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
+                }
+            }
         }
         
         // 获取电池的容量
         Map<String, Integer> finalCapacityMap = capacityMap;
-        
+        Map<String, Integer> finalModelCapacityMap = modelCapacityMap;
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
             if (StringUtils.isNotBlank(batteryType)) {
-                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
+                Integer capacity = finalModelCapacityMap.get(batteryType);
+                if (Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) {
+                    capacity = finalCapacityMap.get(sn);
+                }
+                String key = subStringVoltageAndCapacity(batteryType, capacity);
                 
                 // 统计可换电电池型号
                 if (voltageAndCapacityMap.containsKey(key)) {
@@ -3266,6 +3299,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
             
+            // 获取电池型号
+            List<BatteryModel> modelList = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            Map<String, Integer> modelCapacityMap = Maps.newHashMap();
+            if (!CollectionUtils.isEmpty(modelList)) {
+                modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()))
+                        .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
+            }
+            
+            Map<String, Integer> finalModelCapacityMap = modelCapacityMap;
             electricityCabinetBoxList.forEach(item -> {
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
@@ -3293,8 +3335,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     StringBuilder voltageAndCapacity = new StringBuilder();
                     String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                     voltageAndCapacity.append(batteryV);
-                    if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
-                            electricityBattery.getCapacity())) {
+                    
+                    // 优先取电池型号列表的容量
+                    Integer capacity = finalModelCapacityMap.get(batteryType);
+                    if ((Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) && Objects.nonNull(electricityBattery)) {
+                        capacity = electricityBattery.getCapacity();
+                    }
+                    if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ZERO, capacity)) {
                         voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                     }
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
@@ -4126,6 +4173,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
         
+        // 获取电池型号
+        List<BatteryModel> modelList = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        Map<String, Integer> modelCapacityMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(modelList)) {
+            modelCapacityMap = modelList.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryType()))
+                    .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getCapacity, (k1, k2) -> k1));
+        }
+        
+        Map<String, Integer> finalModelCapacityMap = modelCapacityMap;
         electricityCabinetBoxList.forEach(item -> {
             ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
             BeanUtils.copyProperties(item, electricityCabinetBoxVO);
@@ -4147,9 +4203,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 StringBuilder voltageAndCapacity = new StringBuilder();
                 voltageAndCapacity.append(batteryV);
+                
+                // 优先取电池型号列表的容量
+                Integer capacity = finalModelCapacityMap.get(batteryType);
+                if ((Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) && Objects.nonNull(electricityBattery)) {
+                    capacity = electricityBattery.getCapacity();
+                }
+                
                 //设置电池电压 容量
-                if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
-                        electricityBattery.getCapacity())) {
+                if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ZERO, capacity)) {
                     voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                 }
                 electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
@@ -5094,14 +5156,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
-           
+            
             // 获取柜机类型
             Integer exchangeType = null;
-            if (Objects.nonNull(cabinetModel.getExchangeType())){
+            if (Objects.nonNull(cabinetModel.getExchangeType())) {
                 exchangeType = cabinetModel.getExchangeType();
             }
             
-            if (Objects.isNull(exchangeType)){
+            if (Objects.isNull(exchangeType)) {
                 exchangeType = cabinetVO.getExchangeType();
             }
             

@@ -890,7 +890,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         
         return modelList.stream().map(batteryModel -> {
             BrandNameAndBatteryVShortVO vo = new BrandNameAndBatteryVShortVO();
-            BeanUtils.copyProperties(batteryModel,vo);
+            BeanUtils.copyProperties(batteryModel, vo);
             
             // 赋值复合字段
             StringBuilder brandAndModelName = new StringBuilder();
@@ -908,5 +908,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             vo.setBrandNameAndVShort(brandAndModelName.toString());
             return vo;
         }).collect(Collectors.toList());
+    }
+    
+    public List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId) {
+        if (CollectionUtils.isEmpty(batteryTypeList)) {
+            return Lists.newArrayList();
+        }
+        return batteryModelMapper.selectListBatteryModelByBatteryTypeList(batteryTypeList, tenantId);
     }
 }

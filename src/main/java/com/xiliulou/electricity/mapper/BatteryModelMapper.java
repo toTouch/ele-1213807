@@ -69,4 +69,6 @@ public interface BatteryModelMapper extends BaseMapper<BatteryModel> {
     List<String> selectShortBatteryType(@Param("batteryTypes") List<String> batteryTypes, @Param("tenantId") Integer tenantId);
     
     List<BatteryModel> selectListBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
+    
+    List<BatteryModel> selectListBatteryModelByBatteryTypeList(@Param("batteryTypeList") List<String> batteryTypeList, @Param("tenantId") Integer tenantId);
 }
