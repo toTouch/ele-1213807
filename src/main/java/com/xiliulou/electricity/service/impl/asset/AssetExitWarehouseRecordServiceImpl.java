@@ -25,6 +25,7 @@ import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -65,30 +67,25 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Autowired
     private RedisService redisService;
-    
     @Autowired
     private AssetExitWarehouseRecordMapper assetExitWarehouseRecordMapper;
-    
     @Autowired
     private ElectricityCabinetV2Service electricityCabinetV2Service;
-    
     @Autowired
     private AssetExitWarehouseDetailService assetExitWarehouseDetailService;
-    
     @Autowired
     private ElectricityCarService electricityCarService;
-    
     @Autowired
     private FranchiseeService franchiseeService;
-    
     @Autowired
     private StoreService storeService;
-    
     @Autowired
     private AssetInventoryService assetInventoryService;
-    
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    private ElectricityCabinetService electricityCabinetService;
+    
     
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
@@ -141,15 +138,21 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
             }
         
-            if (CollectionUtils.isNotEmpty(assetExitWarehouseSaveRequest.getSnList())) {
-                List<String> snList = assetExitWarehouseSaveRequest.getSnList();
+            if (CollectionUtils.isNotEmpty(assetExitWarehouseSaveRequest.getAssetList())) {
+                List<String> assetList = assetExitWarehouseSaveRequest.getAssetList();
             
-                if (CollectionUtils.isNotEmpty(snList) && snList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
+                if (CollectionUtils.isNotEmpty(assetList) && assetList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
                     return R.fail("300813", "资产退库数量最大限制50条，请修改");
+                }
+                
+                //如果mode=1,assetList封装的是id，根据id查询sn
+                List<String> snList = null;
+                if (Objects.equals(NumberConstant.ONE, assetExitWarehouseSaveRequest.getMode())) {
+                    snList = handleListByIds(assetList, type);
                 }
             
                 // 对snList进行有效性校验
-                snList = handleInvalidSnList(snList, type);
+                handleInvalidSnList(snList, type);
                 if (CollectionUtils.isEmpty(snList)) {
                     return R.fail("300814", "上传的车辆/电池/电柜编码不存在，请检测后操作");
                 }
@@ -194,41 +197,62 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-    private List<String> handleInvalidSnList(List<String> snList, Integer type) {
-        // 1.去重
-        List<String> uniqueList = snList.stream().distinct().collect(Collectors.toList());
+    private List<String> handleListByIds(List<String> assetList, Integer type) {
+        List<String> snList = null;
+        Set<Integer> idIntegerSet = assetList.stream().map(Integer::parseInt).collect(Collectors.toSet());
+        Set<Long> idLongSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
         
-        // 2.过滤掉不存在的及已出库的
-        List<String> removeList = new ArrayList<>();
         if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-            snList.forEach(sn -> {
-                List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
-                        StockStatusEnum.UN_STOCK.getCode());
-                if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
-                    removeList.add(sn);
-                }
-            });
+            List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idIntegerSet);
+            if (CollectionUtils.isNotEmpty(electricityCabinetList)){
+                snList = electricityCabinetList.stream().map(ElectricityCabinet::getSn).collect(Collectors.toList());
+            }
         } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-            snList.forEach(sn -> {
-                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
-                        StockStatusEnum.UN_STOCK.getCode());
-                if (Objects.isNull(electricityBatteryVO)) {
-                    removeList.add(sn);
-                }
-            });
+            List<ElectricityBattery> electricityBatteryList = electricityBatteryService.selectByBatteryIds(new ArrayList<>(idLongSet));
+            if (CollectionUtils.isNotEmpty(electricityBatteryList)){
+                snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+            }
         } else {
-            snList.forEach(sn -> {
-                ElectricityCarVO electricityCarVO = electricityCarService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(), StockStatusEnum.UN_STOCK.getCode());
-                if (Objects.isNull(electricityCarVO)) {
-                    removeList.add(sn);
-                }
-            });
+            List<ElectricityCarVO> electricityCarVOList = electricityCarService.listByIds(idLongSet);
+            if (CollectionUtils.isNotEmpty(electricityCarVOList)){
+                snList = electricityCarVOList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
+            }
         }
         
-        uniqueList.removeAll(removeList);
-        
-        return uniqueList;
-        
+        return snList;
+    }
+    
+    private void handleInvalidSnList(List<String> snList, Integer type) {
+        if (CollectionUtils.isNotEmpty(snList)) {
+            // 过滤掉不存在的及已出库的
+            List<String> removeList = new ArrayList<>();
+            if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+                snList.forEach(sn -> {
+                    List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
+                            StockStatusEnum.UN_STOCK.getCode());
+                    if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+                        removeList.add(sn);
+                    }
+                });
+            } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
+                snList.forEach(sn -> {
+                    ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
+                            StockStatusEnum.UN_STOCK.getCode());
+                    if (Objects.isNull(electricityBatteryVO)) {
+                        removeList.add(sn);
+                    }
+                });
+            } else {
+                snList.forEach(sn -> {
+                    ElectricityCarVO electricityCarVO = electricityCarService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
+                            StockStatusEnum.UN_STOCK.getCode());
+                    if (Objects.isNull(electricityCarVO)) {
+                        removeList.add(sn);
+                    }
+                });
+            }
+            snList.removeAll(removeList);
+        }
     }
     
     @Transactional(rollbackFor = Exception.class)

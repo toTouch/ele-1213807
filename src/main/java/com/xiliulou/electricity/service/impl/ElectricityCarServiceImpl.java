@@ -1275,4 +1275,26 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         return electricityCarVO;
     }
+    
+    @Override
+    public List<ElectricityCarVO> listByIds(Set<Long> idSet) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
+    
+        List<ElectricityCarVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtils.copyProperties(item, electricityCarVO);
+            
+                return electricityCarVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
+    }
 }

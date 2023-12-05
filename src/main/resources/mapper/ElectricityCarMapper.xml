@@ -733,6 +733,14 @@
         <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
     </select>
     
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        where del_flag = 0 and id in
+        <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>
