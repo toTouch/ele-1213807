@@ -992,6 +992,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
             return checkUserCanFreeDepositResult;
         }
+    
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
+                .uid(userInfo.getUid())
+                .realName(freeBatteryDepositQuery.getRealName())
+                .phoneNumber(freeBatteryDepositQuery.getPhoneNumber())
+                .idCard(freeBatteryDepositQuery.getIdCard()).build();
+    
+        //检查用户是否已经进行过免押操作，且已免押成功
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
+        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+            return useFreeDepositStatusResult;
+        }
+    
+        //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
+            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, PxzCommonRsp.class);
+            log.info("found the free order result from cache. uid = {}, result = {}", uid, pxzCacheData);
+            return Triple.of(true, null, pxzCacheData.getData());
+        }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeBatteryDepositQuery);
         if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
@@ -1063,6 +1083,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+    
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp, 300 * 1000L, false);
 
         return Triple.of(true, null, callPxzRsp.getData());
     }
@@ -1221,6 +1244,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())
                 || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())) {
+            log.info("found the same user info for generate deposit link, order id = {}", orderId);
             return Triple.of(true, null, freeDepositOrder);
         }
         
