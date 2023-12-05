@@ -3342,7 +3342,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         capacity = electricityBattery.getCapacity();
                     }
                     if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ZERO, capacity)) {
-                        voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
+                        voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(capacity).append(BatteryConstant.CAPACITY_UNIT);
                     }
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
                 }
@@ -4212,7 +4212,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 //设置电池电压 容量
                 if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ZERO, capacity)) {
-                    voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
+                    voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(capacity).append(BatteryConstant.CAPACITY_UNIT);
                 }
                 electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
             }
