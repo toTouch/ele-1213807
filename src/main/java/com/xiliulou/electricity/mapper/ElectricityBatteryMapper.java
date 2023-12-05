@@ -152,4 +152,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBatteryBO> selectListEnableAllocateBattery(ElectricityBatteryEnableAllocateQueryModel queryModel);
     
     Integer updateFranchiseeId(ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel);
+    
+    ElectricityBatteryBO selectQueryEnableExitWarehouseBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
 }

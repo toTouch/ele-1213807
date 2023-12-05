@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseQueryModel;
@@ -24,7 +25,6 @@ import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -34,6 +34,7 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
@@ -114,7 +115,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 车辆退库类型门店必填
             if (AssetTypeEnum.ASSET_TYPE_CAR.getCode().equals(type)) {
                 if (Objects.isNull(storeId)) {
-                    return R.fail("300807", "退库门店不能为空");
+                    return R.fail("300807", "退库门店不存在，请刷新页面以获取最新状态后再进行操作");
                 }
             
                 Store store = storeService.queryByIdFromCache(storeId);
@@ -144,13 +145,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 List<String> snList = assetExitWarehouseSaveRequest.getSnList();
             
                 if (CollectionUtils.isNotEmpty(snList) && snList.size() > AssetConstant.ASSET_EXIT_WAREHOUSE_LIMIT_NUMBER) {
-                    return R.fail("300813", "资产退库数量最大限制50条");
+                    return R.fail("300813", "资产退库数量最大限制50条，请修改");
                 }
             
                 // 对snList进行有效性校验
-                snList = handleInvalidSnList(snList, franchiseeId, storeId, type);
+                snList = handleInvalidSnList(snList, type);
                 if (CollectionUtils.isEmpty(snList)) {
-                    return R.fail("300814", "无效的sn，请修改后再操作");
+                    return R.fail("300814", "上传的车辆/电池/电柜编码不存在，请检测后操作");
                 }
             
                 Integer tenantId = TenantContextHolder.getTenantId();
@@ -193,30 +194,32 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         }
     }
     
-    private List<String> handleInvalidSnList(List<String> snList, Long franchiseeId, Long storeId, Integer type) {
+    private List<String> handleInvalidSnList(List<String> snList, Integer type) {
         // 1.去重
         List<String> uniqueList = snList.stream().distinct().collect(Collectors.toList());
         
-        // 2.过滤掉不存在的
+        // 2.过滤掉不存在的及已出库的
         List<String> removeList = new ArrayList<>();
         if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
             snList.forEach(sn -> {
-                List<ElectricityCabinetVO> electricityCabinetVOList= electricityCabinetV2Service.queryBySnFromDb(sn, TenantContextHolder.getTenantId());
+                List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
+                        StockStatusEnum.UN_STOCK.getCode());
                 if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                     removeList.add(sn);
                 }
             });
         } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
             snList.forEach(sn -> {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(sn, TenantContextHolder.getTenantId());
-                if (Objects.isNull(electricityBattery)) {
+                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(),
+                        StockStatusEnum.UN_STOCK.getCode());
+                if (Objects.isNull(electricityBatteryVO)) {
                     removeList.add(sn);
                 }
             });
         } else {
             snList.forEach(sn -> {
-                ElectricityCar electricityCar = electricityCarService.selectBySn(sn, TenantContextHolder.getTenantId());
-                if (Objects.isNull(electricityCar)) {
+                ElectricityCarVO electricityCarVO = electricityCarService.queryEnableExitWarehouseBySn(sn, TenantContextHolder.getTenantId(), StockStatusEnum.UN_STOCK.getCode());
+                if (Objects.isNull(electricityCarVO)) {
                     removeList.add(sn);
                 }
             });

@@ -729,6 +729,12 @@
         select 1 from t_electricity_car where warehouse_id = #{wareHouseId} limit 1;
     </select>
     
+    <select id="selectQueryEnableExitWarehouseBySn" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
+        <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
+    </select>
+    
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>

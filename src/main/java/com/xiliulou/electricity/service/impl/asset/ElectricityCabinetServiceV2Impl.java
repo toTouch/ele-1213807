@@ -378,8 +378,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     }
     
     @Override
-    public List<ElectricityCabinetVO> queryBySnFromDb(String sn, Integer tenantId) {
-        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectQueryBySnFromDb(sn, tenantId);
+    public List<ElectricityCabinetVO> queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectEnableExitWarehouseBySn(sn, tenantId, stockStatus);
     
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {

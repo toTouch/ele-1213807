@@ -34,5 +34,5 @@ public interface ElectricityCabinetV2Service {
     
     List<ElectricityCabinetVO> listEnableAllocateCabinet(ElectricityCabinetEnableAllocateRequest enableAllocateRequest);
     
-    List<ElectricityCabinetVO> queryBySnFromDb(String sn, Integer tenantId);
+    List<ElectricityCabinetVO> queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
 }

@@ -1569,4 +1569,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return count;
     }
     
+    @Override
+    public ElectricityBatteryVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
+        ElectricityBatteryBO electricityBatteryBO = electricitybatterymapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
+        ElectricityBatteryVO electricityBatteryVO = null;
+        
+        if (Objects.nonNull(electricityBatteryBO)) {
+            electricityBatteryVO = new ElectricityBatteryVO();
+            BeanUtils.copyProperties(electricityBatteryBO, electricityBatteryVO);
+        }
+        return electricityBatteryVO;
+    }
+    
 }

@@ -165,7 +165,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             if(CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
                 for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
                     if(Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
-                        return R.fail("300808", "所选资产已盘点，请修改后再操作");
+                        return R.fail("300808", "您选择的电池中存在已盘点的数据，请刷新页面以获取最新状态后再进行操作");
                     }
                 }
             }
