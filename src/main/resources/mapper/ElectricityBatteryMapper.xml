@@ -1194,6 +1194,12 @@
         </if>
     </select>
     
+    <select id="selectQueryEnableExitWarehouseBySn" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
+        <include refid="selectElectricityBattery"/>
+        where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
+        <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
+    </select>
+    
     <update id="batchExitWarehouseBySn">
         update t_electricity_battery
         <set>

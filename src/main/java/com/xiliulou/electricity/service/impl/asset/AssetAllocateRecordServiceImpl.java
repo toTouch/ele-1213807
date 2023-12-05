@@ -120,7 +120,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
     
             if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
-                return R.fail("300811", "资产调拨数量最大限制50条");
+                return R.fail("300811", "资产调拨数量最大限制50条，请修改");
             }
             
             Integer tenantId = TenantContextHolder.getTenantId();
@@ -144,7 +144,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 if (Objects.equals(assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId())) {
                     log.error("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId());
-                    return R.fail("300810", "调出门店与调入门店不能相同");
+                    return R.fail("300810", "调出门店与调入门店不能相同，请修改");
                 }
     
                 if(Objects.isNull(assetAllocateRecordRequest.getSourceStoreId())) {
@@ -190,7 +190,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 //电池调拨
                 if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
                     log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId());
-                    return R.fail("300809", "调出加盟商与调入加盟商不能相同");
+                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
                 }
                 return electricityBatteryMove(assetAllocateRecordRequest, tenantId, idList, uid);
             }
@@ -202,9 +202,10 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     public R electricityCarMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Franchisee targetStoreFranchisee, Integer tenantId, List<Long> idList, Long uid) {
         List<ElectricityCar> electricityCarList = electricityCarService.queryModelIdBySidAndIds(idList, assetAllocateRecordRequest.getSourceStoreId(),
                 ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
+        
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
-            return R.fail("100262", "部分车辆不符合调拨条件，请检查后重试");
+            return R.fail("300815", "您选择的车辆编码中存在不可调拨的车辆，请刷新页面以获取最新状态后再进行操作");
         }
         
         Map<Integer, List<ElectricityCar>> collect = electricityCarList.parallelStream().collect(Collectors.groupingBy(ElectricityCar::getModelId));
@@ -287,6 +288,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         // 根据id集获取柜机信息
         Set<Integer> idSet = (idList.stream().map(Long::intValue).collect(Collectors.toSet()));
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
+    
+        if (CollectionUtils.isEmpty(electricityCabinetList) || !Objects.equals(idList.size(), electricityCabinetList.size())) {
+            log.error("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
+            return R.fail("300816", "您选择的电柜编码中存在不可调拨的电柜，请刷新页面以获取最新状态后再进行操作");
+        }
         
         List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList = electricityCabinetList.stream()
                 .map(electricityCabinet -> ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest.builder().id(electricityCabinet.getId().longValue()).tenantId(tenantId)
@@ -314,10 +320,11 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest = ElectricityBatteryEnableAllocateRequest.builder().tenantId(tenantId)
                 .franchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId()).physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).businessStatusList(businessStatusList)
                 .idList(idList).build();
+        
         List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listEnableAllocateBattery(electricityBatteryEnableAllocateRequest);
         if (CollectionUtils.isEmpty(electricityBatteryList) || !Objects.equals(idList.size(), electricityBatteryList.size())) {
             log.error("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
-            return R.fail("300812", "部分电池不符合调拨条件，请检查后重试");
+            return R.fail("300812", "您选择的电池编码中存在不可调拨的电池，请刷新页面以获取最新状态后再进行操作");
         }
         
         List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList = electricityBatteryList.stream()

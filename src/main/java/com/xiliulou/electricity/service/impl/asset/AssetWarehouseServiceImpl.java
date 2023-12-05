@@ -64,7 +64,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         try {
             Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
             if (Objects.nonNull(exists)) {
-                return R.fail("300803", "库房名称已存在");
+                return R.fail("300803", "库房名称重复，请修改后操作");
             }
         
             AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(assetWarehouseSaveOrUpdateRequest.getName())
@@ -182,7 +182,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
             Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
             if (Objects.nonNull(exists)) {
-                return R.fail("300803", "库房名称已存在");
+                return R.fail("300803", "库房名称重复，请修改后操作");
             }
         
             if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {

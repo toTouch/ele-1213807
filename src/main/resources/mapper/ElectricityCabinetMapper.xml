@@ -918,10 +918,11 @@
         </if>
     </select>
     
-    <select id="selectQueryBySnFromDb" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
+    <select id="selectEnableExitWarehouseBySn" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
         select id, name, sn, product_key, device_name, online_status, model_id
         from t_electricity_cabinet
         where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
+        <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
     </select>
     
     <update id="batchOutWarehouse" parameterType="com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO">

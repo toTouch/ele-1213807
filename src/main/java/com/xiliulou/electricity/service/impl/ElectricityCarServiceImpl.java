@@ -1251,4 +1251,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         return electricityCarMapper.existsByWarehouseId(wareHouseId);
     }
+    
+    @Override
+    public ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
+        ElectricityCarBO electricityCarBO = electricityCarMapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
+        ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+        BeanUtils.copyProperties(electricityCarBO, electricityCarVO);
+        return electricityCarVO;
+    }
 }

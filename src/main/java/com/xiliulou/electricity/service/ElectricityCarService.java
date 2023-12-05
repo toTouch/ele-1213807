@@ -151,4 +151,6 @@ public interface ElectricityCarService {
     List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId);
     
     Integer existsByWarehouseId(Long wareHouseId);
+    
+    ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
 }

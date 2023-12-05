@@ -159,4 +159,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer batchInsertCar(@Param("list") List<ElectricityCar> saveList);
     
     Integer existsByWarehouseId(Long wareHouseId);
+    
+    ElectricityCarBO selectQueryEnableExitWarehouseBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
 }

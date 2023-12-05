@@ -29,7 +29,7 @@ public class AssetAllocateRecordRequest {
      *
      * @see AssetTypeEnum
      */
-    @Range(min = 1, max = 3, message = "调拨类型不合法")
+    @Range(min = 1, max = 3, message = "调拨类型不存在")
     @NotNull(message = "调拨类型不能为空", groups = {CreateGroup.class})
     private Integer type;
     
@@ -58,7 +58,7 @@ public class AssetAllocateRecordRequest {
     /**
      * 调拨原因
      */
-    @Size(max = 350, message = "调拨原因输入过长")
+    @Size(max = 350, message = "调拨原因字数超出最大限制350字")
     private String remark;
     
     /**

@@ -134,4 +134,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest);
     
     Integer batchUpdateFranchiseeId(List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList);
+    
+    ElectricityBatteryVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
 }
