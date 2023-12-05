@@ -3,29 +3,16 @@ package com.xiliulou.electricity.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2023-06-06-14:05
+ * @date 2023-06-07-16:18
  */
 @Data
-public class InvitationActivityRecordVO {
+public class InvitationActivityRecordInfoListVO {
 
     private Long id;
-    /**
-     * 活动id
-     */
-    private Long activityId;
-    private String activityName;
-
-    /**
-     * 用户uid
-     */
-    private Long uid;
-    private String userName;
-    private String phone;
     /**
      * 分享人数
      */
@@ -40,14 +27,7 @@ public class InvitationActivityRecordVO {
     private Integer status;
 
     private BigDecimal money;
-    /**
-     * 创建时间
-     */
-    private Long createTime;
-    /**
-     * 修改时间
-     */
-    private Long updateTime;
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.jpay.util.StringUtils;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -128,9 +130,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         }
 
         return list.parallelStream().peek(item -> {
+            //查询邀请人信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            item.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
-            item.setPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
+            item.setUserName(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getName());
+            item.setPhone(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getPhone());
+            
         }).collect(Collectors.toList());
 
     }
@@ -157,11 +161,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query) {
-        List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectByPage(query);
+        List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectListByUser(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-
+    
         return list;
     }
 
@@ -171,5 +175,16 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         invitationActivityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_FAIL);
         invitationActivityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
         invitationActivityJoinHistoryMapper.updateExpired(invitationActivityJoinHistoryUpdate);
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId) {
+        return invitationActivityJoinHistoryMapper.existsByJoinUidAndActivityId(joinUid, activityId);
+    }
+    
+    @Override
+    public List<InvitationActivityJoinHistory> listByJoinUid(Long uid) {
+        return invitationActivityJoinHistoryMapper.selectListByJoinUid(uid);
     }
 }

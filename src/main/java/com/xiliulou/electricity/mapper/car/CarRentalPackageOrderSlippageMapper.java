@@ -48,7 +48,18 @@ public interface CarRentalPackageOrderSlippageMapper {
      * @return 逾期订单信息集
      */
     List<CarRentalPackageOrderSlippagePo> selectUnPaidByByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
-
+    
+    
+    /**
+     * 是否存在未缴纳的逾期订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param time 时间
+     * @param rentalPackageType 套餐类型
+     * @return 总条数
+     */
+    Integer isExitUnpaidByRentalPackageType(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("time") Long time, @Param("rentalPackageType") Integer rentalPackageType);
+    
     /**
      * 是否存在未缴纳的逾期订单
      * @param tenantId 租户ID

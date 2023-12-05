@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -1173,7 +1174,15 @@ public class ElectricityTradeOrderServiceImpl extends
     public ElectricityTradeOrder selectTradeOrderByOrderId(String orderId) {
         return baseMapper.selectTradeOrderByOrderId(orderId);
     }
-
+    
+    /**
+     * 测试使用
+     */
+    @Override
+    public ElectricityTradeOrder selectTradeOrderByOrderIdV2(String orderId) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityTradeOrder>().eq(ElectricityTradeOrder::getOrderNo,orderId).isNotNull(ElectricityTradeOrder::getChannelOrderNo).orderByDesc(ElectricityTradeOrder::getId).last("limit 1"));
+    }
+    
     @Override
     public void insert(ElectricityTradeOrder electricityTradeOrder) {
         baseMapper.insert(electricityTradeOrder);

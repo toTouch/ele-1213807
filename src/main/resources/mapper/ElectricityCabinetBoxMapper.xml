@@ -80,6 +80,9 @@
         <if test="chargeA != null">
             charge_a= #{chargeA},
         </if>
+        <if test="reportTime != null">
+            report_time= #{reportTime},
+        </if>
         b_id = #{bId},
         update_time = #{updateTime},
         battery_type = #{batteryType},

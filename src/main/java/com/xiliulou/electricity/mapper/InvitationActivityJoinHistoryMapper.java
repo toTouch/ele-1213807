@@ -69,6 +69,8 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query);
 
     Integer selectByPageCount(InvitationActivityJoinHistoryQuery query);
+    
+    List<InvitationActivityJoinHistoryVO> selectListByUser(InvitationActivityJoinHistoryQuery query);
 
     Integer updateStatusByActivityId(@Param("activityId") Long activityId, @Param("status") Integer status);
 
@@ -79,4 +81,8 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     InvitationActivityJoinHistory selectByActivityAndUid(@Param("activityId") Long activityId, @Param("uid") Long uid);
 
     Integer updateExpired(InvitationActivityJoinHistory invitationActivityJoinHistoryUpdate);
+    
+    Integer existsByJoinUidAndActivityId(@Param("joinUid") Long joinUid, @Param("activityId") Long activityId);
+    
+    List<InvitationActivityJoinHistory> selectListByJoinUid(Long uid);
 }

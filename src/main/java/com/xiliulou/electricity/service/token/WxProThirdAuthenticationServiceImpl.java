@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -103,8 +104,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId())
                 || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppSecert())) {
-            log.warn("TOKEN ERROR! not found appId,appSecret! authMap={}", authMap);
-            throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            log.warn("TOKEN ERROR! not found appId,appSecret! authMap={}, params={}, tenantId={}", authMap, electricityPayParams, tenantId);
+            throw new BizException("100002","网络不佳，请重试");
         }
 
         try {

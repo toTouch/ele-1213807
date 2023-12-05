@@ -47,6 +47,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,8 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -399,7 +402,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		//校验姓名
 		if (!Objects.equals(bankCard.getEncBindUserName(), query.getName())) {
 			log.error("phone is not equal! uName:{} ,qName:{},uid:{}", bankCard.getEncBindUserName(), query.getName(), query.getUid());
-			return R.fail("PAY_TRANSFER.0010", "姓名与本人姓名不符");
+			return R.fail("PAY_TRANSFER.0010", "姓名与绑定人不符");
 		}
 
 		if (!bankCard.getEncBindIdNumber().contains(query.getIdNumber())) {
@@ -564,8 +567,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			handlingFee = BigDecimal.valueOf(1);
 		}
 		if (amount > 1000 && amount <= 25000) {
-			//TODO 这里有问题待处理，遇到大目金额时会报错，Non-terminating decimal expansion; no exact representable decimal result
-			handlingFee = BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(1.001)).multiply(BigDecimal.valueOf(0.001));
+			handlingFee = BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(1.001), new MathContext(2, RoundingMode.CEILING)).multiply(BigDecimal.valueOf(0.001));
 		}
 		return Double.valueOf(handlingFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 	}

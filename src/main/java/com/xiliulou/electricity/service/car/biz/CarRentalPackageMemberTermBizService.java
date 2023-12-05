@@ -9,6 +9,14 @@ import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
  * @author xiaohui.song
  **/
 public interface CarRentalPackageMemberTermBizService {
+    
+    /**
+     * 校验会员状态，是否能够租换电<br />
+     * @param tenantId 租户ID
+     * @param uid 用户UID
+     * @return true(正常)、false(异常)
+     */
+    boolean verifyMemberSwapBattery(Integer tenantId, Long uid);
 
     /**
      * 增加余量次数<br />
