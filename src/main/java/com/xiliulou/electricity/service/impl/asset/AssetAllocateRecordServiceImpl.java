@@ -360,7 +360,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     
         // 封装电池调拨记录
         if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
-            assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+            assetAllocateRecordSaveRequest.setType(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
     
             detailSaveRequestList = electricityBatteryList.stream()
                     .map(item -> AssetAllocateDetailSaveRequest.builder().orderNo(orderNo).tenantId(tenantId).assetId(item.getId()).sn(item.getSn())
@@ -368,7 +368,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                             .delFlag(AssetConstant.DEL_NORMAL).createTime(time).updateTime(time).build()).collect(Collectors.toList());
         } else if (CollectionUtils.isNotEmpty(electricityCabinetList)) {
             // 封装电柜调拨记录
-            assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode());
+            assetAllocateRecordSaveRequest.setType(AssetTypeEnum.ASSET_TYPE_CABINET.getCode());
             assetAllocateRecordSaveRequest.setOldStoreId(assetAllocateRecordRequest.getSourceStoreId());
             assetAllocateRecordSaveRequest.setNewStoreId(assetAllocateRecordRequest.getTargetStoreId());
         
@@ -378,7 +378,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                             .updateTime(time).build()).collect(Collectors.toList());
         } else {
             // 封装车辆调拨记录
-            assetAllocateRecordSaveRequest.setAssetType(AssetTypeEnum.ASSET_TYPE_CAR.getCode());
+            assetAllocateRecordSaveRequest.setType(AssetTypeEnum.ASSET_TYPE_CAR.getCode());
             assetAllocateRecordSaveRequest.setOldStoreId(assetAllocateRecordRequest.getSourceStoreId());
             assetAllocateRecordSaveRequest.setNewStoreId(assetAllocateRecordRequest.getTargetStoreId());
         
@@ -427,7 +427,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             
                 if (Objects.nonNull(item.getOldStoreId())) {
                     Store oldStore = storeService.queryByIdFromCache(item.getOldStoreId());
-                    assetAllocateRecordVO.setSourcetoreId(item.getOldStoreId());
+                    assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
                     assetAllocateRecordVO.setSourceStoreName(oldStore.getName());
                 }
                 if (Objects.nonNull(item.getNewStoreId())) {

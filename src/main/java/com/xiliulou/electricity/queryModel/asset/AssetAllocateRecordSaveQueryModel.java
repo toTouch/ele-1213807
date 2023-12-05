@@ -37,7 +37,7 @@ public class AssetAllocateRecordSaveQueryModel {
      *
      * @see AssetTypeEnum
      */
-    private Integer assetType;
+    private Integer type;
     
     /**
      * 旧加盟商

@@ -53,6 +53,7 @@ public class AssetExitWarehouseRecordController {
     
     /**
      * @description 资产退库数量统计
+     * @param type 退库类型(1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 18:17:54
      * @author HeYafeng
      */
@@ -81,6 +82,7 @@ public class AssetExitWarehouseRecordController {
     
     /**
      * @description 资产退库分页
+     * @param type 退库类型(1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */

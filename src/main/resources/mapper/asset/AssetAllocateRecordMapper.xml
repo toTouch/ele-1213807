@@ -6,7 +6,7 @@
         id,
         order_no,
         tenant_id,
-        asset_type,
+        type,
         old_franchisee_id,
         old_store_id,
         new_franchisee_id,
@@ -24,7 +24,7 @@
         <trim prefix="(" suffix=")" suffixOverrides=",">
             order_no,
             tenant_id,
-            asset_type,
+            type,
             old_franchisee_id,
             old_store_id,
             new_franchisee_id,
@@ -38,7 +38,7 @@
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{orderNo},
             #{tenantId},
-            #{assetType},
+            #{type},
             #{oldFranchiseeId},
             #{oldStoreId},
             #{newFranchiseeId},
