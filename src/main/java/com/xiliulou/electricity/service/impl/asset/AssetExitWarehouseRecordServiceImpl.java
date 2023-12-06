@@ -149,19 +149,23 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     //根据sn退库，通过sn获取id进行退库
                     if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
                         List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.listBySnList(assetList, tenantId, franchiseeId);
-                        if (CollectionUtils.isNotEmpty(electricityCabinetVOList)) {
-                            idIntegerSet = electricityCabinetVOList.stream().map(ElectricityCabinetVO::getId).collect(Collectors.toSet());
+                        if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+                            return R.fail("300814", "上传的电柜编码不存在，请检测后操作");
                         }
+                        idIntegerSet = electricityCabinetVOList.stream().map(ElectricityCabinetVO::getId).collect(Collectors.toSet());
+                        
                     } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
                         List<ElectricityBattery> electricityBatteryList = electricityBatteryService.listBatteryBySnList(assetList);
-                        if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
-                            idLongSet = electricityBatteryList.stream().map(ElectricityBattery::getId).collect(Collectors.toSet());
+                        if (CollectionUtils.isEmpty(electricityBatteryList)) {
+                            return R.fail("300817", "上传的电池编码不存在，请检测后操作");
                         }
+                        idLongSet = electricityBatteryList.stream().map(ElectricityBattery::getId).collect(Collectors.toSet());
                     } else {
                         List<ElectricityCarVO> electricityCarVOList = electricityCarService.listBySnList(assetList, tenantId, franchiseeId);
-                        if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
-                            idLongSet = electricityCarVOList.stream().map(ElectricityCarVO::getId).collect(Collectors.toSet());
+                        if (CollectionUtils.isEmpty(electricityCarVOList)) {
+                            return R.fail("300818", "上传的车辆编码不存在，请检测后操作");
                         }
+                        idLongSet = electricityCarVOList.stream().map(ElectricityCarVO::getId).collect(Collectors.toSet());
                     }
                 }
                 
@@ -175,7 +179,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 
                 Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
                 if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING) || CollectionUtils.isEmpty(idIntegerSet)) {
+                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                         return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
                     }
                     // 根据id查询可退库的电柜
@@ -188,7 +192,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     snList = electricityCabinetVOList.stream().map(ElectricityCabinetVO::getSn).collect(Collectors.toList());
                     
                 } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING) || CollectionUtils.isEmpty(idLongSet)) {
+                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                         return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
                     }
                     // 根据id查询可退库的电池
@@ -201,7 +205,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     snList = electricityBatteryVOList.stream().map(ElectricityBatteryVO::getSn).collect(Collectors.toList());
                     
                 } else {
-                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING) || CollectionUtils.isEmpty(idLongSet)) {
+                    if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
                         return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
                     }
                     
