@@ -851,7 +851,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public Triple<Boolean, String, Object> queryBatteryModelById(Long id) {
         BatteryModel batteryModel = this.queryByIdFromDB(id);
-        if (Objects.isNull(batteryModel)) {
+        if (Objects.isNull(batteryModel) || !Objects.equals(batteryModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100560", "电池型号不存在");
         }
         
@@ -875,7 +875,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
                 brandModelVo.setStandardV(Integer.parseInt(standV));
             }
         } catch (Exception e) {
-            return Triple.of(true, null, brandModelVo);
+            return Triple.of(true, null, null);
         }
         
         return Triple.of(true, null, brandModelVo);

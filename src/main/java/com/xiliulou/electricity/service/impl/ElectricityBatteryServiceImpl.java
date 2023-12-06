@@ -246,7 +246,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    @Transactional
     public R saveElectricityBatteryV2(BatteryAddRequest batteryAddRequest) {
         
         TokenUser user = SecurityUtils.getUserInfo();

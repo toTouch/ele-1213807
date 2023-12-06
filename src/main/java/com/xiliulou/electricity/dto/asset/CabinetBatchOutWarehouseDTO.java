@@ -69,4 +69,6 @@ public class CabinetBatchOutWarehouseDTO {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
+    
+    private Integer tenantId;
 }

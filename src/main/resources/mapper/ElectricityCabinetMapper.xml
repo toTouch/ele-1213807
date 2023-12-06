@@ -963,7 +963,7 @@
             </if>
             stock_status = 1
         </set>
-        where id in
+        where tenant_id = #{tenantId} and id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>

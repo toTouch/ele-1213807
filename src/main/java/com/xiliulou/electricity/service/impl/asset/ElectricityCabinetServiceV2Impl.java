@@ -252,6 +252,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         BeanUtil.copyProperties(batchOutWarehouseRequest,batchOutWareHouseDTO);
         batchOutWareHouseDTO.setUpdateTime(System.currentTimeMillis());
         batchOutWareHouseDTO.setBusinessTime(businessTime);
+        batchOutWareHouseDTO.setTenantId(TenantContextHolder.getTenantId());
         
         // 名称需要批量修改的（如果没有名称，则统一修改为当前传入的name值）
         if (CollectionUtils.isNotEmpty(emptyNameIdList)) {
