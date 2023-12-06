@@ -487,7 +487,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		// 判断当前租户是否允许线下提现
 		ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
 		if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
-			return R.fail("100422","当前租户不允许线下提现。");
+			log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
+			return R.fail("100422","系统设置中-提现方式（线下）未生效");
 		}
 		
 		WithdrawRecordQueryModel withdrawRecordQueryModel = WithdrawRecordQueryModel.builder().tenantId(tenantId).idList(batchHandleWithdrawRequest.getIdList()).build();
