@@ -1252,6 +1252,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok();
     }
     
+    @Slave
     @Override
     public List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId) {
         return electricityCarMapper.queryModelIdBySidAndIds(carIds, sourceSid, ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
@@ -1264,6 +1265,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.existsByWarehouseId(wareHouseId);
     }
     
+    @Slave
     @Override
     public ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
         ElectricityCarBO electricityCarBO = electricityCarMapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
@@ -1274,5 +1276,28 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             BeanUtils.copyProperties(electricityCarBO, electricityCarVO);
         }
         return electricityCarVO;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listByIds(Set<Long> idSet) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
+    
+        List<ElectricityCarVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtils.copyProperties(item, electricityCarVO);
+            
+                return electricityCarVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
     }
 }

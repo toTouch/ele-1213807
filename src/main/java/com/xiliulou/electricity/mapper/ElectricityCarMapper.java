@@ -17,6 +17,7 @@ import com.xiliulou.electricity.vo.ElectricityCarVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCar)表数据库访问层
@@ -161,4 +162,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer existsByWarehouseId(Long wareHouseId);
     
     ElectricityCarBO selectQueryEnableExitWarehouseBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
+    
+    List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
 }

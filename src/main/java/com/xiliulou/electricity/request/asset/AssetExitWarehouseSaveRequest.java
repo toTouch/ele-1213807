@@ -44,13 +44,18 @@ public class AssetExitWarehouseSaveRequest {
     /**
      * 电池/车辆/电柜 编号
      */
-    @NotEmpty(message = "退库编号不能为空", groups = {CreateGroup.class})
-    private List<String> snList;
+    @NotEmpty(message = "退库编号/ID不能为空", groups = {CreateGroup.class})
+    private List<String> assetList;
     
     /**
      * 退库库房id
      */
     @NotNull(message = "退库库房不能为空", groups = {CreateGroup.class})
     private Long warehouseId;
+    
+    /**
+     * 1-assetList是id集合，2-assetList是sn集合
+     */
+    private Integer mode;
     
 }

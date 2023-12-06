@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImp
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -153,4 +154,6 @@ public interface ElectricityCarService {
     Integer existsByWarehouseId(Long wareHouseId);
     
     ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
+    
+    List<ElectricityCarVO> listByIds(Set<Long> idSet);
 }
