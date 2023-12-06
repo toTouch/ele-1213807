@@ -119,10 +119,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1021,7 +1023,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, result);
+            return Triple.of(true, null, UriUtils.decode(result, StandardCharsets.UTF_8));
         }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeBatteryDepositQuery);
@@ -1096,7 +1098,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
     
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp.getData(), 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(callPxzRsp.getData(),StandardCharsets.UTF_8), 300 * 1000L, false);
     
         return Triple.of(true, null, callPxzRsp.getData());
     }
@@ -1159,7 +1161,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
             log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, result);
+            return Triple.of(true, null, UriUtils.decode(result, StandardCharsets.UTF_8));
         }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
@@ -1235,7 +1237,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         log.info("generate free deposit data from pxz for battery package, data = {}", callPxzRsp);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp.getData(), 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(callPxzRsp.getData(),StandardCharsets.UTF_8), 300 * 1000L, false);
 
         return Triple.of(true, null, callPxzRsp.getData());
     }
