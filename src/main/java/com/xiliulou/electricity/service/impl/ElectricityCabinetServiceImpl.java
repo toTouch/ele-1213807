@@ -978,8 +978,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //可换电数量
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
-                assignExchangeableBatteyType(exchangeableList, e);
-               // assignExchangeableVoltageAndCapacity(exchangeableList, e);
+                assignExchangeableBatteryType(exchangeableList, e);
+                // assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
             
@@ -1005,13 +1005,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private void assignExchangeableBatteyType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
+    private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
         HashMap<String, Integer> batteryTypeMap = new HashMap<>();
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
-            if (StringUtils.isNotBlank(batteryType)) {
+            if (Objects.nonNull(batteryType)) {
                 String key = subStringButteryType(batteryType);
-                if (StringUtils.isNotBlank(key)) {
+                if (StringUtils.equals(StringUtils.EMPTY, batteryType)) {
+                    key = BatteryConstant.DEFAULT_MODEL;
+                }
+                if (Objects.nonNull(key)) {
                     //统计可换电电池型号
                     if (batteryTypeMap.containsKey(key)) {
                         Integer count = batteryTypeMap.get(key);
@@ -1043,7 +1046,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
-            if (StringUtils.isNotBlank(batteryType)) {
+            if (Objects.nonNull(batteryType)) {
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 
                 // 统计可换电电池型号
@@ -1075,7 +1078,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
-            if (StringUtils.isNotBlank(batteryType)) {
+            if (Objects.nonNull(batteryType)) {
                 String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
                 
                 // 统计可换电电池型号
@@ -4128,7 +4131,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
         StringBuilder voltageAndCapacity = new StringBuilder();
-        if (StringUtils.isNotBlank(batteryType)) {
+        
+        if (Objects.nonNull(batteryType)) {
+            
+            // 如果电池型号解析不出来 则默认标准型号
+            if (StringUtils.equals(StringUtils.EMPTY, batteryType)) {
+                return BatteryConstant.DEFAULT_MODEL;
+            }
+            
             String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
             voltageAndCapacity.append(batteryV);
         }
@@ -4593,7 +4603,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //可换电数量
                 List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(exchangeableList)) {
-                    assignExchangeableBatteyType(exchangeableList, item);
+                    assignExchangeableBatteryType(exchangeableList, item);
                     assignExchangeableVoltageAndCapacity(exchangeableList, item);
                 }
                 long exchangeableNumber = exchangeableList.size();
