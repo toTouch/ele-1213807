@@ -803,9 +803,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            PxzCommonRsp<String> pxzCacheData =  redisService.getWithHash(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), PxzCommonRsp.class);
-            log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), pxzCacheData);
-            return Triple.of(true, null, pxzCacheData.getData());
+            String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+            log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
+            return Triple.of(true, null, result);
         }
     
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeQuery);
@@ -867,10 +867,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
-    
-        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp, 300 * 1000L, false);
         
+        log.info("generate free deposit data from pxz for enterprise battery package, data = {}", callPxzRsp);
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp.getData(), 300 * 1000L, false);
+    
         return Triple.of(true, null, callPxzRsp.getData());
         
     }
