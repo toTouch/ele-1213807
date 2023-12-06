@@ -105,5 +105,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(@Param("idSet") Set<Integer> idSet, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
     
-    List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId);
+    List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 }

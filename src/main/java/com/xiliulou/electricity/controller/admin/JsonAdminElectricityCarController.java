@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminElectricityCarController {
+public class JsonAdmintroller {
     /**
      * 服务对象
      */

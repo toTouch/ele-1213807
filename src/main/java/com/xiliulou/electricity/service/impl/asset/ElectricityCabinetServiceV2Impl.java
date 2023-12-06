@@ -397,8 +397,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Slave
     @Override
-    public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId) {
-        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListBySnList(snList, tenantId);
+    public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
     
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {

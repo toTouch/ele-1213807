@@ -920,6 +920,9 @@
         from t_electricity_cabinet
         <where>
             del_flag=0 and tenant_id = #{tenantId}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
             <if test="snList != null and snList.size()>0">
                 and sn in
                 <foreach collection="snList" item="sn" index="index" open="(" close=")" separator=",">
