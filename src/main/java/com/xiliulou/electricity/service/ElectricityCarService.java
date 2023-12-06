@@ -155,5 +155,5 @@ public interface ElectricityCarService {
     
     List<ElectricityCarVO> listByIds(Set<Long> idSet);
     
-    List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Integer stockStatus);
+    List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
 }

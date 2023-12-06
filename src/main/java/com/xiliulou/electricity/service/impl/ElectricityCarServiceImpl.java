@@ -1290,8 +1290,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Slave
     @Override
-    public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Integer stockStatus) {
-        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, stockStatus);
+    public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, franchiseeId, stockStatus);
     
         List<ElectricityCarVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {

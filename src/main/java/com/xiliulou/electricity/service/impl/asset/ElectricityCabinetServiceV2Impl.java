@@ -374,8 +374,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Slave
     @Override
-    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Integer> idSet, Integer tenantId, Integer stockStatus) {
-        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(idSet, tenantId, stockStatus);
+    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Integer> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(idSet, tenantId, franchiseeId, stockStatus);
         
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {

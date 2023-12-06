@@ -163,5 +163,5 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
     
-    List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("stockStatus")Integer stockStatus);
+    List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus")Integer stockStatus);
 }

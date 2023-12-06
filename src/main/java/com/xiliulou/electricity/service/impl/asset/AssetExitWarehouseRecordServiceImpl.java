@@ -183,7 +183,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
                     }
                     // 根据id查询可退库的电柜
-                    electricityCabinetVOList = electricityCabinetV2Service.listEnableExitWarehouseCabinet(idIntegerSet, tenantId, StockStatusEnum.UN_STOCK.getCode());
+                    electricityCabinetVOList = electricityCabinetV2Service.listEnableExitWarehouseCabinet(idIntegerSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                         return R.fail("300814", "上传的电柜编码不存在，请检测后操作");
                     }
@@ -196,7 +196,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
                     }
                     // 根据id查询可退库的电池
-                    electricityBatteryVOList = electricityBatteryService.listEnableExitWarehouseBattery(idLongSet, tenantId, StockStatusEnum.UN_STOCK.getCode());
+                    electricityBatteryVOList = electricityBatteryService.listEnableExitWarehouseBattery(idLongSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityBatteryVOList)) {
                         return R.fail("300817", "上传的电池编码不存在，请检测后操作");
                     }
@@ -210,7 +210,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     }
                     
                     // 根据id查询可退库的车辆
-                    electricityCarVOList = electricityCarService.listEnableExitWarehouseCar(idLongSet, tenantId, StockStatusEnum.UN_STOCK.getCode());
+                    electricityCarVOList = electricityCarService.listEnableExitWarehouseCar(idLongSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityCarVOList)) {
                         return R.fail("300818", "上传的车辆编码不存在，请检测后操作");
                     }
