@@ -1021,9 +1021,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, UriUtils.decode(result, StandardCharsets.UTF_8));
+            return Triple.of(true, null, result);
         }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeBatteryDepositQuery);
@@ -1159,9 +1159,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
             log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, UriUtils.decode(result, StandardCharsets.UTF_8));
+            return Triple.of(true, null, result);
         }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
