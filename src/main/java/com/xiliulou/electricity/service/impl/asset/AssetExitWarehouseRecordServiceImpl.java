@@ -23,7 +23,6 @@ import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -89,10 +88,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
     
-    @Autowired
-    private ElectricityCabinetService electricityCabinetService;
-    
-    
     @Override
     public R save(AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK + operator, "1", 3 * 1000L, false);
@@ -144,34 +139,39 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     return R.fail("300813", "资产退库数量最大限制50条，请修改");
                 }
                 
-                List<ElectricityCabinetVO> electricityCabinetVOList = null;
-                List<ElectricityBatteryVO> electricityBatteryVOList = null;
-                List<ElectricityCarVO> electricityCarVOList = null;
-                
-                // assetList是sn集合
-                if (Objects.equals(NumberConstant.TWO, assetExitWarehouseSaveRequest.getMode())) {
+                Set<Integer> idIntegerSet = null;
+                Set<Long> idLongSet = null;
+                //根据id退库
+                if (Objects.equals(NumberConstant.ONE, assetExitWarehouseSaveRequest.getMode())) {
+                    idIntegerSet = assetList.stream().map(Integer::parseInt).collect(Collectors.toSet());
+                    idLongSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
+                } else {
+                    //根据sn退库，通过sn获取id进行退库
                     if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-                        electricityCabinetVOList = electricityCabinetV2Service.listBySnList(assetList, tenantId);
+                        List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.listBySnList(assetList, tenantId);
+                        if (CollectionUtils.isNotEmpty(electricityCabinetVOList)) {
+                            idIntegerSet = electricityCabinetVOList.stream().map(ElectricityCabinetVO::getId).collect(Collectors.toSet());
+                        }
                     } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
                         List<ElectricityBattery> electricityBatteryList = electricityBatteryService.listBatteryBySnList(assetList);
                         if (CollectionUtils.isNotEmpty(electricityBatteryList)) {
-                            electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
-                                ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
-                                BeanUtils.copyProperties(item, electricityBatteryVO);
-                                return electricityBatteryVO;
-                            }).collect(Collectors.toList());
+                            idLongSet = electricityBatteryList.stream().map(ElectricityBattery::getId).collect(Collectors.toSet());
                         }
                     } else {
-                        electricityCarVOList = electricityCarService.listBySnList(assetList, tenantId, null);
+                        List<ElectricityCarVO> electricityCarVOList = electricityCarService.listBySnList(assetList, tenantId, null);
+                        if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
+                            idLongSet = electricityCarVOList.stream().map(ElectricityCarVO::getId).collect(Collectors.toSet());
+                        }
                     }
                 }
                 
                 // 根据id进行退库
-                Set<Integer> idIntegerSet = assetList.stream().map(Integer::parseInt).collect(Collectors.toSet());
-                Set<Long> idLongSet = assetList.stream().map(Long::parseLong).collect(Collectors.toSet());
+                List<ElectricityCabinetVO> electricityCabinetVOList = null;
+                List<ElectricityBatteryVO> electricityBatteryVOList = null;
+                List<ElectricityCarVO> electricityCarVOList = null;
                 List<Integer> idIntegerList = null;
                 List<Long> idLongList = null;
-                List<String> snList = null;
+                List<String> snList;
                 
                 Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
                 if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
