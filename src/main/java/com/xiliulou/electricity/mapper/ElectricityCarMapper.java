@@ -9,7 +9,7 @@ import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.query.car.CarDataQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
@@ -150,7 +150,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     List<ElectricityCarBO> selectListByFranchiseeIdAndStockStatus(ElectricityCarListSnByFranchiseeQueryModel queryModel);
     
-    Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
+    Integer batchExitWarehouse(AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel);
     
     Integer existOutWarehouse(@Param("idList") List<Integer> idList, @Param("tenantId") Integer tenantId);
     
@@ -161,7 +161,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     Integer existsByWarehouseId(Long wareHouseId);
     
-    ElectricityCarBO selectQueryEnableExitWarehouseBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
-    
     List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
+    
+    List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("stockStatus")Integer stockStatus);
 }

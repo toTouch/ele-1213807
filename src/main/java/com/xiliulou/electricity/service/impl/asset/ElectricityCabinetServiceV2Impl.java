@@ -15,11 +15,11 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
-import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
-import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
@@ -48,6 +48,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -191,7 +192,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             }
         }
         
-        BeanUtil.copyProperties(outWarehouseRequest,electricityCabinet);
+        BeanUtil.copyProperties(outWarehouseRequest, electricityCabinet);
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         
@@ -226,7 +227,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         if (Objects.nonNull(batchOutWarehouseRequest.getBusinessTimeType())) {
             // 设置全天
             if (Objects.equals(batchOutWarehouseRequest.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
-                businessTime =ElectricityCabinetAddAndUpdate.ALL_DAY;
+                businessTime = ElectricityCabinetAddAndUpdate.ALL_DAY;
             }
             
             // 自定义时间段
@@ -249,7 +250,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 .collect(Collectors.toList());
         
         CabinetBatchOutWarehouseDTO batchOutWareHouseDTO = new CabinetBatchOutWarehouseDTO();
-        BeanUtil.copyProperties(batchOutWarehouseRequest,batchOutWareHouseDTO);
+        BeanUtil.copyProperties(batchOutWarehouseRequest, batchOutWareHouseDTO);
         batchOutWareHouseDTO.setUpdateTime(System.currentTimeMillis());
         batchOutWareHouseDTO.setBusinessTime(businessTime);
         batchOutWareHouseDTO.setTenantId(TenantContextHolder.getTenantId());
@@ -312,24 +313,17 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest) {
+    public R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
         
         if (!redisService.setNx(CacheConstant.ELE_CABINET_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
-        BeanUtil.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
-        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
+        AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
+        BeanUtil.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
+        assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
         
-        return R.ok(electricityCabinetMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
-    }
-    
-    @Slave
-    @Override
-    public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
-        
-        return electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
+        return R.ok(electricityCabinetMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel));
     }
     
     @Override
@@ -378,9 +372,33 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         return rspList;
     }
     
+    @Slave
     @Override
-    public List<ElectricityCabinetVO> queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
-        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectEnableExitWarehouseBySn(sn, tenantId, stockStatus);
+    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Integer> idSet, Integer tenantId, Integer stockStatus) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(idSet, tenantId, stockStatus);
+        
+        List<ElectricityCabinetVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+            rspList = electricityCabinetBOList.stream().map(item -> {
+                ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+                BeanUtil.copyProperties(item, electricityCabinetVO);
+                
+                return electricityCabinetVO;
+                
+            }).collect(Collectors.toList());
+        }
+        
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+        
+        return rspList;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId) {
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListBySnList(snList, tenantId);
     
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
@@ -398,7 +416,6 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         }
     
         return rspList;
-    
     }
     
 }

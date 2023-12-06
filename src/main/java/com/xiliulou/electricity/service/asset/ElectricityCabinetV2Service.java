@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
@@ -12,6 +12,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ElectricityCabinetV2Service {
     Triple<Boolean, String, Object> save(ElectricityCabinetAddRequest electricityCabinetAddRequest);
@@ -26,13 +27,13 @@ public interface ElectricityCabinetV2Service {
     
     List<ElectricityCabinetVO> listByFranchiseeIdAndStockStatus(ElectricityCabinetSnSearchRequest electricityCabinetSnSearchRequest);
     
-    R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest);
-    
-    List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
+    R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
     
     Integer batchUpdateFranchiseeIdAndStoreId(List<ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest> batchUpdateFranchiseeAndStoreRequestList);
     
     List<ElectricityCabinetVO> listEnableAllocateCabinet(ElectricityCabinetEnableAllocateRequest enableAllocateRequest);
     
-    List<ElectricityCabinetVO> queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
+    List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Integer> idSet, Integer tenantId, Integer stockStatus);
+    
+    List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId);
 }

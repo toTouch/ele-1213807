@@ -50,7 +50,6 @@ public class AssetExitWarehouseSaveRequest {
     /**
      * 退库库房id
      */
-    @NotNull(message = "退库库房不能为空", groups = {CreateGroup.class})
     private Long warehouseId;
     
     /**
