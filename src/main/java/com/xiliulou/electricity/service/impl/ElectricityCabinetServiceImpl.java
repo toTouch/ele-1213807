@@ -3237,7 +3237,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setBatteryType(null);
                 }
                 
-                if (StringUtils.isNotBlank(item.getBatteryType())) {
+                if (Objects.nonNull(item.getBatteryType())) {
                     String batteryType = item.getBatteryType();
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
@@ -4097,7 +4097,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
             }
             
-            if (StringUtils.isNotBlank(item.getBatteryType())) {
+            if (Objects.nonNull(item.getBatteryType())) {
                 String batteryType = item.getBatteryType();
                 electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                 String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
