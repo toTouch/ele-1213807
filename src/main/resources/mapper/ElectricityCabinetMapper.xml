@@ -986,9 +986,7 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="warehouseId != null">
-                warehouse_id = #{warehouseId},
-            </if>
+            warehouse_id = #{warehouseId}
         </set>
         <where>
             <if test="tenantId != null">
