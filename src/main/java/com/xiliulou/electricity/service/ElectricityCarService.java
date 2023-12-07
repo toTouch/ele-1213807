@@ -143,7 +143,7 @@ public interface ElectricityCarService {
     
     List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest);
     
-    R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
+    Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
     
     R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest);
     

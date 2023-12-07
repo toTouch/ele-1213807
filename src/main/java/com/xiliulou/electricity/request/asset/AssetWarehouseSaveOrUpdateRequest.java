@@ -57,7 +57,7 @@ public class AssetWarehouseSaveOrUpdateRequest {
     /**
      * 联系方式
      */
-    @Length(max = 50, message = "名称字数超出最大限制50字", groups = {CreateGroup.class, UpdateGroup.class})
+    @Length(max = 50, message = "联系方式超出最大限制50字", groups = {CreateGroup.class, UpdateGroup.class})
     private String managerPhone;
     
 }

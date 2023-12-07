@@ -25,9 +25,7 @@ public class AssetBatchExitWarehouseQueryModel {
     
     private Long warehouseId;
     
-    List<Integer> idIntegerList;
-    
-    List<Long> idLongList;
+    List<Long> idList;
     
     private Long updateTime;
 

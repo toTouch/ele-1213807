@@ -1500,17 +1500,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
-        
-        if (!redisService.setNx(CacheConstant.ELE_BATTERY_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
+    public Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
         AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
         BeanUtils.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
         assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
         
-        return R.ok(electricitybatterymapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel));
+        return electricitybatterymapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel);
     }
     
     /**

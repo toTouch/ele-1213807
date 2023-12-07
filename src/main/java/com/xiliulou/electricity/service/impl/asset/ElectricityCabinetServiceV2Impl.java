@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -313,17 +312,12 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
-        
-        if (!redisService.setNx(CacheConstant.ELE_CABINET_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
+    public Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
         AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
         BeanUtil.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
         assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
         
-        return R.ok(electricityCabinetMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel));
+        return electricityCabinetMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel);
     }
     
     @Override
@@ -374,7 +368,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Slave
     @Override
-    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Integer> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+    public List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListEnableExitWarehouseCabinet(idSet, tenantId, franchiseeId, stockStatus);
         
         List<ElectricityCabinetVO> rspList = null;

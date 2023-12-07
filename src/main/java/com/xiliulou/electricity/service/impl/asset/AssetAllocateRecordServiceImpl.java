@@ -288,7 +288,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         // 根据id集获取柜机信息
         Set<Integer> idSet = (idList.stream().map(Long::intValue).collect(Collectors.toSet()));
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
-    
+        
         if (CollectionUtils.isEmpty(electricityCabinetList) || !Objects.equals(idList.size(), electricityCabinetList.size())) {
             log.error("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
             return R.fail("300816", "您选择的电柜编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
@@ -303,7 +303,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         if (CollectionUtils.isNotEmpty(batchUpdateFranchiseeAndStoreRequestList)) {
             Integer count = electricityCabinetV2Service.batchUpdateFranchiseeIdAndStoreId(batchUpdateFranchiseeAndStoreRequestList);
             
-            if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
+            if (!Objects.equals(count, NumberConstant.ZERO)) {
                 // 异步记录
                 executorService.execute(() -> {
                     saveAllocateRecords(assetAllocateRecordRequest, null, electricityCabinetList, null, tenantId, uid);
@@ -333,8 +333,8 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 .collect(Collectors.toList());
         
         Integer count = electricityBatteryService.batchUpdateFranchiseeId(batchUpdateFranchiseeRequestList);
-        
-        if (Objects.nonNull(count) && count > NumberConstant.ZERO) {
+    
+        if (!Objects.equals(count, NumberConstant.ZERO)) {
             // 异步记录
             executorService.execute(() -> {
                 saveAllocateRecords(assetAllocateRecordRequest, electricityBatteryList, null, null, tenantId, uid);

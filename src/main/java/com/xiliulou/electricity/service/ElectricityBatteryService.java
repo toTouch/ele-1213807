@@ -130,7 +130,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     Integer existsByWarehouseId(Long wareHouseId);
     
-    R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
+    Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
     
     List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest);
     

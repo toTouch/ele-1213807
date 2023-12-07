@@ -60,7 +60,7 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         try {
             Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
             if (Objects.nonNull(exists)) {
@@ -157,45 +157,60 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
         if (Objects.nonNull(existsElectricityCabinet)) {
             return R.fail("300800", "该库房有电柜正在使用,请先解绑后操作");
         }
-        
+    
         // 判断库房是否绑定电池
         Integer existsElectricityBattery = electricityBatteryService.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityBattery)) {
             return R.fail("300801", "该库房有电池正在使用,请先解绑后操作");
         }
-        
+    
         // 判断库房是否绑定车辆
         Integer existsElectricityCar = electricityCarService.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityCar)) {
             return R.fail("300802", "该库房有车辆正在使用,请先解绑后操作");
         }
-        
+    
+        // 根据id查库房
+        AssetWarehouseNameVO assetWarehouseNameVO = queryById(id);
+        if (Objects.nonNull(assetWarehouseNameVO) && !Objects.equals(assetWarehouseNameVO.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+    
         AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().id(id).delFlag(AssetConstant.DEL_DEL)
                 .updateTime(System.currentTimeMillis()).tenantId(TenantContextHolder.getTenantId()).build();
-        
+    
         return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
     }
     
     @Override
     public R updateById(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest) {
-        AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
-        if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
-            Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
-            if (Objects.nonNull(exists)) {
-                return R.fail("300803", "库房名称重复，请修改后操作");
-            }
-        
-            if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {
-                return R.ok();
-            }
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_WAREHOUSE_UPDATE_LOCK + assetWarehouseSaveOrUpdateRequest.getId(), "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+    
+        try {
+            AssetWarehouseBO assetWarehouseBO = assetWarehouseMapper.selectById(assetWarehouseSaveOrUpdateRequest.getId());
+            if (Objects.nonNull(assetWarehouseBO) && !Objects.equals(assetWarehouseBO.getName(), assetWarehouseSaveOrUpdateRequest.getName())) {
+                Integer exists = existsByName(assetWarehouseSaveOrUpdateRequest.getName());
+                if (Objects.nonNull(exists)) {
+                    return R.fail("300803", "库房名称重复，请修改后操作");
+                }
+            
+                if (!Objects.equals(assetWarehouseBO.getTenantId(), TenantContextHolder.getTenantId())) {
+                    return R.ok();
+                }
+            }
         
-        AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
-        BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
-        warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
-        warehouseSaveOrUpdateQueryModel.setUpdateTime(System.currentTimeMillis());
+            AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = new AssetWarehouseSaveOrUpdateQueryModel();
+            BeanUtils.copyProperties(assetWarehouseSaveOrUpdateRequest, warehouseSaveOrUpdateQueryModel);
+            warehouseSaveOrUpdateQueryModel.setTenantId(TenantContextHolder.getTenantId());
+            warehouseSaveOrUpdateQueryModel.setUpdateTime(System.currentTimeMillis());
         
-        return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
+            return R.ok(assetWarehouseMapper.updateById(warehouseSaveOrUpdateQueryModel));
+        } finally {
+            redisService.delete(CacheConstant.CACHE_ASSET_WAREHOUSE_UPDATE_LOCK + assetWarehouseSaveOrUpdateRequest.getId());
+        }
     }
     
     @Slave

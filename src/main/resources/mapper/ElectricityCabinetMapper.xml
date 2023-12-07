@@ -995,9 +995,9 @@
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
-            <if test="idIntegerList != null and idIntegerList.size() > 0">
+            <if test="idList != null and idList.size() > 0">
                 and id in
-                <foreach collection="idIntegerList" item="id" open="(" close=")" separator=",">
+                <foreach collection="idList" item="id" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
