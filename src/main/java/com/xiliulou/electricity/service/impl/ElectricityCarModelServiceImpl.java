@@ -555,4 +555,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return modelVo;
         }).collect(Collectors.toList());
     }
+    
+    @Override
+    public R queryModelById(Integer modelId) {
+        ElectricityCarModel electricityCarModel = electricityCarModelMapper.selectByModelId(modelId, TenantContextHolder.getTenantId());
+        ElectricityCarModelVO electricityCarModelVO = new ElectricityCarModelVO();
+        if (Objects.nonNull(electricityCarModel)) {
+            BeanUtil.copyProperties(electricityCarModel, electricityCarModelVO);
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityCarModel.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                electricityCarModelVO.setFranchiseeName(franchisee.getName());
+            }
+            
+            Store store = storeService.queryByIdFromCache(electricityCarModel.getStoreId());
+            if (Objects.nonNull(store)) {
+                electricityCarModelVO.setStoreName(store.getName());
+            }
+        }
+        return R.ok(electricityCarModelVO);
+    }
 }

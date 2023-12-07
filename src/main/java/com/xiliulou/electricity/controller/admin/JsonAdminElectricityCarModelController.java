@@ -277,4 +277,17 @@ public class JsonAdminElectricityCarModelController {
         
         return R.ok(electricityCarModelService.listCarManufacturerNameAndModel(carModelQuery));
     }
+    
+    /**
+     * 根据型号id查询型号
+     * @param modelId 型号ID
+     * @return 型号
+     */
+    @PostMapping(value = "/admin/electricityCarModel/queryModel/{id}")
+    public R queryModelById(@PathVariable("id") Integer modelId) {
+        if (Objects.isNull(modelId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCarModelService.queryModelById(modelId);
+    }
 }

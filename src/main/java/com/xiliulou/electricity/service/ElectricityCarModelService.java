@@ -85,4 +85,6 @@ public interface ElectricityCarModelService {
     List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
     
     List<CarManufacturerNameAndModelVo> listCarManufacturerNameAndModel(ElectricityCarModelQuery electricityCarModelQuery);
+    
+    R queryModelById(Integer modelId);
 }

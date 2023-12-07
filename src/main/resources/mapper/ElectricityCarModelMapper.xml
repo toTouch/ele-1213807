@@ -279,5 +279,9 @@
         select id,name,manufacturer_name from t_electricity_car_model where tenant_id=#{tenantId} and del_flag=0 order by id desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectByModelId" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+        select id,name,franchisee_id,store_id,manufacturer_name from t_electricity_car_model where tenant_id=#{tenantId} and id = #{modelId} and del_flag=0
+    </select>
 
 </mapper>
