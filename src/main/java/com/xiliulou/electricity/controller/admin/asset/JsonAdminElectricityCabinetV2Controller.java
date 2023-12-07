@@ -69,7 +69,7 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
         return returnTripleResult(electricityCabinetV2Service.outWarehouse(outWarehouseRequest));
     }
     
-    //出库
+    // 批量出库
     @PostMapping(value = "/admin/electricityCabinet/batchOutWarehouse")
     public R batchOutWarehouse(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCabinetBatchOutWarehouseRequest batchOutWarehouseRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
