@@ -5091,6 +5091,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setUpdateTime(System.currentTimeMillis());
         electricityCabinetInsert.setTenantId(TenantContextHolder.getTenantId());
         electricityCabinetInsert.setStoreId(query.getStoreId());
+        electricityCabinetInsert.setFranchiseeId(testFactoryCabinet.getFranchiseeId());
         electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setExchangeType(testFactoryCabinet.getExchangeType());
         electricityCabinetInsert.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
@@ -5131,6 +5132,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCreateTime(System.currentTimeMillis());
         cabinetModelInsert.setUpdateTime(System.currentTimeMillis());
         cabinetModelInsert.setManufacturerName(electricityCabinetModel.getManufacturerName());
+        cabinetModelInsert.setExchangeType(electricityCabinetModel.getExchangeType());
+        cabinetModelInsert.setCabinetSize(electricityCabinetModel.getCabinetSize());
+        cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
+        cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
+        cabinetModelInsert.setWaterproofGrade(electricityCabinetModel.getWaterproofGrade());
         return cabinetModelInsert;
     }
     

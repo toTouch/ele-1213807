@@ -42,7 +42,7 @@ public class ElectricityCabinetOutWarehouseRequest {
     /**
      * 物联网productKey
      */
-    @NotNull(message = "换电柜productKey不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "加盟商不能为空!", groups = {UpdateGroup.class})
     private Long franchiseeId;
     
     /**
