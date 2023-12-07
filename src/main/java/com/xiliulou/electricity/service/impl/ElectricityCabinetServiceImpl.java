@@ -3249,7 +3249,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             electricityBattery.getCapacity())) {
                         voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                     }
-                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                    
+                    if (StringUtils.equals(StringUtils.EMPTY, item.getBatteryType())) {
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(BatteryConstant.DEFAULT_MODEL);
+                    } else {
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                    }
                 }
                 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
@@ -4104,7 +4109,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         electricityBattery.getCapacity())) {
                     voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
                 }
-                electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                
+                if (StringUtils.equals(StringUtils.EMPTY, item.getBatteryType())) {
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(BatteryConstant.DEFAULT_MODEL);
+                } else {
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                }
             }
             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
         });
