@@ -5091,7 +5091,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setUpdateTime(System.currentTimeMillis());
         electricityCabinetInsert.setTenantId(TenantContextHolder.getTenantId());
         electricityCabinetInsert.setStoreId(query.getStoreId());
-        electricityCabinetInsert.setFranchiseeId(testFactoryCabinet.getFranchiseeId());
+        electricityCabinetInsert.setFranchiseeId(store.getFranchiseeId());
         electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setExchangeType(testFactoryCabinet.getExchangeType());
         electricityCabinetInsert.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
