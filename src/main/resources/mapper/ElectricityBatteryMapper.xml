@@ -1193,21 +1193,31 @@
         </if>
     </select>
     
-    <select id="selectQueryEnableExitWarehouseBySn" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
+    <select id="selectListEnableExitWarehouseBattery" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
         <include refid="selectElectricityBattery"/>
-        where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
-        <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
+        <where>
+            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="idSet != null and idSet.size()>0">
+                and id in
+                <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
     </select>
     
-    <update id="batchExitWarehouseBySn">
+    <update id="batchExitWarehouse">
         update t_electricity_battery
         <set>
-            <if test="warehouseId != null">
-                warehouse_id = #{warehouseId},
-                stock_status = 0,
-            </if>
+            stock_status = 0,
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
             </if>
         </set>
         <where>
@@ -1217,12 +1227,10 @@
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
-            <if test="snList != null and snList.size() > 0">
-                and sn in
-                <foreach collection="snList" item="sn" open="(" close=")" separator=",">
-                    <if test="sn != null and sn != ''">
-                        #{sn}
-                    </if>
+            <if test="idLongList != null and idLongList.size() > 0">
+                and id in
+                <foreach collection="idLongList" item="id" open="(" close=")" separator=",">
+                    #{id}
                 </foreach>
             </if>
         </where>

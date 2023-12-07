@@ -9,7 +9,7 @@ import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
-import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
@@ -143,7 +143,7 @@ public interface ElectricityCarService {
     
     List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest);
     
-    R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest);
+    R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
     
     R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest);
     
@@ -153,7 +153,7 @@ public interface ElectricityCarService {
     
     Integer existsByWarehouseId(Long wareHouseId);
     
-    ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus);
-    
     List<ElectricityCarVO> listByIds(Set<Long> idSet);
+    
+    List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
 }

@@ -41,11 +41,11 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryBatchUpdateFranchiseeQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryEnableAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
-import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
@@ -1500,17 +1500,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest assetBatchExitWarehouseBySnRequest) {
+    public R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
         
         if (!redisService.setNx(CacheConstant.ELE_BATTERY_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
-        BeanUtils.copyProperties(assetBatchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
-        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
+        AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
+        BeanUtils.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
+        assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
         
-        return R.ok(electricitybatterymapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
+        return R.ok(electricitybatterymapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel));
     }
     
     /**
@@ -1570,15 +1570,26 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Slave
     @Override
-    public ElectricityBatteryVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
-        ElectricityBatteryBO electricityBatteryBO = electricitybatterymapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
-        ElectricityBatteryVO electricityBatteryVO = null;
-        
-        if (Objects.nonNull(electricityBatteryBO)) {
-            electricityBatteryVO = new ElectricityBatteryVO();
-            BeanUtils.copyProperties(electricityBatteryBO, electricityBatteryVO);
+    public List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+        List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableExitWarehouseBattery(idSet, tenantId, franchiseeId, stockStatus);
+    
+        List<ElectricityBatteryVO> rspList = null;
+    
+        if (CollectionUtils.isNotEmpty(electricityBatteryBOList)) {
+            rspList = electricityBatteryBOList.stream().map(item -> {
+                ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+                BeanUtils.copyProperties(item, electricityBatteryVO);
+            
+                return electricityBatteryVO;
+            
+            }).collect(Collectors.toList());
         }
-        return electricityBatteryVO;
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
     }
     
 }

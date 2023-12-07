@@ -29,9 +29,9 @@ import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
-import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseBySnRequest;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
@@ -1162,17 +1162,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchExitWarehouseBySn(AssetBatchExitWarehouseBySnRequest batchExitWarehouseBySnRequest) {
+    public R batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
     
         if (!redisService.setNx(CacheConstant.ELE_CAR_BATCH_EXIT_WAREHOUSE + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
     
-        AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel = new AssetBatchExitWarehouseBySnQueryModel();
-        BeanUtils.copyProperties(batchExitWarehouseBySnRequest, assetBatchExitWarehouseBySnQueryModel);
-        assetBatchExitWarehouseBySnQueryModel.setUpdateTime(System.currentTimeMillis());
+        AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
+        BeanUtils.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
+        assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
     
-        return R.ok(electricityCarMapper.batchExitWarehouseBySn(assetBatchExitWarehouseBySnQueryModel));
+        return R.ok(electricityCarMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel));
     }
     
     @Override
@@ -1267,19 +1267,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Slave
     @Override
-    public ElectricityCarVO queryEnableExitWarehouseBySn(String sn, Integer tenantId, Integer stockStatus) {
-        ElectricityCarBO electricityCarBO = electricityCarMapper.selectQueryEnableExitWarehouseBySn(sn, tenantId, stockStatus);
-        ElectricityCarVO electricityCarVO = null;
-    
-        if (Objects.nonNull(electricityCarBO)) {
-            electricityCarVO = new ElectricityCarVO();
-            BeanUtils.copyProperties(electricityCarBO, electricityCarVO);
-        }
-        return electricityCarVO;
-    }
-    
-    @Slave
-    @Override
     public List<ElectricityCarVO> listByIds(Set<Long> idSet) {
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
     
@@ -1299,5 +1286,29 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
     
         return rspList;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, franchiseeId, stockStatus);
+    
+        List<ElectricityCarVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtils.copyProperties(item, electricityCarVO);
+            
+                return electricityCarVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
+    
     }
 }

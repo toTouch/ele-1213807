@@ -5,7 +5,7 @@ import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseBySnQueryModel;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
@@ -18,6 +18,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -96,13 +97,13 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListByFranchiseeIdAndStockStatus(ElectricityCabinetListSnByFranchiseeQueryModel electricityCabinetListSnByFranchiseeQueryModel);
     
-    Integer batchExitWarehouseBySn(AssetBatchExitWarehouseBySnQueryModel assetBatchExitWarehouseBySnQueryModel);
-    
-    List<ElectricityCabinetVO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    Integer batchExitWarehouse(AssetBatchExitWarehouseQueryModel batchExitWarehouseQueryModel);
     
     Integer updateFranchiseeIdAndStoreId(ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
     
     List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
     
-    List<ElectricityCabinetBO> selectEnableExitWarehouseBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId, @Param("stockStatus") Integer stockStatus);
+    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(@Param("idSet") Set<Integer> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    
+    List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 }

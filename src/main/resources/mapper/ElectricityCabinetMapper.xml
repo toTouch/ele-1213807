@@ -882,23 +882,6 @@
         </if>
     </select>
     
-    <select id="selectListBySnList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id, name, sn, product_key, device_name, online_status, model_id
-        from t_electricity_cabinet
-        where del_flag=0 and tenant_id = #{tenantId}
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
-        </if>
-        <if test="snList != null and snList.size() > 0">
-            and sn in
-            <foreach collection="snList" item="sn" open="(" close=")" separator=",">
-                #{sn}
-            </foreach>
-        </if>
-        order by id
-    </select>
-    
-    
     <select id="selectListEnableAllocateCabinet" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
         select id, name, sn, product_key, device_name, online_status, model_id
         from t_electricity_cabinet
@@ -918,11 +901,38 @@
         </if>
     </select>
     
-    <select id="selectEnableExitWarehouseBySn" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
-        select id, name, sn, product_key, device_name, online_status, model_id
+    <select id="selectListEnableExitWarehouseCabinet" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
+        select id, name, sn, product_key, device_name, online_status, model_id, stock_status, warehouse_id
         from t_electricity_cabinet
-        where del_flag=0 and tenant_id = #{tenantId} and sn = #{sn}
-        <if test="stockStatus != null"> and stock_status = #{stockStatus}</if>
+        <where>
+            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="idSet != null and idSet.size()>0">
+                and id in
+                <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListBySnList" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
+        select id, name, sn, product_key, device_name, online_status, model_id, stock_status, warehouse_id
+        from t_electricity_cabinet
+        <where>
+            del_flag=0 and tenant_id = #{tenantId}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="snList != null and snList.size()>0">
+                and sn in
+                <foreach collection="snList" item="sn" index="index" open="(" close=")" separator=",">
+                    #{sn}
+                </foreach>
+            </if>
+        </where>
     </select>
     
     <update id="batchOutWarehouse" parameterType="com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO">
@@ -969,15 +979,15 @@
         </foreach>
     </update>
     
-    <update id="batchExitWarehouseBySn">
+    <update id="batchExitWarehouse">
         update t_electricity_cabinet
         <set>
-            <if test="warehouseId != null">
-                warehouse_id = #{warehouseId},
-                stock_status = 0,
-            </if>
+            stock_status = 0,
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
             </if>
         </set>
         <where>
@@ -987,12 +997,10 @@
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
-            <if test="snList != null and snList.size() > 0">
-                and sn in
-                <foreach collection="snList" item="sn" open="(" close=")" separator=",">
-                    <if test="sn != null and sn != ''">
-                        #{sn}
-                    </if>
+            <if test="idIntegerList != null and idIntegerList.size() > 0">
+                and id in
+                <foreach collection="idIntegerList" item="id" open="(" close=")" separator=",">
+                    #{id}
                 </foreach>
             </if>
         </where>
