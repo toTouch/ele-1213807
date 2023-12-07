@@ -82,6 +82,7 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -5004,6 +5005,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    public Triple<Boolean, String, Object> listTransferCabinetModel(TransferCabinetModelRequest cabinetModelRequest) {
+        //查询工厂租户下是否有该柜机
+        ElectricityCabinet testFactoryCabinet = this.selectByProductKeyAndDeviceNameFromDB(cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(),
+                eleCommonConfig.getTestFactoryTenantId());
+        if (Objects.isNull(testFactoryCabinet)) {
+            log.error("ELE ERROR!not found testFactoryCabinet,p={},d={},tenantId={}", cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(),
+                    eleCommonConfig.getTestFactoryTenantId());
+            return Triple.of(false, "", "柜机不存在");
+        }
+        
+        //获取工厂柜机型号
+        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(testFactoryCabinet.getModelId());
+        if (Objects.isNull(electricityCabinetModel)) {
+            log.error("ELE ERROR!not found electricityCabinetModel,p={},d={},tenantId={}", cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(),
+                    eleCommonConfig.getTestFactoryTenantId());
+            return Triple.of(false, "", "柜机型号不存在");
+        }
+        
+        return Triple.of(true, null, electricityCabinetModelService.selectListByNum(electricityCabinetModel.getNum(), TenantContextHolder.getTenantId()));
+    }
+    
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query) {
         
@@ -5028,14 +5052,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         Integer modelId = null;
-        //查询当前租户下是否有该型号，若没有则新建
-        ElectricityCabinetModel cabinetModel = electricityCabinetModelService.selectByNum(electricityCabinetModel.getNum(), TenantContextHolder.getTenantId());
-        if (Objects.isNull(cabinetModel)) {
-            ElectricityCabinetModel cabinetModelInsert = buildCabinetModel(electricityCabinetModel);
-            electricityCabinetModelService.insert(cabinetModelInsert);
-            modelId = cabinetModelInsert.getId();
+        
+        if (Objects.nonNull(query.getModelId())) {
+            ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(query.getModelId());
+            if (Objects.nonNull(cabinetModel)) {
+                modelId = cabinetModel.getId();
+            }
         } else {
-            modelId = cabinetModel.getId();
+            //查询当前租户下是否有该型号，若没有则新建
+            ElectricityCabinetModel cabinetModel = electricityCabinetModelService.selectByNum(electricityCabinetModel.getNum(), TenantContextHolder.getTenantId());
+            if (Objects.isNull(cabinetModel)) {
+                ElectricityCabinetModel cabinetModelInsert = buildCabinetModel(electricityCabinetModel);
+                electricityCabinetModelService.insert(cabinetModelInsert);
+                modelId = cabinetModelInsert.getId();
+            } else {
+                modelId = cabinetModel.getId();
+            }
         }
         
         //当前租户下新增柜机

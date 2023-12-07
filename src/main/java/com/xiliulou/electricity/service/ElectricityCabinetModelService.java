@@ -39,4 +39,6 @@ public interface ElectricityCabinetModelService {
     Integer insert(ElectricityCabinetModel cabinetModelInsert);
     
     List<ElectricityCabinetModelVO> selectListElectricityCabinetModel(ElectricityCabinetModelQuery electricityCabinetModelQuery);
+    
+    List<ElectricityCabinetModel> selectListByNum(Integer num, Integer tenantId);
 }

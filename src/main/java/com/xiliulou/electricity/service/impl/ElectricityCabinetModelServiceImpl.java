@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.asset.ElectricityCabinetModelVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -204,5 +206,14 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             cabinetModelVo.setManufacturerNameAndModelName(manufacturerNameAndModelName.toString());
             return cabinetModelVo;
         }).collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<ElectricityCabinetModel> selectListByNum(Integer num, Integer tenantId) {
+        List<ElectricityCabinetModel> modelList = electricityCabinetModelMapper.selectListByNum(num, tenantId);
+        if (CollectionUtils.isEmpty(modelList)) {
+            return Lists.newArrayList();
+        }
+        return modelList;
     }
 }

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -1025,8 +1026,26 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R batchUpdateAddress(@RequestBody @Validated List<ElectricityCabinet> list) {
         return returnTripleResult(electricityCabinetService.batchUpdateAddress(list));
     }
-
-
+    
+    
+    /**
+     * 查询迁移柜机的型号：如果根据仓门数查询到多个型号，需要让用户选择迁移的型号
+     * 将工厂账号下柜机迁移到扫码租户下，并物理删除工厂租户下的柜机信息
+     */
+    @PostMapping("/admin/electricityCabinet/transfer/queryModel")
+    public R queryTransferCabinetModel(@RequestBody @Validated TransferCabinetModelRequest cabinetModelRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return returnTripleResult(electricityCabinetService.listTransferCabinetModel(cabinetModelRequest));
+    }
+    
     /**
      * 迁移柜机
      * 将工厂账号下柜机迁移到扫码租户下，并物理删除工厂租户下的柜机信息

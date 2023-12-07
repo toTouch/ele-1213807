@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -232,6 +233,8 @@ public interface ElectricityCabinetService {
     Triple<Boolean, String, Object> batchImportCabinet(List<ElectricityCabinetImportQuery> list);
 
     Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query);
+    
+    Triple<Boolean, String, Object> listTransferCabinetModel(TransferCabinetModelRequest cabinetModelRequest);
 
     Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet);
 
