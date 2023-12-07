@@ -47,9 +47,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -678,7 +680,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result =  redisService.get(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, result);
             return result;
         }
@@ -730,7 +733,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
         log.info("generate free deposit data from pxz for car rental, data = {}", callPxzRsp);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, callPxzRsp.getData(), 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(callPxzRsp.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
 
         return callPxzRsp.getData();
     }

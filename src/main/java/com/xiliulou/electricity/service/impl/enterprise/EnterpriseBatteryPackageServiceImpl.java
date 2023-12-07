@@ -120,9 +120,11 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -803,7 +805,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result =  redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
             return Triple.of(true, null, result);
         }
@@ -870,7 +873,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", callPxzRsp);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), callPxzRsp.getData(), 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), UriUtils.encode(callPxzRsp.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
     
         return Triple.of(true, null, callPxzRsp.getData());
         

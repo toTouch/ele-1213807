@@ -1022,6 +1022,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache. uid = {}, result = {}", uid, result);
             return Triple.of(true, null, result);
         }
@@ -1160,8 +1161,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, result);
+            return Triple.of(true, null,  result);
         }
 
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
