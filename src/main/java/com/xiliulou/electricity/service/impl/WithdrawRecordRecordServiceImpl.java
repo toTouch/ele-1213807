@@ -440,125 +440,116 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	 */
 	@Override
 	@Transactional
-	public R batchHandleWithdraw(BatchHandleWithdrawRequest batchHandleWithdrawRequest) {
-		
-		Integer tenantId = TenantContextHolder.getTenantId();
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		
-		if (!redisService.setNx(CacheConstant.CACHE_BATCH_WITHDRAW_OPER_USER_LOCK + user.getUid(), "1", 3 * 1000L, false)) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
-		
-		//提现密码确认
-		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache(tenantId);
-		if (Objects.isNull(withdrawPassword)) {
-			return R.fail("100421","请设置提现密码");
-		}
-		
-		
-		String decryptPassword = null;
-		String encryptPassword = batchHandleWithdrawRequest.getPassword();
-		if (StrUtil.isNotEmpty(encryptPassword)) {
-			//解密密码
-			decryptPassword = decryptPassword(encryptPassword);
-			if (StrUtil.isEmpty(decryptPassword)) {
-				log.error("UPDATE WITHDRAW PASSWORD ERROR! decryptPassword error! password={}", withdrawPassword.getPassword());
-				return R.fail("SYSTEM.0001", "系统错误!");
-			}
-		}
-		
-		if (!customPasswordEncoder.matches(decryptPassword, withdrawPassword.getPassword())) {
-			log.error("UPDATE WITHDRAW PASSWORD ERROR! password is not equals error! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
-			return R.fail("100420", "提现密码错误");
-		}
-		
-		if (!Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE) && !Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_PASS)) {
-			log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
-			return R.fail("参数不合法");
-		}
-		
-		if (CollectionUtils.isEmpty(batchHandleWithdrawRequest.getIdList())) {
-			return R.fail("100314","参数不合法");
-		}
-		
-		// 判断当前租户是否允许线下提现
-		ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-		if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
-			log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
-			return R.fail("100422","系统设置中-提现方式（线下）未生效");
-		}
-		
-		WithdrawRecordQueryModel withdrawRecordQueryModel = WithdrawRecordQueryModel.builder().tenantId(tenantId).idList(batchHandleWithdrawRequest.getIdList()).build();
-		List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.selectList(withdrawRecordQueryModel);
-		if (CollectionUtils.isEmpty(withdrawRecordList) || !Objects.equals(withdrawRecordList.size(), batchHandleWithdrawRequest.getIdList().size())) {
-			log.error("batch handle withdraw record is not exists! idList={}", batchHandleWithdrawRequest.getIdList());
-			return R.fail("100419","提现记录不存在。");
-		}
-		
-		// 过滤已经审核的提现订单
-		List<WithdrawRecord> alreadyAudit = new ArrayList<>();
-		
-		Set<Long> uidList = new HashSet<>();
-		
-		withdrawRecordList.stream().forEach(withdrawRecord -> {
-			if (!Objects.equals(withdrawRecord.getStatus(), WithdrawRecord.CHECKING)) {
-				alreadyAudit.add(withdrawRecord);
-			}
-			uidList.add(withdrawRecord.getUid());
-		});
-		
-		if (!CollectionUtils.isEmpty(alreadyAudit)) {
-			return R.fail("100419","网络不佳，请刷新重试操作。");
-		}
-		
-		WithdrawRecord withdrawRecord = new WithdrawRecord();
-		// 设置状态
-		withdrawRecord.setUpdateTime(System.currentTimeMillis());
-		withdrawRecord.setCheckTime(System.currentTimeMillis());
-		
-		// 提现审核拒绝
-		if (Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE)) {
-			withdrawRecord.setMsg(batchHandleWithdrawRequest.getMsg());
-			withdrawRecord.setStatus(WithdrawRecord.CHECK_REFUSE);
-			
-			List<UserAmount> userAmountList = userAmountService.queryListByUidList(uidList, tenantId);
-			if (!CollectionUtils.isEmpty(userAmountList)) {
-				Map<Long, UserAmount> userAmountMap = userAmountList.stream().collect(Collectors.toMap(UserAmount::getUid, Function.identity()));
-				withdrawRecordList.forEach(withdrawRecordTemp -> {
-					//回退余额
-					UserAmount userAmount = userAmountMap.get(withdrawRecordTemp.getUid());
-					if (Objects.nonNull(userAmount)) {
-						userAmountService.updateRollBackIncome(withdrawRecordTemp.getUid(), withdrawRecordTemp.getAmount() + withdrawRecordTemp.getHandlingFee());
-						
-						UserAmountHistory history = UserAmountHistory.builder()
-								.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
-								.createTime(System.currentTimeMillis())
-								.tenantId(TenantContextHolder.getTenantId())
-								.amount(BigDecimal.valueOf(withdrawRecordTemp.getAmount() + withdrawRecordTemp.getHandlingFee()))
-								.oid(withdrawRecordTemp.getId())
-								.uid(withdrawRecordTemp.getUid())
-								.tenantId(userAmount.getTenantId()).build();
-						userAmountHistoryService.insert(history);
-					}
-				});
-			}
-			
-		} else {
-			// 审核通过
-			//线下提现
-			withdrawRecord.setType(WithdrawRecord.TYPE_UN_ONLINE);
-			// 提现成功
-			withdrawRecord.setStatus(WithdrawRecord.WITHDRAWING_SUCCESS);
-		}
-		
-		// 批量修改审核结果
-		withdrawRecordMapper.batchWithdrawById(withdrawRecord, batchHandleWithdrawRequest.getIdList(), tenantId);
-		
-		return R.ok();
-	}
+    public R batchHandleWithdraw(BatchHandleWithdrawRequest batchHandleWithdrawRequest) {
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!redisService.setNx(CacheConstant.CACHE_BATCH_WITHDRAW_OPER_USER_LOCK + user.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        //提现密码确认
+        WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache(tenantId);
+        if (Objects.isNull(withdrawPassword)) {
+            return R.fail("100421", "请设置提现密码");
+        }
+        
+        String decryptPassword = null;
+        String encryptPassword = batchHandleWithdrawRequest.getPassword();
+        if (StrUtil.isNotEmpty(encryptPassword)) {
+            //解密密码
+            decryptPassword = decryptPassword(encryptPassword);
+            if (StrUtil.isEmpty(decryptPassword)) {
+                log.error("UPDATE WITHDRAW PASSWORD ERROR! decryptPassword error! password={}", withdrawPassword.getPassword());
+                return R.fail("SYSTEM.0001", "系统错误!");
+            }
+        }
+        
+        if (!customPasswordEncoder.matches(decryptPassword, withdrawPassword.getPassword())) {
+            log.error("UPDATE WITHDRAW PASSWORD ERROR! password is not equals error! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
+            return R.fail("100420", "提现密码错误");
+        }
+        
+        if (!Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE) && !Objects.equals(batchHandleWithdrawRequest.getStatus(),
+                WithdrawRecord.CHECK_PASS)) {
+            log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
+            return R.fail("100423","错误的审批操作");
+        }
+        
+        // 判断当前租户是否允许线下提现
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
+            log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
+            return R.fail("100422", "系统设置中-提现方式（线下）未生效");
+        }
+        
+        WithdrawRecordQueryModel withdrawRecordQueryModel = WithdrawRecordQueryModel.builder().tenantId(tenantId).idList(batchHandleWithdrawRequest.getIdList()).build();
+        List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.selectList(withdrawRecordQueryModel);
+        if (CollectionUtils.isEmpty(withdrawRecordList) || !Objects.equals(withdrawRecordList.size(), batchHandleWithdrawRequest.getIdList().size())) {
+            log.error("batch handle withdraw record is not exists! idList={}", batchHandleWithdrawRequest.getIdList());
+            return R.fail("100419", "提现记录不存在。");
+        }
+        
+        // 过滤已经审核的提现订单
+        List<WithdrawRecord> alreadyAudit = new ArrayList<>();
+        
+        Set<Long> uidList = new HashSet<>();
+        
+        withdrawRecordList.forEach(withdrawRecord -> {
+            if (!Objects.equals(withdrawRecord.getStatus(), WithdrawRecord.CHECKING)) {
+                alreadyAudit.add(withdrawRecord);
+            }
+            uidList.add(withdrawRecord.getUid());
+        });
+        
+        if (!CollectionUtils.isEmpty(alreadyAudit)) {
+            return R.fail("100419", "网络不佳，请刷新重试操作。");
+        }
+        
+        WithdrawRecord withdrawRecord = new WithdrawRecord();
+        // 设置状态
+        withdrawRecord.setUpdateTime(System.currentTimeMillis());
+        withdrawRecord.setCheckTime(System.currentTimeMillis());
+        
+        // 提现审核拒绝
+        if (Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE)) {
+            withdrawRecord.setMsg(batchHandleWithdrawRequest.getMsg());
+            withdrawRecord.setStatus(WithdrawRecord.CHECK_REFUSE);
+            
+            List<UserAmount> userAmountList = userAmountService.queryListByUidList(uidList, tenantId);
+            if (!CollectionUtils.isEmpty(userAmountList)) {
+                Map<Long, UserAmount> userAmountMap = userAmountList.stream().collect(Collectors.toMap(UserAmount::getUid, Function.identity()));
+                withdrawRecordList.forEach(withdrawRecordTemp -> {
+                    //回退余额
+                    UserAmount userAmount = userAmountMap.get(withdrawRecordTemp.getUid());
+                    if (Objects.nonNull(userAmount)) {
+                        userAmountService.updateRollBackIncome(withdrawRecordTemp.getUid(), withdrawRecordTemp.getAmount() + withdrawRecordTemp.getHandlingFee());
+                        
+                        UserAmountHistory history = UserAmountHistory.builder().type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK).createTime(System.currentTimeMillis())
+		                        .amount(BigDecimal.valueOf(withdrawRecordTemp.getAmount() + withdrawRecordTemp.getHandlingFee()))
+                                .oid(withdrawRecordTemp.getId()).uid(withdrawRecordTemp.getUid()).tenantId(userAmount.getTenantId()).build();
+                        userAmountHistoryService.insert(history);
+                    }
+                });
+            }
+            
+        } else {
+            // 审核通过
+            //线下提现
+            withdrawRecord.setType(WithdrawRecord.TYPE_UN_ONLINE);
+            // 提现成功
+            withdrawRecord.setStatus(WithdrawRecord.WITHDRAWING_SUCCESS);
+        }
+        
+        // 批量修改审核结果
+        withdrawRecordMapper.batchWithdrawById(withdrawRecord, batchHandleWithdrawRequest.getIdList(), tenantId);
+        
+        return R.ok();
+    }
 	
 	@Transactional(rollbackFor = Exception.class)
 	public R transferPay(WithdrawRecord withdrawRecord) {

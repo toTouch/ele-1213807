@@ -2,6 +2,7 @@ package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @Data
 public class BatchHandleWithdrawRequest {
     
-    @NotNull(message = "id不能为空")
+    @NotEmpty(message = "id不能为空")
     private List<Integer> idList;
     
     @NotNull(message = "状态不能为空")
@@ -22,6 +23,6 @@ public class BatchHandleWithdrawRequest {
     
     private String msg;
     
-    @NotEmpty(message = "密码不能为空")
+    @NotBlank(message = "密码不能为空")
     private String password;
 }
