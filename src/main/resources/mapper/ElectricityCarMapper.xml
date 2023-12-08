@@ -771,10 +771,10 @@
     <update id="updateFranchiseeIdAndStoreId">
         update t_electricity_car
         set franchisee_id = #{targetFranchiseeId},
-            store_id      = #{targetStoreId},
-            update_time   = #{updateTime}
+            store_id = #{targetStoreId},
+            update_time = #{updateTime}
         where
-          and tenant_id = #{tenantId}
+          tenant_id = #{tenantId}
           and id = #{id}
     </update>
     
