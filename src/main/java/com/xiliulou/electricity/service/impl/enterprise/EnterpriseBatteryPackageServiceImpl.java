@@ -793,6 +793,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .phoneNumber(freeQuery.getPhoneNumber())
                 .idCard(freeQuery.getIdCard())
                 .tenantId(TenantContextHolder.getTenantId())
+                .packageId(freeQuery.getMembercardId())
                 .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
                 .build();
         

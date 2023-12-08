@@ -1009,6 +1009,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phoneNumber(freeBatteryDepositQuery.getPhoneNumber())
                 .idCard(freeBatteryDepositQuery.getIdCard())
                 .tenantId(TenantContextHolder.getTenantId())
+                //.packageId(freeBatteryDepositQuery.get)
                 .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
                 .build();
     
@@ -1148,6 +1149,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phoneNumber(freeQuery.getPhoneNumber())
                 .idCard(freeQuery.getIdCard())
                 .tenantId(TenantContextHolder.getTenantId())
+                .packageId(freeQuery.getMembercardId())
                 .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
                 .build();
         
@@ -1253,6 +1255,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Override
     public Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig){
         String orderId;
+        Long packageId;
         
         //判断当前免押操作是购买换电套餐还是租车套餐
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(freeDepositUserDTO.getPackageType())) {
@@ -1262,6 +1265,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(true, null, null);
             }
             orderId = batteryDeposit.getOrderId();
+            packageId = batteryDeposit.getDid();
         } else {
             //获取购买租车套餐时已存在的免押订单信息
             CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.selectLastByUid(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid());
@@ -1269,11 +1273,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(true, null, null);
             }
             orderId = carRentalPackageDepositPayPo.getOrderNo();
+            packageId = carRentalPackageDepositPayPo.getRentalPackageId();
         }
-        //检查传入的用户信息是否和前一次传入的内容一致，若用户名或身份证号存在不一致，则需要生成新码
+        //检查传入的用户信息是否和前一次传入的内容一致，若用户名或身份证号,以及所选套餐存在不一致，则需要生成新码
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())
-                || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())) {
+                || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
+                || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
             log.info("found the same user info for generate deposit link, order id = {}", orderId);
             return Triple.of(true, null, freeDepositOrder);
         }

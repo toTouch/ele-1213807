@@ -668,6 +668,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 .phoneNumber(freeDepositOptReq.getPhoneNumber())
                 .idCard(freeDepositOptReq.getIdCard())
                 .tenantId(tenantId)
+                .packageId(freeDepositOptReq.getRentalPackageId())
                 .packageType(carRentalPackage.getType())
                 .build();
     

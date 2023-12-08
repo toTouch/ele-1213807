@@ -34,6 +34,11 @@ public class FreeDepositUserDTO {
     private String realName;
     
     /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
      * 购买套餐类型
      * @see PackageTypeEnum
      */
