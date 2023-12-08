@@ -106,6 +106,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
         
+            // tenantId校验
             if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
                 return R.ok();
             }

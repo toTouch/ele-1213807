@@ -13,6 +13,7 @@ import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -156,4 +157,6 @@ public interface ElectricityCarService {
     List<ElectricityCarVO> listByIds(Set<Long> idSet);
     
     List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
+    
+    Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
 }
