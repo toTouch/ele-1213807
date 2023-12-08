@@ -20,6 +20,8 @@ public class BatteryConstant {
 	public static final String VOLTAGE_UNIT = "V";
 	
 	public static final String CAPACITY_UNIT = "Ah";
+	
+	public static final String DEFAULT_MODEL = "标准型号";
 
 	/**
 	 * 三元锂
