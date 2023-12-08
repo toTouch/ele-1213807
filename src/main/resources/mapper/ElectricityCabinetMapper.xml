@@ -358,7 +358,10 @@
             <if test="exchangeType != null">
                 exchange_type = #{exchangeType},
             </if>
-		</set>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
+            </if>
+        </set>
 		where id = #{id} and tenant_id = #{tenantId}
 	</update>
 

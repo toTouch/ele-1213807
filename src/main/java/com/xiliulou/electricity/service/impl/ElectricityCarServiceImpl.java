@@ -440,6 +440,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setId(id);
         electricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCar.setDelFlag(ElectricityCar.DEL_DEL);
+        electricityCar.setWarehouseId(NumberConstant.ZERO_L);
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
