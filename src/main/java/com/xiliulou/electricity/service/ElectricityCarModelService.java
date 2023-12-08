@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
+import com.xiliulou.electricity.vo.asset.CarManufacturerNameAndModelVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -82,4 +83,8 @@ public interface ElectricityCarModelService {
     List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId);
 
     List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
+    
+    List<CarManufacturerNameAndModelVo> listCarManufacturerNameAndModel(ElectricityCarModelQuery electricityCarModelQuery);
+    
+    R queryModelById(Integer modelId);
 }

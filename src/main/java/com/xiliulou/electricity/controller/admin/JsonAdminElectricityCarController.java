@@ -52,6 +52,7 @@ public class JsonAdminElectricityCarController {
     CarMoveRecordService carMoveRecordService;
 
     //新增换电柜车辆
+    @Deprecated
     @PostMapping(value = "/admin/electricityCar")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarAddAndUpdate electricityCarAddAndUpdate) {
         return electricityCarService.save(electricityCarAddAndUpdate);
@@ -83,6 +84,7 @@ public class JsonAdminElectricityCarController {
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -125,6 +127,7 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .stockStatus(stockStatus)
                 .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
@@ -144,6 +147,7 @@ public class JsonAdminElectricityCarController {
                         @RequestParam(value = "storeId", required = false) Long storeId,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -176,6 +180,7 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
+                .stockStatus(stockStatus)
                 .uid(uid)
                 .storeId(storeId)
                 .storeIds(storeIds)
@@ -296,6 +301,7 @@ public class JsonAdminElectricityCarController {
     /**
      * 车辆迁移
      */
+    @Deprecated
     @PutMapping("/admin/electricityCar/moveCar")
     @Log(title = "车辆迁移")
     public R electricityCarMove(

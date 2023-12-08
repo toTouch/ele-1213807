@@ -31,4 +31,6 @@ public class ElectricityCarMoveQuery {
      */
     @NotNull(message = "迁移车辆不能为空!", groups = {UpdateGroup.class})
     private List<Long> carIds;
+    
+    private String remark;
 }

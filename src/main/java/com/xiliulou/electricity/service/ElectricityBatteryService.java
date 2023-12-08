@@ -8,6 +8,11 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
+import com.xiliulou.electricity.request.asset.BatteryAddRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
+import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
@@ -15,6 +20,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务接口
@@ -31,9 +37,11 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      * @return 电池信息集
      */
     List<ElectricityBattery> selectBySnList(Integer tenantId, List<String> snList);
-
+    
     R saveElectricityBattery(EleBatteryQuery electricityBattery);
-
+    
+    R saveElectricityBatteryV2(BatteryAddRequest batteryAddRequest);
+    
     Integer update(ElectricityBattery electricityBattery);
     
     R updateForAdmin(EleBatteryQuery electricityBattery);
@@ -117,4 +125,16 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void export(ElectricityBatteryQuery query, HttpServletResponse response);
     
     R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid);
+    
+    List<ElectricityBatteryVO> listSnByFranchiseeId(ElectricityBatterySnSearchRequest electricityBatterySnSearchRequest);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
+    
+    Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
+    
+    List<ElectricityBatteryVO> listEnableAllocateBattery(ElectricityBatteryEnableAllocateRequest electricityBatteryEnableAllocateRequest);
+    
+    Integer batchUpdateFranchiseeId(List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList);
+    
+    List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
 }

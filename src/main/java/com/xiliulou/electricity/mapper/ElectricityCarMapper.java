@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.car.CarDataEntity;
@@ -8,12 +9,16 @@ import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.query.car.CarDataQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCar)表数据库访问层
@@ -141,5 +146,25 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<CarDataVO> queryCarPageByCondition(@Param("query") CarDataQuery carDataQuery,@Param("offset") Long offset, @Param("size") Long size);
 
     Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);
-
+    
+    List<ElectricityCarVO> selectListBySnList(@Param("snList")List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId")Long franchiseeId);
+    
+    List<ElectricityCarBO> selectListByFranchiseeIdAndStockStatus(ElectricityCarListSnByFranchiseeQueryModel queryModel);
+    
+    Integer batchExitWarehouse(AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel);
+    
+    Integer existOutWarehouse(@Param("idList") List<Integer> idList, @Param("tenantId") Integer tenantId);
+    
+    Integer batchUpdateFranchiseeIdAndStoreByIdList(@Param("idList") List<Integer> idList, @Param("franchiseeId") Long franchiseeId, @Param("storeId") Integer storeId,
+            @Param("tenantId") Integer tenantId,@Param("updateTime") Long updateTime,@Param("stockStatus") Integer stockStatus);
+    
+    Integer batchInsertCar(@Param("list") List<ElectricityCar> saveList);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
+    
+    List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
+    
+    List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus")Integer stockStatus);
+    
+    Integer updateFranchiseeIdAndStoreId(ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
 }

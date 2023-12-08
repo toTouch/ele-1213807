@@ -5,38 +5,58 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.util.Lists;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCarBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
+import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
+import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
+import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
+import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,6 +130,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Resource
     private CarMoveRecordMapper carMoveRecordMapper;
+    
+    @Autowired
+    private AssetAllocateRecordService assetAllocateRecordService;
+    
+    @Autowired
+    private AssetAllocateDetailService assetAllocateDetailService;
+    
+    @Autowired
+    private AssetWarehouseService assetWarehouseService;
 
     /**
      * 根据ID更新车辆绑定用户，包含绑定、解绑
@@ -284,6 +313,43 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return R.ok(electricityCar.getId());
     }
+    
+    @Override
+    public R saveV2(CarAddRequest carAddRequest) {
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        //换电柜车辆
+        ElectricityCar electricityCar = new ElectricityCar();
+        BeanUtil.copyProperties(carAddRequest, electricityCar);
+        electricityCar.setTenantId(TenantContextHolder.getTenantId());
+        electricityCar.setCreateTime(System.currentTimeMillis());
+        electricityCar.setUpdateTime(System.currentTimeMillis());
+        electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+        electricityCar.setStoreId(NumberConstant.ZERO_L);
+        electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
+        
+        //查找车辆型号
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
+        if (Objects.isNull(electricityCarModel)) {
+            return R.fail("100005", "未找到车辆型号");
+        }
+        
+        ElectricityCar existElectricityCar = electricityCarMapper.selectBySn(carAddRequest.getSn(),TenantContextHolder.getTenantId());
+        
+        if (Objects.nonNull(existElectricityCar)) {
+            return R.fail("100017", "已存在该编号车辆");
+        }
+        
+        electricityCar.setModel(electricityCarModel.getName());
+        electricityCar.setModelId(electricityCarModel.getId());
+        
+        electricityCarMapper.insert(electricityCar);
+        return R.ok(electricityCar.getId());
+    }
 
     @Override
     @Transactional
@@ -377,6 +443,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setId(id);
         electricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCar.setDelFlag(ElectricityCar.DEL_DEL);
+        electricityCar.setWarehouseId(NumberConstant.ZERO_L);
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
@@ -393,11 +460,38 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-        List<ElectricityCarVO> carVOList = electricityCarVOS.parallelStream().peek(item -> {
+        // 获取库房名称列表
+        List<Long> warehouseIdList = electricityCarVOS.stream().map(ElectricityCarVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
+        
+        Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
+        if(CollectionUtils.isNotEmpty(assetWarehouseNameVOS)){
+            warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
+        }
+        
+        Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+        List<ElectricityCarVO> carVOList = electricityCarVOS.stream().peek(item -> {
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
             if (Objects.nonNull(electricityBattery)) {
                 item.setBatterySn(electricityBattery.getSn());
             }
+            
+            // 设置用户名称
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                item.setUserName(userInfo.getName());
+            }
+            
+            // 设置门店名称
+            Store store = storeService.queryByIdFromCache(Long.valueOf(item.getStoreId()));
+            if (Objects.nonNull(store)) {
+                item.setStoreName(store.getName());
+            }
+            
+            if (finalWarehouseNameVOMap.containsKey(item.getWarehouseId())) {
+                item.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
+            }
+            
         }).collect(Collectors.toList());
 
         return R.ok(carVOList);
@@ -553,7 +647,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", franchisee.getId());
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
     
@@ -1033,5 +1127,206 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         
         return false;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
+        return electricityCarMapper.selectListBySnList(snList, tenantId, franchiseeId);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest) {
+        
+        ElectricityCarListSnByFranchiseeQueryModel queryModel = new ElectricityCarListSnByFranchiseeQueryModel();
+        BeanUtil.copyProperties(electricityCarSnSearchRequest, queryModel);
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        List<ElectricityCarVO> rspList = null;
+        
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByFranchiseeIdAndStockStatus(queryModel);
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+    
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtil.copyProperties(item, electricityCarVO);
+                
+                return electricityCarVO;
+                
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            return Collections.emptyList();
+        }
+        
+        return rspList;
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest) {
+        AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel = new AssetBatchExitWarehouseQueryModel();
+        BeanUtils.copyProperties(assetBatchExitWarehouseRequest, assetBatchExitWarehouseQueryModel);
+        assetBatchExitWarehouseQueryModel.setUpdateTime(System.currentTimeMillis());
+    
+        return electricityCarMapper.batchExitWarehouse(assetBatchExitWarehouseQueryModel);
+    }
+    
+    @Override
+    public R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest) {
+        List<Integer> idList = carOutWarehouseRequest.getIdList();
+        Integer exist = electricityCarMapper.existOutWarehouse(idList,TenantContextHolder.getTenantId());
+        if (Objects.nonNull(exist)) {
+            return R.fail("100561", "已选择项中有已出库车辆，请重新选择后操作");
+        }
+        
+        electricityCarMapper.batchUpdateFranchiseeIdAndStoreByIdList(idList, carOutWarehouseRequest.getFranchiseeId(), carOutWarehouseRequest.getStoreId(),
+                TenantContextHolder.getTenantId(), System.currentTimeMillis(), StockStatusEnum.UN_STOCK.getCode());
+        
+        idList.forEach(item -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);
+        });
+        return R.ok();
+    }
+    
+    @Override
+    public  R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest){
+        //操作频繁
+        boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + SecurityUtils.getUid(), "1", 5 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        if (CommonConstant.EXCEL_MAX_COUNT_TWO_THOUSAND < carBatchSaveRequest.getSnList().size()) {
+            return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
+        }
+        
+        // 校验车辆型号是否存在
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carBatchSaveRequest.getModelId());
+        if (Objects.isNull(electricityCarModel)) {;
+            return R.fail("100005", "未找到车辆型号");
+        }
+        
+        List<String> carSnList = carBatchSaveRequest.getSnList();
+        
+        //过滤重复的sn
+        List<String> snList = carSnList.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
+        
+        List<ElectricityCarVO> electricityCarVOList = electricityCarMapper.selectListBySnList(snList, TenantContextHolder.getTenantId(), null);
+        
+        // 已存在的sn
+        List<String> existSnList = electricityCarVOList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
+     
+        // 准备新增的车辆
+        List<ElectricityCar> electricityCarList = Lists.newArrayList();
+        
+        for (String sn:snList) {
+            // 校验数据库中是否已存在该sn
+            if (existSnList.contains(sn)) {
+                continue;
+            }
+            //换电柜车辆
+            ElectricityCar electricityCar = new ElectricityCar();
+            electricityCar.setSn(sn);
+            electricityCar.setTenantId(TenantContextHolder.getTenantId());
+            electricityCar.setCreateTime(System.currentTimeMillis());
+            electricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+            electricityCar.setStoreId(NumberConstant.ZERO_L);
+            electricityCar.setStockStatus(StockStatusEnum.STOCK.getCode());
+            electricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
+            electricityCar.setFranchiseeId(NumberConstant.ZERO_L);
+            electricityCar.setModel(electricityCarModel.getName());
+            electricityCar.setModelId(electricityCarModel.getId());
+            electricityCarList.add(electricityCar);
+        }
+        
+        if(CollectionUtils.isEmpty(electricityCarList)){
+            return R.fail("100562", "Excel模版中所有车辆数据均已存在，请勿重复导入");
+        }
+        // 保存到本地数据库
+        electricityCarMapper.batchInsertCar(electricityCarList);
+        return R.ok();
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId) {
+        return electricityCarMapper.queryModelIdBySidAndIds(carIds, sourceSid, ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByWarehouseId(Long wareHouseId) {
+        
+        return electricityCarMapper.existsByWarehouseId(wareHouseId);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listByIds(Set<Long> idSet) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
+    
+        List<ElectricityCarVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtils.copyProperties(item, electricityCarVO);
+            
+                return electricityCarVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListEnableExitWarehouseCar(idSet, tenantId, franchiseeId, stockStatus);
+    
+        List<ElectricityCarVO> rspList = null;
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+            rspList = electricityCarBOList.stream().map(item -> {
+                ElectricityCarVO electricityCarVO = new ElectricityCarVO();
+                BeanUtils.copyProperties(item, electricityCarVO);
+            
+                return electricityCarVO;
+            
+            }).collect(Collectors.toList());
+        }
+    
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
+    
+        return rspList;
+    
+    }
+    
+    @Override
+    public Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList) {
+        Integer count = NumberConstant.ZERO;
+    
+        for (ElectricityCarBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : carBatchUpdateFranchiseeAndStoreRequestList) {
+            ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCarUpdateFranchiseeAndStoreQueryModel();
+            BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
+            updateFranchiseeAndStoreQueryModel.setUpdateTime(System.currentTimeMillis());
+        
+            electricityCarMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+            count += 1;
+        
+            //清理缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateFranchiseeAndStoreQueryModel.getId());
+        }
+    
+        return count;
     }
 }

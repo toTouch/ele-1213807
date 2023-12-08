@@ -1,11 +1,15 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * 电池型号(BatteryModel)实体类
@@ -61,6 +65,31 @@ public class BatteryModel {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 品牌名称
+     */
+    private String brandName;
+    
+    /**
+     * 电池容量
+     */
+    private Integer capacity;
+    
+    /**
+     * 电池接入协议 0：未知 1：铁塔
+     */
+    private Integer accessProtocol;
+    
+    /**
+     * 电池尺寸
+     */
+    private String size;
+    
+    /**
+     * 电池重量（Kg)
+     */
+    private Double weight;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

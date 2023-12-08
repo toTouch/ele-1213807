@@ -72,6 +72,11 @@ public class ElectricityCabinetQuery {
 
     private Double fullChargeRate;
     private Double lowChargeRate;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
 
     /**
      * 加盟商ID集

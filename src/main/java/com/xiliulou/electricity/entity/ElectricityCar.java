@@ -95,7 +95,17 @@ public class ElectricityCar {
     private Integer tenantId;
 
     private Integer delFlag;
-
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
+    
+    /**
+     * 库存状态
+     */
+    private Integer stockStatus;
+    
     public static final Integer STATUS_NOT_RENT = 0;
     public static final Integer STATUS_IS_RENT = 1;
 

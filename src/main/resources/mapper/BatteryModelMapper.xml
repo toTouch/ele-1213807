@@ -14,12 +14,17 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="brandName" column="brand_name" jdbcType="VARCHAR"/>
+        <result property="capacity" column="capacity" jdbcType="INTEGER"/>
+        <result property="accessProtocol" column="access_protocol" jdbcType="INTEGER"/>
+        <result property="size" column="size" jdbcType="VARCHAR"/>
+        <result property="weight" column="weight" jdbcType="DOUBLE"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryModelMap">
         select
-          id, mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time
+          id, mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time,brand_name,capacity,access_protocol,size,weight
         from t_battery_model
         where id = #{id}
     </select>
@@ -39,12 +44,17 @@
         tbm.battery_v_short,
         tbm.create_time,
         tbm.update_time,
-        tbm.type
+        tbm.type,
+        tbm.brand_name
         from t_battery_model tbm left join t_battery_material bm on tbm.mid=bm.id
         where tbm.del_flag=0
         <if test="batteryType != null and batteryType != ''">
             and tbm.battery_type = #{batteryType}
         </if>
+        <if test="brandName != null and brandName != ''">
+            and tbm.brand_name like concat('%', #{brandName}, '%')
+        </if>
+        
         <if test="tenantId != null">
             and tbm.tenant_id = #{tenantId}
         </if>
@@ -59,6 +69,9 @@
         where del_flag=0
         <if test="batteryType != null and batteryType != ''">
             and battery_type = #{batteryType}
+        </if>
+        <if test="brandName != null and brandName != ''">
+            and brand_name like concat('%', #{brandName}, '%')
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
@@ -119,8 +132,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_model(mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time)
-        values (#{mid},#{batteryModel}, #{batteryType}, #{batteryV}, #{batteryVShort}, #{delFlag}, #{type}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_battery_model(mid,battery_model, battery_type, battery_v, battery_v_short, del_flag, type, tenant_id, create_time, update_time,brand_name,capacity,access_protocol,size,weight)
+        values (#{mid},#{batteryModel}, #{batteryType}, #{batteryV}, #{batteryVShort}, #{delFlag}, #{type}, #{tenantId}, #{createTime}, #{updateTime}, #{brandName}, #{capacity}, #{accessProtocol}, #{size}, #{weight})
     </insert>
 
 
@@ -166,6 +179,21 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="brandName != null">
+                brand_name = #{brandName},
+            </if>
+            <if test="capacity != null">
+                capacity = #{capacity},
+            </if>
+            <if test="accessProtocol != null">
+                access_protocol = #{accessProtocol},
+            </if>
+            <if test="size != null">
+                size = #{size},
+            </if>
+            <if test="weight != null">
+                weight = #{weight},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -175,4 +203,22 @@
         delete from t_battery_model where id = #{id}
     </delete>
 
+    <select id="selectListBrandAndModel" resultMap="BatteryModelMap">
+        select id, brand_name ,battery_v_short,battery_type from t_battery_model where tenant_id = #{tenantId} order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectListBatteryModelByBatteryTypeList" resultMap="BatteryModelMap">
+        select id, battery_type,capacity from t_battery_model
+        where del_flag=0
+        <if test="batteryTypeList != null and batteryTypeList.size > 0">
+            and battery_type in
+            <foreach collection="batteryTypeList" item="batteryType" index="index" open="(" close=")" separator=",">
+                #{batteryType}
+            </foreach>
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
 </mapper>
