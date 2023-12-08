@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.car.CarDataConditionReq;
 import com.xiliulou.electricity.query.car.CarDataQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -164,4 +165,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
     
     List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus")Integer stockStatus);
+    
+    Integer updateFranchiseeIdAndStoreId(ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
 }

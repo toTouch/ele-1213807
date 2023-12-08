@@ -5,7 +5,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.enums.asset.AssetInventoryDetailStatusEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetInventoryDetailBatchInventoryQueryModel;
@@ -64,27 +63,27 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryDetailQueryModel);
         assetInventoryDetailQueryModel.setTenantId(TenantContextHolder.getTenantId());
         assetInventoryDetailQueryModel.setInventoryStatus(assetInventoryRequest.getStatus());
-    
+        
         List<AssetInventoryDetailVO> rspList = Collections.emptyList();
-    
+        
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListByOrderNo(assetInventoryDetailQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-            
+                
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
                 assetInventoryDetailVO.setFranchiseeName(franchisee.getName());
-            
+                
                 return assetInventoryDetailVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -111,16 +110,16 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryService.listSnByFranchiseeId(snSearchRequest);
         if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
             List<AssetInventoryDetailSaveQueryModel> inventoryDetailSaveQueryModelList = electricityBatteryVOList.stream().map(item -> {
-            
+                
                 AssetInventoryDetailSaveQueryModel inventoryDetailSaveQueryModel = AssetInventoryDetailSaveQueryModel.builder().orderNo(orderNo).sn(item.getSn())
                         .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).franchiseeId(snSearchRequest.getFranchiseeId())
                         .inventoryStatus(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_NO).operator(operator).tenantId(snSearchRequest.getTenantId())
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            
+                
                 return inventoryDetailSaveQueryModel;
-            
+                
             }).collect(Collectors.toList());
-        
+            
             // 批量新增
             if (CollectionUtils.isNotEmpty(inventoryDetailSaveQueryModelList)) {
                 assetInventoryDetailMapper.batchInsert(inventoryDetailSaveQueryModelList);
@@ -137,19 +136,19 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         List<AssetInventoryDetailBO> assetInventoryDetailBOList = assetInventoryDetailMapper.selectListBySnListAndOrderNo(snList, orderNo);
         if (CollectionUtils.isNotEmpty(assetInventoryDetailBOList)) {
             rspList = assetInventoryDetailBOList.stream().map(item -> {
-            
+                
                 AssetInventoryDetailVO assetInventoryDetailVO = new AssetInventoryDetailVO();
                 BeanUtils.copyProperties(item, assetInventoryDetailVO);
-            
+                
                 return assetInventoryDetailVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             return Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     
@@ -160,41 +159,37 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
         if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
             String orderNo = inventoryRequest.getOrderNo();
             Integer tenantId = TenantContextHolder.getTenantId();
-    
+            
+            // tenant校验
+            AssetInventoryQueryModel queryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).build();
+            AssetInventoryVO inventoryVO = assetInventoryService.queryByOrderNo(queryModel);
+            if (Objects.nonNull(inventoryVO) && !Objects.equals(inventoryVO.getTenantId(), tenantId)) {
+                return R.ok();
+            }
+            
             List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
-            if(CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
+            if (CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
                 for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
-                    if(Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
+                    if (Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
                         return R.fail("300808", "您选择的电池中存在已盘点的数据，请刷新页面以获取最新状态后再进行操作");
                     }
                 }
             }
-    
-            AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel
-                    .builder()
-                    .orderNo(orderNo)
-                    .status(inventoryRequest.getStatus())
-                    .snList(inventoryRequest.getSnList())
-                    .operator(operator)
-                    .tenantId(tenantId)
-                    .updateTime(System.currentTimeMillis())
-                    .build();
+            
+            AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
+                    .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis()).build();
             //批量盘点
             count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
             
-            AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel
-                    .builder()
-                    .orderNo(orderNo)
-                    .tenantId(tenantId)
-                    .build();
+            AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).tenantId(tenantId).build();
             AssetInventoryVO assetInventoryVO = assetInventoryService.queryByOrderNo(assetInventoryQueryModel);
             Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
             
             // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
-            if(Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)){
+            if (Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)) {
                 status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
             }
-    
+            
             //同步盘点数据
             AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
                     .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)

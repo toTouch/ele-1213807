@@ -30,11 +30,14 @@ import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
@@ -1306,5 +1309,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         return rspList;
     
+    }
+    
+    @Override
+    public Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList) {
+        Integer count = NumberConstant.ZERO;
+    
+        for (ElectricityCarBatchUpdateFranchiseeAndStoreRequest updateFranchiseeAndStoreRequest : carBatchUpdateFranchiseeAndStoreRequestList) {
+            ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel = new ElectricityCarUpdateFranchiseeAndStoreQueryModel();
+            BeanUtil.copyProperties(updateFranchiseeAndStoreRequest, updateFranchiseeAndStoreQueryModel);
+            updateFranchiseeAndStoreQueryModel.setUpdateTime(System.currentTimeMillis());
+        
+            electricityCarMapper.updateFranchiseeIdAndStoreId(updateFranchiseeAndStoreQueryModel);
+            count += 1;
+        
+            //清理缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateFranchiseeAndStoreQueryModel.getId());
+        }
+    
+        return count;
     }
 }
