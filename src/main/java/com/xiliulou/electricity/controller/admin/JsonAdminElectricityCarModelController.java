@@ -103,6 +103,7 @@ public class JsonAdminElectricityCarModelController {
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "manufacturerName", required = false) String manufacturerName,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "uid", required = false) Long uid) {
@@ -140,6 +141,7 @@ public class JsonAdminElectricityCarModelController {
                 .offset(offset)
                 .size(size)
                 .name(name)
+                .manufacturerName(manufacturerName)
                 .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .storeId(storeId)
@@ -153,6 +155,7 @@ public class JsonAdminElectricityCarModelController {
     //列表查询
     @GetMapping(value = "/admin/electricityCarModel/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "manufacturerName", required = false) String manufacturerName,
                         @RequestParam(value = "storeId", required = false) Long storeId) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -185,6 +188,7 @@ public class JsonAdminElectricityCarModelController {
                 .storeIds(storeIds)
                 .storeId(storeId)
                 .name(name)
+                .manufacturerName(manufacturerName)
                 .tenantId(tenantId).build();
 
         return electricityCarModelService.queryCount(electricityCarModelQuery);
@@ -246,5 +250,44 @@ public class JsonAdminElectricityCarModelController {
     @GetMapping(value = "/admin/electricityCarModel/all/{franchiseeId}")
     public R selectListByFranchiseeId(@PathVariable(value = "franchiseeId") Long franchiseeId) {
         return R.ok(electricityCarModelService.selectListByFranchiseeId(franchiseeId));
+    }
+    
+    /**
+     *
+     * @param size
+     * @param offset
+     * @return
+     */
+    @GetMapping("/admin/electricityCarModel/brandAndModel/list")
+    public R queryCarManufacturerNameAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        ElectricityCarModelQuery carModelQuery = ElectricityCarModelQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(electricityCarModelService.listCarManufacturerNameAndModel(carModelQuery));
+    }
+    
+    /**
+     * 根据型号id查询型号
+     * @param modelId 型号ID
+     * @return 型号
+     */
+    @GetMapping(value = "/admin/electricityCarModel/queryModel/{id}")
+    public R queryModelById(@PathVariable("id") Integer modelId) {
+        if (Objects.isNull(modelId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCarModelService.queryModelById(modelId);
     }
 }

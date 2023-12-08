@@ -1,15 +1,18 @@
-
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.util.Lists;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.mapper.ElectricityCabinetFileMapper;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +41,10 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
-
-
+    
+    @Autowired
+    StorageConfig storageConfig;
+    
     /**
      * 新增数据
      *
@@ -101,4 +106,32 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     public void deleteByDeviceInfo(Long otherId, Integer fileType,Integer isUseOSS) {
         electricityCabinetFileMapper.deleteByDeviceInfo(otherId,fileType,isUseOSS);
     }
+    
+    @Override
+    public R batchSaveCabinetPicture(ElectricityCabinetPictureBatchSaveRequest batchSaveRequest) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        List<Long> otherIdList = batchSaveRequest.getOtherIdList();
+        
+        // 创建柜机图片
+        if (!Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+            return R.ok();
+        }
+        
+        List<ElectricityCabinetFile> saveList = Lists.newArrayList();
+        for (Long otherId : otherIdList) {
+            int index = 1;
+            for (String fileName : batchSaveRequest.getFileNameList()) {
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                        .otherId(otherId).type(batchSaveRequest.getFileType())
+                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName).name(fileName).sequence(index)
+                        .isOss(StorageConfig.IS_USE_OSS).tenantId(tenantId).build();
+                saveList.add(electricityCabinetFile);
+                index = index + 1;
+            }
+        }
+        
+        electricityCabinetFileMapper.batchSave(saveList);
+        return R.ok();
+    }
+    
 }

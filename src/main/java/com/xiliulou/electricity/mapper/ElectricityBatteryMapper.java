@@ -1,16 +1,22 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryBatchUpdateFranchiseeQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryEnableAllocateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 换电柜电池表(ElectricityBattery)表数据库访问层
@@ -72,7 +78,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId,
             @Param("updateBattery") ElectricityBattery updateBattery);
     
-    int bindFranchiseeId(@Param("batteryQuery") BindElectricityBatteryQuery batteryQuery);
+    int bindFranchiseeId(@Param("batteryQuery") BindElectricityBatteryQuery batteryQuery, @Param("stockStatus") Integer stockStatus);
     
     List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
     
@@ -137,4 +143,16 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     
     Integer existBySn(String sn);
+    
+    List<ElectricityBatteryBO> selectListSnByFranchiseeId(ElectricityBatteryListSnByFranchiseeQueryModel queryModel);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
+    
+    Integer batchExitWarehouse(AssetBatchExitWarehouseQueryModel assetBatchExitWarehouseQueryModel);
+    
+    List<ElectricityBatteryBO> selectListEnableAllocateBattery(ElectricityBatteryEnableAllocateQueryModel queryModel);
+    
+    Integer updateFranchiseeId(ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel);
+    
+    List<ElectricityBatteryBO> selectListEnableExitWarehouseBattery(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
 }

@@ -14,6 +14,14 @@
     <delete id="deleteById">
         delete from t_electricity_cabinet_file where id = #{id} and tenant_id = #{tenantId}
     </delete>
-
+    
+    <insert id="batchSave" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_cabinet_file(name, other_id, type, sequence, url, bucket_name, is_oss, create_time,
+        update_time, tenant_id) values
+        <foreach item="c" index="index" collection="saveList" separator=",">
+            (#{c.name}, #{c.otherId}, #{c.type}, #{c.sequence}, #{c.url}, #{c.bucketName}, #{c.isOss}, #{c.createTime},
+            #{c.updateTime}, #{c.tenantId})
+        </foreach>
+    </insert>
 
 </mapper>

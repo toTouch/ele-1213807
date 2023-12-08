@@ -1,20 +1,24 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
+import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -84,4 +88,22 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     List<SearchVo> cabinetSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name,
                                @Param("tenantId") Integer tenantId);
+    
+    Integer existByProductKeyAndDeviceName(@Param("productKey") String productKey, @Param("deviceName") String deviceName);
+    
+    Integer batchOutWarehouse(CabinetBatchOutWarehouseDTO outWarehouseDTO);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
+    
+    List<ElectricityCabinetBO> selectListByFranchiseeIdAndStockStatus(ElectricityCabinetListSnByFranchiseeQueryModel electricityCabinetListSnByFranchiseeQueryModel);
+    
+    Integer batchExitWarehouse(AssetBatchExitWarehouseQueryModel batchExitWarehouseQueryModel);
+    
+    Integer updateFranchiseeIdAndStoreId(ElectricityCabinetUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
+    
+    List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
+    
+    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    
+    List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 }

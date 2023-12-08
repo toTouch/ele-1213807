@@ -54,5 +54,9 @@ public class ElectricityBatteryQuery {
      * 绑定加盟商状态， 0-未绑定 1-已绑定
      */
     private Integer bindStatus;
-
+    
+    /**
+     * 库存状态 0：在库  1：出库
+     */
+    private Integer stockStatus;
 }

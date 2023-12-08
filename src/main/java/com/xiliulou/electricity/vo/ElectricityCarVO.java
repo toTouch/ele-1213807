@@ -29,6 +29,11 @@ public class ElectricityCarVO {
      * 车辆型号
      */
     private String model;
+    
+    /**
+     * 车辆型号
+     */
+    private Integer modelId;
 
     /**
      * 地址经度
@@ -68,7 +73,22 @@ public class ElectricityCarVO {
     private Integer storeId;
 
     private Long franchiseeId;
-
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
+    
+    /**
+     * 库房名称
+     */
+    private String warehouseName;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
+    
     /**
      * 门店名称
      */

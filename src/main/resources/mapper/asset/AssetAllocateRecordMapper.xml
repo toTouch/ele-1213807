@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetAllocateRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        tenant_id,
+        type,
+        old_franchisee_id,
+        old_store_id,
+        new_franchisee_id,
+        new_store_id,
+        remark,
+        operator,
+        del_flag,
+        create_time,
+        update_time
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_allocate_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_no,
+            tenant_id,
+            type,
+            old_franchisee_id,
+            old_store_id,
+            new_franchisee_id,
+            new_store_id,
+            remark,
+            operator,
+            del_flag,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderNo},
+            #{tenantId},
+            #{type},
+            #{oldFranchiseeId},
+            #{oldStoreId},
+            #{newFranchiseeId},
+            #{newStoreId},
+            #{remark},
+            #{operator},
+            #{delFlag},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.bo.asset.AssetAllocateRecordBO">
+        select
+        <include refid="basic_field"/>
+        from t_asset_allocate_record
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = #{orderNo}
+            </if>
+            <if test="type != null ">
+                and type = #{type}
+            </if>
+            <if test="sourceFranchiseeId != null ">
+                and old_franchisee_id= #{sourceFranchiseeId}
+            </if>
+            <if test="targetFranchiseeId != null ">
+                and new_franchisee_id = #{targetFranchiseeId}
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_asset_allocate_record
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = #{orderNo}
+            </if>
+            <if test="type != null ">
+                and type = #{type}
+            </if>
+            <if test="sourceFranchiseeId != null ">
+                and old_franchisee_id= #{sourceFranchiseeId}
+            </if>
+            <if test="targetFranchiseeId != null ">
+                and new_franchisee_id = #{targetFranchiseeId}
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+    </select>
+
+</mapper>
+
+
+
+

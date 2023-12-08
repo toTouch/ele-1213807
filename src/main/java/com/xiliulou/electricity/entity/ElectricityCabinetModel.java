@@ -27,16 +27,50 @@ public class ElectricityCabinetModel {
     */
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
+    
+    /**
+     * 厂家名称
+     */
+    @NotEmpty(message = "厂家名称不能为空!")
+    private String manufacturerName ;
+    
     /**
     * 型号名称
     */
     @NotEmpty(message = "型号名称不能为空!")
     private String name;
+    
+    /**
+     * 电柜类型 1：有屏，2：无屏
+     */
+    private Integer exchangeType ;
+    
     /**
     * 柜子的仓门数量
     */
     @NotNull(message = "柜子的仓门数量不能为空!")
     private Integer num;
+    
+    /**
+     * 柜机尺寸
+     */
+    private String cabinetSize;
+    
+    /**
+     * 仓位尺寸
+     */
+    private String cellSize;
+    
+    /**
+     * 屏幕尺寸
+     */
+    private String screenSize  ;
+    
+    /**
+     * 防水等级
+     */
+    private String waterproofGrade ;
+    
     /**
     * 电压
     */

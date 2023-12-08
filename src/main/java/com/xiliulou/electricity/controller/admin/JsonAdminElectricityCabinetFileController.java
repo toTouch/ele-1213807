@@ -9,17 +9,20 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.query.CallBackQuery;
+import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +133,25 @@ public class JsonAdminElectricityCabinetFileController {
 			}
 		}
 		return R.ok();
+	}
+	
+	/**
+	 * 电柜图片批量保存
+	 * @param batchSaveRequest
+	 * @return
+	 */
+	@PostMapping("/admin/electricityCabinetFileService/electricityCabinetPictureBatchSave")
+	public R electricityCabinetPictureBatchSave(@RequestBody @Valid ElectricityCabinetPictureBatchSaveRequest batchSaveRequest) {
+		if (ObjectUtil.isEmpty(batchSaveRequest.getFileNameList())) {
+			return R.ok();
+		}
+		
+		//换电柜
+		if (ObjectUtil.equal(batchSaveRequest.getFileType(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET) && CollectionUtils.isEmpty(batchSaveRequest.getOtherIdList())) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		
+		return electricityCabinetFileService.batchSaveCabinetPicture(batchSaveRequest);
 	}
 
 	/**

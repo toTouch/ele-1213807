@@ -5,7 +5,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
@@ -22,7 +21,6 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +66,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @PostMapping(value = "/admin/battery")
     public R save(@RequestBody @Validated EleBatteryQuery electricityBattery) {
         
@@ -130,7 +129,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "power", required = false) Double power,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
-            @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus) {
         
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -170,6 +170,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+        electricityBatteryQuery.setStockStatus(stockStatus);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
@@ -213,7 +214,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "power", required = false) Double power,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
-            @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -245,6 +247,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+        electricityBatteryQuery.setStockStatus(stockStatus);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){

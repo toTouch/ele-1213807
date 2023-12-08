@@ -28,6 +28,7 @@ public class ElectricityCabinetOtherSetting {
     private Integer autoTempControlStatus;
 
     /**
+     *
      * 新硬件状态
      */
     private Integer newHardwareStatus;

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.util.Lists;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -86,6 +87,26 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 electricityCabinetBox.setTenantId(tenantId);
                 electricityCabinetBoxMapper.insert(electricityCabinetBox);
             }
+        }
+    }
+    
+    @Override
+    public void batchInsertBoxByModelIdV2(ElectricityCabinetModel electricityCabinetModel, Integer id) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        List<ElectricityCabinetBox> boxList = Lists.newArrayList();
+        if (Objects.nonNull(id)) {
+            for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
+                ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+                electricityCabinetBox.setElectricityCabinetId(id);
+                electricityCabinetBox.setCellNo(String.valueOf(i));
+                electricityCabinetBox.setCreateTime(System.currentTimeMillis());
+                electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+                electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+                electricityCabinetBox.setTenantId(tenantId);
+                boxList.add(electricityCabinetBox);
+            }
+            electricityCabinetBoxMapper.batchInsertEleBox(boxList);
         }
     }
 

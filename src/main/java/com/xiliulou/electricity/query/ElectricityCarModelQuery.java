@@ -28,6 +28,12 @@ public class ElectricityCarModelQuery {
      */
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Integer id;
+    
+    /**
+     * 型号名称
+     */
+    @NotBlank(message = "厂家名称不能为空", groups = {CreateGroup.class})
+    private String manufacturerName;
 
     /**
      * 型号名称

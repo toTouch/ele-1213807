@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id,
+        order_no,
+        sn,
+        type,
+        franchisee_id,
+        inventory_status,
+        status,
+        operator,
+        tenant_id,
+        del_flag,
+        create_time,
+        update_time,
+        remark
+    </sql>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_asset_inventory_detail(order_no, sn, type, franchisee_id, inventory_status, status, operator, tenant_id, del_flag, create_time, update_time, remark)
+        values
+        <foreach item="item" index="index" collection="inventoryDetailSaveQueryModelList" separator=",">
+            (#{item.orderNo},#{item.sn},#{item.type}, #{item.franchiseeId}, #{item.inventoryStatus}, #{item.status}, #{item.operator}, #{item.tenantId}, #{item.delFlag},
+            #{item.createTime}, #{item.updateTime}, #{item.remark})
+        </foreach>
+    </insert>
+    
+    <update id="batchInventoryBySnList">
+        update t_asset_inventory_detail
+        set inventory_status = 1, operator = #{operator}, status = #{status}, update_time = #{updateTime}
+        <where>
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+                    <if test="item != null and item != ''">
+                        #{item}
+                    </if>
+                </foreach>
+            </if>
+            and tenant_id = #{tenantId} and order_no = #{orderNo}
+        </where>
+    </update>
+    
+    <select id="selectListByOrderNo" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO">
+        select
+        <include refid="basic_field"/>
+        from t_asset_inventory_detail
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no=#{orderNo}
+            </if>
+            <if test="inventoryStatus != null ">
+                and inventory_status=#{inventoryStatus}
+            </if>
+            <if test="franchiseeId != null ">
+                and franchisee_id=#{franchiseeId}
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+        ORDER BY id
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_asset_inventory_detail
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no=#{orderNo}
+            </if>
+            <if test="inventoryStatus != null ">
+                and inventory_status=#{inventoryStatus}
+            </if>
+            <if test="franchiseeId != null ">
+                and franchisee_id=#{franchiseeId}
+            </if>
+            and tenant_id = #{tenantId} and del_flag = 0
+        </where>
+    </select>
+    
+    <select id="selectListBySnListAndOrderNo" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO">
+        select
+        <include refid="basic_field"/>
+        from t_asset_inventory_detail
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no=#{orderNo}
+            </if>
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+                    <if test="item != null and item != ''">
+                        #{item}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+
+
+

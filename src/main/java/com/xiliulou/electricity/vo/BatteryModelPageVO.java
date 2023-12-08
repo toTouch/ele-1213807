@@ -18,6 +18,11 @@ public class BatteryModelPageVO {
     private String material;
     
     /**
+     * 品牌名称
+     */
+    private String brandName;
+    
+    /**
      * 电池型号
      */
     private Integer batteryModel;

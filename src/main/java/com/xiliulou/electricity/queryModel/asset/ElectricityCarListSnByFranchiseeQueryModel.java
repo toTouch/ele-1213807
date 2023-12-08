@@ -1,0 +1,33 @@
+package com.xiliulou.electricity.queryModel.asset;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @author HeYafeng
+ * @description 查询车辆sn
+ * @date 2023/11/24 14:54:54
+ */
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ElectricityCarListSnByFranchiseeQueryModel {
+    
+    private Integer tenantId;
+    
+    private Long franchiseeId;
+    
+    private Long storeId;
+    
+    private Integer stockStatus;
+    
+    private String sn;
+    
+    private Long size;
+    
+    private Long offset;
+}

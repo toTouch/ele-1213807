@@ -1,15 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.BatteryModelMapper;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -17,6 +21,8 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.asset.BatteryBrandModelVo;
+import com.xiliulou.electricity.vo.asset.BrandNameAndBatteryVShortVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -47,7 +53,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     private static final String SEPARATOR = "_";
     
     private static final String SEPARATE = "/";
-
+    
     @Autowired
     private ApplicationContext applicationContext;
     
@@ -68,7 +74,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     
     @Autowired
     private FranchiseeService franchiseeService;
-
+    
     /**
      * 根据电池型号查询数据
      *
@@ -86,7 +92,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         queryWrapper.eq(BatteryModel::getTenantId, tenantId).eq(BatteryModel::getBatteryType, batteryType);
         return batteryModelMapper.selectOne(queryWrapper);
     }
-
+    
     /**
      * 根据电池型号集查询数据
      *
@@ -104,7 +110,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getId, idList);
         return batteryModelMapper.selectList(queryWrapper);
     }
-
+    
     /**
      * 根据电池型号集查询数据
      *
@@ -122,7 +128,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         queryWrapper.eq(BatteryModel::getTenantId, tenantId).in(BatteryModel::getBatteryType, batteryTypes);
         return batteryModelMapper.selectList(queryWrapper);
     }
-
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -141,10 +147,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (CollectionUtils.isNotEmpty(cacheBatteryModelList)) {
             return cacheBatteryModelList;
         }
-
+        
         return applicationContext.getBean(BatteryModelService.class).selectByTenantIdFromDB(tenantId);
     }
-
+    
     @Override
     @Klock(name = "selectBatteryModelByTenantIdFromDB", keys = {"#tenantId"}, waitTime = 3, customLockTimeoutStrategy = "queryByTenantIdFromDB")
     public List<BatteryModel> selectByTenantIdFromDB(Integer tenantId) {
@@ -152,7 +158,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (CollectionUtils.isEmpty(batteryModelList)) {
             return Collections.emptyList();
         }
-
+        
         redisService.saveWithList(CacheConstant.CACHE_BATTERY_MODEL + tenantId, batteryModelList);
         return batteryModelList;
     }
@@ -161,8 +167,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public List<BatteryModel> queryByTenantIdFromDB(Integer tenantId) {
         return this.batteryModelMapper.selectList(
-                new LambdaQueryWrapper<BatteryModel>().eq(BatteryModel::getTenantId, tenantId)
-                        .eq(BatteryModel::getDelFlag, BatteryModel.DEL_NORMAL).orderByAsc(BatteryModel::getId));
+                new LambdaQueryWrapper<BatteryModel>().eq(BatteryModel::getTenantId, tenantId).eq(BatteryModel::getDelFlag, BatteryModel.DEL_NORMAL)
+                        .orderByAsc(BatteryModel::getId));
     }
     
     @Slave
@@ -187,7 +193,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     public Integer selectByPageCount(BatteryModelQuery query) {
         return this.batteryModelMapper.selectByPageCount(query);
     }
-
+    
     @Deprecated
     @Override
     public List<BatteryTypeVO> selectBatteryTypeAll() {
@@ -200,49 +206,55 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (CollectionUtils.isEmpty(batteryMaterials)) {
             return Collections.emptyList();
         }
-
+        
         return batteryModels.stream().map(item -> {
-            BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
-            BeanUtils.copyProperties(item, batteryTypeVO);
-            batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
-            return batteryTypeVO;
-        }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
+                    BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
+                    BeanUtils.copyProperties(item, batteryTypeVO);
+                    batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
+                    return batteryTypeVO;
+                }).sorted(Comparator.comparing(
+                        item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0")))
+                .collect(Collectors.toList());
     }
-
+    
     @Override
     public List<BatteryTypeVO> selectBatteryTypeAll(Integer tenantId) {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
         }
-
+        
         List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
         if (CollectionUtils.isEmpty(batteryMaterials)) {
             return Collections.emptyList();
         }
-
+        
         return batteryModels.stream().map(item -> {
-            BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
-            BeanUtils.copyProperties(item, batteryTypeVO);
-            batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
-            return batteryTypeVO;
-        }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
+                    BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
+                    BeanUtils.copyProperties(item, batteryTypeVO);
+                    batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
+                    return batteryTypeVO;
+                }).sorted(Comparator.comparing(
+                        item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0")))
+                .collect(Collectors.toList());
     }
-
+    
     @Override
     public List<String> selectBatteryVAll() {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
         }
-
-        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
+        
+        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/")))
+                .distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
     }
-
+    
     /**
      * 长电池型号转为短电池型号
+     *
      * @param batteryModels 租户所有电池型号
-     * @param batteryTypes 待转换长电池型号
+     * @param batteryTypes  待转换长电池型号
      * @return
      */
     @Override
@@ -251,17 +263,17 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (CollectionUtils.isEmpty(batteryTypes) || CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
         }
-
+        
         Map<String, String> batteryModelMap = batteryModels.stream().collect(Collectors.toMap(BatteryTypeVO::getBatteryType, BatteryTypeVO::getBatteryVShort));
-
+        
         return batteryTypes.stream().map(batteryModelMap::get).collect(Collectors.toList());
     }
-
+    
     @Override
     public List<String> selectShortBatteryType(List<String> batteryTypes, Integer tenantId) {
         return this.batteryModelMapper.selectShortBatteryType(batteryTypes, tenantId);
     }
-
+    
     /**
      * 获取用户自定义电池型号列表
      */
@@ -273,10 +285,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
         
-        List<BatteryModel> list = batteryModels.stream()
-                .filter(item -> Objects.equals(item.getType(), BatteryModel.TYPE_CUSTOMIZE))
-                .sorted(Comparator.comparing(BatteryModel::getBatteryModel))
-                .collect(Collectors.toList());
+        List<BatteryModel> list = batteryModels.stream().filter(item -> Objects.equals(item.getType(), BatteryModel.TYPE_CUSTOMIZE))
+                .sorted(Comparator.comparing(BatteryModel::getBatteryModel)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
@@ -287,12 +297,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public Triple<Boolean, String, Object> save(BatteryModelQuery batteryModelQuery) {
         List<BatteryModel> batteryModels = queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        Integer maxBatteryModel = batteryModels.stream()
-                .sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed())
-                .map(BatteryModel::getBatteryModel).findFirst().orElse(0);
-        List<String> batteryTypeList = batteryModels.stream()
-                .sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed())
-                .map(BatteryModel::getBatteryType).collect(Collectors.toList());
+        Integer maxBatteryModel = batteryModels.stream().sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed()).map(BatteryModel::getBatteryModel).findFirst()
+                .orElse(0);
+        List<String> batteryTypeList = batteryModels.stream().sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed()).map(BatteryModel::getBatteryType)
+                .collect(Collectors.toList());
         
         //电池型号数量
         if (batteryModels.size() >= 50) {
@@ -304,8 +312,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Triple.of(false, "100346", "电池材质不存在");
         }
         
-        if (Objects.isNull(batteryMaterial.getKind()) || StringUtils.isBlank(batteryMaterial.getType()) || StringUtils
-                .isBlank(batteryMaterial.getShortType())) {
+        if (Objects.isNull(batteryMaterial.getKind()) || StringUtils.isBlank(batteryMaterial.getType()) || StringUtils.isBlank(batteryMaterial.getShortType())) {
             return Triple.of(false, "", "电池材质异常");
         }
         
@@ -329,8 +336,13 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         batteryModel.setDelFlag(BatteryModel.DEL_NORMAL);
         batteryModel.setCreateTime(System.currentTimeMillis());
         batteryModel.setUpdateTime(System.currentTimeMillis());
+        batteryModel.setBrandName(batteryModelQuery.getBrandName());
+        batteryModel.setCapacity(batteryModelQuery.getCapacity());
+        batteryModel.setAccessProtocol(batteryModelQuery.getAccessProtocol());
+        batteryModel.setSize(batteryModelQuery.getBatterySize());
+        batteryModel.setWeight(batteryModelQuery.getWeight());
         this.insert(batteryModel);
-
+        
         return Triple.of(true, null, null);
     }
     
@@ -339,7 +351,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         BatteryModel batteryModel = new BatteryModel();
         BeanUtils.copyProperties(batteryModelQuery, batteryModel);
         batteryModel.setUpdateTime(System.currentTimeMillis());
-        
+        batteryModel.setSize(batteryModelQuery.getBatterySize());
         this.update(batteryModel);
         
         return Triple.of(true, null, null);
@@ -356,8 +368,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Triple.of(false, "", "系统默认型号不允许删除");
         }
         
-        Integer result = franchiseeService
-                .checkBatteryModelIsUse(batteryModel.getBatteryModel(), TenantContextHolder.getTenantId());
+        Integer result = franchiseeService.checkBatteryModelIsUse(batteryModel.getBatteryModel(), TenantContextHolder.getTenantId());
         if (Objects.nonNull(result)) {
             return Triple.of(false, "", "电池型号已绑定加盟商不允许删除");
         }
@@ -464,8 +475,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return "";
         }
         
-        return batteryModels.stream().collect(
-                Collectors.toMap(BatteryModel::getBatteryModel, BatteryModel::getBatteryType, (item1, item2) -> item2))
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryModel, BatteryModel::getBatteryType, (item1, item2) -> item2))
                 .getOrDefault(batteryModel, "");
     }
     
@@ -480,11 +490,10 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return NumberConstant.ZERO;
         }
         
-        return batteryModels.stream().collect(
-                Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel, (item1, item2) -> item2))
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel, (item1, item2) -> item2))
                 .getOrDefault(type, NumberConstant.ZERO);
     }
-
+    
     @Override
     public String acquireBatteryShortType(String batteryType, Integer tenantId) {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
@@ -492,12 +501,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             log.warn("GET BATTERY SHORT TYPE WARN! batteryModels is empty,tenantId={}", tenantId);
             return "";
         }
-
-        return batteryModels.stream().collect(
-                        Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2))
+        
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2))
                 .getOrDefault(batteryType, "");
     }
-
+    
     @Override
     public String acquireOriginalModelByShortType(String shortType, Integer tenantId) {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
@@ -505,13 +513,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             log.warn("get battery short type warn for acquire original Model! batteryModels is empty, tenantId = {}", tenantId);
             return StringUtils.EMPTY;
         }
-
-        return batteryModels.stream().collect(
-                        Collectors.toMap(BatteryModel::getBatteryVShort, BatteryModel::getBatteryType, (item1, item2) -> item2))
+        
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryVShort, BatteryModel::getBatteryType, (item1, item2) -> item2))
                 .getOrDefault(shortType, StringUtils.EMPTY);
-
+        
     }
-
+    
     @Override
     public String analysisBatteryTypeByBatteryName(String batteryName) {
         String type = "";
@@ -537,8 +544,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             
             //获取材料体系
             char material = batteryChars[2];
-            Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors
-                    .toMap(item -> String.valueOf(item.getKind()), BatteryMaterial::getType, (item1, item2) -> item2));
+            Map<String, String> materialMap = batteryMaterials.stream()
+                    .collect(Collectors.toMap(item -> String.valueOf(item.getKind()), BatteryMaterial::getType, (item1, item2) -> item2));
             
             //如果电池编码对应的材质不存在，返回空
             String materialName = materialMap.get(String.valueOf(material));
@@ -569,8 +576,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         String V = "V/";
         
         StringBuilder builder = new StringBuilder();
-        return builder.append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getShortType())
-                .append(SEPARATE).append(String.format("%02d", batteryModelQuery.getNumber())).toString();
+        return builder.append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getShortType()).append(SEPARATE)
+                .append(String.format("%02d", batteryModelQuery.getNumber())).toString();
     }
     
     private String generateBatteryType(BatteryModelQuery batteryModelQuery, BatteryMaterial batteryMaterial) {
@@ -578,8 +585,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         String V = "V_";
         
         StringBuilder builder = new StringBuilder();
-        return builder.append(B).append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getType())
-                .append(SEPARATOR).append(String.format("%02d", batteryModelQuery.getNumber())).toString();
+        return builder.append(B).append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getType()).append(SEPARATOR)
+                .append(String.format("%02d", batteryModelQuery.getNumber())).toString();
     }
     
     /**
@@ -587,34 +594,29 @@ public class BatteryModelServiceImpl implements BatteryModelService {
      */
     private String transformBatteryType(BatteryModel batteryModel, List<BatteryMaterial> batteryMaterials) {
         String batteryType = "";
-        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils
-                .isBlank(batteryModel.getBatteryVShort())) {
+        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
             return batteryType;
         }
         
-        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(),
-                batteryMaterials);
+        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(), batteryMaterials);
         
         return batteryType;
     }
     
     private String transformBatteryType(BatteryModelPageVO batteryModel, List<BatteryMaterial> batteryMaterials) {
         String batteryType = "";
-        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils
-                .isBlank(batteryModel.getBatteryVShort())) {
+        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
             return batteryType;
         }
         
-        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(),
-                batteryMaterials);
+        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(), batteryMaterials);
         
         return batteryType;
     }
     
-    private String acquireBatteryType(String batteryType, String batteryVShort,
-            List<BatteryMaterial> batteryMaterials) {
-        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors
-                .toMap(BatteryMaterial::getType, BatteryMaterial::getName, (String item1, String item2) -> item2));
+    private String acquireBatteryType(String batteryType, String batteryVShort, List<BatteryMaterial> batteryMaterials) {
+        Map<String, String> materialMap = batteryMaterials.stream()
+                .collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (String item1, String item2) -> item2));
         
         String[] split = batteryVShort.split(SEPARATE);
         if (ArrayUtils.isEmpty(split) || split.length < 2) {
@@ -622,8 +624,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }
         
         String temp = batteryType;
-        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryType.indexOf(SEPARATOR) + 1) + 1,
-                temp.lastIndexOf(SEPARATOR));
+        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryType.indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
         
         String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
         
@@ -845,5 +846,74 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         list.add(b16);
         
         return list;
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryBatteryModelById(Long id) {
+        BatteryModel batteryModel = this.queryByIdFromDB(id);
+        if (Objects.isNull(batteryModel) || !Objects.equals(batteryModel.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "100560", "电池型号不存在");
+        }
+        
+        BatteryBrandModelVo brandModelVo = new BatteryBrandModelVo();
+        BeanUtils.copyProperties(batteryModel, brandModelVo);
+        String batteryType = batteryModel.getBatteryType();
+        brandModelVo.setChargeV(batteryModel.getBatteryV());
+        brandModelVo.setBatterySize(batteryModel.getSize());
+        
+        // 兼容老数据 如果老数据容量为空 则显示为0
+        if (Objects.isNull(batteryModel.getCapacity())) {
+            brandModelVo.setCapacity(NumberConstant.ZERO);
+        }
+        
+        try {
+            if (StringUtils.isNotBlank(batteryType)) {
+                String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                String standV = batteryV.substring(0, batteryV.length() - 1);
+                String num = batteryType.substring(batteryType.lastIndexOf("_") + 1);
+                brandModelVo.setNumber(Integer.parseInt(num));
+                brandModelVo.setStandardV(Integer.parseInt(standV));
+            }
+        } catch (Exception e) {
+            return Triple.of(true, null, null);
+        }
+        
+        return Triple.of(true, null, brandModelVo);
+    }
+    
+    @Override
+    public List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel) {
+        List<BatteryModel> modelList = batteryModelMapper.selectListBrandAndModel(batteryModelQueryModel);
+        if (CollectionUtils.isEmpty(modelList)) {
+            return Lists.newArrayList();
+        }
+        
+        return modelList.stream().map(batteryModel -> {
+            BrandNameAndBatteryVShortVO vo = new BrandNameAndBatteryVShortVO();
+            BeanUtils.copyProperties(batteryModel, vo);
+            
+            // 赋值复合字段
+            StringBuilder brandAndModelName = new StringBuilder();
+            if (StringUtils.isNotBlank(batteryModel.getBrandName())) {
+                brandAndModelName.append(batteryModel.getBrandName());
+            }
+            
+            if (StringUtils.isNotBlank(brandAndModelName.toString())) {
+                brandAndModelName.append(StringConstant.FORWARD_SLASH);
+            }
+            
+            if (StringUtils.isNotBlank(batteryModel.getBatteryVShort())) {
+                brandAndModelName.append(batteryModel.getBatteryVShort());
+            }
+            vo.setBrandNameAndVShort(brandAndModelName.toString());
+            return vo;
+        }).collect(Collectors.toList());
+    }
+    
+    public List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId) {
+        if (CollectionUtils.isEmpty(batteryTypeList)) {
+            return Lists.newArrayList();
+        }
+        return batteryModelMapper.selectListBatteryModelByBatteryTypeList(batteryTypeList, tenantId);
     }
 }
