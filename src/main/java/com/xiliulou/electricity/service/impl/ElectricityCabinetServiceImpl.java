@@ -1031,7 +1031,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //可换电数量
             List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(exchangeableList)) {
-                assignExchangeableBatteyType(exchangeableList, e);
+                assignExchangeableBatteryType(exchangeableList, e);
                 // assignExchangeableVoltageAndCapacity(exchangeableList, e);
             }
             long exchangeableNumber = exchangeableList.size();
@@ -1058,13 +1058,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
     }
     
-    private void assignExchangeableBatteyType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
+    private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
         HashMap<String, Integer> batteryTypeMap = new HashMap<>();
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
-            if (StringUtils.isNotBlank(batteryType)) {
+            if (Objects.nonNull(batteryType)) {
                 String key = subStringButteryType(batteryType);
-                if (StringUtils.isNotBlank(key)) {
+                if (StringUtils.equals(StringUtils.EMPTY, batteryType)) {
+                    key = BatteryConstant.DEFAULT_MODEL;
+                }
+                if (Objects.nonNull(key)) {
                     //统计可换电电池型号
                     if (batteryTypeMap.containsKey(key)) {
                         Integer count = batteryTypeMap.get(key);
@@ -1108,6 +1111,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
+            if (Objects.nonNull(batteryType)) {
+                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
             if (StringUtils.isNotBlank(batteryType)) {
                 Integer capacity = finalModelCapacityMap.get(batteryType);
                 if (Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) {
@@ -1156,6 +1161,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             String sn = electricityCabinetBox.getSn();
+            if (Objects.nonNull(batteryType)) {
+                String key = subStringVoltageAndCapacity(batteryType, finalCapacityMap.get(sn));
             if (StringUtils.isNotBlank(batteryType)) {
                 Integer capacity = finalModelCapacityMap.get(batteryType);
                 if (Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) {
@@ -3328,8 +3335,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setBatteryType(null);
                 }
                 
-                if (StringUtils.isNotBlank(item.getBatteryType())) {
+                if (Objects.nonNull(item.getBatteryType())) {
                     String batteryType = item.getBatteryType();
+                    
+                    if (StringUtils.equals(StringUtils.EMPTY, item.getBatteryType())) {
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(BatteryConstant.DEFAULT_MODEL);
+                    } else {
+                        //设置电池短型号
+                        electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
+                       
+                        //设置电池电压 容量
+                        StringBuilder voltageAndCapacity = new StringBuilder();
+                        String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                        voltageAndCapacity.append(batteryV);
+                        if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
+                                electricityBattery.getCapacity())) {
+                            voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
+                        }
+                        electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                    }
                     //设置电池短型号
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                     //设置电池电压 容量
@@ -4197,8 +4221,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
             }
             
-            if (StringUtils.isNotBlank(item.getBatteryType())) {
+            if (Objects.nonNull(item.getBatteryType())) {
                 String batteryType = item.getBatteryType();
+                if (StringUtils.equals(StringUtils.EMPTY, item.getBatteryType())) {
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(BatteryConstant.DEFAULT_MODEL);
+                } else {
+                    electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
+                    String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
+                    
+                    StringBuilder voltageAndCapacity = new StringBuilder();
+                    voltageAndCapacity.append(batteryV);
+                    
+                    //设置电池电压 容量
+                    if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getCapacity()) && !Objects.equals(NumberConstant.ZERO,
+                            electricityBattery.getCapacity())) {
+                        voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(electricityBattery.getCapacity()).append(BatteryConstant.CAPACITY_UNIT);
+                    }
+                    electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
+                }
                 electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                 String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
                 
@@ -4242,7 +4282,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private String subStringVoltageAndCapacity(String batteryType, Integer capacity) {
         StringBuilder voltageAndCapacity = new StringBuilder();
-        if (StringUtils.isNotBlank(batteryType)) {
+        
+        if (Objects.nonNull(batteryType)) {
+            
+            // 如果电池型号解析不出来 则默认标准型号
+            if (StringUtils.equals(StringUtils.EMPTY, batteryType)) {
+                return BatteryConstant.DEFAULT_MODEL;
+            }
+            
             String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
             voltageAndCapacity.append(batteryV);
         }
@@ -4707,7 +4754,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //可换电数量
                 List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(e -> isExchangeable(e, fullyCharged)).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(exchangeableList)) {
-                    assignExchangeableBatteyType(exchangeableList, item);
+                    assignExchangeableBatteryType(exchangeableList, item);
                     assignExchangeableVoltageAndCapacity(exchangeableList, item);
                 }
                 long exchangeableNumber = exchangeableList.size();
