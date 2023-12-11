@@ -215,6 +215,13 @@ public interface CacheConstant {
     String BIND_BANK_OPER_USER_LOCK = "bind_Bank_oper_user_lock:";
     //提现密码缓存
     String CACHE_WITHDRAW_PASSWORD = "withdraw_password";
+    
+    // 批量提现审核 用户锁
+    String CACHE_BATCH_WITHDRAW_OPER_USER_LOCK = "batch_withdraw_operation_user_lock:";
+    
+    // 门店修改
+    String STORE_SAVE_UID = "store_save_uid:";
+    
     //提现 用户锁
     String CACHE_WITHDRAW_USER_UID = "withdraw_user_uid:";
     /**
