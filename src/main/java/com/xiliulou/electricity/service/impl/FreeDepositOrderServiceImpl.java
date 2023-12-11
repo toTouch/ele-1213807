@@ -1275,6 +1275,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             orderId = carRentalPackageDepositPayPo.getOrderNo();
             packageId = carRentalPackageDepositPayPo.getRentalPackageId();
         }
+        log.info("check free deposit status from pxz. orderId = {}, package id = {}, user data = {}", orderId, packageId, freeDepositUserDTO);
+        
         //检查传入的用户信息是否和前一次传入的内容一致，若用户名或身份证号,以及所选套餐存在不一致，则需要生成新码
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())

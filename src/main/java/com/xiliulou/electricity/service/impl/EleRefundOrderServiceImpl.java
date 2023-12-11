@@ -1268,7 +1268,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
 
-        return Triple.of(false, "100413", "免押押金解冻中");
+        return Triple.of(true, "100413", "免押押金解冻中");
     }
 
     /**
