@@ -198,6 +198,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -992,7 +993,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.emptyList());
         }
         
-        List<ElectricityCabinetVO> resultVo = electricityCabinetList.stream().map(e -> {
+        List<ElectricityCabinetVO> resultVo = electricityCabinetList.parallelStream().map(e -> {
             //营业时间
             if (Objects.nonNull(e.getBusinessTime())) {
                 String businessTime = e.getBusinessTime();
@@ -1062,7 +1063,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
-        HashMap<String, Integer> batteryTypeMap = new HashMap<>();
+        ConcurrentHashMap<String, Integer> batteryTypeMap = new ConcurrentHashMap<>();
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             if (Objects.nonNull(batteryType)) {
@@ -1085,7 +1086,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void assignExchangeableVoltageAndCapacity(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
-        HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
+        ConcurrentHashMap<String, Integer> voltageAndCapacityMap = new ConcurrentHashMap<>();
         
         // 根据可换电格挡电池的sn列表查询电池列表获取容量
         List<String> snList = exchangeableList.stream().map(ElectricityCabinetBox::getSn).filter(StringUtils::isNotBlank).collect(Collectors.toList());
@@ -4688,7 +4689,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Collections.EMPTY_LIST;
         }
         
-        return electricityCabinets.stream().peek(item -> {
+        return electricityCabinets.parallelStream().peek(item -> {
             
             //营业时间
             if (Objects.nonNull(item.getBusinessTime())) {
