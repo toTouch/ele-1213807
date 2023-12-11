@@ -1282,7 +1282,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName())
                 || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
                 || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
-            log.info("found the same user info for generate deposit link, order id = {}", orderId);
+            log.info("found the different user info or different package for generate deposit link, order id = {}", orderId);
             return Triple.of(true, null, freeDepositOrder);
         }
         

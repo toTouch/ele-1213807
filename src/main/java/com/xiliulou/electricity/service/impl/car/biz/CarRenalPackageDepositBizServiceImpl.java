@@ -669,7 +669,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 .idCard(freeDepositOptReq.getIdCard())
                 .tenantId(tenantId)
                 .packageId(freeDepositOptReq.getRentalPackageId())
-                .packageType(carRentalPackage.getType())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()) //针对租车和车电一体套餐统一判断。为了区别换电套餐。换电套餐类型为1，租车/车电一体统一使用2。
                 .build();
     
         //检查用户是否已经进行过免押操作，且已免押成功
