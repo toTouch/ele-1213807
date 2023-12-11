@@ -132,7 +132,24 @@
                 </foreach>
             </if>
             <if test=" query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
-            order by te.pay_time desc
+            <choose>
+                <when test="query.orderByPayTime != nul">
+                    <choose>
+                        <when test="query.orderByPayTime == 1">
+                            order by te.pay_time desc
+                        </when>
+                        <when test="query.orderByPayTime == 2">
+                            order by te.pay_time
+                        </when>
+                    </choose>
+                </when>
+                <when test="query.orderByServiceFeeGenerateTime != null and query.orderByServiceFeeGenerateTime == 2">
+                    order by te.battery_service_fee_generate_time
+                </when>
+                <otherwise>
+                    order by te.battery_service_fee_generate_time desc
+                </otherwise>
+            </choose>
             limit #{query.offset},#{query.size}
         </where>
     </select>
