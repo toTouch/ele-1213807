@@ -1063,7 +1063,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
-        ConcurrentHashMap<String, Integer> batteryTypeMap = new ConcurrentHashMap<>();
+        HashMap<String, Integer> batteryTypeMap = new HashMap<>();
         exchangeableList.forEach(electricityCabinetBox -> {
             String batteryType = electricityCabinetBox.getBatteryType();
             if (Objects.nonNull(batteryType)) {
@@ -1086,7 +1086,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void assignExchangeableVoltageAndCapacity(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
-        ConcurrentHashMap<String, Integer> voltageAndCapacityMap = new ConcurrentHashMap<>();
+        HashMap<String, Integer> voltageAndCapacityMap = new HashMap<>();
         
         // 根据可换电格挡电池的sn列表查询电池列表获取容量
         List<String> snList = exchangeableList.stream().map(ElectricityCabinetBox::getSn).filter(StringUtils::isNotBlank).collect(Collectors.toList());
