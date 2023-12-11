@@ -198,6 +198,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -992,7 +993,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.emptyList());
         }
         
-        List<ElectricityCabinetVO> resultVo = electricityCabinetList.stream().map(e -> {
+        List<ElectricityCabinetVO> resultVo = electricityCabinetList.parallelStream().map(e -> {
             //营业时间
             if (Objects.nonNull(e.getBusinessTime())) {
                 String businessTime = e.getBusinessTime();
@@ -4688,7 +4689,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Collections.EMPTY_LIST;
         }
         
-        return electricityCabinets.stream().peek(item -> {
+        return electricityCabinets.parallelStream().peek(item -> {
             
             //营业时间
             if (Objects.nonNull(item.getBusinessTime())) {
