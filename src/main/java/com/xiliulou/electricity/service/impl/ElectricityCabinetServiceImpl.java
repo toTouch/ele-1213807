@@ -992,7 +992,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.emptyList());
         }
         
-        List<ElectricityCabinetVO> resultVo = electricityCabinetList.stream().map(e -> {
+        List<ElectricityCabinetVO> resultVo = electricityCabinetList.parallelStream().map(e -> {
             //营业时间
             if (Objects.nonNull(e.getBusinessTime())) {
                 String businessTime = e.getBusinessTime();
@@ -4688,7 +4688,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Collections.EMPTY_LIST;
         }
         
-        return electricityCabinets.stream().peek(item -> {
+        return electricityCabinets.parallelStream().peek(item -> {
             
             //营业时间
             if (Objects.nonNull(item.getBusinessTime())) {
