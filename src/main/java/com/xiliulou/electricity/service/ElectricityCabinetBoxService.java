@@ -29,6 +29,8 @@ public interface ElectricityCabinetBoxService {
     ElectricityCabinetBox queryByIdFromDB(Long id,Integer tenantId);
 
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
+    
+    void batchInsertBoxByModelIdV2(ElectricityCabinetModel electricityCabinetModel, Integer id);
 
     void batchDeleteBoxByElectricityCabinetId(Integer id);
 

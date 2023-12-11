@@ -30,4 +30,6 @@ public class ElectricityCabinetTransferQuery {
     private Double latitude;
 
     private String address;
+    
+    private Integer modelId;
 }

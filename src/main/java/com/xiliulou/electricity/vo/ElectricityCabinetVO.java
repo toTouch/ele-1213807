@@ -64,6 +64,12 @@ public class ElectricityCabinetVO {
     * 型号Id
     */
     private Integer modelId;
+    
+    /**
+     * 设置厂家型号（厂家名称/型号）
+     */
+    private String manufacturerNameAndModelName;
+    
     /**
     * 版本
     */
@@ -184,6 +190,21 @@ public class ElectricityCabinetVO {
     private String pictureUrl;
 
     private Integer exchangeType;
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
+    
+    /**
+     * 库房名称
+     */
+    private String warehouseName;
+    
+    /**
+     * 库存状态；0,库存；1,已出库
+     */
+    private Integer stockStatus;
 
     /**
      * 柜机中电池型号统计

@@ -39,20 +39,21 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
         select
         tec.id,tec.sn,
-        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tui.name as userName,tec.store_id, tec.phone, tec.franchisee_id,
-        tec.create_time,tec.update_time,ts.name as storeName,tec.uid
+        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.store_id, tec.phone, tec.franchisee_id,
+        tec.create_time,tec.update_time,tec.uid,tec.warehouse_id,tec.stock_status,tec.model_id
         from t_electricity_car tec
-        left join t_store ts on tec.store_id=ts.id
-        left join t_user_info tui on tui.uid = tec.uid
         where tec.del_flag=0
         <if test="query.sn != null and query.sn!=''">
-            and tec.sn = #{query.sn}
+            and tec.sn like concat('%', #{query.sn}, '%')
         </if>
         <if test="query.model != null and query.model !=''">
-            and tec.model = #{query.model}
+            and tec.model like concat('%', #{query.model}, '%')
         </if>
         <if test="query.status != null ">
             and tec.status = #{query.status}
+        </if>
+        <if test="query.stockStatus != null ">
+            and tec.stock_status = #{query.stockStatus}
         </if>
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
@@ -84,7 +85,7 @@
         <if test="query.tenantId != null ">
             and tec.tenant_id = #{query.tenantId}
         </if>
-        order by tec.create_time desc
+        order by tec.id desc
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -96,13 +97,16 @@
         tec.user_info_id=tfui.user_info_id
         where tec.del_flag=0
         <if test="query.sn != null and query.sn!=''">
-            and tec.sn = #{query.sn}
+            and tec.sn like concat('%', #{query.sn}, '%')
         </if>
         <if test="query.model != null and query.model !=''">
-            and tec.model = #{query.model}
+            and tec.model like concat('%', #{query.model}, '%')
         </if>
         <if test="query.status != null ">
             and tec.status = #{query.status}
+        </if>
+        <if test="query.stockStatus != null ">
+            and tec.stock_status = #{query.stockStatus}
         </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
@@ -641,6 +645,148 @@
             </foreach>
         </if>
     </select>
-
+    
+    <select id="selectListBySnList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
+        <include refid="selectElectricityCar"/>
+        where del_flag=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="snList != null and snList.size() > 0">
+            and sn in
+            <foreach collection="snList" item="sn" open="(" close=")" separator=",">
+                #{sn}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        where del_flag=0 and tenant_id = #{tenantId}
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="stockStatus != null">
+            and stock_status = #{stockStatus}
+        </if>
+        <if test="sn != null and sn != ''">
+            and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
+        order by id desc
+        <if test="offset != null and size!= null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <update id="batchExitWarehouse">
+        update t_electricity_car
+        <set>
+            stock_status = 0,
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            warehouse_id = #{warehouseId}
+        </set>
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    
+    <select id="existOutWarehouse" resultType="java.lang.Integer">
+        select 1 from t_electricity_car where tenant_id =#{tenantId} and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            <if test="id != null and id != ''">
+                #{id}
+            </if>
+        </foreach>
+        and stock_status = 1 limit 1;
+    </select>
+    
+    <select id="existsByWarehouseId" resultType="java.lang.Integer">
+        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 limit 1;
+    </select>
+    
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        where del_flag = 0 and id in
+        <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectListEnableExitWarehouseCar" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
+        <include refid="selectElectricityCar"/>
+        <where>
+            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="idSet != null and idSet.size()>0">
+                and id in
+                <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <update id="batchUpdateFranchiseeIdAndStoreByIdList">
+        update t_electricity_car
+        <set>
+            <if test="franchiseeId != null and franchiseeId != ''">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null and storeId != ''">
+                store_id = #{storeId},
+            </if>
+            <if test="stockStatus != null and stockStatus != ''">
+                stock_status = #{stockStatus},
+            </if>
+            <if test="updateTime != null and updateTime != ''">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where tenant_id = #{tenantId} and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    
+    <update id="updateFranchiseeIdAndStoreId">
+        update t_electricity_car
+        set franchisee_id = #{targetFranchiseeId},
+            store_id = #{targetStoreId},
+            update_time = #{updateTime}
+        where
+          tenant_id = #{tenantId}
+          and id = #{id}
+    </update>
+    
+    <insert id="batchInsertCar" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_car(sn, model, longitude, latitude, status, uid, phone, user_info_id,
+        user_name, store_id, model_id, battery_sn, create_time, update_time,
+        del_flag, tenant_id, lock_type, franchisee_id) values
+        <foreach item="c" index="index" collection="list" separator=",">
+            (#{c.sn}, #{c.model}, #{c.longitude}, #{c.latitude}, #{c.status}, #{c.uid}, #{c.phone}, #{c.userInfoId},
+            #{c.userName}, #{c.storeId}, #{c.modelId}, #{c.batterySn}, #{c.createTime},
+            #{c.updateTime}, #{c.delFlag}, #{c.tenantId}, #{c.lockType}, #{c.franchiseeId})
+        </foreach>
+    </insert>
 
 </mapper>

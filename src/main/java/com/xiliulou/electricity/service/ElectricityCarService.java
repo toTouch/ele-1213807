@@ -9,9 +9,17 @@ import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
+import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
+import com.xiliulou.electricity.request.asset.CarAddRequest;
+import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
+import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarBatchUpdateFranchiseeAndStoreRequest;
+import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalOrderBizServiceImpl;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -70,6 +78,8 @@ public interface ElectricityCarService {
     ElectricityCar queryByIdFromCache(Integer id);
 
     R save(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
+    
+    R saveV2(CarAddRequest carAddRequest);
 
     R edit(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
 
@@ -129,5 +139,24 @@ public interface ElectricityCarService {
     R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
     
     Boolean retryCarLockCtrl(String str, Integer lockType, Integer retryCount);
-
+    
+    List<ElectricityCarVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
+    
+    List<ElectricityCarVO> listByFranchiseeIdAndStockStatus(ElectricityCarSnSearchRequest electricityCarSnSearchRequest);
+    
+    Integer batchExitWarehouse(AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest);
+    
+    R batchUpdateFranchiseeIdAndStoreId(CarOutWarehouseRequest carOutWarehouseRequest);
+    
+    R bathSaveCar(CarBatchSaveRequest carBatchSaveRequest);
+    
+    List<ElectricityCar> queryModelIdBySidAndIds(List<Long> carIds, Long sourceSid, Integer status, Integer tenantId);
+    
+    Integer existsByWarehouseId(Long wareHouseId);
+    
+    List<ElectricityCarVO> listByIds(Set<Long> idSet);
+    
+    List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
+    
+    Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
 }

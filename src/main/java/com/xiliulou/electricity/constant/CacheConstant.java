@@ -49,6 +49,12 @@ public interface CacheConstant {
     String ELE_SAVE_UID = "ele_save_uid:";
 
     String ELE_BATCH_IMPORT = "ele_batch_import_uid:";
+    
+    String ELE_BATCH_OUT_WAREHOUSE= "ele_batch_out_warehouse:";
+    
+    String ELE_BATTERY_BATCH_EXIT_WAREHOUSE= "ele_battery_batch_exit_warehouse:";
+    String ELE_CABINET_BATCH_EXIT_WAREHOUSE= "ele_cabinet_batch_exit_warehouse:";
+    String ELE_CAR_BATCH_EXIT_WAREHOUSE= "ele_car_batch_exit_warehouse:";
 
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";
@@ -502,5 +508,13 @@ public interface CacheConstant {
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
+    
+    String CACHE_ASSET_WAREHOUSE_LOCK = "cache_asset_warehouse_lock:";
+    String CACHE_ASSET_INVENTORY_LOCK="cache_asset_inventory_lock:";
+    String CACHE_ASSET_EXIT_WAREHOUSE_RECORD_LOCK="cache_asset_exit_warehouse_record_lock:";
+    String CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK="cache_asset_exit_warehouse_detail_lock:";
+    
+    String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
+    String CACHE_ASSET_ALLOCATE_LOCK="cache_asset_allocate_lock:";
     
 }

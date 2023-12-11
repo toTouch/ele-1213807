@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * 换电柜文件表(TElectricityCabinetFile)表数据库访问层
  *
@@ -15,4 +17,6 @@ public interface ElectricityCabinetFileMapper extends BaseMapper<ElectricityCabi
     void deleteByDeviceInfo(@Param("otherId") Long otherId, @Param("fileType")Integer fileType, @Param("isUseOSS")Integer isUseOSS);
     
     Integer deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
+    
+    Integer batchSave(@Param("saveList") List<ElectricityCabinetFile> saveList);
 }

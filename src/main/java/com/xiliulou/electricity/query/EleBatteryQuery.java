@@ -21,6 +21,12 @@ public class EleBatteryQuery {
      * 电池型号
      */
     private String model;
+    
+    /**
+     * 电池型号id
+     */
+    private Long modelId;
+    
     /**
      * 电压
      */

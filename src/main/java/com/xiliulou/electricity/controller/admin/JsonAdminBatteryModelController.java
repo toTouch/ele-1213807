@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -36,7 +37,8 @@ public class JsonAdminBatteryModelController extends BaseController {
      */
     @GetMapping("/admin/battery/model/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-                  @RequestParam(value = "batteryType", required = false) String batteryType) {
+                  @RequestParam(value = "batteryType", required = false) String batteryType,
+                  @RequestParam(value = "brandName", required = false) String brandName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -59,6 +61,7 @@ public class JsonAdminBatteryModelController extends BaseController {
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .batteryType(batteryType)
+                .brandName(brandName)
                 .build();
 
         return R.ok(batteryModelService.selectByPage(query));
@@ -68,7 +71,8 @@ public class JsonAdminBatteryModelController extends BaseController {
      * 分页总数
      */
     @GetMapping("/admin/battery/model/count")
-    public R pageCount(@RequestParam(value = "batteryType", required = false) String batteryType) {
+    public R pageCount(@RequestParam(value = "batteryType", required = false) String batteryType,
+                       @RequestParam(value = "brandName", required = false) String brandName) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -81,6 +85,7 @@ public class JsonAdminBatteryModelController extends BaseController {
 
         BatteryModelQuery query = BatteryModelQuery.builder()
                 .batteryType(batteryType)
+                .brandName(brandName)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
 
@@ -167,6 +172,48 @@ public class JsonAdminBatteryModelController extends BaseController {
 
         return returnTripleResult(batteryModelService.delete(id));
     }
-
-
+    
+    /**
+     * 根据modelId查询电池
+     */
+    @GetMapping("/admin/battery/model/{id}")
+    public R queryBatteryModelById(@PathVariable("id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return returnTripleResult(batteryModelService.queryBatteryModelById(id));
+    }
+    
+    /**
+     * 根据modelId查询电池
+     */
+    @GetMapping("/admin/battery/brandAndModel/list")
+    public R queryBatteryBrandAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        BatteryModelQueryModel batteryModelQueryModel = BatteryModelQueryModel.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(batteryModelService.listBatteryBrandAndModel(batteryModelQueryModel));
+    }
 }

@@ -18,6 +18,12 @@ public class ElectricityCabinetModelQuery {
     private Long size;
     private Long offset;
     private String name;
+    
+    /**
+     * 厂家名称
+     */
+    private String manufacturerName;
+    
     //租户id
     private Integer tenantId;
 }
