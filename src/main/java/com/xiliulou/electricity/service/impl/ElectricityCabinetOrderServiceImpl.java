@@ -333,10 +333,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
                 
-                // 设置会员名称
-                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
-                e.setUName(Objects.isNull(userInfo) ? "" : userInfo.getName());
-                
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
                     
@@ -351,8 +347,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         }
                     }
                 }
-                
-                
                 
             });
         }
