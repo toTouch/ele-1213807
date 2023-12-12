@@ -19,11 +19,13 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -137,7 +139,11 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
-
+        TokenUser user = SecurityUtils.getUserInfo();
+    
+        if (!redisService.setNx(CacheConstant.STORE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 

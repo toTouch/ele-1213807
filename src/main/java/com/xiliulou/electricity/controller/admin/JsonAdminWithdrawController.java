@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.xiliulou.electricity.query.BatchHandleWithdrawRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,7 +58,20 @@ public class JsonAdminWithdrawController extends BaseController {
 		}*/
         return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
     }
-
+    
+    /**
+     * 批量提现审核 线下处理的金额 无需再调用接口进行转账
+     * 只需将对应的订单的状态修改为通过或者拒绝即可
+     * @param batchHandleWithdrawRequest
+     * @return
+     */
+    @PostMapping(value = "/admin/batchHandleWithdraw")
+    @Log(title = "批量提现审核")
+    public R batchHandleWithdraw(@Validated @RequestBody BatchHandleWithdrawRequest batchHandleWithdrawRequest) {
+        
+        return withdrawRecordService.batchHandleWithdraw(batchHandleWithdrawRequest);
+    }
+    
     @GetMapping(value = "/admin/withdraw/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
