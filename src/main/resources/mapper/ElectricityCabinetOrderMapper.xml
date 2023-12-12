@@ -11,7 +11,6 @@
         teco.source, teco.remark, teco.switch_begin_time,
         teco.switch_end_time, teco.create_time, teco.update_time, ui.name as u_name
         from t_electricity_cabinet_order teco
-        left join t_user_info ui on teco.uid = ui.uid
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and teco.order_id = #{query.orderId}
@@ -20,7 +19,7 @@
                 and teco.phone = #{query.phone}
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and tec.name = #{query.electricityCabinetName}
+                and teco.name = #{query.electricityCabinetName}
             </if>
             <if test="query.oldCellNo != null">
                 and teco.old_cell_no = #{query.oldCellNo}
