@@ -9,7 +9,7 @@
         teco.old_electricity_battery_sn,
         teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method,
         teco.source, teco.remark, teco.switch_begin_time,
-        teco.switch_end_time, teco.create_time, teco.update_time, ui.name as u_name
+        teco.switch_end_time, teco.create_time, teco.update_time
         from t_electricity_cabinet_order teco
         <where>
             <if test="query.orderId != null and query.orderId != ''">
