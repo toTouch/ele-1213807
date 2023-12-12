@@ -247,4 +247,6 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetExtendData(Integer electricityCabinetId);
     
     R showBatteryVAndCapacity(Integer electricityCabinetId);
+    
+    R homeOneV2();
 }
