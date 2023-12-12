@@ -311,7 +311,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatterV(EnterpriseChannelUserQuery query) {
-        log.info("query battery v flow end, enterprise id = {}", query.getEnterpriseId());
+        log.info("query battery v flow start, enterprise id = {}", query.getEnterpriseId());
         //获取当前企业信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
