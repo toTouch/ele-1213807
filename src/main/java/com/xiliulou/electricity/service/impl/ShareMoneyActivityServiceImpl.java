@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -335,6 +336,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         for(ShareMoneyActivity shareMoneyActivity : shareMoneyActivityList){
             ShareMoneyActivityVO shareMoneyActivityVO = new ShareMoneyActivityVO();
             BeanUtil.copyProperties(shareMoneyActivity, shareMoneyActivityVO);
+    
+            // 如果单位小时，timeType=1  如果单位分钟，timeType=2
+            if (Objects.nonNull(shareMoneyActivity.getHours()) && !Objects.equals(shareMoneyActivity.getHours(), NumberConstant.ZERO)) {
+                shareMoneyActivityVO.setTimeType(NumberConstant.ONE);
+            } else {
+                shareMoneyActivityVO.setTimeType(NumberConstant.TWO);
+            }
 
             if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareMoneyActivity.getInvitationCriteria())){
                 shareMoneyActivityVO.setBatteryPackages(getBatteryPackages(shareMoneyActivity.getId()));
@@ -438,6 +446,18 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         ShareMoneyActivityVO shareMoneyActivityVO = new ShareMoneyActivityVO();
         BeanUtil.copyProperties(shareMoneyActivity, shareMoneyActivityVO);
+    
+        // 兼容旧版小程序
+        if (Objects.nonNull(shareMoneyActivity.getHours()) && !Objects.equals(shareMoneyActivity.getHours(), NumberConstant.ZERO)) {
+            shareMoneyActivityVO.setHours(shareMoneyActivity.getHours().doubleValue());
+            shareMoneyActivityVO.setMinutes(shareMoneyActivity.getHours() * TimeConstant.HOURS_MINUTE);
+            shareMoneyActivityVO.setTimeType(NumberConstant.ONE);
+        } else {
+            shareMoneyActivityVO.setMinutes(shareMoneyActivity.getMinutes().longValue());
+            shareMoneyActivityVO.setHours(
+                    Math.round((double) shareMoneyActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+            shareMoneyActivityVO.setTimeType(NumberConstant.TWO);
+        }
 
         //邀请好友数
         int count = 0;
