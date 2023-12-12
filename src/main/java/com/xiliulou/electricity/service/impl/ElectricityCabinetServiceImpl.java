@@ -1530,6 +1530,86 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(homeOne);
     }
     
+    @Slave
+    @Override
+    public R homeOneV2() {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        HashMap<String, String> homeOne = new HashMap<>();
+        //电柜数
+        homeOne.put("eleCount", "0");
+        //在线电柜
+        homeOne.put("onlineEleCount", "0");
+        //离线电柜
+        homeOne.put("offlineEleCount", "0");
+        
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! homeOneV2 not found operate service! userDataType:{}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+        }
+        
+        // 查换电柜相关
+        List<ElectricityCabinet> electricityCabinetList = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            //1、直接查柜子
+            electricityCabinetList = this.electricityCabinetMapper.homeOne(eleIdList, tenantId);
+            
+            log.warn("homeOneV2 by super or operate, electricityCabinetList size ={}", electricityCabinetList.size());
+        } else if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            //1、查代理商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            //2、再找代理商下的门店
+            List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+            electricityCabinetList = new ArrayList<>();
+            //3、再找门店绑定的柜子
+            for (Store store : storeList) {
+                List<ElectricityCabinet> storeElectricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
+                electricityCabinetList.addAll(storeElectricityCabinetList);
+            }
+            
+            log.warn("homeOneV2 by franchisee, electricityCabinetList size ={}", electricityCabinetList.size());
+        } else {
+            //1、直接找门店
+            Store store = storeService.queryByUid(user.getUid());
+            //2、再找门店绑定的柜子
+            electricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
+            
+            log.warn("homeOneV2 by store, electricityCabinetList size ={}", electricityCabinetList.size());
+        }
+        
+        Integer eleCount = electricityCabinetList.size();
+        Integer onlineEleCount = 0;
+        Integer offlineEleCount = 0;
+        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+            for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                boolean result = Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                if (result) {
+                    onlineEleCount++;
+                } else {
+                    offlineEleCount++;
+                }
+            }
+        }
+        homeOne.put("eleCount", eleCount.toString());
+        homeOne.put("onlineEleCount", onlineEleCount.toString());
+        homeOne.put("offlineEleCount", offlineEleCount.toString());
+        
+        return R.ok(homeOne);
+    }
+    
     @Override
     public R homeTwo(Long beginTime, Long endTime) {
         //用户区分
