@@ -126,7 +126,7 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
     /**
      * 根据计费开始时间排序，1-正序，2-倒叙
      */
-    private Integer orderByLateFeeStartTime;
+    private Integer orderByServiceFeeGenerateTime;
     
     /**
      * 根据支付时间排序，1-正序，2-倒叙

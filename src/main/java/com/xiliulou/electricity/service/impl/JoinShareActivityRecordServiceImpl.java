@@ -2,12 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -135,6 +138,14 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
             return R.fail("110207", "已参加过邀请返现活动");
         }
+        
+        // 计算活动有效期
+        long expiredTime;
+        if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)){
+            expiredTime = System.currentTimeMillis() + shareActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
+        } else {
+            expiredTime = System.currentTimeMillis() + shareActivity.getMinutes() * TimeConstant.MINUTE_MILLISECOND;
+        }
 
         JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
         joinShareActivityRecord.setUid(uid);
@@ -142,7 +153,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityRecord.setCreateTime(System.currentTimeMillis());
         joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
         joinShareActivityRecord.setStartTime(System.currentTimeMillis());
-        joinShareActivityRecord.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
+        joinShareActivityRecord.setExpiredTime(expiredTime);
         joinShareActivityRecord.setTenantId(tenantId);
         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
         joinShareActivityRecord.setActivityId(activityId);
@@ -156,7 +167,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
         joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
         joinShareActivityHistory.setStartTime(System.currentTimeMillis());
-        joinShareActivityHistory.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
+        joinShareActivityHistory.setExpiredTime(expiredTime);
         joinShareActivityHistory.setTenantId(tenantId);
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());

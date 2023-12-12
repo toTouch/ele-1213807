@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -121,6 +123,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R insert(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery) {
+        if (ObjectUtil.isEmpty(shareMoneyActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareMoneyActivityAddAndUpdateQuery.getMinutes())) {
+            return R.fail("110209", "有效时间不能为空");
+        }
+        
         //创建账号
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -169,6 +175,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setCreateTime(System.currentTimeMillis());
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
+        shareMoneyActivity.setHours(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getHours()));
 
         if (Objects.isNull(shareMoneyActivity.getType())) {
             shareMoneyActivity.setType(ShareActivity.SYSTEM);
