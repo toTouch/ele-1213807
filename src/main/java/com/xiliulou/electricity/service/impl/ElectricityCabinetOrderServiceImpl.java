@@ -330,7 +330,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            Set<Long> collect = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toSet());
+            List<UserInfo> list = userInfoService.list(new LambdaQueryWrapper<UserInfo>().select(UserInfo::getName, UserInfo::getUid).in(UserInfo::getUid, collect));
+            final Map<Long, String> userNameMap = list.stream()
+                    .collect(Collectors.groupingBy(UserInfo::getUid, Collectors.collectingAndThen(Collectors.toList(), e -> e.get(0).getName())));
+            
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+                if (ObjectUtils.isNotEmpty(userNameMap.get(e.getUid()))) {
+                    e.setUName(userNameMap.get(e.getUid()));
+                }
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
