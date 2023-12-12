@@ -36,6 +36,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -321,6 +322,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Slave
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        long startTime = System.currentTimeMillis();
         
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
         if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
@@ -328,14 +330,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            Set<Long> collect = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toSet());
+            List<UserInfo> list = userInfoService.list(new LambdaQueryWrapper<UserInfo>().select(UserInfo::getName, UserInfo::getUid).in(UserInfo::getUid, collect));
+            final Map<Long, String> userNameMap = list.stream()
+                    .collect(Collectors.groupingBy(UserInfo::getUid, Collectors.collectingAndThen(Collectors.toList(), e -> e.get(0).getName())));
+            
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
-    
-                // 设置会员名称
-                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
-                e.setUName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+                
+                if (ObjectUtils.isNotEmpty(userNameMap.get(e.getUid()))) {
+                    e.setUName(userNameMap.get(e.getUid()));
+                }
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
@@ -354,7 +361,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 
             });
         }
-        
+    
+        long endTime = System.currentTimeMillis();
+    
+        long time = endTime - startTime;
+        log.info("electricity cabinet order query time={}", time);
+    
         return R.ok(electricityCabinetOrderVOList);
     }
     
