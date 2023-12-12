@@ -17,6 +17,7 @@
         <result property="activeElectricalEnergy" column="active_electrical_energy" jdbcType="NUMERIC"/>
         <result property="waterPumpOpen" column="water_pump_open" jdbcType="INTEGER"/>
         <result property="waterLevelWarning" column="water_level_warning" jdbcType="INTEGER"/>
+        <result property="heatOpen" column="heat_open" jdbcType="INTEGER"/>
         <result property="temp" column="temp" jdbcType="NUMERIC"/>
         <result property="humidity" column="humidity" jdbcType="NUMERIC"/>
         <result property="waterLeachingWarning" column="water_leaching_warning" jdbcType="INTEGER"/>
@@ -235,7 +236,7 @@
         </if>
         </where>
     </select>
-f
+    
     <select id="selectByEid" resultMap="EleCabinetCoreDataMap">
         select
         id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
