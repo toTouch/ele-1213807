@@ -348,6 +348,16 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         return electricityCabinetService.homeOne(beginTime, endTime);
     }
+    
+    /**
+     * @description 首页一：运营小程序 只响应 柜机总数、在线柜机数
+     * @date 2023/12/7 15:13:34
+     * @author HeYafeng
+     */
+    @GetMapping(value = "/admin/electricityCabinet/homeOne/v2")
+    public R homeOneV2() {
+        return electricityCabinetService.homeOneV2();
+    }
 
     //首页三
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
