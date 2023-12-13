@@ -55,7 +55,7 @@ public class ElectricityCabinetBatchOutWarehouseRequest {
     /**
      * 电柜类型
      */
-    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {UpdateGroup.class})
     private Integer exchangeType;
     
     /**
