@@ -69,6 +69,11 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_CHARGE_POWER_HANDLER = "normalEleChargePowerHandler";
 
     public static final String NEW_HARDWARE_WARN_MSG_HANDLER = "hardwareWarnMsgHandler";
+    
+    /**
+     * 离线换电密码设置
+     */
+    public static final String NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER = "normalOfflineExchangePasswordHandler";
 
 
     public static String acquireChargeHandlerName(String command) {
@@ -570,5 +575,11 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG, NEW_HARDWARE_WARN_MSG_HANDLER);
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG_ACK, NEW_HARDWARE_WARN_MSG_HANDLER);
+    
+        /**
+         * 离线换电密码设置
+         */
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_OFFLINE_PASSWORD_RESET, NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER);
+        
     }
 }
