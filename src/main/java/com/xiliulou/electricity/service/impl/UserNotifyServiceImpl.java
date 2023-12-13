@@ -133,6 +133,12 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         UserNotify userNotify = queryByTenantId();
+        
+        // 如果租户的通知配置不存在且状态为关闭则直接返回成功
+        if (Objects.isNull(userNotify) && Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_OFF)) {
+            return R.ok();
+        }
+        
         UserNotify updateAndInsert = new UserNotify();
         updateAndInsert.setContent(userNotifyQuery.getContent());
         updateAndInsert.setTitle(userNotifyQuery.getTitle());
