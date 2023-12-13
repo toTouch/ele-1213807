@@ -341,6 +341,16 @@ public class ElectricityIotConstant {
      */
     public static final String NEW_HARDWARE_WARN_MSG = "hardware_warn_msg";
     public static final String NEW_HARDWARE_WARN_MSG_ACK = "hardware_warn_msg_ack";
+    
+    /**
+     * 离线换电
+     */
+    /*public static final String ELE_BATTERY_OFFLINE_EXCHANGE = "battery_offline_exchange";*/
+    
+    /**
+     * 设置离线换电密码
+     */
+    public static final String  ELE_BATTERY_OFFLINE_PASSWORD_RESET = "offline_password_reset";
 
 
     static {
@@ -424,6 +434,7 @@ public class ElectricityIotConstant {
         SEND_COMMAND_SETS.add(ELE_CELL_CLOSE_CHARGE);
         SEND_COMMAND_SETS.add(CUPBOARD_RESUME_CYCLE);
         SEND_COMMAND_SETS.add(ELE_CELL_OPEN_CHARGE);
+        SEND_COMMAND_SETS.add(ELE_BATTERY_OFFLINE_PASSWORD_RESET);
 
 
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
