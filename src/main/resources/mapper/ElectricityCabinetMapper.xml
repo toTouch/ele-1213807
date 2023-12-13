@@ -974,6 +974,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="exchangeType != null">
+                exchange_type = #{exchangeType},
+            </if>
             stock_status = 1
         </set>
         where tenant_id = #{tenantId} and id in

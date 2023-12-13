@@ -70,6 +70,12 @@ public class ElectricityCabinetOutWarehouseRequest {
     private Double latitude;
     
     /**
+     * 电柜类型
+     */
+    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
+    private Integer exchangeType;
+    
+    /**
      * 营业时间类型
      */
     private String businessTimeType;

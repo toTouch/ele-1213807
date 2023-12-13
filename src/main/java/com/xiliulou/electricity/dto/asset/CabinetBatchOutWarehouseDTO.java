@@ -41,6 +41,11 @@ public class CabinetBatchOutWarehouseDTO {
     private Double latitude;
     
     /**
+     * 电柜类型
+     */
+    private Integer exchangeType;
+    
+    /**
      * 柜机名称
      */
     private String name;

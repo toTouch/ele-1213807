@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.request.asset;
 
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
@@ -50,6 +51,12 @@ public class ElectricityCabinetBatchOutWarehouseRequest {
      */
     @NotNull(message = "地址纬度不能为空!", groups = {UpdateGroup.class})
     private Double latitude;
+    
+    /**
+     * 电柜类型
+     */
+    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
+    private Integer exchangeType;
     
     /**
      * 营业时间类型
