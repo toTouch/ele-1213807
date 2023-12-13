@@ -392,8 +392,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			
 			// 如果单位小时，timeType=1  如果单位分钟，timeType=2
 			if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
+				shareActivityVO.setHours(shareActivity.getHours().doubleValue());
 				shareActivityVO.setTimeType(NumberConstant.ONE);
 			} else {
+				shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
 				shareActivityVO.setTimeType(NumberConstant.TWO);
 			}
 
@@ -656,8 +658,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		
 		// 如果单位小时，timeType=1  如果单位分钟，timeType=2
 		if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
+			shareActivityVO.setHours(shareActivity.getHours().doubleValue());
 			shareActivityVO.setTimeType(NumberConstant.ONE);
 		} else {
+			shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
 			shareActivityVO.setTimeType(NumberConstant.TWO);
 		}
 

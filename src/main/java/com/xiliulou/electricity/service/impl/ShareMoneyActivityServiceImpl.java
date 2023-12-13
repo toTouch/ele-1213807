@@ -339,8 +339,10 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
             // 如果单位小时，timeType=1  如果单位分钟，timeType=2
             if (Objects.nonNull(shareMoneyActivity.getHours()) && !Objects.equals(shareMoneyActivity.getHours(), NumberConstant.ZERO)) {
+                shareMoneyActivityVO.setHours(shareMoneyActivity.getHours().doubleValue());
                 shareMoneyActivityVO.setTimeType(NumberConstant.ONE);
             } else {
+                shareMoneyActivityVO.setMinutes(shareMoneyActivity.getMinutes().longValue());
                 shareMoneyActivityVO.setTimeType(NumberConstant.TWO);
             }
 

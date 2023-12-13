@@ -18,6 +18,10 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2022-07-12 13:55
  */
 public class DateUtils {
+    
+    public static void main(String[] args) {
+        System.out.println(getTodayEndTimeStamp());
+    }
 
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 

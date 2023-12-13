@@ -273,8 +273,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
             // 如果单位小时，timeType=1  如果单位分钟，timeType=2
             if (Objects.nonNull(item.getHours()) && !Objects.equals(item.getHours(), NumberConstant.ZERO)) {
+                invitationActivityVO.setHours(item.getHours().doubleValue());
                 invitationActivityVO.setTimeType(NumberConstant.ONE);
             } else {
+                invitationActivityVO.setMinutes(item.getMinutes().longValue());
                 invitationActivityVO.setTimeType(NumberConstant.TWO);
             }
 
@@ -464,8 +466,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
         // 如果单位小时，timeType=1  如果单位分钟，timeType=2
         if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+            invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
             invitationActivityVO.setTimeType(NumberConstant.ONE);
         } else {
+            invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
             invitationActivityVO.setTimeType(NumberConstant.TWO);
         }
         
