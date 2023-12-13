@@ -40,7 +40,7 @@ public class ElectricityCabinetAddRequest {
     /**
      * 电柜类型
      */
-    @NotEmpty(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
     private Integer exchangeType;
     
     /**
