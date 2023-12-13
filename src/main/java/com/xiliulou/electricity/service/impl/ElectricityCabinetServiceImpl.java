@@ -5359,6 +5359,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @param electricityCabinetId 柜机id
      * @return 柜机扩展参数
      */
+    @Override
     public R queryElectricityCabinetExtendData(Integer electricityCabinetId) {
         
         //校验柜机Id
@@ -5378,6 +5379,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(netType);
     }
     
+    @Override
     public R showBatteryVAndCapacity(Integer electricityCabinetId) {
         //校验柜机Id
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
