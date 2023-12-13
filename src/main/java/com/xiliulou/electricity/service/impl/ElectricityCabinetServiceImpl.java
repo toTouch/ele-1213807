@@ -696,7 +696,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
-            electricityCabinetList.stream().forEach(e -> {
+            electricityCabinetList.parallelStream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
                     Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
@@ -725,11 +725,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
-                    
-                    // 如果型号列表中有电柜类型 则取型号的电柜类型
-                    if (Objects.nonNull(electricityCabinetModel.getExchangeType())) {
-                        e.setExchangeType(electricityCabinetModel.getExchangeType());
-                    }
                     
                     // 赋值复合字段
                     StringBuilder manufacturerNameAndModelName = new StringBuilder();
@@ -5234,7 +5229,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCreateTime(System.currentTimeMillis());
         cabinetModelInsert.setUpdateTime(System.currentTimeMillis());
         cabinetModelInsert.setManufacturerName(electricityCabinetModel.getManufacturerName());
-        cabinetModelInsert.setExchangeType(electricityCabinetModel.getExchangeType());
         cabinetModelInsert.setCabinetSize(electricityCabinetModel.getCabinetSize());
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
@@ -5296,18 +5290,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
-            
-            // 获取柜机类型
-            Integer exchangeType = null;
-            if (Objects.nonNull(cabinetModel.getExchangeType())) {
-                exchangeType = cabinetModel.getExchangeType();
-            }
-            
-            if (Objects.isNull(exchangeType)) {
-                exchangeType = cabinetVO.getExchangeType();
-            }
-            
-            excelVO.setExchangeType(acquireExchangeType(exchangeType));
+            excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
             
             ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(),
                     cabinetVO.getDeviceName());

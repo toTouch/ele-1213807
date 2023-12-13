@@ -41,11 +41,6 @@ public class ElectricityCabinetModel {
     private String name;
     
     /**
-     * 电柜类型 1：有屏，2：无屏
-     */
-    private Integer exchangeType ;
-    
-    /**
     * 柜子的仓门数量
     */
     @NotNull(message = "柜子的仓门数量不能为空!")

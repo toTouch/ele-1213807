@@ -38,6 +38,12 @@ public class ElectricityCabinetAddRequest {
     private String deviceName;
     
     /**
+     * 电柜类型
+     */
+    @NotEmpty(message = "电柜类型exchangeType不能为空!", groups = {CreateGroup.class})
+    private Integer exchangeType;
+    
+    /**
      * 库房Id
      */
     private Long warehouseId;
