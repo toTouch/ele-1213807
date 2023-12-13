@@ -423,13 +423,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
-		
-		// 如果单位小时，timeType=1  如果单位分钟，timeType=2
-		if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
-			shareActivityVO.setTimeType(NumberConstant.ONE);
-		} else {
-			shareActivityVO.setTimeType(NumberConstant.TWO);
-		}
 
 		//小活动
 		getCouponVOList(shareActivityVO);

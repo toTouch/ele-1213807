@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -392,6 +393,18 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
         invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
         invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+    
+        // 兼容旧版小程序
+        if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+            invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
+            invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
+            invitationActivityVO.setTimeType(NumberConstant.ONE);
+        } else {
+            invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
+            invitationActivityVO.setHours(
+                    Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+            invitationActivityVO.setTimeType(NumberConstant.TWO);
+        }
         
         return Triple.of(true, null, invitationActivityVO);
     }
@@ -424,6 +437,18 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
                 invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+    
+                // 兼容旧版小程序
+                if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+                    invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
+                    invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
+                    invitationActivityVO.setTimeType(NumberConstant.ONE);
+                } else {
+                    invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
+                    invitationActivityVO.setHours(
+                            Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+                    invitationActivityVO.setTimeType(NumberConstant.TWO);
+                }
             }
             return invitationActivityVO;
         }).collect(Collectors.toList());

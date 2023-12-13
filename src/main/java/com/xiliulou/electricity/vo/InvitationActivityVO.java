@@ -33,7 +33,7 @@ public class InvitationActivityVO {
     /**
      * 有效时间
      */
-    private Integer hours;
+    private Double hours;
     
     /**
      * 有效时间，单位：分钟
