@@ -5348,7 +5348,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<ElectricityCabinetStatistic> statisticList = Lists.newArrayList();
             for (ElectricityCabinetVO item:electricityCabinetVOList) {
                 List<ElectricityCabinetStatistic> exchangeOrdersList = electricityCabinetOrderService.selectExchangeOrders(item.getId(), DateUtils.getTimeAgoStartTime(60),
-                        DateUtils.getTodayEndTimeStamp(), TenantContextHolder.getTenantId());
+                        DateUtils.getTodayEndTimeStamp(), item.getTenantId());
                 for (ElectricityCabinetStatistic statistic:exchangeOrdersList) {
                     ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
                     cabinetStatistic.setElectricityCabinetId(item.getId());
