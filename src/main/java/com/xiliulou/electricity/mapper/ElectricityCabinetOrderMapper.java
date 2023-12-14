@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -49,4 +50,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     ElectricityCabinetOrder selectLatestByUidV2(Long uid);
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
+    
+    List<ElectricityCabinetStatistic> selectExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
 }

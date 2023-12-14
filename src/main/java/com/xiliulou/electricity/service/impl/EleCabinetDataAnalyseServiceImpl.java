@@ -153,7 +153,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
         //今日活跃度
         result.setPeopleNumber((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
-
+        
+        eleCabinetService.handleElectricityCabinetStatistic("1");
         return result;
     }
 

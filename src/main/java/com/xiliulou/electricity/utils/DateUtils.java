@@ -45,6 +45,10 @@ public class DateUtils {
     public static long get30AgoStartTime() {
         return LocalDateTime.of(LocalDate.now().minusDays(30), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
+    
+    public static long getTimeAgoStartTime(int day) {
+        return LocalDateTime.of(LocalDate.now().minusDays(60), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
 
     /**
      * @param nowTime

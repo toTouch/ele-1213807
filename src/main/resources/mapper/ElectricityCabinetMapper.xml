@@ -1017,4 +1017,8 @@
           and tenant_id = #{tenantId}
           and id = #{id}
     </update>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select id,name,franchisee_id,store_id,tenant_id  from t_electricity_cabinet limit #{offset}, #{size}
+    </select>
 </mapper>

@@ -47,6 +47,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -5332,4 +5333,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .collect(Collectors.toList());
         return R.ok(assignExchangeableVoltageAndCapacityV2(exchangeableList));
     }
+    
+    public void handleElectricityCabinetStatistic(String param) {
+        Long offset = 0L;
+        Long size = 200L;
+        //如果是第一次进入，则需要查询近60天的数据
+        boolean isFlag = true;
+        while (isFlag) {
+            List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetMapper.selectListByPage(size, offset);
+            if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+                return;
+            }
+            
+            List<ElectricityCabinetStatistic> statisticList = Lists.newArrayList();
+            for (ElectricityCabinetVO item:electricityCabinetVOList) {
+                List<ElectricityCabinetStatistic> exchangeOrdersList = electricityCabinetOrderService.selectExchangeOrders(item.getId(), DateUtils.getTimeAgoStartTime(60),
+                        DateUtils.getTodayEndTimeStamp(), TenantContextHolder.getTenantId());
+                for (ElectricityCabinetStatistic statistic:exchangeOrdersList) {
+                    ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
+                    cabinetStatistic.setElectricityCabinetId(item.getId());
+                    cabinetStatistic.setElectricityCabinetName(item.getName());
+                    cabinetStatistic.setFranchiseeId(item.getFranchiseeId());
+                    cabinetStatistic.setStoreId(item.getStoreId());
+                    cabinetStatistic.setTenantId(item.getTenantId());
+                    cabinetStatistic.setStatisticDate(statistic.getStatisticDate());
+                    cabinetStatistic.setUseFrequency(statistic.getUseFrequency());
+                    statisticList.add(statistic);
+                }
+            }
+            log.info("statisticList={}",JsonUtil.toJson(statisticList));
+            isFlag = false;
+        }
+    }
+    
 }

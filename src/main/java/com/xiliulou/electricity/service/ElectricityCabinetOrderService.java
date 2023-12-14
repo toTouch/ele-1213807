@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -94,4 +95,6 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName);
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
+    
+    List<ElectricityCabinetStatistic> selectExchangeOrders(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
 }

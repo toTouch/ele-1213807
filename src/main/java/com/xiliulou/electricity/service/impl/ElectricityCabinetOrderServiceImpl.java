@@ -36,6 +36,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -2095,5 +2096,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private boolean isOpenPlaceCellStatus(String status) {
         return status.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS) || status.equals(ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS) || status.equals(
                 ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) || status.equals(ElectricityCabinetOrder.INIT);
+    }
+    
+    @Override
+    public List<ElectricityCabinetStatistic> selectExchangeOrders(Integer eid,long startTimeStamp,long endTimeStamp,Integer tenantId){
+        List<ElectricityCabinetStatistic> statisticList = electricityCabinetOrderMapper.selectExchangeOrders(eid, startTimeStamp, endTimeStamp, tenantId);
+        if(CollectionUtils.isEmpty(statisticList)){
+            return Lists.newArrayList();
+        }
+        return statisticList;
     }
 }
