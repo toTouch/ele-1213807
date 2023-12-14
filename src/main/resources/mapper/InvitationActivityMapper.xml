@@ -9,6 +9,7 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="description" column="description" jdbcType="VARCHAR"/>
         <result property="hours" column="hours" jdbcType="INTEGER"/>
+        <result property="minutes" column="minutes" jdbcType="INTEGER"/>
         <result property="discountType" column="discount_type" jdbcType="INTEGER"/>
 
         <result property="firstReward" column="first_reward" jdbcType="NUMERIC"/>
@@ -86,7 +87,7 @@
 
     <select id="selectByPage" resultMap="InvitationActivityMap">
         select
-        id, name, type, status, description, hours, discount_type, first_reward, other_reward, operate_uid, del_flag,
+        id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag,
         create_time, update_time,
         tenant_id
         from t_invitation_activity
