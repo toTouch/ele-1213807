@@ -275,7 +275,7 @@ public class EleOperateQueueHandler {
         Integer cellNo = null;
         //电柜Id
         Integer electricityCabinetId = null;
-        
+    
         if (Objects.nonNull(electricityCabinetOrder) && Objects.isNull(rentBatteryOrder)) {
             //旧仓门异常
             if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
@@ -290,8 +290,7 @@ public class EleOperateQueueHandler {
         } else {
             //租退电仓门异常
             if (Objects.equals(orderStatus, RentBatteryOrder.RENT_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT) || Objects.equals(
-                    orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT) || Objects.equals(orderStatus,
-                    RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
+                    orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
                 cellNo = rentBatteryOrder.getCellNo();
                 electricityCabinetId = rentBatteryOrder.getElectricityCabinetId();
             }
