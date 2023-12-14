@@ -352,7 +352,6 @@
         </where>
         limit
         group by electricity_cabinet_id,FROM_UNIXTIME(create_time/1000,'%Y-%m-%d')
-        limit #{offset}, #{size}
     </select>
 
 </mapper>
