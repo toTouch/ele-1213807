@@ -395,7 +395,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				shareActivityVO.setHours(shareActivity.getHours().doubleValue());
 				shareActivityVO.setTimeType(NumberConstant.ONE);
 			} else {
-				shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
+				shareActivityVO.setMinutes(Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO_L : shareActivity.getMinutes().longValue());
 				shareActivityVO.setTimeType(NumberConstant.TWO);
 			}
 
@@ -661,7 +661,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			shareActivityVO.setHours(shareActivity.getHours().doubleValue());
 			shareActivityVO.setTimeType(NumberConstant.ONE);
 		} else {
-			shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
+			shareActivityVO.setMinutes(Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO_L : shareActivity.getMinutes().longValue());
 			shareActivityVO.setTimeType(NumberConstant.TWO);
 		}
 

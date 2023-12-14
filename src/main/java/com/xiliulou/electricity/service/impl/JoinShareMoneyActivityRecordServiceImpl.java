@@ -131,7 +131,8 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		if (Objects.nonNull(shareMoneyActivity.getHours()) && !Objects.equals(shareMoneyActivity.getHours(), NumberConstant.ZERO)){
 			expiredTime = System.currentTimeMillis() + shareMoneyActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
 		} else {
-			expiredTime = System.currentTimeMillis() + shareMoneyActivity.getMinutes() * TimeConstant.MINUTE_MILLISECOND;
+			Integer minutes = Objects.isNull(shareMoneyActivity.getMinutes()) ? NumberConstant.ZERO : shareMoneyActivity.getMinutes();
+			expiredTime = System.currentTimeMillis() + minutes * TimeConstant.MINUTE_MILLISECOND;
 		}
 
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();

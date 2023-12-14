@@ -10,7 +10,6 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
-import jodd.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -144,7 +143,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)){
             expiredTime = System.currentTimeMillis() + shareActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
         } else {
-            expiredTime = System.currentTimeMillis() + shareActivity.getMinutes() * TimeConstant.MINUTE_MILLISECOND;
+            Integer minutes = Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO : shareActivity.getMinutes();
+            expiredTime = System.currentTimeMillis() + minutes * TimeConstant.MINUTE_MILLISECOND;
         }
 
         JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();

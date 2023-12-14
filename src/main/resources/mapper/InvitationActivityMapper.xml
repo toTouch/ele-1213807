@@ -25,7 +25,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityMap">
         select
-          id, name, type, status, description, hours, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id
+          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id
         from t_invitation_activity
         where id = #{id}
     </select>
