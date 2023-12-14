@@ -166,8 +166,6 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             updateAndInsert.setId(userNotify.getId());
             update(updateAndInsert);
         }
-    
-        redisService.delete(CacheConstant.USER_NOTIFY_SAVE_CACHE_UID + SecurityUtils.getUid());
         
         return R.ok();
     }
