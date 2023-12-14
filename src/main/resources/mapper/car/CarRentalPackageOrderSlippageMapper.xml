@@ -219,18 +219,18 @@
                 <when test="orderByPayTime != null">
                     <choose>
                         <when test="orderByPayTime == 1">
-                            order by te.pay_time desc
+                            order by pay_time desc
                         </when>
                         <when test="orderByPayTime == 2">
-                            order by te.pay_time
+                            order by pay_time
                         </when>
                     </choose>
                 </when>
                 <when test="orderByServiceFeeGenerateTime != null and orderByServiceFeeGenerateTime == 2">
-                    order by te.late_fee_start_time
+                    order by late_fee_start_time
                 </when>
                 <otherwise>
-                    order by te.late_fee_start_time desc
+                    order by late_fee_start_time desc
                 </otherwise>
             </choose>
         </where>
