@@ -226,7 +226,7 @@
                         </when>
                     </choose>
                 </when>
-                <when test="orderByServiceFeeGenerateTime != null and orderByLateFeeStartTime == 2">
+                <when test="orderByServiceFeeGenerateTime != null and orderByServiceFeeGenerateTime == 2">
                     order by te.late_fee_start_time
                 </when>
                 <otherwise>
