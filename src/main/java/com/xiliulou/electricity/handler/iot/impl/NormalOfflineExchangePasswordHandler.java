@@ -30,6 +30,7 @@ public class NormalOfflineExchangePasswordHandler extends AbstractElectricityIot
     
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
+        //该消息的接受响应，目前走了other config的消息处理。但是发送信息依然使用了当前的handler。
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
