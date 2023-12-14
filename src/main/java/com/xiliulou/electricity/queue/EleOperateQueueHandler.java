@@ -9,6 +9,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -311,9 +312,10 @@ public class EleOperateQueueHandler {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", cellNo);
-        dataMap.put("lockType", 1);
+        dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_SYSTEM);
         dataMap.put("isForbidden", true);
-        
+        dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_EXCEPTION);
+    
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
         
