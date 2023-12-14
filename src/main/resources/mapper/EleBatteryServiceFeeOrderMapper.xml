@@ -131,7 +131,7 @@
                     #{id}
                 </foreach>
             </if>
-            <if test=" query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
+            <if test="query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
             <choose>
                 <when test="query.orderByPayTime != null">
                     <choose>

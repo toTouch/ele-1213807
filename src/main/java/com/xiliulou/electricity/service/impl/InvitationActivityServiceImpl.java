@@ -276,7 +276,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 invitationActivityVO.setHours(item.getHours().doubleValue());
                 invitationActivityVO.setTimeType(NumberConstant.ONE);
             } else {
-                invitationActivityVO.setMinutes(item.getMinutes().longValue());
+                invitationActivityVO.setMinutes(Objects.isNull(item.getMinutes()) ? NumberConstant.ZERO : item.getMinutes().longValue());
                 invitationActivityVO.setTimeType(NumberConstant.TWO);
             }
 
@@ -469,7 +469,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
             invitationActivityVO.setTimeType(NumberConstant.ONE);
         } else {
-            invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
+            invitationActivityVO.setMinutes(Objects.isNull(invitationActivity.getMinutes()) ? NumberConstant.ZERO : invitationActivity.getMinutes().longValue());
             invitationActivityVO.setTimeType(NumberConstant.TWO);
         }
         

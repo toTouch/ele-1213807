@@ -342,7 +342,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
                 shareMoneyActivityVO.setHours(shareMoneyActivity.getHours().doubleValue());
                 shareMoneyActivityVO.setTimeType(NumberConstant.ONE);
             } else {
-                shareMoneyActivityVO.setMinutes(shareMoneyActivity.getMinutes().longValue());
+                shareMoneyActivityVO.setMinutes(Objects.isNull(shareMoneyActivity.getMinutes()) ? NumberConstant.ZERO : shareMoneyActivity.getMinutes().longValue());
                 shareMoneyActivityVO.setTimeType(NumberConstant.TWO);
             }
 

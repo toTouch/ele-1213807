@@ -512,10 +512,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
             // 计算活动有效期
             long expiredTime;
-            if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)){
+            if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
                 expiredTime = System.currentTimeMillis() + invitationActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
             } else {
-                expiredTime = System.currentTimeMillis() + invitationActivity.getMinutes() * TimeConstant.MINUTE_MILLISECOND;
+                Integer minutes = Objects.isNull(invitationActivity.getMinutes()) ? NumberConstant.ZERO : invitationActivity.getMinutes();
+                expiredTime = System.currentTimeMillis() + minutes * TimeConstant.MINUTE_MILLISECOND;
             }
             
             //保存活动参与记录
