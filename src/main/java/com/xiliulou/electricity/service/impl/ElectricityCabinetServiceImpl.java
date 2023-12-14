@@ -5335,21 +5335,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     public void handleElectricityCabinetStatistic(String param) {
-        Long offset = 0L;
-        Long size = 200L;
+        long offset = 0L;
+        long size = 200L;
+        
         //如果是第一次进入，则需要查询近60天的数据
-        boolean isFlag = true;
-        while (isFlag) {
+        while (true) {
             List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetMapper.selectListByPage(size, offset);
             if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                 return;
             }
             
             List<ElectricityCabinetStatistic> statisticList = Lists.newArrayList();
-            for (ElectricityCabinetVO item:electricityCabinetVOList) {
+            for (ElectricityCabinetVO item : electricityCabinetVOList) {
                 List<ElectricityCabinetStatistic> exchangeOrdersList = electricityCabinetOrderService.selectExchangeOrders(item.getId(), DateUtils.getTimeAgoStartTime(60),
-                        DateUtils.getTodayEndTimeStamp(), TenantContextHolder.getTenantId());
-                for (ElectricityCabinetStatistic statistic:exchangeOrdersList) {
+                        DateUtils.getTodayEndTimeStamp(), item.getTenantId());
+                
+                
+                for (ElectricityCabinetStatistic statistic : exchangeOrdersList) {
                     ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
                     cabinetStatistic.setElectricityCabinetId(item.getId());
                     cabinetStatistic.setElectricityCabinetName(item.getName());
@@ -5361,8 +5363,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     statisticList.add(statistic);
                 }
             }
-            log.info("statisticList={}",JsonUtil.toJson(statisticList));
-            isFlag = false;
+            
+            offset += size;
+            if(!CollectionUtils.isEmpty(statisticList)){
+                log.info("statisticList={}", JsonUtil.toJson(statisticList));
+            }
         }
     }
     
