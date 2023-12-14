@@ -51,5 +51,5 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
     
-    List<ElectricityCabinetStatistic> selectExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
+    ElectricityCabinetStatistic selectExchangeOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
 }

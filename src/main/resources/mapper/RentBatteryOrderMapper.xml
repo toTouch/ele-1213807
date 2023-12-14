@@ -210,5 +210,51 @@
 
         </where>
     </select>
+    
+    <select id="selectRentOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
+        SELECT
+        count(1) as use_frequency,electricity_cabinet_id
+        FROM t_rent_battery_order
+        <where>
+            <if test="eid != null">
+                and electricity_cabinet_id = #{eid}
+            </if>
+            <if test="startTimeStamp != null">
+                and create_time &gt;=#{startTimeStamp}
+            </if>
+            <if test="endTimeStamp != null">
+                and create_time &lt;= #{endTimeStamp}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            and status = 'RENT_BATTERY_TAKE_SUCCESS'
+            and type = 1
+        </where>
+        group by electricity_cabinet_id
+    </select>
+    
+    <select id="selectReturnOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
+        SELECT
+        count(1) as use_frequency,electricity_cabinet_id
+        FROM t_rent_battery_order
+        <where>
+            <if test="eid != null">
+                and electricity_cabinet_id = #{eid}
+            </if>
+            <if test="startTimeStamp != null">
+                and create_time &gt;=#{startTimeStamp}
+            </if>
+            <if test="endTimeStamp != null">
+                and create_time &lt;= #{endTimeStamp}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            and status = 'RETURN_BATTERY_CHECK_SUCCESS'
+            and type = 2
+        </where>
+        group by electricity_cabinet_id
+    </select>
 
 </mapper>

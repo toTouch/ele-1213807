@@ -181,6 +181,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -5345,30 +5346,81 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return;
             }
             
-            List<ElectricityCabinetStatistic> statisticList = Lists.newArrayList();
-            for (ElectricityCabinetVO item : electricityCabinetVOList) {
-                List<ElectricityCabinetStatistic> exchangeOrdersList = electricityCabinetOrderService.selectExchangeOrders(item.getId(), DateUtils.getTimeAgoStartTime(60),
-                        DateUtils.getTodayEndTimeStamp(), item.getTenantId());
-                
-                
-                for (ElectricityCabinetStatistic statistic : exchangeOrdersList) {
+            List<ElectricityCabinetStatistic> cabinetStatisticList = Lists.newArrayList();
+            int days = 60;
+            while (days > 0) {
+                long startTime = DateUtils.getTimeAgoStartTime(days);
+                long endTime = DateUtils.getTimeAgoEndTime(days);
+                log.info("startTime={},endTime={}", startTime, endTime);
+                for (ElectricityCabinetVO item : electricityCabinetVOList) {
                     ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
+                    int useFrequency = 0;
+                    ElectricityCabinetStatistic exchangeOrderStatistic = electricityCabinetOrderService.queryExchangeOrder(item.getId(), startTime, endTime, item.getTenantId());
+                    if (Objects.nonNull(exchangeOrderStatistic) && Objects.nonNull(exchangeOrderStatistic.getUseFrequency())) {
+                        useFrequency += exchangeOrderStatistic.getUseFrequency();
+                    }
+                    ElectricityCabinetStatistic rentStatistic = rentBatteryOrderService.queryRentOrder(item.getId(), startTime, endTime, item.getTenantId());
+                    if (Objects.nonNull(rentStatistic) && Objects.nonNull(rentStatistic.getUseFrequency())) {
+                        useFrequency += rentStatistic.getUseFrequency();
+                    }
+                    ElectricityCabinetStatistic returnStatistic = rentBatteryOrderService.queryReturnOrder(item.getId(), startTime, endTime, item.getTenantId());
+                    
+                    if (Objects.nonNull(returnStatistic) && Objects.nonNull(returnStatistic.getUseFrequency())) {
+                        useFrequency += returnStatistic.getUseFrequency();
+                    }
+                    
                     cabinetStatistic.setElectricityCabinetId(item.getId());
                     cabinetStatistic.setElectricityCabinetName(item.getName());
-                    cabinetStatistic.setFranchiseeId(item.getFranchiseeId());
-                    cabinetStatistic.setStoreId(item.getStoreId());
+                    cabinetStatistic.setUseFrequency(useFrequency);
+                    cabinetStatistic.setTodayNumber(0);
+                    cabinetStatistic.setTodayActivity(0);
+                    cabinetStatistic.setCreateTime(System.currentTimeMillis());
+                    cabinetStatistic.setUpdateTime(System.currentTimeMillis());
                     cabinetStatistic.setTenantId(item.getTenantId());
-                    cabinetStatistic.setStatisticDate(statistic.getStatisticDate());
-                    cabinetStatistic.setUseFrequency(statistic.getUseFrequency());
-                    statisticList.add(statistic);
+                    
+                    // 设置今日换电数量和今日活跃数
+                    buildTodayStatistic(cabinetStatistic);
+                    
+                    // 设置日均换电数量和日均活跃数
+                    buildAverageStatistic(cabinetStatistic);
+                    cabinetStatisticList.add(cabinetStatistic);
                 }
+                --days;
             }
-            
+            log.info("cabinetStatisticListaaa={}",JsonUtil.toJson(cabinetStatisticList));
             offset += size;
-            if(!CollectionUtils.isEmpty(statisticList)){
-                log.info("statisticList={}", JsonUtil.toJson(statisticList));
-            }
         }
+    }
+    
+    private void buildTodayStatistic(ElectricityCabinetStatistic cabinetStatistic){
+        //今日换电订单
+        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectTodayExchangeOrder(cabinetStatistic.getElectricityCabinetId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), cabinetStatistic.getTenantId());
+        if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
+            return;
+        }
+        
+        //今日换电数量
+        cabinetStatistic.setTodayNumber(electricityCabinetOrders.size());
+        
+        //今日活跃度
+        cabinetStatistic.setTodayActivity((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
+    }
+    
+    private void buildAverageStatistic(ElectricityCabinetStatistic cabinetStatistic){
+        //获取本月订单
+        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectMonthExchangeOrders(cabinetStatistic.getElectricityCabinetId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), cabinetStatistic.getTenantId());
+        if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
+            return;
+        }
+        
+        //日均换电次数
+        cabinetStatistic.setAverageNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP).doubleValue());
+        
+        //本月换电总人数
+        long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
+        
+        //日均活跃度
+        cabinetStatistic.setAverageActivity(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP).doubleValue());
     }
     
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.EleCabinetUsedRecordVO;
@@ -60,4 +61,8 @@ public interface RentBatteryOrderService {
     Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
     
     List<RentBatteryOrder> selectByUidAndTime(Long uid, Long membercardStartTime, Long currentTime);
+    
+    ElectricityCabinetStatistic queryRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
+    
+    ElectricityCabinetStatistic queryReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
 }

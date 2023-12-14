@@ -31,7 +31,7 @@ public class ElectricityCabinetStatistic {
     /**
      * 统计
      */
-    private Date statisticDate;
+    private Long statisticDate;
     
     /**
      * 换电柜id
@@ -44,16 +44,6 @@ public class ElectricityCabinetStatistic {
     private String electricityCabinetName;
     
     /**
-     * 加盟商id
-     */
-    private Long franchiseeId;
-    
-    /**
-     * 门店id
-     */
-    private Integer storeId;
-    
-    /**
      * 使用频次
      */
     private Integer useFrequency;
@@ -61,12 +51,12 @@ public class ElectricityCabinetStatistic {
     /**
      * 日均换电次数
      */
-    private Integer averageNumber;
+    private Double averageNumber;
     
     /**
      * 日均活跃度
      */
-    private Integer averageActivity;
+    private Double averageActivity;
     
     /**
      * 今日换电数量

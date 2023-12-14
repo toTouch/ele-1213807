@@ -47,7 +47,11 @@ public class DateUtils {
     }
     
     public static long getTimeAgoStartTime(int day) {
-        return LocalDateTime.of(LocalDate.now().minusDays(60), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
+        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+    
+    public static long getTimeAgoEndTime(int day) {
+        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
 
     /**

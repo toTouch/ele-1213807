@@ -331,9 +331,9 @@
         order by teco.id desc limit 1
     </select>
     
-    <select id="selectExchangeOrders" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
+    <select id="selectExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
         SELECT
-        count(1) as use_frequency, FROM_UNIXTIME(create_time/1000,'%Y-%m-%d') as statistic_date
+        count(1) as use_frequency,electricity_cabinet_id
         FROM t_electricity_cabinet_order
         <where>
             <if test="eid != null">
@@ -350,7 +350,7 @@
             </if>
             and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
         </where>
-        group by electricity_cabinet_id,FROM_UNIXTIME(create_time/1000,'%Y-%m-%d')
+        group by electricity_cabinet_id
     </select>
 
 </mapper>

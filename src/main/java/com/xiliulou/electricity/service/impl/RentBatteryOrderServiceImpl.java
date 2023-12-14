@@ -1641,4 +1641,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return Triple.of(true, null, null);
     }
     
+    @Override
+    public ElectricityCabinetStatistic queryRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId){
+        return rentBatteryOrderMapper.selectRentOrder(eid, startTimeStamp, endTimeStamp, tenantId);
+    }
+    
+    @Override
+    public ElectricityCabinetStatistic queryReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId){
+        return rentBatteryOrderMapper.selectReturnOrder(eid, startTimeStamp, endTimeStamp, tenantId);
+    }
 }

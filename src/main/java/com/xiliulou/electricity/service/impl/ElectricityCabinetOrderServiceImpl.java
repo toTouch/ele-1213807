@@ -2100,11 +2100,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     @Override
-    public List<ElectricityCabinetStatistic> selectExchangeOrders(Integer eid,long startTimeStamp,long endTimeStamp,Integer tenantId){
-        List<ElectricityCabinetStatistic> statisticList = electricityCabinetOrderMapper.selectExchangeOrders(eid, startTimeStamp, endTimeStamp, tenantId);
-        if(CollectionUtils.isEmpty(statisticList)){
-            return Lists.newArrayList();
-        }
-        return statisticList;
+    public ElectricityCabinetStatistic queryExchangeOrder(Integer eid, long startTimeStamp, long endTimeStamp, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectExchangeOrder(eid, startTimeStamp, endTimeStamp, tenantId);
     }
 }
