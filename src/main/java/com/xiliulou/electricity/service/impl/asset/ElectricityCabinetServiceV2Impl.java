@@ -121,7 +121,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             electricityCabinet.setBusinessTime(StringUtils.EMPTY);
             electricityCabinet.setStoreId(0L);
             electricityCabinet.setFullyCharged(0.00);
-            electricityCabinet.setExchangeType(electricityCabinetModel.getExchangeType());
+            electricityCabinet.setExchangeType(electricityCabinetAddRequest.getExchangeType());
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
                 
