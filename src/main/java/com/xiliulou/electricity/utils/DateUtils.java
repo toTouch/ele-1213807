@@ -79,10 +79,9 @@ public class DateUtils {
     public static Long getTodayStartTimeByDate(){
         Date todayDate = new Date();
         String todayStr = todayFormatter.format(todayDate);
-        String todayStartTimeStamp = DateUtils.getTodayTimeByTimeStamp(todayStr);
         Date dateLong = null;
         try {
-            dateLong = todayFormatter.parse(todayStartTimeStamp);
+            dateLong = todayFormatter.parse(todayStr);
         } catch (ParseException e) {
             log.error("todayDate timestamps parse error");
             return 0L;
