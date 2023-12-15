@@ -349,9 +349,9 @@
                 and tenant_id = #{tenantId}
             </if>
             and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
-            <if test="eleIdList!=null and eleIdList!=''">
+            <if test="eidList!=null and eidList!=''">
                 and electricity_cabinet_id in
-                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                <foreach collection="eidList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>

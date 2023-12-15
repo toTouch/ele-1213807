@@ -230,9 +230,9 @@
             </if>
             and status = 'RENT_BATTERY_TAKE_SUCCESS'
             and type = 1
-            <if test="eleIdList!=null and eleIdList!=''">
+            <if test="eidList!=null and eidList!=''">
                 and electricity_cabinet_id in
-                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                <foreach collection="eidList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -259,9 +259,9 @@
             </if>
             and status = 'RETURN_BATTERY_CHECK_SUCCESS'
             and type = 2
-            <if test="eleIdList!=null and eleIdList!=''">
+            <if test="eidList!=null and eidList!=''">
                 and electricity_cabinet_id in
-                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                <foreach collection="eidList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
