@@ -539,4 +539,14 @@ public interface CacheConstant {
     String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
     String CACHE_ASSET_ALLOCATE_LOCK="cache_asset_allocate_lock:";
     
+    String CACHE_FAILURE_ALARM_LOCK = "cache_failure_alarm_lock:";
+    
+    String CACHE_FAILURE_ALARM_UPDATE_LOCK = "cache_failure_alarm_update_lock:";
+    
+    String CACHE_FAILURE_ALARM_DELETE_LOCK = "cache_failure_alarm_delete_lock:";
+    
+    String CACHE_FAILURE_ALARM_BATCH_SET_LOCK = "cache_failure_alarm_batch_set_lock:";
+    
+    String CACHE_FAILURE_ALARM = "cache_failure_alarm:";
+    
 }

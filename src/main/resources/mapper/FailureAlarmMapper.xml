@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FailureAlarmMapper">
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_failure_alarm(id, type, grade, model, name, error_code, trigger_rules, tenant_visible, status, del_flag
+            create_time, update_time)
+        values (#{id}, #{type}, #{grade}, #{model}, #{name}, #{errorCode}, #{triggerRules}, #{tenantVisible}, #{status}, #{delFlag}
+                #{createTime}, #{updateTime})
+    </insert>
+    
+    <select id="checkErrorCode" resultType="int">
+        select count(1)
+        from t_failure_alarm
+        where
+        error_code = #{errorCode}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+    <sql id="pageFilter">
+        <where>
+            <if test="name != null and name != ''">
+                name like concat('%',concat(#{name}, '%'))
+            </if>
+            <if test="errorCode != null">
+                AND error_code like concat('%',concat(#{errorCode}, '%'))
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="grade != null">
+                AND grade = #{grade}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="model != null">
+                AND model = #{model}
+            </if>
+            <if test="tenantVisible != null">
+                AND tenant_visible = #{tenantVisible}
+            </if>
+            <if test="protectMeasureList != null and protectMeasureList.size() > 0">
+                and EXISTS (
+                select 1 from t_failure_alarm_protect_measure p where failure_alarm_id = t.id and p.protect_measure in
+                <foreach collection="protectMeasureList" close=")" open="(" separator="," item="protectMeasure">
+                    #{protectMeasure}
+                </foreach>
+                )
+            </if>
+        </where>
+    </sql>
+    <select id="countTotal" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        t_failure_alarm t
+        <include refid="pageFilter"/>
+    </select>
+    
+    <sql id="column">
+        t
+        .
+        id
+        ,
+            t.type ,
+            t.grade,
+            t.model,
+            t.`name`,
+            t.error_code,
+            t.trigger_rules,
+            t.tenant_visible,
+            t.`status`,
+            t.del_flag,
+            t.create_time,
+            t.update_time
+    </sql>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.FailureAlarm">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_failure_alarm t
+        <include refid="pageFilter"/>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="select" resultType="com.xiliulou.electricity.entity.FailureAlarm">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_failure_alarm t
+        <where>
+            t.id in  #{id}
+        </where>
+    </select>
+    <select id="selectList" resultType="com.xiliulou.electricity.entity.FailureAlarm">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_failure_alarm t
+        <where>
+            t.id in
+            <foreach collection="idList" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+    
+    <update id="update" parameterType="com.xiliulou.electricity.entity.FailureAlarm">
+        UPDATE t_failure_alarm
+        SET type           = #{type}
+          , grade          = #{grade}
+          , model          = #{model}
+          , name           = #{name}
+          , errorCode      = #{errorCode}
+          , trigger_rules  = #{triggerRules}
+          , tenant_visible = #{tenantVisible}
+          , status         = #{status}
+          , update_time    = #{updateTime}
+        WHERE id = #{id}
+    </update>
+    <update id="remove">
+        update t_failure_alarm
+        set del_flag    = #{delFlag},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    <update id="batchUpdateTenantVisible">
+        update t_failure_alarm set tenant_visible = #{tenantVisible}, update_time = #{updateTime}
+        <where>
+            id in
+            <foreach collection="idList" close=")" open="(" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+    
+    <delete id="batchDeleteByFailureAlarmId">
+        delete
+        from t_failure_alarm
+        where failure_alarm_id = #{failureAlarmId}
+    </delete>
+</mapper>
