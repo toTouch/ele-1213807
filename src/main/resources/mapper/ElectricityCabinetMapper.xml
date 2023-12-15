@@ -992,9 +992,7 @@
             warehouse_id = #{warehouseId}
         </set>
         <where>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
+            tenant_id = #{tenantId}
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
