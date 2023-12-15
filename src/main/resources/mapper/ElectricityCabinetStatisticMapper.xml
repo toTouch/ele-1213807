@@ -23,7 +23,7 @@
     </insert>
     
     <insert id="batchInsert">
-        insert into t_electricity_cabinet_statistic(statistic_date, electricity_cabinet_id, electricity_cabinet_name, use_frequency, average_number, average_activity，today_number,today_activity,create_time,update_time,tenant_id)
+        insert into t_electricity_cabinet_statistic(statistic_date, electricity_cabinet_id, electricity_cabinet_name, use_frequency, average_number, average_activity,today_number,today_activity,create_time,update_time,tenant_id)
         values
         <foreach item="item" index="index" collection="statisticList" separator=",">
             (#{item.statisticDate}, #{item.electricityCabinetId}, #{item.electricityCabinetName}, #{item.useFrequency}, #{item.averageNumber},#{item.averageActivity},#{item.todayNumber},#{item.todayActivity},#{item.createTime},#{item.updateTime},#{item.tenantId})
