@@ -11,7 +11,10 @@
     <select id="selectListByElectricityCabinetIdList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
         select id, statistic_date, electricity_cabinet_id,use_frequency,average_number,average_activity,today_number,today_activity
         from t_electricity_cabinet_statistic
-        where electricity_cabinet_id = #{eid} and statistic_date = #{statisticDate}
+        where statistic_date = #{statisticDate} and electricity_cabinet_id in
+        <foreach item="eid" index="index" collection="eidList" separator=",">
+            #{eid}
+        </foreach>
     </select>
     
     <insert id="insertOne">
