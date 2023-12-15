@@ -5438,9 +5438,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void handleFirstStatistic(List<ElectricityCabinetVO> electricityCabinetVOList, List<Integer> eidList) {
-        List<ElectricityCabinetStatistic> cabinetStatisticList = Lists.newArrayList();
         for (ElectricityCabinetVO item : electricityCabinetVOList) {
-            ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
+            List<ElectricityCabinetStatistic> cabinetStatisticList = Lists.newArrayList();
             List<ElectricityCabinetStatistic> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(item.getId(), DateUtils.getTimeAgoStartTime(30),
                     DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
             Map<String, Integer> exchangeUseFrequencyMap = new HashMap<>();
@@ -5483,6 +5482,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     frequency += returnUseFrequencyMap.get(item.getId() + ":" + date);
                 }
                 log.info("cabinetStatisticList key={},value={}", item.getId() + ":" + date, frequency);
+                ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
                 cabinetStatistic.setElectricityCabinetId(item.getId());
                 cabinetStatistic.setElectricityCabinetName(item.getName());
                 try {
@@ -5497,8 +5497,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 cabinetStatisticList.add(cabinetStatistic);
             }
             log.info("cabinetStatisticListaaa={}", JsonUtil.toJson(cabinetStatisticList));
+            statisticService.batchInsert(cabinetStatisticList);
         }
-        statisticService.batchInsert(cabinetStatisticList);
     }
     
     
