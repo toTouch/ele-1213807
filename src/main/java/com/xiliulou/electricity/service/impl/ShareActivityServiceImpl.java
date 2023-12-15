@@ -559,7 +559,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			shareActivityVO.setHours(shareActivity.getHours().doubleValue());
 			shareActivityVO.setMinutes(shareActivity.getHours() * TimeConstant.HOURS_MINUTE);
 			shareActivityVO.setTimeType(NumberConstant.ONE);
-		} else {
+		}
+		if (Objects.nonNull(shareActivity.getMinutes()) && !Objects.equals(shareActivity.getMinutes(), NumberConstant.ZERO)){
 			shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
 			shareActivityVO.setHours(
 					Math.round((double) shareActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);

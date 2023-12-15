@@ -208,11 +208,15 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityUpdate.setOtherReward(query.getOtherReward());
         invitationActivityUpdate.setUpdateTime(System.currentTimeMillis());
     
-        // 设置有效期 兼容 小时和分钟
+        // 设置有效期 兼容 小时和分钟：小时修改为小时或分钟修改为小时
         if (Objects.nonNull(query.getHours()) && !Objects.equals(query.getHours(), NumberConstant.ZERO)){
             invitationActivityUpdate.setHours(query.getHours());
-        } else {
+            invitationActivityUpdate.setMinutes(NumberConstant.ZERO);
+        }
+        // 设置有效期 兼容 小时和分钟：分钟修改为分钟或小时修改为分钟
+        if (Objects.nonNull(query.getMinutes()) && !Objects.equals(query.getMinutes(), NumberConstant.ZERO)){
             invitationActivityUpdate.setMinutes(query.getMinutes());
+            invitationActivityUpdate.setHours(NumberConstant.ZERO);
         }
         
         Integer update = this.update(invitationActivityUpdate);
@@ -402,7 +406,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
             invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
             invitationActivityVO.setTimeType(NumberConstant.ONE);
-        } else {
+        }
+        if (Objects.nonNull(invitationActivity.getMinutes()) && !Objects.equals(invitationActivity.getMinutes(), NumberConstant.ZERO)){
             invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
             invitationActivityVO.setHours(
                     Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
@@ -446,7 +451,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                     invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
                     invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
                     invitationActivityVO.setTimeType(NumberConstant.ONE);
-                } else {
+                }
+                if (Objects.nonNull(invitationActivity.getMinutes()) && !Objects.equals(invitationActivity.getMinutes(), NumberConstant.ZERO)){
                     invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
                     invitationActivityVO.setHours(
                             Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
