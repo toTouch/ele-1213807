@@ -260,6 +260,12 @@ public interface CacheConstant {
      * 异常告警导出缓存
      */
     String WARN_MESSAGE_EXPORT_CACHE = "warn_message_export_cache:";
+    
+    /**
+     * 异常告警导出缓存
+     */
+    String USER_NOTIFY_SAVE_CACHE_UID = "user_notify_save_cache_uid:";
+    
 
     /**
      * 保险缓存
