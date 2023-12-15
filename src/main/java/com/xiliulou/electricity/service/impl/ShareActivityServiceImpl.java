@@ -196,6 +196,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 		shareActivity.setTenantId(tenantId);
 		shareActivity.setHours(Objects.isNull(shareActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getHours()));
+		shareActivity.setMinutes(Objects.isNull(shareActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getMinutes()));
 
 		if (Objects.isNull(shareActivity.getType())) {
 			shareActivity.setType(ShareActivity.SYSTEM);

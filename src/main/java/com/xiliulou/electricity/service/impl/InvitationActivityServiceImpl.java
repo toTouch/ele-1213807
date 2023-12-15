@@ -144,6 +144,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivity.setCreateTime(System.currentTimeMillis());
         invitationActivity.setUpdateTime(System.currentTimeMillis());
         invitationActivity.setHours(Objects.isNull(query.getHours()) ? NumberConstant.ZERO : (query.getHours()));
+        invitationActivity.setMinutes(Objects.isNull(query.getMinutes()) ? NumberConstant.ZERO : (query.getMinutes()));
     
     
         Integer insert = this.insert(invitationActivity);

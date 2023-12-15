@@ -177,6 +177,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         shareMoneyActivity.setUpdateTime(System.currentTimeMillis());
         shareMoneyActivity.setTenantId(tenantId);
         shareMoneyActivity.setHours(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getHours()));
+        shareMoneyActivity.setMinutes(Objects.isNull(shareMoneyActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareMoneyActivityAddAndUpdateQuery.getMinutes()));
 
         if (Objects.isNull(shareMoneyActivity.getType())) {
             shareMoneyActivity.setType(ShareActivity.SYSTEM);
