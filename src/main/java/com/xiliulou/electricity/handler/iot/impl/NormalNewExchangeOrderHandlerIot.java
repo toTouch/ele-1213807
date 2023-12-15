@@ -549,7 +549,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         Integer electricityCabinetId = null;
         
         //旧仓门异常
-        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(
+                orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(
                 orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
             cellNo = electricityCabinetOrder.getOldCellNo();
             electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
@@ -557,7 +558,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             cellNo = electricityCabinetOrder.getNewCellNo();
             electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
         }
-        
+    
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
             log.warn("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", exchangeOrderRsp.getOrderId());
             return;
