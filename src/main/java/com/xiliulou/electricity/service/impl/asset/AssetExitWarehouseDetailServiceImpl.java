@@ -43,16 +43,7 @@ public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDe
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator, "1", 3 * 1000L, false);
-        if (!result) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
-        try {
-            return R.ok(assetExitWarehouseDetailMapper.batchInsert(detailSaveQueryModelList));
-        } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator);
-        }
+    public Integer batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
+        return assetExitWarehouseDetailMapper.batchInsert(detailSaveQueryModelList);
     }
 }

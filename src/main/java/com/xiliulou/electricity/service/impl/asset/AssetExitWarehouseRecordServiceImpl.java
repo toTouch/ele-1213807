@@ -38,6 +38,7 @@ import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -110,7 +111,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
                 return R.ok();
             }
-        
+    
             // 车辆退库类型门店必填
             if (AssetTypeEnum.ASSET_TYPE_CAR.getCode().equals(type)) {
                 if (Objects.isNull(storeId)) {
@@ -279,19 +280,21 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             List<ElectricityCarVO> electricityCarVOList) {
         //清理柜机缓存
         if (CollectionUtils.isNotEmpty(electricityCabinetVOList)) {
-            if (CollectionUtils.isNotEmpty(electricityCabinetVOList)) {
-                electricityCabinetVOList.forEach(electricityCabinet -> {
-                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
-                    redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-                });
-            }
-        } else if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
-            //清理电池缓存
+            electricityCabinetVOList.forEach(electricityCabinet -> {
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            });
+        }
+    
+        //清理电池缓存
+        if (CollectionUtils.isNotEmpty(electricityBatteryVOList)) {
             electricityBatteryVOList.forEach(electricityBattery -> {
                 redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             });
-        } else if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
-            //清理车辆缓存
+        }
+    
+        //清理车辆缓存
+        if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
             if (CollectionUtils.isNotEmpty(electricityCarVOList)) {
                 electricityCarVOList.forEach(electricityCar -> {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId());

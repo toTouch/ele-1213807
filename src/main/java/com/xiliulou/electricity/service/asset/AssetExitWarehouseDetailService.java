@@ -15,6 +15,6 @@ public interface AssetExitWarehouseDetailService {
     
     List<String> listSnByOrderNo(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest);
     
-    R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator);
+    Integer batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator);
 
 }
