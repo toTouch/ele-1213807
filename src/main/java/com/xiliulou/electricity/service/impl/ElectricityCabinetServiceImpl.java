@@ -5426,6 +5426,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetStatistic insert = new ElectricityCabinetStatistic();
                 insert.setElectricityCabinetId(e.getId());
                 insert.setElectricityCabinetName(e.getName());
+                insert.setStatisticDate(todayStartTime);
                 insert.setTenantId(e.getTenantId());
                 insert.setUseFrequency(useFrequency);
                 buildAverageStatistic(insert);

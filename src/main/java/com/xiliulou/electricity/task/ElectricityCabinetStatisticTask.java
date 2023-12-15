@@ -20,7 +20,7 @@ public class ElectricityCabinetStatisticTask extends IJobHandler {
         try {
             electricityCabinetService.handleElectricityCabinetStatistic(s);
         } catch (Exception e) {
-            log.error("xxl-job电池套餐过期生成滞纳金订单失败", e);
+            log.error("xxl-job electricityCabinet statistic error", e);
         }
         return IJobHandler.SUCCESS;
     }
