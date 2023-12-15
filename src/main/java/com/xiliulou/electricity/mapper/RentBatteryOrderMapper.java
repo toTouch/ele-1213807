@@ -37,8 +37,8 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     
     List<RentBatteryOrder> selectByUidAndTime(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
     
-    ElectricityCabinetStatistic selectRentOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
+    List<ElectricityCabinetStatistic> selectListRentOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId, @Param("eidList") List<Integer> eidList);
     
-    ElectricityCabinetStatistic selectReturnOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
+    List<ElectricityCabinetStatistic> selectListReturnOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId, @Param("eidList") List<Integer> eidList);
     
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.CalendarUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -186,9 +187,12 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -5340,61 +5344,81 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         long size = 200L;
         
         //如果是第一次进入，则需要查询近60天的数据
-        while (true) {
+        boolean isFlag=true;
+        while (isFlag) {
             List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetMapper.selectListByPage(size, offset);
             if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                 return;
             }
             
+            List<Integer> eidList = electricityCabinetVOList.parallelStream().map(ElectricityCabinetVO::getId).filter(Objects::nonNull).collect(Collectors.toList());
+            
             List<ElectricityCabinetStatistic> cabinetStatisticList = Lists.newArrayList();
-            int days = 60;
-            while (days > 0) {
-                long startTime = DateUtils.getTimeAgoStartTime(days);
-                long endTime = DateUtils.getTimeAgoEndTime(days);
-                log.info("startTime={},endTime={}", startTime, endTime);
-                for (ElectricityCabinetVO item : electricityCabinetVOList) {
-                    ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
-                    int useFrequency = 0;
-                    ElectricityCabinetStatistic exchangeOrderStatistic = electricityCabinetOrderService.queryExchangeOrder(item.getId(), startTime, endTime, item.getTenantId());
-                    if (Objects.nonNull(exchangeOrderStatistic) && Objects.nonNull(exchangeOrderStatistic.getUseFrequency())) {
-                        useFrequency += exchangeOrderStatistic.getUseFrequency();
+            
+            for (ElectricityCabinetVO item : electricityCabinetVOList) {
+                ElectricityCabinetStatistic cabinetStatistic = new ElectricityCabinetStatistic();
+                List<ElectricityCabinetStatistic> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(item.getId(), DateUtils.getTimeAgoStartTime(60),
+                        DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
+                Map<String, Integer> exchangeUseFrequencyMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(exchangeOrderStatisticList)) {
+                    exchangeUseFrequencyMap = exchangeOrderStatisticList.stream().collect(
+                            Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                }
+                
+                List<ElectricityCabinetStatistic> rentStatisticList = rentBatteryOrderService.listRentOrder(item.getId(), DateUtils.getTimeAgoStartTime(60),
+                        DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
+                Map<String, Integer> rentUseFrequencyMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(rentStatisticList)) {
+                    rentUseFrequencyMap = rentStatisticList.stream().collect(
+                            Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                }
+                
+                List<ElectricityCabinetStatistic> returnStatistic = rentBatteryOrderService.listReturnOrder(item.getId(), DateUtils.getTimeAgoStartTime(60),
+                        DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
+                
+                Map<String, Integer> returnUseFrequencyMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(returnStatistic)) {
+                    returnUseFrequencyMap = returnStatistic.stream().collect(
+                            Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                }
+                
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new Date());
+                for (int i = -30; i < 0; i++) {
+                    calendar.add(Calendar.DATE, i);
+                    String date = format.format(calendar.getTime());
+                    Integer frequency = 0;
+                    if(exchangeUseFrequencyMap.containsKey(item.getId() + ":" + date)){
+                        frequency += exchangeUseFrequencyMap.get(item.getId() + ":" + date);
                     }
-                    ElectricityCabinetStatistic rentStatistic = rentBatteryOrderService.queryRentOrder(item.getId(), startTime, endTime, item.getTenantId());
-                    if (Objects.nonNull(rentStatistic) && Objects.nonNull(rentStatistic.getUseFrequency())) {
-                        useFrequency += rentStatistic.getUseFrequency();
+                    if(rentUseFrequencyMap.containsKey(item.getId() + ":" + date)){
+                        frequency += rentUseFrequencyMap.get(item.getId() + ":" + date);
                     }
-                    ElectricityCabinetStatistic returnStatistic = rentBatteryOrderService.queryReturnOrder(item.getId(), startTime, endTime, item.getTenantId());
                     
-                    if (Objects.nonNull(returnStatistic) && Objects.nonNull(returnStatistic.getUseFrequency())) {
-                        useFrequency += returnStatistic.getUseFrequency();
+                    if(returnUseFrequencyMap.containsKey(item.getId() + ":" + date)){
+                        frequency += returnUseFrequencyMap.get(item.getId() + ":" + date);
                     }
                     
                     cabinetStatistic.setElectricityCabinetId(item.getId());
                     cabinetStatistic.setElectricityCabinetName(item.getName());
-                    cabinetStatistic.setUseFrequency(useFrequency);
-                    cabinetStatistic.setTodayNumber(0);
-                    cabinetStatistic.setTodayActivity(0);
+                    cabinetStatistic.setUseFrequency(frequency);
                     cabinetStatistic.setCreateTime(System.currentTimeMillis());
                     cabinetStatistic.setUpdateTime(System.currentTimeMillis());
                     cabinetStatistic.setTenantId(item.getTenantId());
-                    
-                    // 设置今日换电数量和今日活跃数
-                    buildTodayStatistic(cabinetStatistic);
-                    
-                    // 设置日均换电数量和日均活跃数
-                    buildAverageStatistic(cabinetStatistic);
                     cabinetStatisticList.add(cabinetStatistic);
                 }
-                --days;
+                log.info("cabinetStatisticListaaa={}", JsonUtil.toJson(cabinetStatisticList));
+                isFlag = false;
+                offset += size;
             }
-            log.info("cabinetStatisticListaaa={}",JsonUtil.toJson(cabinetStatisticList));
-            offset += size;
         }
     }
     
-    private void buildTodayStatistic(ElectricityCabinetStatistic cabinetStatistic){
+    private void buildTodayStatistic(ElectricityCabinetStatistic cabinetStatistic) {
         //今日换电订单
-        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectTodayExchangeOrder(cabinetStatistic.getElectricityCabinetId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), cabinetStatistic.getTenantId());
+        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectTodayExchangeOrder(cabinetStatistic.getElectricityCabinetId(),
+                DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), cabinetStatistic.getTenantId());
         if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
             return;
         }
@@ -5406,9 +5430,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetStatistic.setTodayActivity((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
     }
     
-    private void buildAverageStatistic(ElectricityCabinetStatistic cabinetStatistic){
+    private void buildAverageStatistic(ElectricityCabinetStatistic cabinetStatistic) {
         //获取本月订单
-        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectMonthExchangeOrders(cabinetStatistic.getElectricityCabinetId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), cabinetStatistic.getTenantId());
+        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.selectMonthExchangeOrders(cabinetStatistic.getElectricityCabinetId(),
+                DateUtils.get30AgoStartTime(), System.currentTimeMillis(), cabinetStatistic.getTenantId());
         if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
             return;
         }

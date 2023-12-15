@@ -95,5 +95,5 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName);
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
-    ElectricityCabinetStatistic queryExchangeOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
+    List<ElectricityCabinetStatistic> listExchangeOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
 }

@@ -1642,12 +1642,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public ElectricityCabinetStatistic queryRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId){
-        return rentBatteryOrderMapper.selectRentOrder(eid, startTimeStamp, endTimeStamp, tenantId);
+    public List<ElectricityCabinetStatistic> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
+        return rentBatteryOrderMapper.selectListRentOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
     
     @Override
-    public ElectricityCabinetStatistic queryReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId){
-        return rentBatteryOrderMapper.selectReturnOrder(eid, startTimeStamp, endTimeStamp, tenantId);
+    public List<ElectricityCabinetStatistic> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
+        return rentBatteryOrderMapper.selectListReturnOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
 }

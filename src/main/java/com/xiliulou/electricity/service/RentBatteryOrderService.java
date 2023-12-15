@@ -62,7 +62,7 @@ public interface RentBatteryOrderService {
     
     List<RentBatteryOrder> selectByUidAndTime(Long uid, Long membercardStartTime, Long currentTime);
     
-    ElectricityCabinetStatistic queryRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
+    List<ElectricityCabinetStatistic> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
     
-    ElectricityCabinetStatistic queryReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId);
+    List<ElectricityCabinetStatistic> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
 }

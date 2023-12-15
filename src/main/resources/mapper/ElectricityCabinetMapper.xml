@@ -1019,6 +1019,6 @@
     </update>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id,name,franchisee_id,store_id,tenant_id  from t_electricity_cabinet limit #{offset}, #{size}
+        select id,name,franchisee_id,store_id,tenant_id from t_electricity_cabinet where del_flag=0 order by id desc limit #{offset}, #{size}
     </select>
 </mapper>
