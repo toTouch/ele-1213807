@@ -76,6 +76,20 @@ public class DateUtils {
         return String.valueOf(parse.getTime());
     }
     
+    public static Long getTodayStartTimeByDate(){
+        Date todayDate = new Date();
+        String todayStr = todayFormatter.format(todayDate);
+        String todayStartTimeStamp = DateUtils.getTodayTimeByTimeStamp(todayStr);
+        Date dateLong = null;
+        try {
+            dateLong = todayFormatter.parse(todayStartTimeStamp);
+        } catch (ParseException e) {
+            log.error("todayDate timestamps parse error");
+            return 0L;
+        }
+        return dateLong.getTime();
+    }
+    
     /**
      * @param nowTime
      * @param beginTime
