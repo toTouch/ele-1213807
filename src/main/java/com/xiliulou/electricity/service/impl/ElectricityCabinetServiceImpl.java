@@ -5384,9 +5384,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date());
-                for (int i = -30; i < 0; i++) {
-                    calendar.add(Calendar.DATE, i);
+                for (int i = 0; i < 30; i++) {
+                    calendar.setTime(new Date());
+                    calendar.add(Calendar.DATE, -i);
                     String date = format.format(calendar.getTime());
                     Integer frequency = 0;
                     if(exchangeUseFrequencyMap.containsKey(item.getId() + ":" + date)){
@@ -5399,7 +5399,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if(returnUseFrequencyMap.containsKey(item.getId() + ":" + date)){
                         frequency += returnUseFrequencyMap.get(item.getId() + ":" + date);
                     }
-                    
+                    log.info("cabinetStatisticList key={},value={}", item.getId() + ":" + date,frequency);
                     cabinetStatistic.setElectricityCabinetId(item.getId());
                     cabinetStatistic.setElectricityCabinetName(item.getName());
                     cabinetStatistic.setStatisticDate(date);
