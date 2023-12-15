@@ -35,7 +35,7 @@ public class ShareMoneyActivityAddAndUpdateQuery {
     /**
      * 有效时间，单位：分钟
      */
-    private Long minutes;
+    private Integer minutes;
     
     /**
      * 金额
