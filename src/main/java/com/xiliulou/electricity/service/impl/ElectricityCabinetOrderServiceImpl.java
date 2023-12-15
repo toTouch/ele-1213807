@@ -17,6 +17,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
@@ -2100,7 +2101,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     @Override
-    public List<ElectricityCabinetStatistic> listExchangeOrder(Integer eid, long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList) {
+    public List<ElectricityCabinetStatisticDO> listExchangeOrder(Integer eid, long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList) {
         return electricityCabinetOrderMapper.selectListExchangeOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
 }

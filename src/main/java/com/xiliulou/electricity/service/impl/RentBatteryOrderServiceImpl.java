@@ -16,6 +16,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
@@ -1642,12 +1643,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public List<ElectricityCabinetStatistic> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
+    public List<ElectricityCabinetStatisticDO> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
         return rentBatteryOrderMapper.selectListRentOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
     
     @Override
-    public List<ElectricityCabinetStatistic> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
+    public List<ElectricityCabinetStatisticDO> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
         return rentBatteryOrderMapper.selectListReturnOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
 }

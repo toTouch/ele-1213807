@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,10 +63,17 @@ public class DateUtils {
         return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
     }
     
-    public static long getTodayTimeByTimeStamp(long timestamp) throws ParseException {
-        String today = todayFormatter.format(new Date(timestamp));
-        Date parse = todayFormatter.parse(today);
-        return parse.getTime();
+    public static String getTodayTimeByTimeStamp(String today){
+        Date parse = null;
+        try {
+            parse = todayFormatter.parse(today);
+        } catch (ParseException e) {
+            log.error("today timestamps parse error");
+        }
+        if(Objects.isNull(parse)){
+            return "";
+        }
+        return String.valueOf(parse.getTime());
     }
     
     /**

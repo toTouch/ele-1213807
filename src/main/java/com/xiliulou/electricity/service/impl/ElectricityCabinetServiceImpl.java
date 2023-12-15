@@ -30,6 +30,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -5378,29 +5379,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .collect(Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), Function.identity(), (key1, key2) -> key1));
         
         for (ElectricityCabinetVO e : electricityCabinetVOList) {
-            List<ElectricityCabinetStatistic> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
+            List<ElectricityCabinetStatisticDO> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
                     DateUtils.getTodayEndTimeStamp(), e.getTenantId(), eidList);
             Map<String, Integer> exchangeUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(exchangeOrderStatisticList)) {
                 exchangeUseFrequencyMap = exchangeOrderStatisticList.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
-            List<ElectricityCabinetStatistic> rentStatisticList = rentBatteryOrderService.listRentOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
+            List<ElectricityCabinetStatisticDO> rentStatisticList = rentBatteryOrderService.listRentOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
                     DateUtils.getTodayEndTimeStamp(), e.getTenantId(), eidList);
             Map<String, Integer> rentUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(rentStatisticList)) {
                 rentUseFrequencyMap = rentStatisticList.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
-            List<ElectricityCabinetStatistic> returnStatistic = rentBatteryOrderService.listReturnOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
+            List<ElectricityCabinetStatisticDO> returnStatistic = rentBatteryOrderService.listReturnOrder(e.getId(), DateUtils.getTodayStartTimeStamp(),
                     DateUtils.getTodayEndTimeStamp(), e.getTenantId(), eidList);
             
             Map<String, Integer> returnUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(returnStatistic)) {
                 returnUseFrequencyMap = returnStatistic.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
             Integer useFrequency = 0;
@@ -5440,50 +5441,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private void handleFirstStatistic(List<ElectricityCabinetVO> electricityCabinetVOList, List<Integer> eidList) {
         for (ElectricityCabinetVO item : electricityCabinetVOList) {
             List<ElectricityCabinetStatistic> cabinetStatisticList = Lists.newArrayList();
-            List<ElectricityCabinetStatistic> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(item.getId(), DateUtils.getTimeAgoStartTime(30),
+            List<ElectricityCabinetStatisticDO> exchangeOrderStatisticList = electricityCabinetOrderService.listExchangeOrder(item.getId(), DateUtils.getTimeAgoStartTime(30),
                     DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
             Map<String, Integer> exchangeUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(exchangeOrderStatisticList)) {
-                exchangeOrderStatisticList.forEach(order->{
-                    try {
-                        order.setStatisticDate(DateUtils.getTodayTimeByTimeStamp(order.getStatisticDate()));
-                    } catch (Exception e) {
-                       log.error("StatisticDate parse error");
-                    }
-                });
                 exchangeUseFrequencyMap = exchangeOrderStatisticList.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
-            List<ElectricityCabinetStatistic> rentStatisticList = rentBatteryOrderService.listRentOrder(item.getId(), DateUtils.getTimeAgoStartTime(30),
+            List<ElectricityCabinetStatisticDO> rentStatisticList = rentBatteryOrderService.listRentOrder(item.getId(), DateUtils.getTimeAgoStartTime(30),
                     DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
             Map<String, Integer> rentUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(rentStatisticList)) {
-                rentStatisticList.forEach(order->{
-                    try {
-                        order.setStatisticDate(DateUtils.getTodayTimeByTimeStamp(order.getStatisticDate()));
-                    } catch (Exception e) {
-                        log.error("StatisticDate parse error");
-                    }
-                });
                 rentUseFrequencyMap = rentStatisticList.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
-            List<ElectricityCabinetStatistic> returnStatisticList = rentBatteryOrderService.listReturnOrder(item.getId(), DateUtils.getTimeAgoStartTime(60),
+            List<ElectricityCabinetStatisticDO> returnStatisticList = rentBatteryOrderService.listReturnOrder(item.getId(), DateUtils.getTimeAgoStartTime(60),
                     DateUtils.getTodayEndTimeStamp(), item.getTenantId(), eidList);
             
             Map<String, Integer> returnUseFrequencyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(returnStatisticList)) {
-                returnStatisticList.forEach(order->{
-                    try {
-                        order.setStatisticDate(DateUtils.getTodayTimeByTimeStamp(order.getStatisticDate()));
-                    } catch (Exception e) {
-                        log.error("StatisticDate parse error");
-                    }
-                });
                 returnUseFrequencyMap = returnStatisticList.stream().collect(
-                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), ElectricityCabinetStatistic::getUseFrequency, (key1, key2) -> key1));
+                        Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + DateUtils.getTodayTimeByTimeStamp(k.getStatisticDate()), ElectricityCabinetStatisticDO::getUseFrequency, (key1, key2) -> key1));
             }
             
             Calendar calendar = Calendar.getInstance();

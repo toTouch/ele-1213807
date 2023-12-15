@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
@@ -62,7 +63,7 @@ public interface RentBatteryOrderService {
     
     List<RentBatteryOrder> selectByUidAndTime(Long uid, Long membercardStartTime, Long currentTime);
     
-    List<ElectricityCabinetStatistic> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
+    List<ElectricityCabinetStatisticDO> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
     
-    List<ElectricityCabinetStatistic> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
+    List<ElectricityCabinetStatisticDO> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList);
 }
