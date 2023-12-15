@@ -5349,7 +5349,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     public void handleElectricityCabinetStatistic(String param) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         long offset = 0L;
         long size = 200L;
         
