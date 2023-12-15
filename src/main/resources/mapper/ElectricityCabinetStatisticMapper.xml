@@ -18,7 +18,7 @@
     </select>
     
     <insert id="insertOne">
-        insert into t_electricity_cabinet_statistic(statistic_date, electricity_cabinet_id, electricity_cabinet_name, use_frequency, average_number, average_activity，today_number,today_activity,create_time,update_time,tenant_id)
+        insert into t_electricity_cabinet_statistic(statistic_date, electricity_cabinet_id, electricity_cabinet_name, use_frequency, average_number, average_activity,today_number,today_activity,create_time,update_time,tenant_id)
             values (#{statisticDate}, #{electricityCabinetId}, #{electricityCabinetName}, #{useFrequency}, #{averageNumber},#{averageActivity},#{todayNumber},#{todayActivity},#{createTime},#{updateTime},#{tenantId})
     </insert>
     
