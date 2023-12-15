@@ -170,6 +170,9 @@
             <if test="hours != null">
                 hours = #{hours},
             </if>
+            <if test="minutes != null">
+                minutes = #{minutes},
+            </if>
             <if test="discountType != null">
                 discount_type = #{discountType},
             </if>
