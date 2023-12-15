@@ -224,11 +224,12 @@ public class EleOperateQueueHandler {
                 }
             }
         } else {
+            if (!redisService.setNx(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId(), "1", 200L, false)) {
+                log.info("RENT ORDER INFO! order is being processed,requestId={},orderId={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId());
+                return;
+            }
+            
             try {
-                if (!redisService.setNx(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId(), "1", 200L, false)) {
-                    log.info("RENT ORDER INFO! order is being processed,requestId={},orderId={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId());
-                    return;
-                }
                 //租还电池订单
                 RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
                 if (Objects.isNull(rentBatteryOrder)) {

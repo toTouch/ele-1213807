@@ -127,13 +127,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         ElectricityCabinetOrder electricityCabinetOrder = null;
+    
+        if (!redisService.setNx(CacheConstant.EXCHANGE_ORDER_HANDLE_LIMIT + exchangeOrderRsp.getOrderId(), "1", 200L, false)) {
+            log.info("EXCHANGE ORDER INFO! order is being processed,requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
+            return;
+        }
         
         try {
-            if (!redisService.setNx(CacheConstant.EXCHANGE_ORDER_HANDLE_LIMIT + exchangeOrderRsp.getOrderId(), "1", 200L, false)) {
-                log.info("EXCHANGE ORDER INFO! order is being processed,requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
-                return;
-            }
-            
             electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
             if (Objects.isNull(electricityCabinetOrder)) {
                 log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
