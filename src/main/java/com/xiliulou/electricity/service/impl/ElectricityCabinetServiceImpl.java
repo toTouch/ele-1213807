@@ -5342,10 +5342,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public void handleElectricityCabinetStatistic(String param) {
         long offset = 0L;
         long size = 200L;
-        
+        log.info("ssstartTime={}",System.currentTimeMillis());
         //如果是第一次进入，则需要查询近60天的数据
-        boolean isFlag=true;
-        while (isFlag) {
+        while (true) {
             List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetMapper.selectListByPage(size, offset);
             if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
                 return;
@@ -5402,6 +5401,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     
                     cabinetStatistic.setElectricityCabinetId(item.getId());
                     cabinetStatistic.setElectricityCabinetName(item.getName());
+                    cabinetStatistic.setStatisticDate(date);
                     cabinetStatistic.setUseFrequency(frequency);
                     cabinetStatistic.setCreateTime(System.currentTimeMillis());
                     cabinetStatistic.setUpdateTime(System.currentTimeMillis());
@@ -5409,10 +5409,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     cabinetStatisticList.add(cabinetStatistic);
                 }
                 log.info("cabinetStatisticListaaa={}", JsonUtil.toJson(cabinetStatisticList));
-                isFlag = false;
                 offset += size;
             }
         }
+        log.info("ssendTime={}",System.currentTimeMillis());
     }
     
     private void buildTodayStatistic(ElectricityCabinetStatistic cabinetStatistic) {
