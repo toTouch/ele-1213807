@@ -20,5 +20,5 @@ public interface ElectricityCabinetStatisticMapper {
     Integer update(ElectricityCabinetStatistic statistic);
     Integer insertOne(ElectricityCabinetStatistic statistic);
     
-    Integer batchInsert(List<ElectricityCabinetStatistic> statisticList);
+    Integer batchInsert(@Param("statisticList") List<ElectricityCabinetStatistic> statisticList);
 }
