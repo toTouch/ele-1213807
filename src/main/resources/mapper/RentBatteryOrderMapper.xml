@@ -213,7 +213,7 @@
     
     <select id="selectListRentOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
         SELECT
-        count(1) as use_frequency, FROM_UNIXTIME(create_time/1000,'%Y-%m-%d') as statistic_date,electricity_cabinet_id
+        count(1) as use_frequency, create_time as statistic_date,electricity_cabinet_id
         FROM t_rent_battery_order
         <where>
             <if test="eid != null">
@@ -242,7 +242,7 @@
     
     <select id="selectListReturnOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetStatistic">
         SELECT
-        count(1) as use_frequency, FROM_UNIXTIME(create_time/1000,'%Y-%m-%d') as statistic_date,electricity_cabinet_id
+        count(1) as use_frequency, create_time as statistic_date,electricity_cabinet_id
         FROM t_rent_battery_order
         <where>
             <if test="eid != null">
