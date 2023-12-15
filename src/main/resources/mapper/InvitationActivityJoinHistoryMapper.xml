@@ -330,8 +330,6 @@
         iajh.money,
         iajh.create_time,
         iajh.join_uid joinUid,
-        tu.name as userName,
-        tu.phone as phone,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
