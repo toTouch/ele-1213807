@@ -31,7 +31,7 @@ public class ElectricityCabinetStatistic {
     /**
      * 统计
      */
-    private Long statisticDate;
+    private String statisticDate;
     
     /**
      * 换电柜id
