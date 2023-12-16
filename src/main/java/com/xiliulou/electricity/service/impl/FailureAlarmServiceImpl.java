@@ -279,7 +279,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         List<Long> idList = list.stream().map(FailureAlarm::getId).collect(Collectors.toList());
         Set<Long> noExistIds = request.getIdList().stream().filter(item -> !idList.contains(item)).collect(Collectors.toSet());
-        if (ObjectUtils.isEmpty(noExistIds)) {
+        if (ObjectUtils.isNotEmpty(noExistIds)) {
             log.error("batch set not find failure alarm ,ids={}", noExistIds);
             return R.fail("300820", "故障告警不存在");
         }

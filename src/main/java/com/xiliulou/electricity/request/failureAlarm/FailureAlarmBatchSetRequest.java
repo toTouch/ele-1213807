@@ -29,7 +29,7 @@ public class FailureAlarmBatchSetRequest {
     /**
      * 主键ID
      */
-    @NotEmpty(message = "[主键ID]不能为空")
+    @NotNull(message = "[主键ID]不能为空")
     private List<Long> idList;
     
     /**
