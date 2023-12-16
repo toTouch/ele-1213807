@@ -64,7 +64,7 @@ public class FailureAlarmSaveRequest {
     /**
      * 错误码
      */
-    @Range(min = 1000000000, max = 2147483647, message = "错误码不符合规定")
+    @Range(min = 0, max = 2147483647, message = "错误码不符合规定")
     @NotNull(message = "错误码不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer errorCode;
     
