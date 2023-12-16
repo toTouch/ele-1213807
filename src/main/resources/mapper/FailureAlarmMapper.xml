@@ -140,7 +140,7 @@
     
     <delete id="batchDeleteByFailureAlarmId">
         delete
-        from t_failure_alarm
+        from t_failure_alarm_protect_measure
         where failure_alarm_id = #{failureAlarmId}
     </delete>
 </mapper>
