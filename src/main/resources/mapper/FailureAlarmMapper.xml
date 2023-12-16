@@ -92,7 +92,7 @@
         t_failure_alarm t
         <where>
             del_flag = 0
-            and t.id in  #{id}
+            and t.id =  #{id}
         </where>
     </select>
     <select id="selectList" resultType="com.xiliulou.electricity.entity.FailureAlarm">
