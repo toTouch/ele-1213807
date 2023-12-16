@@ -14,7 +14,7 @@ import java.util.List;
  * @author maxiaodong
  * @since 2023-12-15 18:05:41
  */
-public interface FailureAlarmProtectMeasureMapper extends BaseMapper<FailureAlarm>{
+public interface FailureAlarmProtectMeasureMapper extends BaseMapper<FailureAlarmProtectMeasure>{
     
     int batchInsert(@Param("list") List<FailureAlarmProtectMeasure> protectMeasures);
     
