@@ -115,7 +115,7 @@
           , grade          = #{grade}
           , model          = #{model}
           , name           = #{name}
-          , errorCode      = #{errorCode}
+          , error_code      = #{errorCode}
           , trigger_rules  = #{triggerRules}
           , tenant_visible = #{tenantVisible}
           , status         = #{status}
