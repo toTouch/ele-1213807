@@ -3,9 +3,9 @@
 <mapper namespace="com.xiliulou.electricity.mapper.FailureAlarmMapper">
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_failure_alarm(id, type, grade, model, name, error_code, trigger_rules, tenant_visible, status, del_flag
+        insert into t_failure_alarm(id, type, grade, model, name, error_code, trigger_rules, tenant_visible, status, del_flag,
             create_time, update_time)
-        values (#{id}, #{type}, #{grade}, #{model}, #{name}, #{errorCode}, #{triggerRules}, #{tenantVisible}, #{status}, #{delFlag}
+        values (#{id}, #{type}, #{grade}, #{model}, #{name}, #{errorCode}, #{triggerRules}, #{tenantVisible}, #{status}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     
