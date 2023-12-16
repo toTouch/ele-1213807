@@ -144,7 +144,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     @Slave
     @Override
     public List<FailureAlarmVO> listByPage(FailureAlarmPageRequest allocateRecordPageRequest) {
-        List<FailureAlarmVO> rspList = null;
+        List<FailureAlarmVO> rspList = new ArrayList<>();
         
         FailureAlarmQueryModel failureAlarmQueryModel = new FailureAlarmQueryModel();
         BeanUtils.copyProperties(allocateRecordPageRequest, failureAlarmQueryModel);
