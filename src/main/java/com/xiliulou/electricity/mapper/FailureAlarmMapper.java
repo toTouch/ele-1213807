@@ -3,7 +3,6 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
-import com.xiliulou.electricity.vo.failureAlarm.FailureAlarmVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public interface FailureAlarmMapper extends BaseMapper<FailureAlarm>{
     
     int insertOne(FailureAlarm failureAlarm);
     
-    int checkErrorCode(@Param("errorCode") Integer errorCode);
+    int checkErrorCode(@Param("errorCode") Integer errorCode,@Param("id") Long id);
     
     Integer countTotal(FailureAlarmQueryModel failureAlarmQueryModel);
     

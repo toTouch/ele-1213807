@@ -92,7 +92,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         }
         
         // 检测错误码是否存在
-        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode());
+        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), null);
         if (errorCodeCount > 0) {
             return Triple.of(false, "300819", "错误码重复，请检查后操作");
         }
@@ -196,7 +196,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         }
         
         // 检测错误码是否存在
-        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode());
+        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), failureAlarmSaveRequest.getId());
         if (errorCodeCount > 0) {
             return Triple.of(false, "300819", "错误码重复，请检查后操作");
         }
@@ -233,8 +233,8 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     }
     
     @Slave
-    public int checkErrorCode(Integer errorCode) {
-        return failureAlarmMapper.checkErrorCode(errorCode);
+    public int checkErrorCode(Integer errorCode, Long id) {
+        return failureAlarmMapper.checkErrorCode(errorCode, id);
     }
     
     @Override
