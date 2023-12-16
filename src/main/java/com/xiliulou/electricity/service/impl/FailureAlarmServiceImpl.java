@@ -91,6 +91,10 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
+        if (ObjectUtils.isEmpty(failureAlarmSaveRequest.getProtectMeasureList())) {
+            return Triple.of(false, "300823", "保护措施不能为空");
+        }
+        
         // 检测错误码是否存在
         int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), null);
         if (errorCodeCount > 0) {
@@ -194,6 +198,10 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         if (!result) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
+    
+        if (ObjectUtils.isEmpty(failureAlarmSaveRequest.getProtectMeasureList())) {
+            return Triple.of(false, "300823", "保护措施不能为空");
+        }
         
         // 检测错误码是否存在
         int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), failureAlarmSaveRequest.getId());
@@ -271,6 +279,9 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
+        if (ObjectUtils.isEmpty(request.getIdList())) {
+            return R.fail("300822", "主键id不能为空");
+        }
         // 判断id是否存在
         List<FailureAlarm> list = this.listByIdList(request.getIdList());
         if (ObjectUtils.isEmpty(list)) {
@@ -296,7 +307,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     }
     
     @Override
-    public void exportExcel(FailureAlarmPageRequest allocateRecordPageRequest, HttpServletResponse response) {
+    public void exportExcel(FailureAlarmPageRequest failureAlarmPageRequest, HttpServletResponse response) {
         Long userId = SecurityUtils.getUid();
         if (Objects.isNull(userId)) {
             throw new CustomBusinessException("未查询到用户");
@@ -304,12 +315,12 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         Long offset = 0L;
         Long size = 2000L;
-        allocateRecordPageRequest.setOffset(offset);
-        allocateRecordPageRequest.setSize(size);
+        failureAlarmPageRequest.setOffset(offset);
+        failureAlarmPageRequest.setSize(size);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
     
-        List<FailureAlarmVO> failureAlarmVOList = this.listByPage(allocateRecordPageRequest);
+        List<FailureAlarmVO> failureAlarmVOList = this.listByPage(failureAlarmPageRequest);
         List<FailureAlarmExcelVo> voList = new ArrayList<>();
         
         if (ObjectUtils.isNotEmpty(failureAlarmVOList)) {
@@ -329,7 +340,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             
             for (FailureAlarmVO item : failureAlarmVOList) {
                 FailureAlarmExcelVo vo = new FailureAlarmExcelVo();
-    
+                BeanUtils.copyProperties(item, vo);
                 FailureAlarmTypeEnum typeEnum = BasicEnum.getEnum(item.getType(), FailureAlarmTypeEnum.class);
                 if (ObjectUtils.isNotEmpty(typeEnum)) {
                     vo.setType(typeEnum.getDesc());
