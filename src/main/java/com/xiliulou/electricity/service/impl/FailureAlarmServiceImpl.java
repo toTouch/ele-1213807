@@ -99,7 +99,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         // 检测保护措施是否存在
         List<Integer> noExistsList = checkProtectMeasureExists(failureAlarmSaveRequest.getProtectMeasureList());
-        if (ObjectUtils.isEmpty(noExistsList)) {
+        if (ObjectUtils.isNotEmpty(noExistsList)) {
             return Triple.of(false, "300821", "保护措施不存在");
         }
     
@@ -203,7 +203,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
         // 检测保护措施是否存在
         List<Integer> noExistsList = checkProtectMeasureExists(failureAlarmSaveRequest.getProtectMeasureList());
-        if (ObjectUtils.isEmpty(noExistsList)) {
+        if (ObjectUtils.isNotEmpty(noExistsList)) {
             return Triple.of(false, "300821", "保护措施不存在");
         }
         
