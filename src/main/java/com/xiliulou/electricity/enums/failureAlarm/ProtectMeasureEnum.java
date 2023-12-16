@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.enums.failureAlarm;
 
+import com.xiliulou.electricity.enums.basic.BasicEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
-public enum ProtectMeasureEnum {
+public enum ProtectMeasureEnum implements BasicEnum<Integer, String> {
     PROTECT_MEASURE_UP(1, "上报"),
     PROTECT_MEASURE_WARING(2, "发出告警"),
     PROTECT_MEASURE_BUGLE(3, "喇叭长鸣"),
