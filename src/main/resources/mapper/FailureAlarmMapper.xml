@@ -14,14 +14,16 @@
         from t_failure_alarm
         where
         error_code = #{errorCode}
+        and del_flag = 0
         <if test="id != null">
             and id != #{id}
         </if>
     </select>
     <sql id="pageFilter">
         <where>
+             del_flag = 0
             <if test="name != null and name != ''">
-                name like concat('%',concat(#{name}, '%'))
+                and name like concat('%',concat(#{name}, '%'))
             </if>
             <if test="errorCode != null">
                 AND error_code like concat('%',concat(#{errorCode}, '%'))
@@ -60,10 +62,7 @@
     </select>
     
     <sql id="column">
-        t
-        .
-        id
-        ,
+            t.id,
             t.type ,
             t.grade,
             t.model,
@@ -92,7 +91,8 @@
         FROM
         t_failure_alarm t
         <where>
-            t.id in  #{id}
+            del_flag = 0
+            and t.id in  #{id}
         </where>
     </select>
     <select id="selectList" resultType="com.xiliulou.electricity.entity.FailureAlarm">
@@ -101,7 +101,8 @@
         FROM
         t_failure_alarm t
         <where>
-            t.id in
+             del_flag = 0
+            and t.id in
             <foreach collection="idList" item="id" separator="," open="(" close=")">
                 #{id}
             </foreach>

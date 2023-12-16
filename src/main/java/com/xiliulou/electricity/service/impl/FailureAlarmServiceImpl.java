@@ -97,6 +97,12 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             return Triple.of(false, "300819", "错误码重复，请检查后操作");
         }
         
+        // 检测保护措施是否存在
+        List<Integer> noExistsList = checkProtectMeasureExists(failureAlarmSaveRequest.getProtectMeasureList());
+        if (ObjectUtils.isEmpty(noExistsList)) {
+            return Triple.of(false, "300821", "保护措施不存在");
+        }
+    
         // 故障告警设置保存
         FailureAlarm failureAlarm = new FailureAlarm();
         BeanUtils.copyProperties(failureAlarmSaveRequest, failureAlarm);
@@ -119,6 +125,11 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         failureAlarmProtectMeasureMapper.batchInsert(protectMeasures);
         
         return Triple.of(true, "", failureAlarm);
+    }
+    
+    private List<Integer> checkProtectMeasureExists(List<Integer> protectMeasureList) {
+         List<Integer> list = protectMeasureList.stream().filter(code -> !BasicEnum.isExist(code, ProtectMeasureEnum.class)).collect(Collectors.toList());
+         return list;
     }
     
     @Slave
@@ -188,6 +199,12 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode());
         if (errorCodeCount > 0) {
             return Triple.of(false, "300819", "错误码重复，请检查后操作");
+        }
+    
+        // 检测保护措施是否存在
+        List<Integer> noExistsList = checkProtectMeasureExists(failureAlarmSaveRequest.getProtectMeasureList());
+        if (ObjectUtils.isEmpty(noExistsList)) {
+            return Triple.of(false, "300821", "保护措施不存在");
         }
         
         // 故障告警设置保存
