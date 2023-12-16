@@ -287,6 +287,8 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         Long offset = 0L;
         Long size = 2000L;
+        allocateRecordPageRequest.setOffset(offset);
+        allocateRecordPageRequest.setSize(size);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
     
@@ -356,7 +358,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, ChannelActivityHistoryExcelVo.class).sheet("sheet").doWrite(voList);
+            EasyExcel.write(outputStream, FailureAlarmExcelVo.class).sheet("sheet").doWrite(voList);
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);
