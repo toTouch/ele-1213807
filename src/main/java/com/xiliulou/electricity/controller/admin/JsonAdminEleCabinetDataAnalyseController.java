@@ -47,6 +47,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                      @RequestParam(value = "sn", required = false) String sn,
                      @RequestParam(value = "address", required = false) String address,
                      @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                     @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                     @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                     @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                     @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                      @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -77,10 +81,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
-                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name)
-                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId)
+                .name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -131,6 +135,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                          @RequestParam(value = "sn", required = false) String sn,
                          @RequestParam(value = "address", required = false) String address,
                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                         @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                         @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                         @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                         @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                          @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -161,10 +169,11 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
-                .onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS).sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList)
+                .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
+                .orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -213,6 +222,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                          @RequestParam(value = "sn", required = false) String sn,
                          @RequestParam(value = "address", required = false) String address,
                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                         @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                         @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                         @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                         @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                          @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -243,10 +256,11 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
-                .usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS).sn(sn).address(address)
-                .name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList).build();
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
+                .sn(sn).address(address).name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList)
+                .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
+                .orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -296,6 +310,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                       @RequestParam(value = "sn", required = false) String sn,
                       @RequestParam(value = "address", required = false) String address,
                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                      @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                      @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                      @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                      @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                       @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -325,11 +343,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
-                .storeId(storeId).usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address)
-                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+        
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).storeId(storeId)
+                .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address).franchiseeId(franchiseeId).name(name)
+                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity)
+                .orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectLockPage(cabinetQuery));
     }
@@ -381,6 +400,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                           @RequestParam(value = "address", required = false) String address,
                           @RequestParam(value = "lowChargeRate") Double lowChargeRate,
                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                          @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                          @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                          @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                          @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                           @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -411,11 +434,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
-                .address(address).lowChargeRate(lowChargeRate)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).lowChargeRate(lowChargeRate)
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
@@ -466,6 +488,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "fullChargeRate") Double fullChargeRate,
                            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                           @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                           @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                           @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                           @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                            @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -496,9 +522,10 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
-                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+        
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).fullChargeRate(fullChargeRate)
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }

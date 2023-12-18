@@ -87,4 +87,24 @@ public class ElectricityCabinetQuery {
      * 门店ID集
      */
     private List<Long> storeIdList;
+    
+    /**
+     * 排序字段averageNumber
+     */
+    private Integer orderByAverageNumber;
+    
+    /**
+     * 排序字段averageActivity
+     */
+    private Integer orderByAverageActivity;
+    
+    /**
+     * 排序字段todayNumber
+     */
+    private Integer orderByTodayNumber;
+    
+    /**
+     * 排序字段todayActivity
+     */
+    private Integer orderByTodayActivity;
 }
