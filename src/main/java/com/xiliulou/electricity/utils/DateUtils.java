@@ -30,8 +30,6 @@ public class DateUtils {
     
     static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     
-    private static final SimpleDateFormat todayFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    
     /**
      * 解析毫秒的时间字符串
      *
@@ -57,36 +55,6 @@ public class DateUtils {
     
     public static long getTimeAgoStartTime(int day) {
         return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
-    }
-    
-    public static long getTimeAgoEndTime(int day) {
-        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
-    }
-    
-    public static String getTodayTimeByTimeStamp(String today){
-        Date parse = null;
-        try {
-            parse = todayFormatter.parse(today);
-        } catch (ParseException e) {
-            log.error("today timestamps parse error");
-        }
-        if(Objects.isNull(parse)){
-            return "";
-        }
-        return String.valueOf(parse.getTime());
-    }
-    
-    public static Long getTodayStartTimeByDate(){
-        Date todayDate = new Date();
-        String todayStr = todayFormatter.format(todayDate);
-        Date dateLong = null;
-        try {
-            dateLong = todayFormatter.parse(todayStr);
-        } catch (ParseException e) {
-            log.error("todayDate timestamps parse error");
-            return 0L;
-        }
-        return dateLong.getTime();
     }
     
     /**

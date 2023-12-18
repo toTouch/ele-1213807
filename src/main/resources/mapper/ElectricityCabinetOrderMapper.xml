@@ -330,33 +330,4 @@
         and teco.status='COMPLETE_BATTERY_TAKE_SUCCESS'
         order by teco.id desc limit 1
     </select>
-    
-    <select id="selectListExchangeOrder" resultType="com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO">
-        SELECT
-        count(1) as use_frequency, FROM_UNIXTIME(create_time/1000,'%Y-%m-%d') as statistic_date,electricity_cabinet_id
-        FROM t_electricity_cabinet_order
-        <where>
-            <if test="eid != null">
-                and electricity_cabinet_id = #{eid}
-            </if>
-            <if test="startTimeStamp != null">
-                and create_time &gt;=#{startTimeStamp}
-            </if>
-            <if test="endTimeStamp != null">
-                and create_time &lt;= #{endTimeStamp}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
-            <if test="eidList!=null and eidList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="eidList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-        group by electricity_cabinet_id,FROM_UNIXTIME(create_time/1000,'%Y-%m-%d')
-    </select>
-
 </mapper>

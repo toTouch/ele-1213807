@@ -1,11 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
-import com.xiliulou.electricity.entity.ElectricityCabinetStatistic;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
@@ -37,9 +33,4 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     Integer selectUsedRecordsTotalCount(@Param("query") EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
     
     List<RentBatteryOrder> selectByUidAndTime(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
-    
-    List<ElectricityCabinetStatisticDO> selectListRentOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId, @Param("eidList") List<Integer> eidList);
-    
-    List<ElectricityCabinetStatisticDO> selectListReturnOrder(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId, @Param("eidList") List<Integer> eidList);
-    
 }

@@ -63,9 +63,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Autowired
     private EleWarnMsgService eleWarnMsgService;
     
-    @Autowired
-    private ElectricityCabinetStatisticService electricityCabinetStatisticService;
-
 
     @Override
     public List<EleCabinetDataAnalyseVO> selectOfflineByPage(ElectricityCabinetQuery cabinetQuery) {
@@ -228,29 +225,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         } catch (Exception e) {
             log.error("ELE ERROR! acquire result fail", e);
         }
-        
-        // 设置换电数量 日活跃度
-        List<Integer> eidList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getId).collect(Collectors.toList());
-        Long todayStartTime = DateUtils.getTodayStartTimeByDate();
-        List<ElectricityCabinetStatistic> statisticList = electricityCabinetStatisticService.listByElectricityCabinetIdList(eidList, todayStartTime);
-        Map<String, ElectricityCabinetStatistic> statisticMap = new HashMap<>();
-        if(CollectionUtils.isNotEmpty(statisticList)){
-            statisticMap = statisticList.stream()
-                    .collect(Collectors.toMap(k -> k.getElectricityCabinetId() + ":" + k.getStatisticDate(), Function.identity(), (key1, key2) -> key1));
-        }
-        
-        Map<String, ElectricityCabinetStatistic> finalStatisticMap = statisticMap;
-        electricityCabinetList.forEach(item->{
-            if(finalStatisticMap.containsKey(item.getId() + ":" + todayStartTime)){
-                ElectricityCabinetStatistic cabinetStatistic = finalStatisticMap.get(item.getId() + ":" + todayStartTime);
-                if(Objects.nonNull(cabinetStatistic)){
-                    item.setAverageActivity(cabinetStatistic.getAverageActivity());
-                    item.setAverageNumber(cabinetStatistic.getAverageNumber());
-                    item.setTodayNumber(cabinetStatistic.getTodayNumber());
-                    item.setTodayActivity(cabinetStatistic.getTodayActivity());
-                }
-            }
-        });
         
         return electricityCabinetList;
     }

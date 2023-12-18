@@ -248,6 +248,4 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetExtendData(Integer electricityCabinetId);
     
     R showBatteryVAndCapacity(Integer electricityCabinetId);
-    
-    void handleElectricityCabinetStatistic(String param);
 }

@@ -16,7 +16,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.domain.cabinet.ElectricityCabinetStatisticDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
@@ -1640,15 +1639,5 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "100233", "租车套餐已过期");
         }
         return Triple.of(true, null, null);
-    }
-    
-    @Override
-    public List<ElectricityCabinetStatisticDO> listRentOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
-        return rentBatteryOrderMapper.selectListRentOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
-    }
-    
-    @Override
-    public List<ElectricityCabinetStatisticDO> listReturnOrder(Integer eid,long startTimeStamp, long endTimeStamp, Integer tenantId, List<Integer> eidList){
-        return rentBatteryOrderMapper.selectListReturnOrder(eid, startTimeStamp, endTimeStamp, tenantId, eidList);
     }
 }
