@@ -497,6 +497,9 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        <if test="statisticDate != null ">
+            and tecs.statistic_date = #{statisticDate}
+        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -607,6 +610,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="statisticDate != null ">
+            and tecs.statistic_date = #{statisticDate}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -720,6 +726,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="statisticDate != null ">
+            and tecs.statistic_date = #{statisticDate}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in

@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.EleCabinetDataAnalyseService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -82,9 +83,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId)
                 .name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
-                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -170,10 +174,13 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
                 .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList)
                 .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
-                .orderByTodayActivity(orderByTodayActivity).build();
+                .orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -257,10 +264,13 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
                 .sn(sn).address(address).name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList)
                 .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
-                .orderByTodayActivity(orderByTodayActivity).build();
+                .orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
     }
@@ -344,11 +354,13 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).storeId(storeId)
                 .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address).franchiseeId(franchiseeId).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity)
-                .orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
+                .orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectLockPage(cabinetQuery));
     }
@@ -435,9 +447,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).lowChargeRate(lowChargeRate)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
-                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
@@ -523,9 +538,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             }
         }
         
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).fullChargeRate(fullChargeRate)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
-                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).build();
+                .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }

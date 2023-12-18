@@ -89,6 +89,11 @@ public class ElectricityCabinetQuery {
     private List<Long> storeIdList;
     
     /**
+     * 统计时间
+     */
+    private Long statisticDate;
+    
+    /**
      * 排序字段averageNumber
      */
     private Integer orderByAverageNumber;
