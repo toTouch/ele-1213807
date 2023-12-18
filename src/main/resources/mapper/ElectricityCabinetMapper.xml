@@ -573,10 +573,10 @@
         tec.update_time,
         tec.tenant_id,
         tec.store_id,
-        tecs.average_number,
-        tecs.average_activity,
-        tecs.today_number,
-        tecs.today_activity
+        any_value(tecs.average_number) AS averageNumber,
+        any_value(tecs.average_activity) AS averageActivity,
+        any_value(tecs.today_number) AS todayNumber,
+        any_value(tecs.today_activity) AS todayActivity
         from t_electricity_cabinet tec
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
@@ -691,10 +691,10 @@
         any_value(tec.store_id) AS store_id,
         any_value(tec.del_flag) AS del_flag,
         any_value(ecb.power) AS power,
-        any_value(ecb.average_number) AS averageNumber,
-        any_value(ecb.average_activity) AS averageActivity,
-        any_value(ecb.today_number) AS todayNumber,
-        any_value(ecb.today_activity) AS todayActivity
+        any_value(tecs.average_number) AS averageNumber,
+        any_value(tecs.average_activity) AS averageActivity,
+        any_value(tecs.today_number) AS todayNumber,
+        any_value(tecs.today_activity) AS todayActivity
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
         <if test="franchiseeId != null ">
