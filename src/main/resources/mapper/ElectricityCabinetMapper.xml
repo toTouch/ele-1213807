@@ -626,40 +626,40 @@
             <when test="orderByAverageNumber != null">
                 <choose>
                     <when test="orderByAverageNumber == 1">
-                        order by tecs.average_number
+                        order by any_value(tecs.average_number)
                     </when>
                     <when test="orderByAverageNumber == 2">
-                        order by tecs.average_number desc
+                        order by any_value(tecs.average_number) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByAverageActivity != null">
                 <choose>
                     <when test="orderByAverageActivity == 1">
-                        order by tecs.average_activity
+                        order by any_value(tecs.average_activity)
                     </when>
                     <when test="orderByAverageActivity == 2">
-                        order by tecs.average_activity desc
+                        order by any_value(tecs.average_activity) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayNumber != null">
                 <choose>
                     <when test="orderByTodayNumber == 1">
-                        order by tecs.today_number
+                        order by any_value(tecs.today_number)
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by tecs.today_number desc
+                        order by any_value(tecs.today_number) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayActivity != null">
                 <choose>
                     <when test="orderByTodayActivity == 1">
-                        order by tecs.today_activity
+                        order by any_value(tecs.today_activity)
                     </when>
                     <when test="orderByTodayActivity == 2">
-                        order by tecs.today_activity desc
+                        order by any_value(tecs.today_activity) desc
                     </when>
                 </choose>
             </when>
@@ -749,40 +749,40 @@
             <when test="orderByAverageNumber != null">
                 <choose>
                     <when test="orderByAverageNumber == 1">
-                        order by tecs.average_number
+                        order by any_value(tecs.average_number)
                     </when>
                     <when test="orderByAverageNumber == 2">
-                        order by tecs.average_number desc
+                        order by any_value(tecs.average_number) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByAverageActivity != null">
                 <choose>
                     <when test="orderByAverageActivity == 1">
-                        order by tecs.average_activity
+                        order by any_value(tecs.average_activity)
                     </when>
                     <when test="orderByAverageActivity == 2">
-                        order by tecs.average_activity desc
+                        order by any_value(tecs.average_activity) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayNumber != null">
                 <choose>
                     <when test="orderByTodayNumber == 1">
-                        order by tecs.today_number
+                        order by any_value(tecs.today_number)
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by tecs.today_number desc
+                        order by any_value(tecs.today_number)) desc
                     </when>
                 </choose>
             </when>
             <when test="orderByTodayActivity != null">
                 <choose>
                     <when test="orderByTodayActivity == 1">
-                        order by tecs.today_activity
+                        order by any_value(tecs.today_activity)
                     </when>
                     <when test="orderByTodayActivity == 2">
-                        order by tecs.today_activity desc
+                        order by any_value(tecs.today_activity) desc
                     </when>
                 </choose>
             </when>
