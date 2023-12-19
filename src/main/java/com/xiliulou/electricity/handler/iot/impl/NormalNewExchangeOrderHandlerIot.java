@@ -8,6 +8,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -548,8 +549,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         Integer electricityCabinetId = null;
         
         //旧仓门异常
-        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(
-                orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS) || Objects.equals(
                 orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
             cellNo = electricityCabinetOrder.getOldCellNo();
             electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
@@ -573,8 +573,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", cellNo);
-        dataMap.put("lockType", 1);
+        dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_SYSTEM);
         dataMap.put("isForbidden", true);
+        dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_EXCEPTION);
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
