@@ -805,7 +805,6 @@
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
         </if>
-        left join t_electricity_cabinet_statistic tecs on tec.id=tecs.electricity_cabinet_id
         where
         tec.tenant_id = #{tenantId}
         <if test="usableStatusCell != null">
@@ -832,9 +831,6 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
-        <if test="statisticDate != null ">
-            and tecs.statistic_date = #{statisticDate}
-        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -845,10 +841,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and sum( status = 0 ) / count( tec.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and sum( status = 0 ) / count( tec.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and sum( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>
@@ -862,7 +858,6 @@
             left join t_store ts on tec.store_id=ts.id
         </if>
         left join t_electricity_cabinet_box ecb on ecb.electricity_cabinet_id =tec.id
-        left join t_electricity_cabinet_statistic tecs on tec.id=tecs.electricity_cabinet_id
         where tec.del_flag=0
         <if test="usableStatusCell != null">
             and ecb.usable_status = #{usableStatusCell}
@@ -891,9 +886,6 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
-        <if test="statisticDate != null ">
-            and tecs.statistic_date = #{statisticDate}
-        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -911,7 +903,6 @@
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
         </if>
-        left join t_electricity_cabinet_statistic tecs on tec.id=tecs.electricity_cabinet_id
         where tec.del_flag=0
         <if test="name != null and name != ''">
             and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
@@ -936,9 +927,6 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
-        </if>
-        <if test="statisticDate != null ">
-            and tecs.statistic_date = #{statisticDate}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
