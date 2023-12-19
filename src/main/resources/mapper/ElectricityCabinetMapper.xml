@@ -772,7 +772,7 @@
                         order by any_value(tecs.today_number) desc
                     </when>
                     <when test="orderByTodayNumber == 2">
-                        order by any_value(tecs.today_number))
+                        order by any_value(tecs.today_number)
                     </when>
                 </choose>
             </when>
