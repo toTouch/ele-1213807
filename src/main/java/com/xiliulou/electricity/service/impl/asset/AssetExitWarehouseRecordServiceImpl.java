@@ -151,6 +151,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                         // 通过sn对柜机进行退库操作，可能会造成同一个sn对多个柜机退库，后期需要优化
                         List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetV2Service.listBySnList(assetList, tenantId, franchiseeId);
                         if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+                            log.error("ASSET_EXIT_WAREHOUSE ERROR! electricity not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                             return R.fail("300814", "上传的电柜编码不存在，请检测后操作");
                         }
                         idSet = electricityCabinetVOList.stream().map(ElectricityCabinetVO::getId).map(Long::valueOf).collect(Collectors.toSet());
@@ -158,12 +159,14 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
                         List<ElectricityBattery> electricityBatteryList = electricityBatteryService.listBatteryBySnList(assetList);
                         if (CollectionUtils.isEmpty(electricityBatteryList)) {
+                            log.error("ASSET_EXIT_WAREHOUSE ERROR! battery not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                             return R.fail("300817", "上传的电池编码不存在，请检测后操作");
                         }
                         idSet = electricityBatteryList.stream().map(ElectricityBattery::getId).collect(Collectors.toSet());
                     } else {
                         List<ElectricityCarVO> electricityCarVOList = electricityCarService.listBySnList(assetList, tenantId, franchiseeId);
                         if (CollectionUtils.isEmpty(electricityCarVOList)) {
+                            log.error("ASSET_EXIT_WAREHOUSE ERROR! car not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                             return R.fail("300818", "上传的车辆编码不存在，请检测后操作");
                         }
                         idSet = electricityCarVOList.stream().map(ElectricityCarVO::getId).collect(Collectors.toSet());
@@ -185,6 +188,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     // 根据id查询可退库的电柜
                     electricityCabinetVOList = electricityCabinetV2Service.listEnableExitWarehouseCabinet(idSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+                        log.error("ASSET_EXIT_WAREHOUSE ERROR! electricity not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                         return R.fail("300814", "上传的电柜编码不存在，请检测后操作");
                     }
                 
@@ -198,6 +202,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     // 根据id查询可退库的电池
                     electricityBatteryVOList = electricityBatteryService.listEnableExitWarehouseBattery(idSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityBatteryVOList)) {
+                        log.error("ASSET_EXIT_WAREHOUSE ERROR! battery not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                         return R.fail("300817", "上传的电池编码不存在，请检测后操作");
                     }
                 
@@ -212,6 +217,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                     // 根据id查询可退库的车辆
                     electricityCarVOList = electricityCarService.listEnableExitWarehouseCar(idSet, tenantId, franchiseeId, StockStatusEnum.UN_STOCK.getCode());
                     if (CollectionUtils.isEmpty(electricityCarVOList)) {
+                        log.error("ASSET_EXIT_WAREHOUSE ERROR! car not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                         return R.fail("300818", "上传的车辆编码不存在，请检测后操作");
                     }
                 
