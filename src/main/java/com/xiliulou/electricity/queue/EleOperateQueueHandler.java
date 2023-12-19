@@ -9,6 +9,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -223,11 +224,12 @@ public class EleOperateQueueHandler {
                 }
             }
         } else {
+            if (!redisService.setNx(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId(), "1", 200L, false)) {
+                log.info("RENT ORDER INFO! order is being processed,requestId={},orderId={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId());
+                return;
+            }
+            
             try {
-                if (!redisService.setNx(CacheConstant.RENT_BATTERY_ORDER_HANDLE_LIMIT + finalOpenDTO.getOrderId(), "1", 200L, false)) {
-                    log.info("RENT ORDER INFO! order is being processed,requestId={},orderId={}", finalOpenDTO.getSessionId(), finalOpenDTO.getOrderId());
-                    return;
-                }
                 //租还电池订单
                 RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
                 if (Objects.isNull(rentBatteryOrder)) {
@@ -274,7 +276,7 @@ public class EleOperateQueueHandler {
         Integer cellNo = null;
         //电柜Id
         Integer electricityCabinetId = null;
-        
+    
         if (Objects.nonNull(electricityCabinetOrder) && Objects.isNull(rentBatteryOrder)) {
             //旧仓门异常
             if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
@@ -289,8 +291,7 @@ public class EleOperateQueueHandler {
         } else {
             //租退电仓门异常
             if (Objects.equals(orderStatus, RentBatteryOrder.RENT_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT) || Objects.equals(
-                    orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT) || Objects.equals(orderStatus,
-                    RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
+                    orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
                 cellNo = rentBatteryOrder.getCellNo();
                 electricityCabinetId = rentBatteryOrder.getElectricityCabinetId();
             }
@@ -311,9 +312,10 @@ public class EleOperateQueueHandler {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", cellNo);
-        dataMap.put("lockType", 1);
+        dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_SYSTEM);
         dataMap.put("isForbidden", true);
-        
+        dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_EXCEPTION);
+    
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
         

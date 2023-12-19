@@ -5,16 +5,19 @@ import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
@@ -61,6 +64,9 @@ public class CarModelBizServiceImpl implements CarModelBizService {
 
     @Resource
     private ElectricityCarModelService carModelService;
+    
+    @Resource
+    private UserInfoService userInfoService;
 
     /**
      * 根据车辆型号ID获取车辆型号信息<br />
@@ -170,7 +176,15 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         Integer franchiseeIdExit = null;
         Integer storeIdExit = null;
         Integer freeDepositExit = null;
-        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
+        
+        //获取用户信息，查看用户押金缴纳状况。 如果已缴纳过单车押金或者车电一体押金，则判断所选车辆型号和套餐对应的车辆型号是否一致
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(userInfo)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        boolean depositPaid = UserInfo.CAR_DEPOSIT_STATUS_YES.equals(userInfo.getCarDepositStatus()) || YesNoEnum.YES.getCode().equals(userInfo.getCarBatteryDepositStatus());
+        
+        if (ObjectUtils.isNotEmpty(memberTermEntity) && depositPaid) {
             Long rentalPackageId = memberTermEntity.getRentalPackageId();
             if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId == 0) {
                 String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();

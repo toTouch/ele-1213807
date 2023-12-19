@@ -106,5 +106,60 @@
 			</if>
 		</where>
 	</select>
-
+	
+	<update id="batchWithdrawById">
+		update t_withdraw_record
+		<set>
+			<if test="record.status != null">
+				`status` = #{record.status},
+			</if>
+			<if test="record.updateTime != null">
+				update_time = #{record.updateTime},
+			</if>
+			<if test="record.checkTime != null">
+				check_time = #{record.checkTime},
+			</if>
+			<if test="record.msg != null and record.msg != ''">
+				msg = #{record.msg},
+			</if>
+			<if test="record.type != null">
+				type = #{record.type},
+			</if>
+		</set>
+		
+		<where>
+			<if test="tenantId != null">
+				tenant_id = #{tenantId}
+			</if>
+			
+			<if test="idList != null and !idList.isEmpty()">
+				and id in
+				<foreach collection="idList" item="id" close=")" open="(" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		
+		</where>
+	</update>
+	
+	<select id="selectList" resultType="com.xiliulou.electricity.entity.WithdrawRecord">
+		select twr.id as id,twr.uid as uid,twr.order_id as orderId,twr.bank_name as bankName,
+		twr.bank_number as bankNumber,twr.check_time as checkTime,twr.arrive_time as arriveTime,
+		twr.status as status,twr.create_time as createTime,twr.update_time as updateTime,
+		twr.bank_code as bankCode,twr.true_name as trueName,twr.type as type,
+		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
+		from t_withdraw_record as twr
+		<where>
+			<if test="query.tenantId != null ">
+				and twr.tenant_id = #{query.tenantId}
+			</if>
+			<if test="query.idList != null and !query.idList.isEmpty()">
+				and twr.id in
+				<foreach collection="query.idList" item="id" close=")" open="(" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
 </mapper>

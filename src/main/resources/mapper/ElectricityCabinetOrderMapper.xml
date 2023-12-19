@@ -20,7 +20,7 @@
                 and teco.phone = #{query.phone}
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and tec.name = #{query.electricityCabinetName}
+                and teco.name = #{query.electricityCabinetName}
             </if>
             <if test="query.oldCellNo != null">
                 and teco.old_cell_no = #{query.oldCellNo}
@@ -78,7 +78,7 @@
                 and teco.phone = #{query.phone}
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and tec.name = #{query.electricityCabinetName}
+                and teco.name = #{query.electricityCabinetName}
             </if>
             <if test="query.oldCellNo != null">
                 and teco.old_cell_no = #{query.oldCellNo}

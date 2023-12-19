@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserNotify;
 import com.xiliulou.electricity.mapper.UserNotifyMapper;
 import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserNotifyVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,9 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     
     @Resource
     private UserNotifyMapper userNotifyMapper;
+    
+    @Resource
+    RedisService redisService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -118,6 +124,11 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R editOne(UserNotifyQuery userNotifyQuery) {
+        // 限制操作频次
+        if (!redisService.setNx(CacheConstant.USER_NOTIFY_SAVE_CACHE_UID + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail(false, "ELECTRICITY.0001", "操作频繁！");
+        }
+    
         if (Objects.isNull(userNotifyQuery.getStatus())) {
             userNotifyQuery.setStatus(UserNotify.STATUS_OFF);
         }
@@ -133,6 +144,12 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         UserNotify userNotify = queryByTenantId();
+        
+        // 如果租户的通知配置不存在且状态为关闭则直接返回成功
+        if (Objects.isNull(userNotify) && Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_OFF)) {
+            return R.ok();
+        }
+        
         UserNotify updateAndInsert = new UserNotify();
         updateAndInsert.setContent(userNotifyQuery.getContent());
         updateAndInsert.setTitle(userNotifyQuery.getTitle());
@@ -149,6 +166,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             updateAndInsert.setId(userNotify.getId());
             update(updateAndInsert);
         }
+        
         return R.ok();
     }
     
