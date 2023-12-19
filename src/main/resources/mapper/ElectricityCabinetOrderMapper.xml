@@ -330,5 +330,4 @@
         and teco.status='COMPLETE_BATTERY_TAKE_SUCCESS'
         order by teco.id desc limit 1
     </select>
-
 </mapper>

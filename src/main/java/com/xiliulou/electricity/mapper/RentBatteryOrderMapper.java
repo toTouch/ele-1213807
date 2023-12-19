@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
