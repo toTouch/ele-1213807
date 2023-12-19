@@ -40,9 +40,15 @@ public class InvitationActivity {
      */
     private String description;
     /**
-     * 有效时间
+     * 有效时间，单位：小时
      */
     private Integer hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Integer minutes;
+    
     /**
      * 奖励类型  1--固定金额  2--套餐比例
      */

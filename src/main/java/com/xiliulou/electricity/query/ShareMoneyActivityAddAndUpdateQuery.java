@@ -28,10 +28,15 @@ public class ShareMoneyActivityAddAndUpdateQuery {
     private String name;
 
     /**
-     * 有效时间
+     * 有效时间，单位：时间
      */
-    @NotNull(message = "有效时间不能为空!", groups = {CreateGroup.class})
     private Integer hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Integer minutes;
+    
     /**
      * 金额
      */

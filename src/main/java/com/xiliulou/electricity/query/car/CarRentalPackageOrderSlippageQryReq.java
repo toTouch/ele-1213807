@@ -79,4 +79,14 @@ public class CarRentalPackageOrderSlippageQryReq implements Serializable {
      * 支付时间截止
      */
     private Long payTimeEnd;
+    
+    /**
+     * 根据计费开始时间排序，1-倒叙(默认)，2-正序
+     */
+    private Integer orderByServiceFeeGenerateTime;
+    
+    /**
+     * 根据支付时间排序，1-倒叙，2-正序
+     */
+    private Integer orderByPayTime;
 }
