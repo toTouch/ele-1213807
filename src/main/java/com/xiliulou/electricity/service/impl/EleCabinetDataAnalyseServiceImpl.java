@@ -92,7 +92,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getId)).collect(Collectors.toList()), cabinetQuery);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
