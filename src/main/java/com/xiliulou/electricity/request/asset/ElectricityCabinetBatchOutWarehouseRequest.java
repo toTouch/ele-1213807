@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.request.asset;
 
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
