@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
@@ -71,7 +72,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getId)).collect(Collectors.toList()));
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getId)).collect(Collectors.toList()), cabinetQuery);
     }
 
     @Override
@@ -160,7 +161,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         return result;
     }
 
-    private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList) {
+    private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
 
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
@@ -226,6 +227,25 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             log.error("ELE ERROR! acquire result fail", e);
         }
         
-        return electricityCabinetList;
+        // 排序
+        if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity)).collect(Collectors.toList());
+        }else {
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
+        }
     }
 }
