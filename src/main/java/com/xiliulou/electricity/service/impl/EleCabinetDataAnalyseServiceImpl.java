@@ -245,7 +245,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity)).collect(Collectors.toList());
         }else {
-            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
         }
     }
 }
