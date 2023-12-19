@@ -228,21 +228,21 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }
         
         // 排序
-        if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)){
+        if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)){
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber)).collect(Collectors.toList());
         }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_DESC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
         }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_ASC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity)).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)){
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)){
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber)).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)){
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity).reversed()).collect(Collectors.toList());
-        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity)).collect(Collectors.toList());
         }else {
             return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
