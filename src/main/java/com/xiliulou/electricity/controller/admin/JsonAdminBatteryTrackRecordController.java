@@ -41,7 +41,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
             offset = 0;
         }
         double days = (Double.valueOf(endTime - startTime)) / 1000 / 3600 / 24;
-        if (days > 90) {
+        if (days > 91) {
             return R.fail("时间跨度不可以大于90天");
         }
 
@@ -66,7 +66,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
             offset = 0;
         }
 
-        if ((endTime - startTime) > TimeUnit.DAYS.toMillis(90)) {
+        if ((endTime - startTime) > TimeUnit.DAYS.toMillis(91)) {
             return R.fail("时间跨度不可以大于90天");
         }
 
