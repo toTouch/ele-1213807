@@ -700,8 +700,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			BeanUtil.copyProperties(shareActivityRule, shareActivityRuleVO);
 			Integer couponId = shareActivityRule.getCouponId();
 			Coupon coupon = couponService.queryByIdFromCache(couponId);
-			shareActivityRuleVO.setCouponName(coupon.getName());
-
+			if(Objects.nonNull(coupon)){
+				shareActivityRuleVO.setCouponName(coupon.getName());
+			}
 			shareActivityRuleVOList.add(shareActivityRuleVO);
 		}
 

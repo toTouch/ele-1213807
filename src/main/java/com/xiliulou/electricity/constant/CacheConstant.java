@@ -215,6 +215,13 @@ public interface CacheConstant {
     String BIND_BANK_OPER_USER_LOCK = "bind_Bank_oper_user_lock:";
     //提现密码缓存
     String CACHE_WITHDRAW_PASSWORD = "withdraw_password";
+    
+    // 批量提现审核 用户锁
+    String CACHE_BATCH_WITHDRAW_OPER_USER_LOCK = "batch_withdraw_operation_user_lock:";
+    
+    // 门店修改
+    String STORE_SAVE_UID = "store_save_uid:";
+    
     //提现 用户锁
     String CACHE_WITHDRAW_USER_UID = "withdraw_user_uid:";
     /**
@@ -253,6 +260,12 @@ public interface CacheConstant {
      * 异常告警导出缓存
      */
     String WARN_MESSAGE_EXPORT_CACHE = "warn_message_export_cache:";
+    
+    /**
+     * 异常告警导出缓存
+     */
+    String USER_NOTIFY_SAVE_CACHE_UID = "user_notify_save_cache_uid:";
+    
 
     /**
      * 保险缓存
@@ -449,6 +462,22 @@ public interface CacheConstant {
      * 免押电池套餐押金支付缓存锁
      */
     String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
+    
+    /**
+     * 换电套餐免押订单链接缓存
+     */
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "battery_free_deposit_order_generate_lock_key:";
+    
+    /**
+     * 租车套餐免押订单链接缓存
+     */
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "car_rental_free_deposit_order_generate_lock_key:";
+    
+    /**
+     * 企业渠道换电套餐免押订单链接缓存
+     */
+    String ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "enterprise_battery_free_deposit_order_generate_lock_key:";
+    
     /**
      * 用户活跃缓存
      */

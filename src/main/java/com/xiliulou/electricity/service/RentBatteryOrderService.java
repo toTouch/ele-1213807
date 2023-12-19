@@ -60,4 +60,6 @@ public interface RentBatteryOrderService {
     Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
     
     List<RentBatteryOrder> selectByUidAndTime(Long uid, Long membercardStartTime, Long currentTime);
+    
+    R queryRentBatteryOrderLimitCountByUid(Long uid);
 }

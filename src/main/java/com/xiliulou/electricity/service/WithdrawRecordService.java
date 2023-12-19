@@ -6,6 +6,8 @@ import com.xiliulou.electricity.query.CheckQuery;
 import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
+import com.xiliulou.electricity.query.BatchHandleWithdrawRequest;
+
 import com.xiliulou.security.bean.TokenUser;
 
 import java.math.BigDecimal;
@@ -34,4 +36,7 @@ public interface WithdrawRecordService {
 	WithdrawRecord selectById(Long oid);
 
 	R getWithdrawCount(Long uid);
+	
+	R batchHandleWithdraw(BatchHandleWithdrawRequest batchHandleWithdrawRequest);
+	
 }

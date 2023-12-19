@@ -13,6 +13,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAmountVO;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.electricity.query.UserAmountQueryModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * (AgentAmount)表服务实现类
@@ -160,5 +162,11 @@ public class UserAmountServiceImpl implements UserAmountService {
 		userAmountHistory.setCreateTime(System.currentTimeMillis());
 		userAmountHistory.setTenantId(userAmount.getTenantId());
 		userAmountHistoryService.insert(userAmountHistory);
+	}
+	
+	@Override
+	public List<UserAmount> queryListByUidList(Set<Long> uidList, Integer tenantId) {
+		UserAmountQueryModel userAmountQueryModel = UserAmountQueryModel.builder().tenantId(tenantId).uidList(uidList).build();
+		return userAmountMapper.selectList(userAmountQueryModel);
 	}
 }

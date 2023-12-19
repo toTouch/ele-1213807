@@ -6,7 +6,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
-import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,12 +54,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     @Autowired
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
     
-    @Resource
-    private ActivityShareInvitationRefService activityShareInvitationRefService;
-    
-    @Resource
-    private InvitationActivityRecordService invitationActivityRecordService;
-
     /**
      * 修改数据
      *
@@ -89,18 +81,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
     
-        // 悦来能源2023/12需求特殊处理：邀请返券的数据迁移到邀请返现，并在扫码相关邀请人（迁移）的返券二维码时跳转到套餐返券逻辑
-        // 说明 邀请返券活动和新建的套餐返现活动一一对应
-        ActivityShareInvitationRef activityShareInvitationRef = activityShareInvitationRefService.selectByInviterAndShareActivityId(tenantId, uid, activityId.longValue());
-        if (Objects.nonNull(activityShareInvitationRef)) {
-            String code = codeEnCoder(activityShareInvitationRef.getInvitationActivityId().toString(), uid);
-            InvitationActivityQuery invitationActivityQuery = InvitationActivityQuery.builder().code(code).build();
-            
-            Triple<Boolean, String, Object> tripleResult = invitationActivityRecordService.joinActivity(invitationActivityQuery);
-            if (Objects.nonNull(tripleResult) && Boolean.FALSE.equals(tripleResult.getLeft())) {
-                return R.fail(tripleResult.getMiddle(), (String) tripleResult.getRight());
-            }
-        }
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {

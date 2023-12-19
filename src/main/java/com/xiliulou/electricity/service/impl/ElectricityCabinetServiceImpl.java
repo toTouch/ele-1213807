@@ -694,7 +694,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
-            electricityCabinetList.stream().forEach(e -> {
+            electricityCabinetList.parallelStream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
                     Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
@@ -723,11 +723,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
-                    
-                    // 如果型号列表中有电柜类型 则取型号的电柜类型
-                    if (Objects.nonNull(electricityCabinetModel.getExchangeType())) {
-                        e.setExchangeType(electricityCabinetModel.getExchangeType());
-                    }
                     
                     // 赋值复合字段
                     StringBuilder manufacturerNameAndModelName = new StringBuilder();
@@ -990,7 +985,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.emptyList());
         }
         
-        List<ElectricityCabinetVO> resultVo = electricityCabinetList.stream().map(e -> {
+        List<ElectricityCabinetVO> resultVo = electricityCabinetList.parallelStream().map(e -> {
             //营业时间
             if (Objects.nonNull(e.getBusinessTime())) {
                 String businessTime = e.getBusinessTime();
@@ -1524,6 +1519,63 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } catch (Exception e) {
             log.error("operateOrderCount ERROR! uid={}", user.getUid(), e);
         }
+        
+        return R.ok(homeOne);
+    }
+    
+    @Slave
+    @Override
+    public R homeOneV2() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        HashMap<String, String> homeOne = new HashMap<>();
+        //电柜数
+        homeOne.put("eleCount", "0");
+        //在线电柜
+        homeOne.put("onlineEleCount", "0");
+        //离线电柜
+        homeOne.put("offlineEleCount", "0");
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("homeOneV2 franchiseeIds is empty!");
+                return R.ok(homeOne);
+            }
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                log.warn("homeOneV2 storeIds is empty!");
+                return R.ok(homeOne);
+            }
+        }
+        
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeIdList(franchiseeIds)
+                .storeIdList(storeIds).build();
+        List<ElectricityCabinetVO> electricityCabinetVOList = electricityCabinetMapper.selectListForStatistics(electricityCabinetQuery);
+        
+        if (CollectionUtils.isEmpty(electricityCabinetVOList)) {
+            log.warn("homeOneV2 electricityCabinetVOList is empty!");
+            return R.ok(homeOne);
+        }
+        
+        Integer eleCount = electricityCabinetVOList.size();
+        Integer onlineEleCount = (int) electricityCabinetVOList.stream()
+                .filter(item -> Objects.equals(item.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)).count();
+        Integer offlineEleCount = (int) electricityCabinetVOList.stream()
+                .filter(item -> Objects.equals(item.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)).count();
+        
+        homeOne.put("eleCount", eleCount.toString());
+        homeOne.put("onlineEleCount", onlineEleCount.toString());
+        homeOne.put("offlineEleCount", offlineEleCount.toString());
         
         return R.ok(homeOne);
     }
@@ -4686,7 +4738,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Collections.EMPTY_LIST;
         }
         
-        return electricityCabinets.stream().peek(item -> {
+        return electricityCabinets.parallelStream().peek(item -> {
             
             //营业时间
             if (Objects.nonNull(item.getBusinessTime())) {
@@ -5152,7 +5204,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         cabinetModelInsert.setCreateTime(System.currentTimeMillis());
         cabinetModelInsert.setUpdateTime(System.currentTimeMillis());
         cabinetModelInsert.setManufacturerName(electricityCabinetModel.getManufacturerName());
-        cabinetModelInsert.setExchangeType(electricityCabinetModel.getExchangeType());
         cabinetModelInsert.setCabinetSize(electricityCabinetModel.getCabinetSize());
         cabinetModelInsert.setCellSize(electricityCabinetModel.getCellSize());
         cabinetModelInsert.setScreenSize(electricityCabinetModel.getScreenSize());
@@ -5214,18 +5265,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
-            
-            // 获取柜机类型
-            Integer exchangeType = null;
-            if (Objects.nonNull(cabinetModel.getExchangeType())) {
-                exchangeType = cabinetModel.getExchangeType();
-            }
-            
-            if (Objects.isNull(exchangeType)) {
-                exchangeType = cabinetVO.getExchangeType();
-            }
-            
-            excelVO.setExchangeType(acquireExchangeType(exchangeType));
+            excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
             
             ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(),
                     cabinetVO.getDeviceName());
@@ -5294,6 +5334,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @param electricityCabinetId 柜机id
      * @return 柜机扩展参数
      */
+    @Override
     public R queryElectricityCabinetExtendData(Integer electricityCabinetId) {
         
         //校验柜机Id
@@ -5313,6 +5354,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(netType);
     }
     
+    @Override
     public R showBatteryVAndCapacity(Integer electricityCabinetId) {
         //校验柜机Id
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);

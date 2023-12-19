@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -34,6 +35,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
@@ -118,9 +120,11 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -307,7 +311,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatterV(EnterpriseChannelUserQuery query) {
-        log.info("query battery v flow end, enterprise id = {}", query.getEnterpriseId());
+        log.info("query battery v flow start, enterprise id = {}", query.getEnterpriseId());
         //获取当前企业信息
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
@@ -368,7 +372,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryVByEnterprise(batteryMemberCardQuery);
             //List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
             if (CollectionUtils.isEmpty(list)) {
@@ -438,9 +442,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            
+    
+            UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryMemberCard.getUid());
-            if (Objects.nonNull(userBatteryDeposit)) {
+            if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 query.setDeposit(userBatteryDeposit.getBatteryDeposit());
             }
             
@@ -781,7 +786,32 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
             return checkUserCanFreeDepositResult;
         }
+    
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
+                .uid(userInfo.getUid())
+                .realName(freeQuery.getRealName())
+                .phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard())
+                .tenantId(TenantContextHolder.getTenantId())
+                .packageId(freeQuery.getMembercardId())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
+                .build();
         
+        //检查用户是否已经进行过免押操作，且已免押成功
+        Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
+        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+            return useFreeDepositStatusResult;
+        }
+    
+        //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
+        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+        if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
+            log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
+            return Triple.of(true, null, result);
+        }
+    
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeQuery);
         if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
             return generateDepositOrderResult;
@@ -842,6 +872,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
         
+        log.info("generate free deposit data from pxz for enterprise battery package, data = {}", callPxzRsp);
+        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), UriUtils.encode(callPxzRsp.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
+    
         return Triple.of(true, null, callPxzRsp.getData());
         
     }
