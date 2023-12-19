@@ -6,18 +6,23 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
+import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,6 +55,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
     @Autowired
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+    
+    @Resource
+    private ActivityShareInvitationRefService activityShareInvitationRefService;
+    
+    @Resource
+    private InvitationActivityRecordService invitationActivityRecordService;
 
     /**
      * 修改数据
@@ -74,79 +85,91 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             log.error("joinActivity  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
+    
+        // 悦来能源2023/12需求特殊处理：邀请返券的数据迁移到邀请返现，并在扫码相关邀请人（迁移）的返券二维码时跳转到套餐返券逻辑
+        // 说明 邀请返券活动和新建的套餐返现活动一一对应
+        ActivityShareInvitationRef activityShareInvitationRef = activityShareInvitationRefService.selectByInviterAndShareActivityId(tenantId, uid, activityId.longValue());
+        if (Objects.nonNull(activityShareInvitationRef)) {
+            String code = codeEnCoder(activityShareInvitationRef.getInvitationActivityId().toString(), uid);
+            InvitationActivityQuery invitationActivityQuery = InvitationActivityQuery.builder().code(code).build();
+            
+            Triple<Boolean, String, Object> tripleResult = invitationActivityRecordService.joinActivity(invitationActivityQuery);
+            if (Objects.nonNull(tripleResult) && Boolean.FALSE.equals(tripleResult.getLeft())) {
+                return R.fail(tripleResult.getMiddle(), (String) tripleResult.getRight());
+            }
+        }
         //用户是否可用
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-
+    
         //查找活动
         ShareActivity shareActivity = shareActivityService.queryByStatus(activityId);
         if (Objects.isNull(shareActivity)) {
             log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
             return R.fail("ELECTRICITY.00106", "活动已下架");
         }
-
+    
         //查找分享的用户
         User oldUser = userService.queryByUidFromCache(uid);
         if (Objects.isNull(oldUser)) {
             log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         //1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则
         if (Objects.equals(uid, user.getUid())) {
             return R.ok();
         }
-
+    
         //判断是否为重复扫邀请人的码
         Pair<Boolean, String> sameInviterResult = joinShareActivityHistoryService.checkTheActivityFromSameInviter(user.getUid(), oldUser.getUid(), activityId.longValue());
-        if(sameInviterResult.getLeft()){
-            if(sameInviterResult.getRight().isEmpty()){
+        if (sameInviterResult.getLeft()) {
+            if (sameInviterResult.getRight().isEmpty()) {
                 return R.ok();
-            }else{
+            } else {
                 return R.fail("110205", sameInviterResult.getRight());
             }
         }
-
+    
         log.info("start join share activity, join uid = {}, inviter uid = {}, activity id = {}", user.getUid(), oldUser.getUid(), activityId);
-
+    
         //2、别人点击链接登录
-
+    
         //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页
         //3.0扩展了活动范围，扩展到登录注册，实名认证及购买套餐。所以不需要再判断是否购买过套餐
         /*if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
             return R.ok();
         }*/
-
+    
         //3.0修改为用户只能参加邀请返券或者邀请返现其中一种活动。如果已经参与了，则提示已参加对应活动。不允许参加多个活动。如果邀请活动未完成，但是已过期或者下架了。则还可以正常参加。
         //1. 查看当前用户是否存在正在参加或者已成功参加的活动，如果是，则提示已参加过邀请活动。
         //2. 若以上都没有参与过，则查看是否存在邀请返现的活动，判断规则和1一致。
         List<JoinShareActivityHistory> joinShareActivityHistories = joinShareActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-        if(CollectionUtils.isNotEmpty(joinShareActivityHistories)){
+        if (CollectionUtils.isNotEmpty(joinShareActivityHistories)) {
             return R.fail("110206", "已参加过邀请返券活动");
         }
-
+    
         //查询当前用户是否参与了邀请返现活动
         List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
-        if(CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)){
+        if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
             return R.fail("110207", "已参加过邀请返现活动");
         }
-        
+    
         // 计算活动有效期
         long expiredTime;
-        if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)){
+        if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
             expiredTime = System.currentTimeMillis() + shareActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
         } else {
             Integer minutes = Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO : shareActivity.getMinutes();
             expiredTime = System.currentTimeMillis() + minutes * TimeConstant.MINUTE_MILLISECOND;
         }
-
+    
         JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
         joinShareActivityRecord.setUid(uid);
         joinShareActivityRecord.setJoinUid(user.getUid());
@@ -158,7 +181,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
         joinShareActivityRecord.setActivityId(activityId);
         joinShareActivityRecordMapper.insert(joinShareActivityRecord);
-
+    
         //新增邀请历史记录
         JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
         joinShareActivityHistory.setRecordId(joinShareActivityRecord.getId());
@@ -172,9 +195,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
-
+    
         return R.ok();
-
     }
 
     @Override
@@ -224,4 +246,16 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
         return Boolean.TRUE;
     }
+    
+    private static String codeEnCoder(String activityIds, Long uid) {
+        String encrypt = AESUtils.encrypt(activityIds + ":" + uid);
+        
+        if (StringUtils.isNotBlank(encrypt)) {
+            Base64.Encoder encoder = Base64.getUrlEncoder();
+            byte[] base64Result = encoder.encode(encrypt.getBytes());
+            return new String(base64Result);
+        }
+        return null;
+    }
+    
 }

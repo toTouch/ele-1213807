@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ActivityShareInvitationRefMapper">
+    
+    <!-- 表中所有字段 -->
+    <sql id="all_field">
+        id, tenant_id, inviter_uid, share_activity_id, invitation_activity_id, del_flag, create_time, update_time
+    </sql>
+    
+    <select id="selectByInviterAndShareActivityId" resultType="com.xiliulou.electricity.entity.ActivityShareInvitationRef">
+        select <include refid="all_field"/>
+        from t_activity_share_invitation_ref
+        where del_flag = 0 and tenant_id = #{tenantId} and inviter_uid = #{inviterUid} and share_activity_id = #{shareActivityId} limit 1
+    </select>
+</mapper>
