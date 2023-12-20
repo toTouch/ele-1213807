@@ -2814,8 +2814,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Slave
     @Override
-    public List<UserInfo> listByUIds(List<Long> uIdList) {
-        return userInfoMapper.selectListByUIds(uIdList);
+    public List<UserInfo> listByUidList(List<Long> uidList) {
+        return userInfoMapper.selectListByUidList(uidList);
     }
     
 }
