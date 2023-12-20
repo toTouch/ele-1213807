@@ -1189,7 +1189,7 @@
         <where>
             del_flag = 0
             
-            and uid
+            and uid in
             <foreach collection="uIdList" item="uid" separator="," open="(" close=")">
                 #{uid}
             </foreach>
