@@ -664,7 +664,8 @@
     </select>
     
     <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         where del_flag=0 and tenant_id = #{tenantId}
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
@@ -722,14 +723,16 @@
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         where del_flag = 0 and id in
         <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </select>
     <select id="selectListEnableExitWarehouseCar" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         <where>
             del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
             <if test="franchiseeId != null">

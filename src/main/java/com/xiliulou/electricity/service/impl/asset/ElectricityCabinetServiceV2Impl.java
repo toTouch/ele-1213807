@@ -11,7 +11,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocat
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
+import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchUpdateFranchiseeAndStoreRequest;
@@ -31,6 +34,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -82,6 +86,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     @Resource
     private FranchiseeService franchiseeService;
     
+    @Resource
+    private AssetWarehouseRecordService assetWarehouseRecordService;
+    
     
     @Override
     public Triple<Boolean, String, Object> save(ElectricityCabinetAddRequest electricityCabinetAddRequest) {
@@ -122,18 +129,29 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             electricityCabinet.setStoreId(0L);
             electricityCabinet.setFullyCharged(0.00);
             electricityCabinet.setExchangeType(electricityCabinetAddRequest.getExchangeType());
-            
+    
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
-                
+        
                 // 新增缓存
                 redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
                 redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(),
                         electricityCabinet);
-                
+        
                 // 添加格挡
                 electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
                 // 添加服务时间记录
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+    
+                // 异步记录
+                Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+                Long warehouseId = electricityCabinetAddRequest.getWarehouseId();
+                String sn = electricityCabinetAddRequest.getSn();
+                AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
+                List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
+    
+                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+        
             });
             
             return Triple.of(true, null, electricityCabinet.getId());
@@ -201,6 +219,19 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             //修改柜机服务时间信息
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+    
+            // 异步记录
+            List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(List.of(outWarehouseRequest.getId()));
+            if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+                Long warehouseId = electricityCabinetBOList.get(NumberConstant.ZERO).getWarehouseId();
+                Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+                String sn = outWarehouseRequest.getSn();
+                AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
+                List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
+        
+                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode());
+            }
         });
         
         return Triple.of(true, null, null);
@@ -271,6 +302,18 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
         });
+    
+        // 异步记录
+        List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(batchOutWarehouseRequest.getIdList());
+        if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
+            List<AssetSnWarehouseRequest> snWarehouseList = electricityCabinetBOList.stream()
+                    .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
+        
+            Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+        
+            assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+                    WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
+        }
         
         return Triple.of(true, null, null);
     }
@@ -393,22 +436,22 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     @Override
     public List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId) {
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListBySnList(snList, tenantId, franchiseeId);
-    
+        
         List<ElectricityCabinetVO> rspList = null;
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
             rspList = electricityCabinetBOList.stream().map(item -> {
                 ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
                 BeanUtil.copyProperties(item, electricityCabinetVO);
-            
+                
                 return electricityCabinetVO;
-            
+                
             }).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
-    
+        
         return rspList;
     }
     

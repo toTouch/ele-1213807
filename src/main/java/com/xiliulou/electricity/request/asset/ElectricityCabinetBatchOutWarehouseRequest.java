@@ -13,7 +13,7 @@ public class ElectricityCabinetBatchOutWarehouseRequest {
     /**
      * id
      */
-    @NotEmpty(message = "门店不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "电柜不能为空!", groups = {UpdateGroup.class})
     private List<Integer> idList;
     
     /**

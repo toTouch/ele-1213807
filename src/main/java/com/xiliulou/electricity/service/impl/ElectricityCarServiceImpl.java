@@ -22,7 +22,9 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
@@ -34,6 +36,7 @@ import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchi
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
+import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
 import com.xiliulou.electricity.request.asset.CarBatchSaveRequest;
 import com.xiliulou.electricity.request.asset.CarOutWarehouseRequest;
@@ -42,6 +45,7 @@ import com.xiliulou.electricity.request.asset.ElectricityCarSnSearchRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
+import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -139,6 +143,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     private AssetWarehouseService assetWarehouseService;
+    
+    @Resource
+    private AssetWarehouseRecordService assetWarehouseRecordService;
 
     /**
      * 根据ID更新车辆绑定用户，包含绑定、解绑
@@ -348,6 +355,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setModelId(electricityCarModel.getId());
         
         electricityCarMapper.insert(electricityCar);
+    
+        // 异步记录
+        Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+        Long warehouseId = carAddRequest.getWarehouseId();
+        String sn = carAddRequest.getSn();
+        AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
+        List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
+    
+        assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(),
+                WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+        
         return R.ok(electricityCar.getId());
     }
 
@@ -1188,6 +1206,25 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         idList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + item);
         });
+    
+        // 异步记录
+        List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(new HashSet<>(idList));
+        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+        
+            List<AssetSnWarehouseRequest> snWarehouseList = electricityCarBOList.stream()
+                    .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
+        
+            Integer tenantId = TenantContextHolder.getTenantId();
+            Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+        
+            Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
+            if (snWarehouseList.size() > NumberConstant.ONE) {
+                operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
+            }
+        
+            assetWarehouseRecordService.asyncRecord(tenantId, uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
+        }
+        
         return R.ok();
     }
     
@@ -1266,7 +1303,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Slave
     @Override
-    public List<ElectricityCarVO> listByIds(Set<Long> idSet) {
+    public List<ElectricityCarVO> listByIds(Set<Integer> idSet) {
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(idSet);
     
         List<ElectricityCarVO> rspList = null;

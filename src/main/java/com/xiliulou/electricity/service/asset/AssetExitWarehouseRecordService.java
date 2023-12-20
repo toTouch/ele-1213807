@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
@@ -19,4 +20,6 @@ public interface AssetExitWarehouseRecordService {
     List<AssetExitWarehouseVO> listByPage(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
     
     Integer countTotal(AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest);
+    
+    Integer insertOne(AssetExitWarehouseSaveQueryModel recordSaveQueryModel);
 }
