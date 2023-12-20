@@ -5249,6 +5249,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetExcelVO> excelVOS = new ArrayList<>(electricityCabinetList.size());
         int index = 0;
         
+        // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的
+        List<Long> warehouseIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
+        
+        Map<Long, String> warehouseNameVOMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(assetWarehouseNameVOS)) {
+            warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
+        }
+        
+        Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+        
         for (ElectricityCabinetVO cabinetVO : electricityCabinetList) {
             
             ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(cabinetVO.getModelId());
@@ -5266,6 +5277,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
             excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
+            excelVO.setStockStatus(acquireStockStatus(cabinetVO.getStockStatus()));
+            
+            //设置仓库名称
+            if (finalWarehouseNameVOMap.containsKey(cabinetVO.getWarehouseId())) {
+                excelVO.setWarehouseName(finalWarehouseNameVOMap.get(cabinetVO.getWarehouseId()));
+            }
             
             ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(),
                     cabinetVO.getDeviceName());
@@ -5287,6 +5304,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } catch (IOException e) {
             log.error("导出报表失败！", e);
         }
+    }
+    
+    private String acquireStockStatus(Integer stockStatus) {
+        String status = null;
+        switch (stockStatus) {
+            case 1:
+                status = "库存";
+                break;
+            case 2:
+                status = "已出库";
+                break;
+            default:
+                status = StringUtils.EMPTY;
+                break;
+        }
+        return status;
     }
     
     private String acquireExchangeType(Integer exchangeType) {
