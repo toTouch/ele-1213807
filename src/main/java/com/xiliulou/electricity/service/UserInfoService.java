@@ -164,5 +164,5 @@ public interface UserInfoService extends IService<UserInfo> {
     
     void deleteCache(Long uid);
     
-    List<UserInfo> listByUIds(List<Long> uIdList);
+    List<UserInfo> listByUidList(List<Long> uidList);
 }

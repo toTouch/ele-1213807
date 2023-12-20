@@ -332,7 +332,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 批量查询会员信息
             Map<Long, String> userNameMap = new HashMap<>();
             List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
-            List<UserInfo> userInfos = userInfoService.listByUIds(uIdList);
+            List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
             if (ObjectUtils.isNotEmpty(userInfos)) {
                  userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
             }
