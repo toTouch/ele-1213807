@@ -21,6 +21,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
@@ -322,6 +323,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             log.error("Franchisee id is invalid! uid = {}", uid);
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
+
+        // 校验库房
+        Long warehouseId = batteryExcelV3Query.getWarehouseId();
+        if (Objects.nonNull(warehouseId)) {
+            AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(warehouseId);
+            if (Objects.isNull(assetWarehouseNameVO)) {
+                return R.fail("300819", "您选择的库房不存在，请检测后操作");
+            }
+        }
         
         // 校验加盟商是否正在进行资产盘点
         Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
@@ -379,6 +389,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             electricityBattery.setFranchiseeId(franchiseeId);
             
             electricityBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+            electricityBattery.setWarehouseId(warehouseId);
             saveList.add(electricityBattery);
         }
         

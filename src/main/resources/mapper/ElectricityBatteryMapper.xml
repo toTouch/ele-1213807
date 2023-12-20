@@ -108,6 +108,9 @@
         <if test="query.stockStatus != null">
             and stock_status =#{query.stockStatus}
         </if>
+        <if test="query.warehouseId != null">
+            and warehouse_id =#{query.warehouseId}
+        </if>
         <if test="query.chargeStatus != null">
             and charge_status =#{query.chargeStatus}
         </if>
@@ -264,6 +267,9 @@
         </if>
         <if test="query.stockStatus != null">
             and stock_status =#{query.stockStatus}
+        </if>
+        <if test="query.warehouseId != null">
+            and warehouse_id =#{query.warehouseId}
         </if>
         <if test="query.power != null">
             and power = #{query.power}
@@ -731,12 +737,12 @@
         insert into t_electricity_battery(sn, longitude, latitude, power, voltage, capacity, model, status,
         electricity_cabinet_id, electricity_cabinet_name, uid, create_time, update_time, del_flag,
         charge_status, health_status, tenant_id, borrow_expire_time, iot_card_number, exchange_count, franchisee_id,
-        physics_status, business_status,stock_status) values
+        physics_status, business_status,stock_status,warehouse_id) values
         <foreach item="c" index="index" collection="list" separator=",">
             (#{c.sn}, #{c.longitude}, #{c.latitude}, #{c.power}, #{c.voltage}, #{c.capacity}, #{c.model}, #{c.status},
             #{c.electricityCabinetId}, #{c.electricityCabinetName}, #{c.uid}, #{c.createTime}, #{c.updateTime},
             #{c.delFlag}, #{c.chargeStatus}, #{c.healthStatus}, #{c.tenantId}, #{c.borrowExpireTime}, #{c.iotCardNumber},
-            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}, #{c.stockStatus})
+            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}, #{c.stockStatus},#{c.warehouseId})
         
         </foreach>
     </insert>

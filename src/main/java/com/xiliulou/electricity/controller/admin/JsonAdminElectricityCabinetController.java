@@ -133,6 +133,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                       @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "id", required = false) Integer id) {
@@ -179,6 +180,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
                 .stockStatus(stockStatus)
+                .warehouseId(warehouseId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
@@ -199,6 +201,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                         @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                         @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
@@ -235,6 +238,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .address(address)
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
+                .warehouseId(warehouseId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
@@ -256,6 +260,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                             @RequestParam(value = "address", required = false) String address,
                             @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                             @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime,
                             @RequestParam(value = "id", required = false) Integer id) {
@@ -283,7 +289,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size)
-                .name(name).address(address).usableStatus(usableStatus).onlineStatus(onlineStatus).beginTime(beginTime)
+                .name(name).address(address).usableStatus(usableStatus).stockStatus(stockStatus).warehouseId(warehouseId).onlineStatus(onlineStatus).beginTime(beginTime)
                 .endTime(endTime).eleIdList(null).id(id).tenantId(null).build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -295,6 +301,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                              @RequestParam(value = "address", required = false) String address,
                              @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                              @RequestParam(value = "beginTime", required = false) Long beginTime,
                              @RequestParam(value = "endTime", required = false) Long endTime) {
         //用户区分
@@ -309,7 +317,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(name).address(address)
-                .usableStatus(usableStatus).onlineStatus(onlineStatus).beginTime(beginTime).endTime(endTime)
+                .usableStatus(usableStatus).onlineStatus(onlineStatus).stockStatus(stockStatus).warehouseId(warehouseId).beginTime(beginTime).endTime(endTime)
                 .eleIdList(null).build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -1082,6 +1090,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                             @RequestParam(value = "address", required = false) String address,
                             @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                             @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime,
                             @RequestParam(value = "id", required = false) Integer id, HttpServletResponse response) {
@@ -1102,6 +1112,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .address(address)
                 .usableStatus(usableStatus)
                 .onlineStatus(onlineStatus)
+                .stockStatus(stockStatus)
+                .warehouseId(warehouseId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .id(id)
