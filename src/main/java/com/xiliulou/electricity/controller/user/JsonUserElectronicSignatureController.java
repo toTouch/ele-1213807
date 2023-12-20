@@ -47,5 +47,10 @@ public class JsonUserElectronicSignatureController extends BaseController {
     public R getSignatureLink(@PathVariable("signFlowId") String signFlowId){
         return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
     }
+    
+    @GetMapping(value = "/user/eSign/flowLink")
+    public R getSignFlowLink(@RequestParam(value = "signFlowId", required = true)  String signFlowId) {
+        return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
+    }
 
 }
