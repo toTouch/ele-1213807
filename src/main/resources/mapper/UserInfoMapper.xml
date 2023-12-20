@@ -1180,4 +1180,17 @@
             and tui.phone =#{query.phone}
         </if>
     </select>
+    <select id="selectListByUIds" resultType="com.xiliulou.electricity.entity.UserInfo">
+        SELECT
+            name,
+            uid
+        FROM
+        t_user_info
+        <where>
+             uid in
+            <foreach collection="uIdList" item="uid" separator="," open="(" close=")">
+                #{uid}
+            </foreach>
+        </where>
+    </select>
 </mapper>

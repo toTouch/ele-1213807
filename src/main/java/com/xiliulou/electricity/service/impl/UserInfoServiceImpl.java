@@ -2812,4 +2812,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         redisService.delete(CacheConstant.CACHE_USER_INFO + uid);
     }
     
+    @Slave
+    @Override
+    public List<UserInfo> listByUIds(List<Long> uIdList) {
+        return userInfoMapper.selectListByUIds(uIdList);
+    }
+    
 }
