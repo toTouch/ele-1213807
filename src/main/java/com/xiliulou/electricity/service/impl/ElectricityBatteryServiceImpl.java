@@ -755,6 +755,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         // 获取库房名称列表
         List<Long> warehouseIdList = electricityBatteryList.stream().map(ElectricityBattery::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        
+        // 根据库房id查询库房名称，不需要过滤库房状态是已删除的
         List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
         
         Map<Long, String> warehouseNameVOMap = Maps.newHashMap();

@@ -718,7 +718,7 @@
     </select>
     
     <select id="existsByWarehouseId" resultType="java.lang.Integer">
-        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 limit 1;
+        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 and stock_status=0 limit 1;
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">

@@ -684,7 +684,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
-            // 获取库房名称列表
+            // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的
             List<Long> warehouseIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getWarehouseId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
             List<AssetWarehouseNameVO> assetWarehouseNameVOS = assetWarehouseService.selectByIdList(warehouseIdList);
             

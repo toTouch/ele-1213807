@@ -152,19 +152,19 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Override
     public R deleteById(Long id) {
-        // 判断库房是否绑定柜机
+        // 判断库房是否绑定库存状态的柜机（不需要校验出库的，只校验库存状态）
         Integer existsElectricityCabinet = electricityCabinetV2Service.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityCabinet)) {
             return R.fail("300800", "该库房有电柜正在使用,请先解绑后操作");
         }
     
-        // 判断库房是否绑定电池
+        // 判断库房是否绑定库存状态的电池（不需要校验出库的，只校验库存状态）
         Integer existsElectricityBattery = electricityBatteryService.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityBattery)) {
             return R.fail("300801", "该库房有电池正在使用,请先解绑后操作");
         }
     
-        // 判断库房是否绑定车辆
+        // 判断库房是否绑定库存状态的车辆（不需要校验出库的，只校验库存状态）
         Integer existsElectricityCar = electricityCarService.existsByWarehouseId(id);
         if (Objects.nonNull(existsElectricityCar)) {
             return R.fail("300802", "该库房有车辆正在使用,请先解绑后操作");
