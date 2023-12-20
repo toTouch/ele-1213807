@@ -48,6 +48,11 @@ public class JsonUserElectronicSignatureController extends BaseController {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
     }
     
+    /**
+     * 替代上面的方法，修改参数的传入方式，方便在监控中查看接口响应时，同一个接口出现的次数过多。
+     * @param signFlowId
+     * @return
+     */
     @GetMapping(value = "/user/eSign/flowLink")
     public R getSignFlowLink(@RequestParam(value = "signFlowId", required = true)  String signFlowId) {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowUrl(signFlowId));
