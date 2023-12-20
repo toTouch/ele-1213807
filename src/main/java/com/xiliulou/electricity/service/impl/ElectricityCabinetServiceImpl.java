@@ -5309,10 +5309,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private String acquireStockStatus(Integer stockStatus) {
         String status = null;
         switch (stockStatus) {
-            case 1:
+            case 0:
                 status = "库存";
                 break;
-            case 2:
+            case 1:
                 status = "已出库";
                 break;
             default:
