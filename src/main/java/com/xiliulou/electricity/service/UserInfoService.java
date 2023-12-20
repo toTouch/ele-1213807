@@ -163,4 +163,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R queryEleListCount(UserInfoQuery userInfoQuery);
     
     void deleteCache(Long uid);
+    
+    List<UserInfo> listByUIds(List<Long> uIdList);
 }

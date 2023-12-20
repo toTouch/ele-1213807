@@ -160,4 +160,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     List<UserEleInfoVO> queryEleList(@Param("query") UserInfoQuery userInfoQuery);
     Integer queryEleListCount(@Param("query") UserInfoQuery userInfoQuery);
+    
+    List<UserInfo> selectListByUIds(@Param("uIdList") List<Long> uIdList);
 }
