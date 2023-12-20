@@ -329,7 +329,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (Objects.nonNull(warehouseId)) {
             AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(warehouseId);
             if (Objects.isNull(assetWarehouseNameVO)) {
-                return R.fail("300819", "您选择的库房不存在，请检测后操作");
+                return R.fail("100564", "您选择的库房不存在，请检测后操作");
             }
         }
         
