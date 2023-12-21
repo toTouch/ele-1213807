@@ -102,7 +102,38 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
         BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
         
-        return assetWarehouseRecordMapper.countTotal(queryModel);
+        Integer count = NumberConstant.ZERO;
+        
+        List<AssetWarehouseRecord> assetWarehouseRecordList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
+        if (CollectionUtils.isNotEmpty(assetWarehouseRecordList)) {
+            List<AssetWarehouseRecordVO> rsp = new ArrayList<>();
+            
+            //将recordNo相同的数据处理为一条
+            Map<String, List<AssetWarehouseRecord>> listMap = assetWarehouseRecordList.stream().collect(Collectors.groupingBy(AssetWarehouseRecord::getRecordNo));
+            
+            for (Map.Entry<String, List<AssetWarehouseRecord>> next : listMap.entrySet()) {
+                List<AssetWarehouseRecord> recordList = next.getValue();
+                AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
+                
+                AssetWarehouseRecord record = recordList.get(NumberConstant.ZERO);
+                BeanUtils.copyProperties(record, warehouseRecordVO);
+                
+                User user = userService.queryByUidFromCache(record.getOperator());
+                warehouseRecordVO.setOperatorName(user.getName());
+                
+                if (Objects.equals(recordList.size(), NumberConstant.ONE)) {
+                    warehouseRecordVO.setSnList(List.of(record.getSn()));
+                } else {
+                    List<String> snList = recordList.stream().map(AssetWarehouseRecord::getSn).collect(Collectors.toList());
+                    warehouseRecordVO.setSnList(snList);
+                }
+                rsp.add(warehouseRecordVO);
+            }
+            
+            count = rsp.size();
+        }
+        
+        return count;
     }
     
     /**

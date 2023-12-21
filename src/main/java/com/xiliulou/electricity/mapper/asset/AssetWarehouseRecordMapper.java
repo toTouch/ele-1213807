@@ -17,7 +17,5 @@ public interface AssetWarehouseRecordMapper {
     
     List<AssetWarehouseRecord> selectListByWarehouseId(AssetWarehouseRecordQueryModel queryModel);
     
-    Integer countTotal(AssetWarehouseRecordQueryModel queryModel);
-    
     Integer batchInsert(@Param("batchInsertList") List<AssetWarehouseRecord> batchInsertList);
 }

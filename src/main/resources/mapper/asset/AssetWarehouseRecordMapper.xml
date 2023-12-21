@@ -40,21 +40,9 @@
             </if>
         </where>
         ORDER BY id DESC
-        limit #{offset}, #{size}
-    </select>
-    
-    <select id="countTotal" resultType="java.lang.Integer">
-        select count(1)
-        FROM t_asset_warehouse_record
-        <where>
-            warehouse_id = #{warehouseId} and del_flag = 0
-            <if test="type != null">
-                and type = #{type}
-            </if>
-            <if test="sn != null and sn != ''">
-                and sn like concat('%', #{sn}, '%')
-            </if>
-        </where>
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
 </mapper>
