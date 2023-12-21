@@ -23,7 +23,6 @@ import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryMode
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
-import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -286,12 +285,12 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 assetExitWarehouseDetailService.batchInsert(detailSaveQueryModelList, operator);
                 
                 //库房记录
-                List<AssetSnWarehouseRequest> snWarehouseList = snList.stream()
-                        .map(sn -> AssetSnWarehouseRequest.builder().sn(sn).warehouseId(assetBatchExitWarehouseRequest.getWarehouseId()).build()).collect(Collectors.toList());
-                
-                assetWarehouseRecordService.asyncRecord(assetBatchExitWarehouseRequest.getTenantId(), operator, snWarehouseList, type,
-                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
-                
+                Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
+                if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+                    
+                    assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, snList, type,
+                            WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
+                }
             });
         }
     }

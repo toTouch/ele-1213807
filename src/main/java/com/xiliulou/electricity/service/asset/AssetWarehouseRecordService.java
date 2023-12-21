@@ -17,5 +17,9 @@ public interface AssetWarehouseRecordService {
     
     Integer countTotal(AssetWarehouseRecordRequest assetWarehouseRecordRequest);
     
-    void asyncRecord(Integer tenantId, Long uid, List<AssetSnWarehouseRequest> snWarehouseList, Integer type, Integer operateType);
+    void asyncRecords(Integer tenantId, Long uid, List<AssetSnWarehouseRequest> snWarehouseList, Integer type, Integer operateType);
+    
+    void asyncRecordOne(Integer tenantId, Long uid, Long warehouseId, String sn, Integer type, Integer operateType);
+    
+    void asyncRecordByWarehouseId(Integer tenantId, Long uid, Long warehouseId, List<String> snList, Integer type, Integer operateType);
 }

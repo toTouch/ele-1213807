@@ -32,20 +32,17 @@ public class AssetWarehouseRecord {
     
     /**
      * 资产类型(1-电柜, 2-电池, 3-车辆)
+     *
      * @see AssetTypeEnum
      */
     private Integer type;
     
     /**
      * 操作类型(1-入库, 2-出库, 3-批量入库, 4-批量出库, 5-退库)
+     *
      * @see WarehouseOperateTypeEnum
      */
     private Integer operateType;
-    
-    /**
-     * 资产SN码
-     */
-    private String sn;
     
     /**
      * 库房ID

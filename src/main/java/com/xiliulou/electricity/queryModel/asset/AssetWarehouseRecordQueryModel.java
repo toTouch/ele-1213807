@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 /**
  * @author HeYafeng
  * @description 库房资产记录分页
@@ -29,10 +31,7 @@ public class AssetWarehouseRecordQueryModel {
      */
     private Integer type;
     
-    /**
-     * 资产编号
-     */
-    private String sn;
+    private Set<String> recordNoSet;
     
     private Long size;
     

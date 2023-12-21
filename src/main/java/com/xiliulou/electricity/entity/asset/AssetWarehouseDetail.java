@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.bo.asset;
+package com.xiliulou.electricity.entity.asset;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
@@ -10,14 +10,15 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 库房资产记录BO
+ * @description 库房资产记录详情实体类
  * @date 2023/12/20 09:42:45
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AssetWarehouseRecordBO {
+@TableName("t_asset_warehouse_detail")
+public class AssetWarehouseDetail {
     
     /**
      * 主键ID
@@ -30,26 +31,21 @@ public class AssetWarehouseRecordBO {
     private String recordNo;
     
     /**
-     * 资产类型(1-电柜, 2-电池, 3-车辆)
-     * @see AssetTypeEnum
-     */
-    private Integer type;
-    
-    /**
-     * 操作类型(1-入库, 2-出库, 3-批量入库, 4-批量出库, 5-退库)
-     * @see WarehouseOperateTypeEnum
-     */
-    private Integer operateType;
-    
-    /**
      * 库房ID
      */
     private Long warehouseId;
     
     /**
-     * 操作人
+     * 资产类型(1-电柜, 2-电池, 3-车辆)
+     *
+     * @see AssetTypeEnum
      */
-    private Long operator;
+    private Integer type;
+    
+    /**
+     * 资产sn
+     */
+    private String sn;
     
     /**
      * 租户ID
@@ -75,9 +71,4 @@ public class AssetWarehouseRecordBO {
      * 备注
      */
     private String remark;
-    
-    /**
-     * 库房名称
-     */
-    private String warehouseName;
 }

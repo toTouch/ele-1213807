@@ -319,14 +319,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
         // 异步记录
         Long warehouseId = batteryAddRequest.getWarehouseId();
-        String sn = batteryAddRequest.getSn();
-        AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
-        List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
-        Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode();
-        if (Objects.nonNull(franchiseeId)) {
-            operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
+        if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+            String sn = batteryAddRequest.getSn();
+            Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode();
+            if (Objects.nonNull(franchiseeId)) {
+                operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
+            }
+        
+            assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), user.getUid(), warehouseId, sn, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
         }
-        assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), user.getUid(), snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
         
         return R.ok();
     }
@@ -435,11 +436,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         insertBatch(saveList);
     
         // 异步记录
-        if (Objects.nonNull(batteryExcelV3Query.getWarehouseId()) && !Objects.equals(batteryExcelV3Query.getWarehouseId(), NumberConstant.ZERO_L)) {
-            List<AssetSnWarehouseRequest> snWarehouseList = saveList.stream()
-                    .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(batteryExcelV3Query.getWarehouseId()).build()).collect(Collectors.toList());
+        if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+            List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
         
-            assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
+            assetWarehouseRecordService.asyncRecordByWarehouseId(TenantContextHolder.getTenantId(), uid, warehouseId, snList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_IN.getCode());
         }
         
@@ -1382,6 +1382,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 异步记录
             if (CollectionUtils.isNotEmpty(electricityBatteries)) {
                 List<AssetSnWarehouseRequest> snWarehouseList = electricityBatteries.stream()
+                        .filter(item -> Objects.nonNull(item.getWarehouseId()))
                         .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
             
                 Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
@@ -1391,7 +1392,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
                 }
             
-                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
+                assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
     

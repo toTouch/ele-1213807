@@ -16,7 +16,11 @@ import java.util.List;
 @Mapper
 public interface AssetWarehouseRecordMapper {
     
-    List<AssetWarehouseRecordBO> selectListByWarehouseId(AssetWarehouseRecordQueryModel queryModel);
-    
     Integer batchInsert(@Param("batchInsertList") List<AssetWarehouseRecord> batchInsertList);
+    
+    Integer insertOne(AssetWarehouseRecord assetWarehouseRecord);
+    
+    List<AssetWarehouseRecordBO> selectListByRecordNoSet(AssetWarehouseRecordQueryModel queryModel);
+    
+    Integer countTotal(AssetWarehouseRecordQueryModel queryModel);
 }

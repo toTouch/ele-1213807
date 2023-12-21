@@ -143,15 +143,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
     
                 // 异步记录
-                Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
                 Long warehouseId = electricityCabinetAddRequest.getWarehouseId();
-                String sn = electricityCabinetAddRequest.getSn();
-                AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
-                List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
-    
-                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
-                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
-        
+                if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+                    Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+                    String sn = electricityCabinetAddRequest.getSn();
+                    
+                    assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), uid, warehouseId, sn, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+                            WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+                }
             });
             
             return Triple.of(true, null, electricityCabinet.getId());
@@ -224,13 +223,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(List.of(outWarehouseRequest.getId()));
             if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
                 Long warehouseId = electricityCabinetBOList.get(NumberConstant.ZERO).getWarehouseId();
-                Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
-                String sn = outWarehouseRequest.getSn();
-                AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
-                List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
         
-                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
-                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode());
+                if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+                    Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+                    String sn = outWarehouseRequest.getSn();
+            
+                    assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), uid, warehouseId, sn, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+                            WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode());
+                }
             }
         });
         
@@ -307,11 +307,12 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(batchOutWarehouseRequest.getIdList());
         if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
             List<AssetSnWarehouseRequest> snWarehouseList = electricityCabinetBOList.stream()
+                    .filter(item -> Objects.nonNull(item.getWarehouseId()))
                     .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
         
             Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
         
-            assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
+            assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
         }
         

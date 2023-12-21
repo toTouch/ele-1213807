@@ -356,14 +356,14 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCarMapper.insert(electricityCar);
     
         // 异步记录
-        Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
         Long warehouseId = carAddRequest.getWarehouseId();
-        String sn = carAddRequest.getSn();
-        AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
-        List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
-    
-        assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(),
-                WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+        if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+            Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+            String sn = carAddRequest.getSn();
+        
+            assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), uid, warehouseId, sn, AssetTypeEnum.ASSET_TYPE_CAR.getCode(),
+                    WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+        }
         
         return R.ok(electricityCar.getId());
     }
@@ -1211,6 +1211,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
         
             List<AssetSnWarehouseRequest> snWarehouseList = electricityCarBOList.stream()
+                    .filter(item -> Objects.nonNull(item.getWarehouseId()))
                     .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
         
             Integer tenantId = TenantContextHolder.getTenantId();
@@ -1221,7 +1222,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
             }
         
-            assetWarehouseRecordService.asyncRecord(tenantId, uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
+            assetWarehouseRecordService.asyncRecords(tenantId, uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
         }
         
         return R.ok();
