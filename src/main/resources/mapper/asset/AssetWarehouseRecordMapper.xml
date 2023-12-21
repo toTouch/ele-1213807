@@ -26,10 +26,10 @@
         </foreach>
     </insert>
     
-    <select id="selectListByWarehouseId" resultType="com.xiliulou.electricity.entity.asset.AssetWarehouseRecord">
-        SELECT
-        <include refid="basic_field"/>
-        FROM t_asset_warehouse_record
+    <select id="selectListByWarehouseId" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseRecordBO">
+        SELECT tawr.id, tawr.record_no, tawr.type, tawr.operate_type, tawr.sn, tawr.warehouse_id, tawr.operator, tawr.tenant_id, tawr.del_flag, tawr.create_time, tawr.update_time, tawr.remark, taw.name as warehouseName
+        FROM t_asset_warehouse_record tawr
+        LEFT JOIN t_asset_warehouse taw ON tawr.warehouse_id = taw.id
         <where>
             warehouse_id = #{warehouseId} and del_flag = 0
             <if test="type != null">

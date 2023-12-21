@@ -32,7 +32,6 @@ import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
-import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
@@ -1366,4 +1365,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         return count;
     }
+    
+    @Slave
+    @Override
+    public R queryCountByWarehouse(ElectricityCarQuery electricityCarQuery) {
+        return R.ok(electricityCarMapper.queryCountByWarehouse(electricityCarQuery));
+    }
+    
 }

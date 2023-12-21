@@ -159,4 +159,6 @@ public interface ElectricityCarService {
     List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
     
     Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
+    
+    R queryCountByWarehouse(ElectricityCarQuery electricityCarQuery);
 }

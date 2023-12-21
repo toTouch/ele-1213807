@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.asset;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.AssetWarehouseRecordBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
@@ -14,7 +15,6 @@ import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRecordRequest;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
-import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseRecordVO;
 import jodd.util.StringUtil;
@@ -46,9 +46,6 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
     private AssetWarehouseRecordMapper assetWarehouseRecordMapper;
     
     @Resource
-    private AssetWarehouseService assetWarehouseService;
-    
-    @Resource
     private UserService userService;
     
     @Slave
@@ -59,18 +56,18 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
         BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
         
-        List<AssetWarehouseRecord> assetWarehouseRecordList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
-        if (CollectionUtils.isNotEmpty(assetWarehouseRecordList)) {
+        List<AssetWarehouseRecordBO> assetWarehouseRecordBOList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
+        if (CollectionUtils.isNotEmpty(assetWarehouseRecordBOList)) {
             rsp = new ArrayList<>();
             
             //将recordNo相同的数据处理为一条
-            Map<String, List<AssetWarehouseRecord>> listMap = assetWarehouseRecordList.stream().collect(Collectors.groupingBy(AssetWarehouseRecord::getRecordNo));
+            Map<String, List<AssetWarehouseRecordBO>> listMap = assetWarehouseRecordBOList.stream().collect(Collectors.groupingBy(AssetWarehouseRecordBO::getRecordNo));
             
-            for (Map.Entry<String, List<AssetWarehouseRecord>> next : listMap.entrySet()) {
-                List<AssetWarehouseRecord> recordList = next.getValue();
+            for (Map.Entry<String, List<AssetWarehouseRecordBO>> next : listMap.entrySet()) {
+                List<AssetWarehouseRecordBO> recordList = next.getValue();
                 AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
                 
-                AssetWarehouseRecord record = recordList.get(NumberConstant.ZERO);
+                AssetWarehouseRecordBO record = recordList.get(NumberConstant.ZERO);
                 BeanUtils.copyProperties(record, warehouseRecordVO);
                 
                 User user = userService.queryByUidFromCache(record.getOperator());
@@ -79,7 +76,7 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
                 if (Objects.equals(recordList.size(), NumberConstant.ONE)) {
                     warehouseRecordVO.setSnList(List.of(record.getSn()));
                 } else {
-                    List<String> snList = recordList.stream().map(AssetWarehouseRecord::getSn).collect(Collectors.toList());
+                    List<String> snList = recordList.stream().map(AssetWarehouseRecordBO::getSn).collect(Collectors.toList());
                     warehouseRecordVO.setSnList(snList);
                 }
                 rsp.add(warehouseRecordVO);
@@ -104,18 +101,18 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         
         Integer count = NumberConstant.ZERO;
         
-        List<AssetWarehouseRecord> assetWarehouseRecordList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
-        if (CollectionUtils.isNotEmpty(assetWarehouseRecordList)) {
+        List<AssetWarehouseRecordBO> assetWarehouseRecordBOList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
+        if (CollectionUtils.isNotEmpty(assetWarehouseRecordBOList)) {
             List<AssetWarehouseRecordVO> rsp = new ArrayList<>();
             
             //将recordNo相同的数据处理为一条
-            Map<String, List<AssetWarehouseRecord>> listMap = assetWarehouseRecordList.stream().collect(Collectors.groupingBy(AssetWarehouseRecord::getRecordNo));
+            Map<String, List<AssetWarehouseRecordBO>> listMap = assetWarehouseRecordBOList.stream().collect(Collectors.groupingBy(AssetWarehouseRecordBO::getRecordNo));
             
-            for (Map.Entry<String, List<AssetWarehouseRecord>> next : listMap.entrySet()) {
-                List<AssetWarehouseRecord> recordList = next.getValue();
+            for (Map.Entry<String, List<AssetWarehouseRecordBO>> next : listMap.entrySet()) {
+                List<AssetWarehouseRecordBO> recordList = next.getValue();
                 AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
                 
-                AssetWarehouseRecord record = recordList.get(NumberConstant.ZERO);
+                AssetWarehouseRecordBO record = recordList.get(NumberConstant.ZERO);
                 BeanUtils.copyProperties(record, warehouseRecordVO);
                 
                 User user = userService.queryByUidFromCache(record.getOperator());
@@ -124,7 +121,7 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
                 if (Objects.equals(recordList.size(), NumberConstant.ONE)) {
                     warehouseRecordVO.setSnList(List.of(record.getSn()));
                 } else {
-                    List<String> snList = recordList.stream().map(AssetWarehouseRecord::getSn).collect(Collectors.toList());
+                    List<String> snList = recordList.stream().map(AssetWarehouseRecordBO::getSn).collect(Collectors.toList());
                     warehouseRecordVO.setSnList(snList);
                 }
                 rsp.add(warehouseRecordVO);

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.asset;
 
+import com.xiliulou.electricity.bo.asset.AssetWarehouseRecordBO;
 import com.xiliulou.electricity.entity.asset.AssetWarehouseRecord;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseRecordQueryModel;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,7 +16,7 @@ import java.util.List;
 @Mapper
 public interface AssetWarehouseRecordMapper {
     
-    List<AssetWarehouseRecord> selectListByWarehouseId(AssetWarehouseRecordQueryModel queryModel);
+    List<AssetWarehouseRecordBO> selectListByWarehouseId(AssetWarehouseRecordQueryModel queryModel);
     
     Integer batchInsert(@Param("batchInsertList") List<AssetWarehouseRecord> batchInsertList);
 }
