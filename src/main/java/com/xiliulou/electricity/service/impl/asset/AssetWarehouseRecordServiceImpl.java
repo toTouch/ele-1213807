@@ -5,16 +5,17 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.asset.AssetWarehouseRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseRecordMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetWarehouseRecordQueryModel;
 import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRecordRequest;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseRecordVO;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -24,7 +25,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -45,32 +48,51 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
     @Resource
     private AssetWarehouseService assetWarehouseService;
     
+    @Resource
+    private UserService userService;
+    
     @Slave
     @Override
     public List<AssetWarehouseRecordVO> listByWarehouseId(AssetWarehouseRecordRequest assetWarehouseRecordRequest) {
         List<AssetWarehouseRecordVO> rsp = null;
-    
+        
         AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
         BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
-        // TODO 处理同一单号数据
+        
         List<AssetWarehouseRecord> assetWarehouseRecordList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseRecordList)) {
-            rsp = assetWarehouseRecordList.stream().map(item -> {
-                AssetWarehouseRecordVO assetWarehouseRecordVO = new AssetWarehouseRecordVO();
-                BeanUtils.copyProperties(item, assetWarehouseRecordVO);
+            rsp = new ArrayList<>();
             
-                AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(item.getWarehouseId());
-                assetWarehouseRecordVO.setWarehouseName(assetWarehouseNameVO.getName());
+            //将recordNo相同的数据处理为一条
+            Map<String, List<AssetWarehouseRecord>> listMap = assetWarehouseRecordList.stream().collect(Collectors.groupingBy(AssetWarehouseRecord::getRecordNo));
             
-                return assetWarehouseRecordVO;
+            for (Map.Entry<String, List<AssetWarehouseRecord>> next : listMap.entrySet()) {
+                List<AssetWarehouseRecord> recordList = next.getValue();
+                AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
+                
+                AssetWarehouseRecord record = recordList.get(NumberConstant.ZERO);
+                BeanUtils.copyProperties(record, warehouseRecordVO);
+                
+                User user = userService.queryByUidFromCache(record.getOperator());
+                warehouseRecordVO.setOperatorName(user.getName());
+                
+                if (Objects.equals(recordList.size(), NumberConstant.ONE)) {
+                    warehouseRecordVO.setSnList(List.of(record.getSn()));
+                } else {
+                    List<String> snList = recordList.stream().map(AssetWarehouseRecord::getSn).collect(Collectors.toList());
+                    warehouseRecordVO.setSnList(snList);
+                }
+                rsp.add(warehouseRecordVO);
+            }
             
-            }).collect(Collectors.toList());
+            // 降序重排序
+            rsp.sort(Comparator.comparing(AssetWarehouseRecordVO::getId).reversed());
         }
-    
+        
         if (CollectionUtils.isEmpty(rsp)) {
             rsp = Collections.emptyList();
         }
-    
+        
         return rsp;
     }
     

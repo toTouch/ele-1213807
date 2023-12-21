@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 库房资产记录VO
@@ -45,7 +47,7 @@ public class AssetWarehouseRecordVO {
     /**
      * 资产SN码
      */
-    private String sn;
+    private List<String> snList;
     
     /**
      * 库房ID
@@ -61,6 +63,11 @@ public class AssetWarehouseRecordVO {
      * 操作人
      */
     private Long operator;
+    
+    /**
+     * 操作人姓名
+     */
+    private String operatorName;
     
     /**
      * 租户ID
