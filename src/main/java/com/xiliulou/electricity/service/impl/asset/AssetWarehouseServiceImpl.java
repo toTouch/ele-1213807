@@ -7,7 +7,6 @@ import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -106,21 +105,21 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 // 统计电池数量
                 ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                Integer batteryCount = electricityBatteryService.queryCount(electricityBatteryQuery).getCode();
+                Integer batteryCount = (Integer) electricityBatteryService.queryCount(electricityBatteryQuery).getData();
                 
                 // 统计柜机数量
                 ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                Integer cabinetCount = electricityCabinetService.queryCount(electricityCabinetQuery).getCode();
+                Integer cabinetCount = (Integer) electricityCabinetService.queryCount(electricityCabinetQuery).getData();
                 
                 // 统计车辆数量
                 ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                Integer carCount = electricityCarService.queryCountByWarehouse(electricityCarQuery).getCode();
+                Integer carCount = (Integer) electricityCarService.queryCountByWarehouse(electricityCarQuery).getData();
                 
-                assetWarehouseVO.setBatteryCount(Objects.isNull(batteryCount) ? NumberConstant.ZERO : batteryCount);
-                assetWarehouseVO.setCabinetCount(Objects.isNull(cabinetCount) ? NumberConstant.ZERO : cabinetCount);
-                assetWarehouseVO.setCarCount(Objects.isNull(carCount) ? NumberConstant.ZERO : carCount);
+                assetWarehouseVO.setBatteryCount(batteryCount);
+                assetWarehouseVO.setCabinetCount(cabinetCount);
+                assetWarehouseVO.setCarCount(carCount);
                 
                 return assetWarehouseVO;
             }).collect(Collectors.toList());
