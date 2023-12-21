@@ -96,40 +96,11 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
     @Slave
     @Override
     public Integer countTotal(AssetWarehouseRecordRequest assetWarehouseRecordRequest) {
-        AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
-        BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
-        
         Integer count = NumberConstant.ZERO;
-        
-        List<AssetWarehouseRecordBO> assetWarehouseRecordBOList = assetWarehouseRecordMapper.selectListByWarehouseId(queryModel);
-        if (CollectionUtils.isNotEmpty(assetWarehouseRecordBOList)) {
-            List<AssetWarehouseRecordVO> rsp = new ArrayList<>();
-            
-            //将recordNo相同的数据处理为一条
-            Map<String, List<AssetWarehouseRecordBO>> listMap = assetWarehouseRecordBOList.stream().collect(Collectors.groupingBy(AssetWarehouseRecordBO::getRecordNo));
-            
-            for (Map.Entry<String, List<AssetWarehouseRecordBO>> next : listMap.entrySet()) {
-                List<AssetWarehouseRecordBO> recordList = next.getValue();
-                AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
-                
-                AssetWarehouseRecordBO record = recordList.get(NumberConstant.ZERO);
-                BeanUtils.copyProperties(record, warehouseRecordVO);
-                
-                User user = userService.queryByUidFromCache(record.getOperator());
-                warehouseRecordVO.setOperatorName(user.getName());
-                
-                if (Objects.equals(recordList.size(), NumberConstant.ONE)) {
-                    warehouseRecordVO.setSnList(List.of(record.getSn()));
-                } else {
-                    List<String> snList = recordList.stream().map(AssetWarehouseRecordBO::getSn).collect(Collectors.toList());
-                    warehouseRecordVO.setSnList(snList);
-                }
-                rsp.add(warehouseRecordVO);
-            }
-            
-            count = rsp.size();
+        List<AssetWarehouseRecordVO> warehouseRecordVOList = this.listByWarehouseId(assetWarehouseRecordRequest);
+        if (CollectionUtils.isNotEmpty(warehouseRecordVOList)) {
+            count = warehouseRecordVOList.size();
         }
-        
         return count;
     }
     

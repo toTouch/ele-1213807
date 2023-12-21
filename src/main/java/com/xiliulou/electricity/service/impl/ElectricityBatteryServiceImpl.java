@@ -322,9 +322,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         String sn = batteryAddRequest.getSn();
         AssetSnWarehouseRequest snWarehouseRequest = AssetSnWarehouseRequest.builder().sn(sn).warehouseId(warehouseId).build();
         List<AssetSnWarehouseRequest> snWarehouseList = List.of(snWarehouseRequest);
-    
-        assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), user.getUid(), snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
-                WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
+        Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode();
+        if (Objects.nonNull(franchiseeId)) {
+            operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
+        }
+        assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), user.getUid(), snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
         
         return R.ok();
     }
@@ -1389,7 +1391,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
                 }
             
-                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
+                assetWarehouseRecordService.asyncRecord(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
     
