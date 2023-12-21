@@ -31,15 +31,15 @@
         FROM t_asset_warehouse_record tawr
         LEFT JOIN t_asset_warehouse taw ON tawr.warehouse_id = taw.id
         <where>
-            warehouse_id = #{warehouseId} and del_flag = 0
+            tawr.warehouse_id = #{warehouseId} and tawr.del_flag = 0
             <if test="type != null">
-                and type = #{type}
+                and tawr.type = #{type}
             </if>
             <if test="sn != null and sn != ''">
-                and sn like concat('%', #{sn}, '%')
+                and tawr.sn like concat('%', #{sn}, '%')
             </if>
         </where>
-        ORDER BY id DESC
+        ORDER BY tawr.id DESC
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
