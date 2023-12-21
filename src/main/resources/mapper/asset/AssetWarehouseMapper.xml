@@ -70,7 +70,7 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
-    <select id="selectListByFranchiseeId" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseBO">
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.bo.asset.AssetWarehouseBO">
         SELECT
         <include refid="basic_field"/>
         FROM t_asset_warehouse

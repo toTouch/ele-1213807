@@ -7,6 +7,7 @@ import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -89,14 +90,14 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
     
     @Slave
     @Override
-    public List<AssetWarehouseVO> listByFranchiseeId(AssetWarehouseRequest assetInventoryRequest) {
+    public List<AssetWarehouseVO> listByPage(AssetWarehouseRequest assetInventoryRequest) {
         
         AssetWarehouseQueryModel assetWarehouseQueryModel = new AssetWarehouseQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetWarehouseQueryModel);
         assetWarehouseQueryModel.setTenantId(TenantContextHolder.getTenantId());
         
         List<AssetWarehouseVO> rspList = Collections.emptyList();
-        List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByFranchiseeId(assetWarehouseQueryModel);
+        List<AssetWarehouseBO> assetWarehouseBOList = assetWarehouseMapper.selectListByPage(assetWarehouseQueryModel);
         if (CollectionUtils.isNotEmpty(assetWarehouseBOList)) {
             rspList = assetWarehouseBOList.stream().map(item -> {
                 AssetWarehouseVO assetWarehouseVO = new AssetWarehouseVO();
@@ -105,21 +106,21 @@ public class AssetWarehouseServiceImpl implements AssetWarehouseService {
                 // 统计电池数量
                 ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                R batteryCount = electricityBatteryService.queryCount(electricityBatteryQuery);
+                Integer batteryCount = electricityBatteryService.queryCount(electricityBatteryQuery).getCode();
                 
                 // 统计柜机数量
                 ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                R cabinetCount = electricityCabinetService.queryCount(electricityCabinetQuery);
+                Integer cabinetCount = electricityCabinetService.queryCount(electricityCabinetQuery).getCode();
                 
                 // 统计车辆数量
                 ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder().tenantId(item.getTenantId()).warehouseId(item.getId())
                         .stockStatus(StockStatusEnum.STOCK.getCode()).build();
-                R carCount = electricityCarService.queryCountByWarehouse(electricityCarQuery);
+                Integer carCount = electricityCarService.queryCountByWarehouse(electricityCarQuery).getCode();
                 
-                assetWarehouseVO.setCabinetCount((Integer) batteryCount.getData());
-                assetWarehouseVO.setCabinetCount((Integer) cabinetCount.getData());
-                assetWarehouseVO.setCabinetCount((Integer) carCount.getData());
+                assetWarehouseVO.setBatteryCount(Objects.isNull(batteryCount) ? NumberConstant.ZERO : batteryCount);
+                assetWarehouseVO.setCabinetCount(Objects.isNull(cabinetCount) ? NumberConstant.ZERO : cabinetCount);
+                assetWarehouseVO.setCarCount(Objects.isNull(carCount) ? NumberConstant.ZERO : carCount);
                 
                 return assetWarehouseVO;
             }).collect(Collectors.toList());
