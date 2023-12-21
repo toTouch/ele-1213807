@@ -55,6 +55,9 @@
         <if test="query.stockStatus != null ">
             and tec.stock_status = #{query.stockStatus}
         </if>
+        <if test="query.warehouseId != null">
+            and tec.warehouse_id = #{query.warehouseId}
+        </if>
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
         </if>
@@ -107,6 +110,9 @@
         </if>
         <if test="query.stockStatus != null ">
             and tec.stock_status = #{query.stockStatus}
+        </if>
+        <if test="query.warehouseId != null">
+            and tec.warehouse_id = #{query.warehouseId}
         </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
