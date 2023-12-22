@@ -241,8 +241,8 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     }
     
     @Slave
-    public int checkErrorCode(Integer errorCode, Long id) {
-        return failureAlarmMapper.checkErrorCode(errorCode, id);
+    public int checkErrorCode(Integer signalId, Long id) {
+        return failureAlarmMapper.checkErrorCode(signalId, id);
     }
     
     @Override
