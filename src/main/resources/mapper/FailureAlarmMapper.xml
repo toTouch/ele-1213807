@@ -69,7 +69,7 @@
             t.signal_id,
             t.signal_name,
             t.signal_desc,
-            t.event_desc
+            t.event_desc,
             t.tenant_visible,
             t.`status`,
             t.del_flag,
