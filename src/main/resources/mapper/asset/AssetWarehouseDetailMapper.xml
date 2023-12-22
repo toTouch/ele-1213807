@@ -46,7 +46,7 @@
         insert into t_asset_warehouse_detail(record_no,warehouse_id,type,sn,tenant_id,del_flag,create_time,update_time,remark)
         values
         <foreach item="item" index="index" collection="batchInsertList" separator=",">
-            (#{item.recordNo},#{warehouseId},#{item.type}, #{sn}, #{item.tenantId}, #{item.delFlag}, #{item.createTime}, #{item.updateTime}, #{item.remark})
+            (#{item.recordNo},#{item.warehouseId},#{item.type}, #{item.sn}, #{item.tenantId}, #{item.delFlag}, #{item.createTime}, #{item.updateTime}, #{item.remark})
         </foreach>
     </insert>
     
