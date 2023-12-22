@@ -72,7 +72,7 @@ public class FailureAlarmExcelVo {
     /**
      * 运作状态(0-启用， 1-禁用)
      */
-    @ExcelProperty("运营商可见")
+    @ExcelProperty("运作状态")
     private String status;
     
     /**
