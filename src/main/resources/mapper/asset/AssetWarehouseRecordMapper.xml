@@ -66,7 +66,7 @@
                 and tawr.type = #{type}
             </if>
             <if test="recordNoSet != null and recordNoSet.size() > 0">
-                and record_no in
+                and tawr.record_no in
                 <foreach collection="recordNoSet" item="recordNo" index="index" separator="," open="(" close=")">
                     #{recordNo}
                 </foreach>
@@ -85,7 +85,7 @@
                 and tawr.type = #{type}
             </if>
             <if test="recordNoSet != null and recordNoSet.size() > 0">
-                and record_no in
+                and tawr.record_no in
                 <foreach collection="recordNoSet" item="recordNo" index="index" separator="," open="(" close=")">
                     #{recordNo}
                 </foreach>
