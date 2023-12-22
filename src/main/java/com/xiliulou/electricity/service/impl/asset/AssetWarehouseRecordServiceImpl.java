@@ -73,6 +73,8 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         List<AssetWarehouseRecordBO> recordBOList = assetWarehouseRecordMapper.selectListByRecordNoSet(queryModel);
         if (CollectionUtils.isNotEmpty(recordBOList)) {
             rsp = new ArrayList<>();
+    
+            recordBOList = recordBOList.stream().distinct().collect(Collectors.toList());
             
             for (AssetWarehouseRecordBO record : recordBOList) {
                 AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
