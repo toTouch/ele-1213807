@@ -80,10 +80,10 @@ public class FailureAlarmController {
      * @author maxiaodong
      */
     @GetMapping("/admin/failure/alarm/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "errorCode", required = false) Integer errorCode,
+    public R pageCount(@RequestParam(value = "signalName", required = false) String signalName, @RequestParam(value = "signalId", required = false) Integer signalId,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "grade", required = false) Integer grade,
-            @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureIdList, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "model", required = false) Integer model, @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {
+            @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureList, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -92,9 +92,9 @@ public class FailureAlarmController {
         if (!SecurityUtils.isAdmin()) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
-        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().name(name).type(type).errorCode(errorCode).type(type).grade(grade)
-                .protectMeasureList(protectMeasureIdList).status(status).model(model).tenantVisible(tenantVisible).build();
+    
+        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().signalName(signalName).type(type).signalId(signalId).type(type).grade(grade)
+                .protectMeasureList(protectMeasureList).status(status).deviceType(deviceType).tenantVisible(tenantVisible).build();
         return R.ok(failureAlarmService.countTotal(allocateRecordPageRequest));
     }
     
@@ -105,10 +105,10 @@ public class FailureAlarmController {
      * @author maxiaodong
      */
     @GetMapping("/admin/failure/alarm/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "errorCode", required = false) Integer errorCode, @RequestParam(value = "type", required = false) Integer type,
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "signalName", required = false) String signalName,
+            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureList,
-            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "model", required = false) Integer model,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "deviceType", required = false) Integer deviceType,
             @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -127,8 +127,8 @@ public class FailureAlarmController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().name(name).type(type).errorCode(errorCode).type(type).grade(grade)
-                .protectMeasureList(protectMeasureList).status(status).model(model).tenantVisible(tenantVisible).size(size).offset(offset).build();
+        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().signalName(signalName).type(type).signalId(signalId).type(type).grade(grade)
+                .protectMeasureList(protectMeasureList).status(status).deviceType(deviceType).tenantVisible(tenantVisible).size(size).offset(offset).build();
         
         return R.ok(failureAlarmService.listByPage(allocateRecordPageRequest));
     }
@@ -166,9 +166,9 @@ public class FailureAlarmController {
      * @param id
      * @return
      */
-    @DeleteMapping(value = "/admin/failure/alarm/delete/{id}")
+    @DeleteMapping(value = "/admin/failure/alarm/delete")
     @Log(title = "删除故障告警设置")
-    public R delete(@PathVariable("id") Long id) {
+    public R delete(@RequestParam("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -204,7 +204,6 @@ public class FailureAlarmController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        
         return failureAlarmService.batchSet(request, user.getUid());
     }
     
@@ -213,11 +212,7 @@ public class FailureAlarmController {
      * 故障告警数据导出
      */
     @GetMapping(value = "/admin/failure/alarm/exportExcel")
-    public void exportExcel(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "errorCode", required = false) Integer errorCode,
-            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "grade", required = false) Integer grade,
-            @RequestParam(value = "protectMeasureIdList", required = false) List<Long> protectMeasureIdList, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "model", required = false) Integer model, @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible,
-            HttpServletResponse response) {
+    public void exportExcel(HttpServletResponse response) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -228,8 +223,7 @@ public class FailureAlarmController {
             throw new CustomBusinessException("用户权限不足");
         }
         
-        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().name(name).type(type).errorCode(errorCode).type(type).grade(grade)
-                .protectMeasureList(protectMeasureIdList).status(status).model(model).tenantVisible(tenantVisible).build();
+        FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().build();
         
         failureAlarmService.exportExcel(allocateRecordPageRequest, response);
     }

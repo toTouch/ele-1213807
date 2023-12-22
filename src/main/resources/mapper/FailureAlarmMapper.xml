@@ -3,9 +3,9 @@
 <mapper namespace="com.xiliulou.electricity.mapper.FailureAlarmMapper">
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_failure_alarm(id, type, grade, model, name, error_code, trigger_rules, tenant_visible, status, del_flag,
+        insert into t_failure_alarm(id, type, grade, device_type, signal_id, signal_name, signal_desc, event_desc, tenant_visible, status, del_flag,
             create_time, update_time)
-        values (#{id}, #{type}, #{grade}, #{model}, #{name}, #{errorCode}, #{triggerRules}, #{tenantVisible}, #{status}, #{delFlag},
+        values (#{id}, #{type}, #{grade}, #{deviceType}, #{signalId}, #{signalName}, #{signalDesc},#{eventDesc}, #{tenantVisible}, #{status}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     
@@ -13,7 +13,7 @@
         select count(1)
         from t_failure_alarm
         where
-        error_code = #{errorCode}
+        signal_id = #{signalId}
         and del_flag = 0
         <if test="id != null">
             and id != #{id}
@@ -22,11 +22,11 @@
     <sql id="pageFilter">
         <where>
              del_flag = 0
-            <if test="name != null and name != ''">
-                and name like concat('%',concat(#{name}, '%'))
+            <if test="signalName != null and signalName != ''">
+                and signal_name like concat('%',concat(#{signalName}, '%'))
             </if>
-            <if test="errorCode != null">
-                AND error_code like concat('%',concat(#{errorCode}, '%'))
+            <if test="signalId != null">
+                AND signal_id like concat('%',concat(#{signalId}, '%'))
             </if>
             <if test="type != null">
                 AND type = #{type}
@@ -37,8 +37,8 @@
             <if test="status != null">
                 AND status = #{status}
             </if>
-            <if test="model != null">
-                AND model = #{model}
+            <if test="deviceType != null">
+                AND device_type = #{deviceType}
             </if>
             <if test="tenantVisible != null">
                 AND tenant_visible = #{tenantVisible}
@@ -65,10 +65,11 @@
             t.id,
             t.type ,
             t.grade,
-            t.model,
-            t.`name`,
-            t.error_code,
-            t.trigger_rules,
+            t.device_type,
+            t.signal_id,
+            t.signal_name,
+            t.signal_desc,
+            t.event_desc
             t.tenant_visible,
             t.`status`,
             t.del_flag,
@@ -113,10 +114,11 @@
         UPDATE t_failure_alarm
         SET type           = #{type}
           , grade          = #{grade}
-          , model          = #{model}
-          , name           = #{name}
-          , error_code      = #{errorCode}
-          , trigger_rules  = #{triggerRules}
+          , device_type          = #{deviceType}
+          , signal_id           = #{signalId}
+          , signal_name      = #{signalName}
+          , signal_desc  = #{signalDesc}
+          , event_desc = #{eventDesc}
           , tenant_visible = #{tenantVisible}
           , status         = #{status}
           , update_time    = #{updateTime}

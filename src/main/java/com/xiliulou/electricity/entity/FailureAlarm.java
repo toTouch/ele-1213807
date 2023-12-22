@@ -28,25 +28,30 @@ public class FailureAlarm {
 	private Integer grade;
 	
 	/**
-	 *模块(1- 主板， 2- 子板，3- 电池，4 -电池异常消失，5 -车辆，6-充电器，7-BMS)
+	 *设备分类：1-电池  2-换电柜
 	 */
-	private Integer model;
+	private Integer deviceType;
 	
 	/**
-	 * 名称
+	 * 信号量ID
 	 */
-	private String name;
+	private Integer signalId;
+	
+	/**
+	 * 信号量标准名
+	 */
+	private String signalName;
 	
 	
 	/**
-	 * 错误码
+	 * 信号说明
 	 */
-	private Integer errorCode;
+	private String signalDesc;
 	
 	/**
-	 * 触发规则
+	 * 事件描述
 	 */
-	private String triggerRules;
+	private String eventDesc;
 	
 	/**
 	 * 运营商可见(0-不可见， 1-可见)

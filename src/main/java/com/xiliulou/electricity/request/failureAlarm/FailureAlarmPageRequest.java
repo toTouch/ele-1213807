@@ -23,11 +23,11 @@ public class FailureAlarmPageRequest {
     /**
      * 名称
      */
-    private String name;
+    private String signalName;
     /**
-     * 错误码
+     * 信号量ID
      */
-    private Integer errorCode;
+    private Integer signalId;
     /**
      * 分类(1-故障， 2-告警)
      */
@@ -48,9 +48,9 @@ public class FailureAlarmPageRequest {
     private Integer status;
     
     /**
-     *模块(1- 主板， 2- 子板，3- 电池，4 -电池异常消失，5 -车辆，6-充电器，7-BMS)
+     *设备分类：1-电池  2-换电柜
      */
-    private Integer model;
+    private Integer deviceType;
     
     /**
      * 运营商可见(0-不可见， 1-可见)

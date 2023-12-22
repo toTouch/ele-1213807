@@ -47,34 +47,38 @@ public class FailureAlarmSaveRequest {
     private Integer grade;
     
     /**
-     * 模块(1- 主板， 2- 子板，3- 电池，4 -电池异常消失，5 -车辆，6-充电器，7-BMS)
+     * 设备分类：1-电池  2-换电柜
      */
     @Range(min = 1, max = 7, message = "等级不存在")
-    @NotNull(message = "等级不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer model;
+    @NotNull(message = "设备分类不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer deviceType;
     
     /**
-     * 名称
+     * 信号量ID
      */
-    @Size(max = 15, message = "名称字数超出最大限制15字")
-    @NotEmpty(message = "名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private String name;
-    
+    @Range(min = 0,  message = "信号量ID不符合规定")
+    @NotNull(message = "信号量ID", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer signalId;
     
     /**
-     * 错误码
+     * 信号量标准名
      */
-    @Range(min = 0, max = 2147483647, message = "错误码不符合规定")
-    @NotNull(message = "错误码不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer errorCode;
+    @Size(max = 50, message = "信号量标准名字数超出最大限制15字")
+    @NotEmpty(message = "信号量标准名不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private String signalName;
     
     /**
-     * 触发规则
+     * 信号说明
      */
-    @NotEmpty(message = "触发规则不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Size(max = 50, message = "触发规则字数超出最大限制50字")
-    private String triggerRules;
+    @Size(max = 100, message = "信号说明字数超出最大限制100字")
+    private String signalDesc;
     
+    /**
+     * 事件描述
+     */
+    @Size(max = 100, message = "事件描述字数超出最大限制100字")
+    private String eventDesc;
+   
     /**
      * 运营商可见(0-不可见， 1-可见)
      */

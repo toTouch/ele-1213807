@@ -10,8 +10,8 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.entity.FailureAlarmProtectMeasure;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmGradeEnum;
-import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmModelEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmStatusEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmTenantVisibleEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmTypeEnum;
@@ -96,9 +96,9 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         }
         
         // 检测错误码是否存在
-        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), null);
+        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getSignalId(), null);
         if (errorCodeCount > 0) {
-            return Triple.of(false, "300819", "错误码重复，请检查后操作");
+            return Triple.of(false, "300819", "信号量ID重复，请检查后操作");
         }
         
         // 检测保护措施是否存在
@@ -204,9 +204,9 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         }
         
         // 检测错误码是否存在
-        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getErrorCode(), failureAlarmSaveRequest.getId());
+        int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getSignalId(), failureAlarmSaveRequest.getId());
         if (errorCodeCount > 0) {
-            return Triple.of(false, "300819", "错误码重复，请检查后操作");
+            return Triple.of(false, "300819", "信号量ID重复，请检查后操作");
         }
     
         // 检测保护措施是否存在
@@ -288,6 +288,14 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
             return R.fail("300820", "故障告警不存在");
         }
         
+        // 判断是否存在故障数据
+        List<FailureAlarm> failureList = list.stream().filter(item -> Objects.equals(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode(), item.getType()))
+                .collect(Collectors.toList());
+        
+        if (ObjectUtils.isNotEmpty(failureList)) {
+            return R.fail("300820", "只可选择告警类型数据，请重新选择后操作");
+        }
+    
         List<Long> idList = list.stream().map(FailureAlarm::getId).collect(Collectors.toList());
         Set<Long> noExistIds = request.getIdList().stream().filter(item -> !idList.contains(item)).collect(Collectors.toSet());
         if (ObjectUtils.isNotEmpty(noExistIds)) {
@@ -297,6 +305,13 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         // 批量修改运营商的可见状态
         int res = failureAlarmMapper.batchUpdateTenantVisible(request.getIdList(), request.getTenantVisible(), System.currentTimeMillis());
+        
+        // 删除缓存
+        DbUtils.dbOperateSuccessThenHandleCache(res, i -> {
+            list.forEach(failureAlarm -> {
+                this.deleteCache(failureAlarm);
+            });
+        });
         
         return R.ok();
     }
@@ -351,9 +366,9 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
                     vo.setGrade(gradeEnum.getDesc());
                 }
     
-                FailureAlarmModelEnum modelEnum = BasicEnum.getEnum(item.getType(), FailureAlarmModelEnum.class);
-                if (ObjectUtils.isNotEmpty(modelEnum)) {
-                    vo.setModel(modelEnum.getDesc());
+                FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(item.getType(), FailureAlarmDeviceTypeEnum.class);
+                if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
+                    vo.setDeviceType(deviceTypeEnum.getDesc());
                 }
     
                 FailureAlarmStatusEnum statusEnum = BasicEnum.getEnum(item.getType(), FailureAlarmStatusEnum.class);
@@ -395,11 +410,11 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
     @Override
     public void refreshCache(FailureAlarm failureAlarm) {
-        redisService.saveWithHash(CacheConstant.CACHE_FAILURE_ALARM + failureAlarm.getErrorCode(), failureAlarm);
+        redisService.saveWithHash(CacheConstant.CACHE_FAILURE_ALARM + failureAlarm.getSignalId(), failureAlarm);
     }
     
     @Override
     public void deleteCache(FailureAlarm failureAlarm) {
-        redisService.delete(CacheConstant.CACHE_FAILURE_ALARM + failureAlarm.getErrorCode());
+        redisService.delete(CacheConstant.CACHE_FAILURE_ALARM + failureAlarm.getSignalId());
     }
 }

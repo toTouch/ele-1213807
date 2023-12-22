@@ -18,14 +18,14 @@ public class FailureAlarmExcelVo {
     /**
      * 错误码
      */
-    @ExcelProperty("错误码")
-    private Integer errorCode;
+    @ExcelProperty("信号量ID")
+    private Integer signalId;
     
     /**
      * 名称
      */
-    @ExcelProperty("名称")
-    private String name;
+    @ExcelProperty("信号量标准名")
+    private String signalName;
     
     /**
      * 分类(1-故障， 2-告警)
@@ -34,16 +34,22 @@ public class FailureAlarmExcelVo {
     private String type;
     
     /**
-     *模块(1- 主板， 2- 子板，3- 电池，4 -电池异常消失，5 -车辆，6-充电器，7-BMS)
+     *设备分类：1-电池  2-换电柜
      */
-    @ExcelProperty("模块")
-    private String model;
+    @ExcelProperty("设备分类")
+    private String deviceType;
+
+    /**
+     * 信号说明
+     */
+    @ExcelProperty("信号说明")
+    private String signalDesc;
     
     /**
-     * 触发规则
+     * 事件描述
      */
-    @ExcelProperty("触发规则")
-    private String triggerRules;
+    @ExcelProperty("事件描述")
+    private String eventDesc;
     
     /**
      * 保护措施
