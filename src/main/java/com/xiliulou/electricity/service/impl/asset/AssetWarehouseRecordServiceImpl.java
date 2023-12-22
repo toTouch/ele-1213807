@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -73,9 +74,6 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         List<AssetWarehouseRecordBO> recordBOList = assetWarehouseRecordMapper.selectListByRecordNoSet(queryModel);
         if (CollectionUtils.isNotEmpty(recordBOList)) {
             rsp = new ArrayList<>();
-    
-            recordBOList = recordBOList.stream().distinct().collect(Collectors.toList());
-            
             for (AssetWarehouseRecordBO record : recordBOList) {
                 AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
                 BeanUtils.copyProperties(record, warehouseRecordVO);
@@ -88,6 +86,7 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
                 }
                 
                 List<String> snList = detailList.stream().map(AssetWarehouseDetail::getSn).collect(Collectors.toList());
+                
                 warehouseRecordVO.setSnList(snList);
                 
                 User user = userService.queryByUidFromCache(record.getOperator());
@@ -137,13 +136,17 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
             
             List<AssetWarehouseRecord> batchInsertRecordList = new ArrayList<>();
             List<AssetWarehouseDetail> batchInsertDetailList = new ArrayList<>();
-            
-            snWarehouseList.forEach(item -> {
-                Long warehouseId = item.getWarehouseId();
-                String sn = item.getSn();
+    
+            Set<Long> warehouseIdSet = snWarehouseList.stream().map(AssetSnWarehouseRequest::getWarehouseId).collect(Collectors.toSet());
+            warehouseIdSet.forEach(warehouseId ->{
                 AssetWarehouseRecord assetWarehouseRecord = AssetWarehouseRecord.builder().recordNo(orderNo).type(type).operateType(operateType).warehouseId(warehouseId)
                         .operator(uid).tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
                 batchInsertRecordList.add(assetWarehouseRecord);
+            });
+    
+            snWarehouseList.forEach(item -> {
+                Long warehouseId = item.getWarehouseId();
+                String sn = item.getSn();
                 
                 AssetWarehouseDetail assetWarehouseDetail = AssetWarehouseDetail.builder().recordNo(orderNo).warehouseId(warehouseId).type(type).sn(sn).tenantId(tenantId)
                         .delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
