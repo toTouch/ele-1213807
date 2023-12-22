@@ -41,4 +41,9 @@ public class AssetWarehouseDetailServiceImpl implements AssetWarehouseDetailServ
     public List<AssetWarehouseDetail> listByRecordNo(String recordNo) {
         return assetWarehouseDetailMapper.selectListByRecordNo(recordNo);
     }
+    
+    @Override
+    public List<AssetWarehouseDetail> listByRecordNoList(List<String> recordNoList) {
+        return assetWarehouseDetailMapper.selectListByRecordNoList(recordNoList);
+    }
 }

@@ -21,4 +21,6 @@ public interface AssetWarehouseDetailMapper {
     List<AssetWarehouseDetail> selectListBySn(@Param("warehouseId") Long warehouseId, @Param("sn") String sn);
     
     List<AssetWarehouseDetail> selectListByRecordNo(String recordNo);
+    
+    List<AssetWarehouseDetail> selectListByRecordNoList(@Param("recordNoList") List<String> recordNoList);
 }

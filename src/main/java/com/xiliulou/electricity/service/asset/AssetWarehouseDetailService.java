@@ -18,4 +18,6 @@ public interface AssetWarehouseDetailService {
     List<AssetWarehouseDetail> listBySn(Long warehouseId, String sn);
     
     List<AssetWarehouseDetail> listByRecordNo(String recordNo);
+    
+    List<AssetWarehouseDetail> listByRecordNoList(List<String> recordNoList);
 }

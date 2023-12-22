@@ -66,6 +66,20 @@
         FROM t_asset_warehouse_detail
         WHERE del_flag = 0 and record_no = #{recordNo}
     </select>
+    
+    <select id="selectListByRecordNoList" resultType="com.xiliulou.electricity.entity.asset.AssetWarehouseDetail">
+        SELECT <include refid="basic_field"/>
+        FROM t_asset_warehouse_detail
+        <where>
+            del_flag = 0
+            <if test="recordNoList != null and recordNoList.size() > 0">
+                and record_no in
+                <foreach collection="recordNoList" item="recordNo" index="index" separator="," open="(" close=")">
+                    #{recordNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>
 

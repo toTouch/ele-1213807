@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @author HeYafeng
  * @description 库房资产记录分页
@@ -20,6 +22,7 @@ public class AssetWarehouseRecordRequest {
     /**
      * 库房ID
      */
+    @NotNull
     private Long warehouseId;
     
     /**
@@ -34,8 +37,10 @@ public class AssetWarehouseRecordRequest {
      */
     private String sn;
     
+    @NotNull
     private Long size;
     
+    @NotNull
     private Long offset;
     
 }

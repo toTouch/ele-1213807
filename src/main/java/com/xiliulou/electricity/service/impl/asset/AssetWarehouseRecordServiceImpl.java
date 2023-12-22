@@ -20,7 +20,6 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseRecordVO;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -60,31 +59,20 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
         BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
         
-        // sn模糊查询，先查detail表
-        Map<String, List<AssetWarehouseDetail>> recordNoMap = null;
-        String sn = assetWarehouseRecordRequest.getSn();
-        if (StringUtil.isNotEmpty(sn)) {
-            List<AssetWarehouseDetail> detailList = assetWarehouseDetailService.listBySn(assetWarehouseRecordRequest.getWarehouseId(), assetWarehouseRecordRequest.getSn());
-            if (CollectionUtils.isNotEmpty(detailList)) {
-                recordNoMap = detailList.stream().collect(Collectors.groupingBy(AssetWarehouseDetail::getRecordNo));
-                queryModel.setRecordNoSet(recordNoMap.keySet());
-            }
-        }
-        
         List<AssetWarehouseRecordBO> recordBOList = assetWarehouseRecordMapper.selectListByRecordNoSet(queryModel);
         if (CollectionUtils.isNotEmpty(recordBOList)) {
             rsp = new ArrayList<>();
+            
+            List<String> recordNoList = recordBOList.stream().map(AssetWarehouseRecordBO::getRecordNo).collect(Collectors.toList());
+            List<AssetWarehouseDetail> totalDetailList = assetWarehouseDetailService.listByRecordNoList(recordNoList);
+            
+            Map<String, List<AssetWarehouseDetail>> recordNoMap = totalDetailList.stream().collect(Collectors.groupingBy(AssetWarehouseDetail::getRecordNo));
+            
             for (AssetWarehouseRecordBO record : recordBOList) {
                 AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
                 BeanUtils.copyProperties(record, warehouseRecordVO);
                 
-                List<AssetWarehouseDetail> detailList;
-                if (MapUtils.isNotEmpty(recordNoMap)) {
-                    detailList = recordNoMap.get(record.getRecordNo());
-                } else {
-                    detailList = assetWarehouseDetailService.listByRecordNo(record.getRecordNo());
-                }
-                
+                List<AssetWarehouseDetail> detailList = recordNoMap.get(record.getRecordNo());
                 List<String> snList = detailList.stream().map(AssetWarehouseDetail::getSn).collect(Collectors.toList());
                 
                 warehouseRecordVO.setSnList(snList);
@@ -108,7 +96,7 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
     public Integer countTotal(AssetWarehouseRecordRequest assetWarehouseRecordRequest) {
         AssetWarehouseRecordQueryModel queryModel = new AssetWarehouseRecordQueryModel();
         BeanUtils.copyProperties(assetWarehouseRecordRequest, queryModel);
-    
+        
         // sn模糊查询，先查detail表
         Map<String, List<AssetWarehouseDetail>> recordNoMap = null;
         String sn = assetWarehouseRecordRequest.getSn();
@@ -119,7 +107,7 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
                 queryModel.setRecordNoSet(recordNoMap.keySet());
             }
         }
-    
+        
         return assetWarehouseRecordMapper.countTotal(queryModel);
     }
     
@@ -136,14 +124,14 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
             
             List<AssetWarehouseRecord> batchInsertRecordList = new ArrayList<>();
             List<AssetWarehouseDetail> batchInsertDetailList = new ArrayList<>();
-    
+            
             Set<Long> warehouseIdSet = snWarehouseList.stream().map(AssetSnWarehouseRequest::getWarehouseId).collect(Collectors.toSet());
-            warehouseIdSet.forEach(warehouseId ->{
+            warehouseIdSet.forEach(warehouseId -> {
                 AssetWarehouseRecord assetWarehouseRecord = AssetWarehouseRecord.builder().recordNo(orderNo).type(type).operateType(operateType).warehouseId(warehouseId)
                         .operator(uid).tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
                 batchInsertRecordList.add(assetWarehouseRecord);
             });
-    
+            
             snWarehouseList.forEach(item -> {
                 Long warehouseId = item.getWarehouseId();
                 String sn = item.getSn();
