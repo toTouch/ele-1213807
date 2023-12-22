@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * @author HeYafeng
  * @description 库房资产记录BO
@@ -80,4 +82,22 @@ public class AssetWarehouseRecordBO {
      * 库房名称
      */
     private String warehouseName;
+    
+    // equals 和 hashCode 方法，用于去重
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AssetWarehouseRecordBO that = (AssetWarehouseRecordBO) o;
+        return Objects.equals(recordNo, that.recordNo) && Objects.equals(warehouseId, that.warehouseId);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(recordNo, warehouseId);
+    }
 }
