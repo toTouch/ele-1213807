@@ -121,26 +121,28 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
         if (CollectionUtils.isNotEmpty(snWarehouseList)) {
             String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.ASSET_WAREHOUSE_RECORD, uid);
             long nowTime = System.currentTimeMillis();
-            
+        
             List<AssetWarehouseRecord> batchInsertRecordList = new ArrayList<>();
             List<AssetWarehouseDetail> batchInsertDetailList = new ArrayList<>();
-            
-            Set<Long> warehouseIdSet = snWarehouseList.stream().map(AssetSnWarehouseRequest::getWarehouseId).collect(Collectors.toSet());
-            warehouseIdSet.forEach(warehouseId -> {
+        
+            Map<Long, List<AssetSnWarehouseRequest>> warehouseIdSnMap = snWarehouseList.stream().collect(Collectors.groupingBy(AssetSnWarehouseRequest::getWarehouseId));
+        
+            warehouseIdSnMap.keySet().forEach(warehouseId -> {
                 AssetWarehouseRecord assetWarehouseRecord = AssetWarehouseRecord.builder().recordNo(orderNo).type(type).operateType(operateType).warehouseId(warehouseId)
                         .operator(uid).tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
                 batchInsertRecordList.add(assetWarehouseRecord);
-            });
             
-            snWarehouseList.forEach(item -> {
-                Long warehouseId = item.getWarehouseId();
-                String sn = item.getSn();
+                List<AssetSnWarehouseRequest> snWarehouseRequestList = warehouseIdSnMap.get(warehouseId);
+                snWarehouseRequestList.forEach(item -> {
+                    String sn = item.getSn();
                 
-                AssetWarehouseDetail assetWarehouseDetail = AssetWarehouseDetail.builder().recordNo(orderNo).warehouseId(warehouseId).type(type).sn(sn).tenantId(tenantId)
-                        .delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
-                batchInsertDetailList.add(assetWarehouseDetail);
+                    AssetWarehouseDetail assetWarehouseDetail = AssetWarehouseDetail.builder().recordNo(orderNo).warehouseId(warehouseId).type(type).sn(sn).tenantId(tenantId)
+                            .delFlag(AssetConstant.DEL_NORMAL).createTime(nowTime).updateTime(nowTime).build();
+                    batchInsertDetailList.add(assetWarehouseDetail);
+                });
             });
-            
+        
+            // 持久化
             executorService.execute(() -> {
                 assetWarehouseRecordMapper.batchInsert(batchInsertRecordList);
                 assetWarehouseDetailService.batchInsert(batchInsertDetailList);
