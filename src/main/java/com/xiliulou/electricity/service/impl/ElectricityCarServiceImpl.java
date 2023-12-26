@@ -1207,20 +1207,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
     
         // 异步记录
+        Integer operateType = carOutWarehouseRequest.getType();
         List<ElectricityCarBO> electricityCarBOList = electricityCarMapper.selectListByIds(new HashSet<>(idList));
-        if (CollectionUtils.isNotEmpty(electricityCarBOList)) {
+        if (CollectionUtils.isNotEmpty(electricityCarBOList) && Objects.nonNull(operateType)) {
         
-            List<AssetSnWarehouseRequest> snWarehouseList = electricityCarBOList.stream()
-                    .filter(item -> Objects.nonNull(item.getWarehouseId()))
+            List<AssetSnWarehouseRequest> snWarehouseList = electricityCarBOList.stream().filter(item -> Objects.nonNull(item.getWarehouseId()))
                     .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
         
             Integer tenantId = TenantContextHolder.getTenantId();
             Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
-        
-            Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
-            if (snWarehouseList.size() > NumberConstant.ONE) {
-                operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
-            }
         
             assetWarehouseRecordService.asyncRecords(tenantId, uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CAR.getCode(), operateType);
         }

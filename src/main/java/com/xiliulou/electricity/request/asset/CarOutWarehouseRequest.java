@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.request.asset;
 
+import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
@@ -32,4 +33,10 @@ public class CarOutWarehouseRequest {
      */
     @NotNull(message = "门店id不能为空", groups = {UpdateGroup.class})
     private Integer storeId;
+    
+    /**
+     * 操作类型
+     * @see WarehouseOperateTypeEnum
+     */
+    private Integer type;
 }

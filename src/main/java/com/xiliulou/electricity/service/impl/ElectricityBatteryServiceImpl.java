@@ -1378,19 +1378,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         int count = electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus);
     
         // 出库，需要异步记录
-        if (isBind) {
+        Integer operateType = batteryQuery.getType();
+        if (isBind && Objects.nonNull(operateType)) {
             // 异步记录
             if (CollectionUtils.isNotEmpty(electricityBatteries)) {
-                List<AssetSnWarehouseRequest> snWarehouseList = electricityBatteries.stream()
-                        .filter(item -> Objects.nonNull(item.getWarehouseId()))
+                List<AssetSnWarehouseRequest> snWarehouseList = electricityBatteries.stream().filter(item -> Objects.nonNull(item.getWarehouseId()))
                         .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
             
                 Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
-            
-                Integer operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_OUT.getCode();
-                if (snWarehouseList.size() > NumberConstant.ONE) {
-                    operateType = WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode();
-                }
             
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
