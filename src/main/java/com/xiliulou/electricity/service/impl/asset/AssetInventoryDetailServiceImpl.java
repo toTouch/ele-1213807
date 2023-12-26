@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl.asset;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO;
 import com.xiliulou.electricity.constant.AssetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.mapper.asset.AssetInventoryDetailMapper;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -54,6 +57,9 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Autowired
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private RedisService redisService;
     
     @Slave
     @Override
@@ -154,50 +160,60 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest, Long operator) {
-        
-        Integer count = 0;
-        if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
-            String orderNo = inventoryRequest.getOrderNo();
-            Integer tenantId = TenantContextHolder.getTenantId();
-            
-            // tenant校验
-            AssetInventoryQueryModel queryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).build();
-            AssetInventoryVO inventoryVO = assetInventoryService.queryByOrderNo(queryModel);
-            if (Objects.nonNull(inventoryVO) && !Objects.equals(inventoryVO.getTenantId(), tenantId)) {
-                return R.ok();
-            }
-            
-            List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
-            if (CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
-                for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
-                    if (Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
-                        return R.fail("300808", "您选择的电池中存在已盘点的数据，请刷新页面以获取最新状态后再进行操作");
-                    }
-                }
-            }
-            
-            AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
-                    .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis()).build();
-            //批量盘点
-            count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
-            
-            AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).tenantId(tenantId).build();
-            AssetInventoryVO assetInventoryVO = assetInventoryService.queryByOrderNo(assetInventoryQueryModel);
-            Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
-            
-            // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
-            if (Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)) {
-                status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
-            }
-            
-            //同步盘点数据
-            AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
-                    .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)
-                    .updateTime(System.currentTimeMillis()).build();
-            
-            assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + operator, "1", 3 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        return R.ok(count);
+        try {
+            Integer count = 0;
+            if (CollectionUtils.isNotEmpty(inventoryRequest.getSnList())) {
+                String orderNo = inventoryRequest.getOrderNo();
+                Integer tenantId = TenantContextHolder.getTenantId();
+                
+                // tenant校验
+                AssetInventoryQueryModel queryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).build();
+                AssetInventoryVO inventoryVO = assetInventoryService.queryByOrderNo(queryModel);
+                if (Objects.nonNull(inventoryVO) && !Objects.equals(inventoryVO.getTenantId(), tenantId)) {
+                    return R.ok();
+                }
+                
+                List<AssetInventoryDetailVO> assetInventoryDetailVOList = listBySnListAndOrderNo(inventoryRequest.getSnList(), inventoryRequest.getOrderNo());
+                if (CollectionUtils.isNotEmpty(assetInventoryDetailVOList)) {
+                    for (AssetInventoryDetailVO assetInventoryDetailVO : assetInventoryDetailVOList) {
+                        if (Objects.equals(AssetConstant.ASSET_INVENTORY_DETAIL_STATUS_YES, assetInventoryDetailVO.getInventoryStatus())) {
+                            return R.fail("300808", "您选择的电池中存在已盘点的数据，请刷新页面以获取最新状态后再进行操作");
+                        }
+                    }
+                }
+                
+                AssetInventoryDetailBatchInventoryQueryModel assetInventoryDetailBatchInventoryQueryModel = AssetInventoryDetailBatchInventoryQueryModel.builder().orderNo(orderNo)
+                        .status(inventoryRequest.getStatus()).snList(inventoryRequest.getSnList()).operator(operator).tenantId(tenantId).updateTime(System.currentTimeMillis())
+                        .build();
+                //批量盘点
+                count = assetInventoryDetailMapper.batchInventoryBySnList(assetInventoryDetailBatchInventoryQueryModel);
+                
+                AssetInventoryQueryModel assetInventoryQueryModel = AssetInventoryQueryModel.builder().orderNo(orderNo).tenantId(tenantId).build();
+                AssetInventoryVO assetInventoryVO = assetInventoryService.queryByOrderNo(assetInventoryQueryModel);
+                Integer status = AssetConstant.ASSET_INVENTORY_STATUS_TAKING;
+                
+                // 本次盘点数量=待盘点数，则修改盘点状态为 已完成
+                if (Objects.nonNull(assetInventoryVO) && Objects.equals(assetInventoryVO.getPendingTotal(), count)) {
+                    status = AssetConstant.ASSET_INVENTORY_STATUS_FINISHED;
+                }
+                
+                //同步盘点数据
+                AssetInventoryUpdateDataQueryModel assetInventoryUpdateDataQueryModel = AssetInventoryUpdateDataQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .orderNo(inventoryRequest.getOrderNo()).inventoryCount(inventoryRequest.getSnList().size()).operator(operator).status(status)
+                        .updateTime(System.currentTimeMillis()).build();
+                
+                assetInventoryService.updateByOrderNo(assetInventoryUpdateDataQueryModel);
+            }
+            
+            return R.ok(count);
+            
+        } finally {
+            redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + operator);
+        }
     }
 }
