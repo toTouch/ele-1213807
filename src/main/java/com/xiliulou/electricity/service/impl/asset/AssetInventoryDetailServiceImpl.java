@@ -160,7 +160,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
     
     @Override
     public R batchInventory(AssetInventoryDetailBatchInventoryRequest inventoryRequest, Long operator) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + operator, "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_BATCH_INVENTORY_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -213,7 +213,7 @@ public class AssetInventoryDetailServiceImpl implements AssetInventoryDetailServ
             return R.ok(count);
             
         } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + operator);
+            redisService.delete(CacheConstant.CACHE_ASSET_BATCH_INVENTORY_LOCK + operator);
         }
     }
 }
