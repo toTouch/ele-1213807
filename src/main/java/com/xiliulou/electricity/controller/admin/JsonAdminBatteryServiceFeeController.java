@@ -120,7 +120,9 @@ public class JsonAdminBatteryServiceFeeController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "source", required = false) Integer source,
                        @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
-                       @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd) {
+                       @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd,
+                       @RequestParam(value = "orderByServiceFeeGenerateTime", required = false) Integer orderByServiceFeeGenerateTime,
+                       @RequestParam(value = "orderByPayTime", required = false) Integer orderByPayTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -166,6 +168,8 @@ public class JsonAdminBatteryServiceFeeController {
                 .phone(phone)
                 .payTimeBegin(payTimeBegin)
                 .payTimeEnd(payTimeEnd)
+                .orderByServiceFeeGenerateTime(orderByServiceFeeGenerateTime)
+                .orderByPayTime(orderByPayTime)
                 .build();
 
         return eleBatteryServiceFeeOrderService.queryList(batteryServiceFeeQuery);

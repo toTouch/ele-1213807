@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;

@@ -43,5 +43,10 @@ public class ElectricityCabinetExcelVO {
 
     @ExcelProperty("创建时间")
     private String createTime;
-
+    
+    @ExcelProperty("库存状态")
+    private String stockStatus;
+    
+    @ExcelProperty("库房名称")
+    private String warehouseName;
 }

@@ -77,6 +77,11 @@ public class ElectricityCabinetQuery {
      * 库存状态；0,库存；1,已出库
      */
     private Integer stockStatus;
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
 
     /**
      * 加盟商ID集
@@ -87,4 +92,30 @@ public class ElectricityCabinetQuery {
      * 门店ID集
      */
     private List<Long> storeIdList;
+    
+    /**
+     * 统计时间
+     */
+    private Long statisticDate;
+    
+    /**
+     * 排序字段averageNumber
+     */
+    private Integer orderByAverageNumber;
+    
+    /**
+     * 排序字段averageActivity
+     */
+    private Integer orderByAverageActivity;
+    
+    /**
+     * 排序字段todayNumber
+     */
+    private Integer orderByTodayNumber;
+    
+    /**
+     * 排序字段todayActivity
+     */
+    private Integer orderByTodayActivity;
+    
 }

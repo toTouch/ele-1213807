@@ -77,9 +77,19 @@ public class ShareActivityVO {
     private Integer receiveType;
     
     /**
-     * 小时
+     * 有效时间，单位：小时
      */
-    private Integer hours;
+    private Double hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Long minutes;
+    
+    /**
+     * 时间类型：1-小时 2-分钟
+     */
+    private Integer timeType;
     
     //优惠券列表
     private List<CouponVO> couponVOList;

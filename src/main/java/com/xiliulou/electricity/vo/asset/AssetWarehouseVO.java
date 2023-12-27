@@ -66,4 +66,20 @@ public class AssetWarehouseVO {
      */
     private Long tenantId;
     
+    /**
+     * 电池总数
+     */
+    private Integer batteryCount;
+    
+    
+    /**
+     * 电柜总数
+     */
+    private Integer cabinetCount;
+    
+    /**
+     * 车辆总数
+     */
+    private Integer carCount;
+    
 }

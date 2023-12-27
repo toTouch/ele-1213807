@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseDetailRequest;
 
@@ -15,6 +14,6 @@ public interface AssetExitWarehouseDetailService {
     
     List<String> listSnByOrderNo(AssetExitWarehouseDetailRequest assetExitWarehouseDetailRequest);
     
-    R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator);
-
+    Integer batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator);
+    
 }
