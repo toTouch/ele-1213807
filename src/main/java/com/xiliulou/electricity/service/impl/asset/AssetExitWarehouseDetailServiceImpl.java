@@ -1,9 +1,6 @@
 package com.xiliulou.electricity.service.impl.asset;
 
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
@@ -24,9 +21,6 @@ import java.util.List;
  */
 @Service
 public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDetailService {
-    
-    @Autowired
-    private RedisService redisService;
     
     @Autowired
     private AssetExitWarehouseDetailMapper assetExitWarehouseDetailMapper;

@@ -14,6 +14,8 @@ import java.util.List;
 public class BatteryExcelV3Query {
     
     private Long franchiseeId;
+    
+    private Long warehouseId;
 
     private List<BatteryExcelV3DTO> batteryList;
 }
