@@ -7,13 +7,12 @@ import lombok.Getter;
 /**
  * @Author zhangzhe
  * @date 2023/11/16 13:42
- * @Description:
+ * @Description: 资产类型
  **/
 @Getter
 @AllArgsConstructor
 public enum AssetTypeEnum implements BasicEnum<Integer, String> {
     
-    // 资产类型
     ASSET_TYPE_CABINET(1, "柜机"),
     
     ASSET_TYPE_BATTERY(2, "电池"),
