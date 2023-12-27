@@ -27,7 +27,7 @@ public class FailureAlarmQueryModel {
     /**
      * 信号量ID
      */
-    private Integer signalId;
+    private String signalId;
     /**
      * 分类(1-故障， 2-告警)
      */

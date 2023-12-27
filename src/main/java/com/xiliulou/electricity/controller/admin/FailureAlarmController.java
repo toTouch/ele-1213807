@@ -80,7 +80,7 @@ public class FailureAlarmController {
      * @author maxiaodong
      */
     @GetMapping("/admin/failure/alarm/pageCount")
-    public R pageCount(@RequestParam(value = "signalName", required = false) String signalName, @RequestParam(value = "signalId", required = false) Integer signalId,
+    public R pageCount(@RequestParam(value = "signalName", required = false) String signalName, @RequestParam(value = "signalId", required = false) String signalId,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureList, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {
@@ -106,7 +106,7 @@ public class FailureAlarmController {
      */
     @GetMapping("/admin/failure/alarm/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "signalName", required = false) String signalName,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "signalId", required = false) String signalId, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "protectMeasureList", required = false) List<Long> protectMeasureList,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "deviceType", required = false) Integer deviceType,
             @RequestParam(value = "tenantVisible", required = false) Integer tenantVisible) {

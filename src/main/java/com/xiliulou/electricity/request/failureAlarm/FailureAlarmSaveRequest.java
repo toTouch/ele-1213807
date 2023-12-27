@@ -56,14 +56,14 @@ public class FailureAlarmSaveRequest {
     /**
      * 信号量ID
      */
-    @Range(min = 0,  message = "信号量ID不符合规定")
-    @NotNull(message = "信号量ID", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer signalId;
+    @Size(max = 10, message = "信号量ID字数超出最大限制10字")
+    @NotEmpty(message = "信号量ID", groups = {CreateGroup.class, UpdateGroup.class})
+    private String signalId;
     
     /**
      * 信号量标准名
      */
-    @Size(max = 50, message = "信号量标准名字数超出最大限制15字")
+    @Size(max = 50, message = "信号量标准名字数超出最大限制50字")
     @NotEmpty(message = "信号量标准名不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String signalName;
     

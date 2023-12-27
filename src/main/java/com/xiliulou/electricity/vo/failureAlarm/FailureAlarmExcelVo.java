@@ -19,7 +19,7 @@ public class FailureAlarmExcelVo {
      * 错误码
      */
     @ExcelProperty("信号量ID")
-    private Integer signalId;
+    private String signalId;
     
     /**
      * 名称

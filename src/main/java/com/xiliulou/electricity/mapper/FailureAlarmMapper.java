@@ -17,7 +17,7 @@ public interface FailureAlarmMapper extends BaseMapper<FailureAlarm>{
     
     int insertOne(FailureAlarm failureAlarm);
     
-    int checkErrorCode(@Param("signalId") Integer errorCode,@Param("id") Long id);
+    int checkErrorCode(@Param("signalId") String errorCode,@Param("id") Long id);
     
     Integer countTotal(FailureAlarmQueryModel failureAlarmQueryModel);
     

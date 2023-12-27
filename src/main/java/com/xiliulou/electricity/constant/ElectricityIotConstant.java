@@ -69,8 +69,11 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_CHARGE_POWER_HANDLER = "normalEleChargePowerHandler";
 
     public static final String NEW_HARDWARE_WARN_MSG_HANDLER = "hardwareWarnMsgHandler";
-
-
+    
+    public static final String HARDWARE_FAILURE_WARN_MSG_HANDLER = "hardwareFailureWarnMsgHandler";
+    
+    
+    
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
     }
@@ -341,6 +344,12 @@ public class ElectricityIotConstant {
      */
     public static final String NEW_HARDWARE_WARN_MSG = "hardware_warn_msg";
     public static final String NEW_HARDWARE_WARN_MSG_ACK = "hardware_warn_msg_ack";
+    
+    /**
+     * 柜机故障告警上报
+     */
+    public static final String HARDWARE_FAILURE_WARN_MSG = "hardware_failure_warn_msg";
+    public static final String HARDWARE_FAILURE_WARN_MSG_ACK = "hardware_failure_warn_msg_ack";
 
 
     static {
@@ -559,5 +568,12 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG, NEW_HARDWARE_WARN_MSG_HANDLER);
         COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG_ACK, NEW_HARDWARE_WARN_MSG_HANDLER);
+    
+        /**
+         * 柜机故障告警上报
+         */
+    
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG, HARDWARE_FAILURE_WARN_MSG_HANDLER);
+        COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG_ACK, HARDWARE_FAILURE_WARN_MSG_HANDLER);
     }
 }

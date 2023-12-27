@@ -35,7 +35,7 @@ public class FailureAlarm {
 	/**
 	 * 信号量ID
 	 */
-	private Integer signalId;
+	private String signalId;
 	
 	/**
 	 * 信号量标准名
