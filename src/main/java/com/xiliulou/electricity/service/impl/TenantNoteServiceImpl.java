@@ -100,6 +100,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
             addNote.setCreateTime(System.currentTimeMillis());
             noteMapper.insertOne(addNote);
         } else {
+            addNote.setId(tenantNote.getId());
             noteMapper.addNoteNum(addNote);
         }
         
