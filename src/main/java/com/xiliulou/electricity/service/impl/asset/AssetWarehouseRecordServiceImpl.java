@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -66,22 +67,28 @@ public class AssetWarehouseRecordServiceImpl implements AssetWarehouseRecordServ
             List<String> recordNoList = recordBOList.stream().map(AssetWarehouseRecordBO::getRecordNo).collect(Collectors.toList());
             List<AssetWarehouseDetail> totalDetailList = assetWarehouseDetailService.listByRecordNoList(recordNoList);
             
-            Map<String, List<AssetWarehouseDetail>> recordNoMap = totalDetailList.stream().collect(Collectors.groupingBy(AssetWarehouseDetail::getRecordNo));
-            
-            for (AssetWarehouseRecordBO record : recordBOList) {
-                AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
-                BeanUtils.copyProperties(record, warehouseRecordVO);
+            if (CollectionUtils.isNotEmpty(totalDetailList)) {
+                Map<String, List<AssetWarehouseDetail>> recordNoMap = totalDetailList.stream().collect(Collectors.groupingBy(AssetWarehouseDetail::getRecordNo));
                 
-                List<AssetWarehouseDetail> detailList = recordNoMap.get(record.getRecordNo());
-                List<String> snList = detailList.stream().filter(item -> Objects.equals(item.getWarehouseId(), assetWarehouseRecordRequest.getWarehouseId()))
-                        .map(AssetWarehouseDetail::getSn).collect(Collectors.toList());
-                
-                warehouseRecordVO.setSnList(snList);
-                
-                User user = userService.queryByUidFromCache(record.getOperator());
-                warehouseRecordVO.setOperatorName(user.getName());
-                
-                rsp.add(warehouseRecordVO);
+                for (AssetWarehouseRecordBO record : recordBOList) {
+                    AssetWarehouseRecordVO warehouseRecordVO = new AssetWarehouseRecordVO();
+                    BeanUtils.copyProperties(record, warehouseRecordVO);
+                    
+                    List<AssetWarehouseDetail> detailList = recordNoMap.get(record.getRecordNo());
+                    if (CollectionUtils.isNotEmpty(detailList)) {
+                        List<String> snList = detailList.stream().filter(item -> Objects.equals(item.getWarehouseId(), assetWarehouseRecordRequest.getWarehouseId()))
+                                .map(AssetWarehouseDetail::getSn).collect(Collectors.toList());
+                        
+                        warehouseRecordVO.setSnList(snList);
+                    }
+                    
+                    User user = userService.queryByUidFromCache(record.getOperator());
+                    Optional.ofNullable(user).ifPresent(u ->{
+                        warehouseRecordVO.setOperatorName(u.getName());
+                    });
+                    
+                    rsp.add(warehouseRecordVO);
+                }
             }
         }
         
