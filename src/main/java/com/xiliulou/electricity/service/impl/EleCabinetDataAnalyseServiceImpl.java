@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
@@ -20,10 +21,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +63,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     private StoreService storeService;
     @Autowired
     private EleWarnMsgService eleWarnMsgService;
-
+    
 
     @Override
     public List<EleCabinetDataAnalyseVO> selectOfflineByPage(ElectricityCabinetQuery cabinetQuery) {
@@ -68,7 +72,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
@@ -78,7 +82,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
@@ -88,7 +92,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getId)).collect(Collectors.toList()));
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
 
     @Override
@@ -153,11 +157,11 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
         //今日活跃度
         result.setPeopleNumber((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
-
+        
         return result;
     }
 
-    private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList) {
+    private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
 
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
@@ -222,7 +226,26 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         } catch (Exception e) {
             log.error("ELE ERROR! acquire result fail", e);
         }
-
-        return electricityCabinetList;
+        
+        // 排序
+        if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_NUMBER_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByAverageActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_AVERAGE_ACTIVITY_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageActivity)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayNumber(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_NUMBER_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayNumber)).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_DESC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity).reversed()).collect(Collectors.toList());
+        }else if(Objects.equals(cabinetQuery.getOrderByTodayActivity(), ElectricityCabinetDataAnalyseConstant.ORDER_BY_TODAY_ACTIVITY_ASC)){
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getTodayActivity)).collect(Collectors.toList());
+        }else {
+            return electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getAverageNumber).reversed()).collect(Collectors.toList());
+        }
     }
 }

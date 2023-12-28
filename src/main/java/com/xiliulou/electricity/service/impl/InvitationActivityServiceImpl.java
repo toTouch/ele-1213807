@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -114,6 +117,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 //        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
 //            return Triple.of(false, "", "已存在上架的活动");
 //        }
+        
+        if (ObjectUtil.isEmpty(query.getHours()) && ObjectUtil.isEmpty(query.getMinutes())) {
+            return Triple.of(false, "110209", "有效时间不能为空");
+        }
 
         //检查是否有选择（换电,租车,车电一体）套餐信息
         if(CollectionUtils.isEmpty(query.getBatteryPackages())
@@ -136,6 +143,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivity.setTenantId(TenantContextHolder.getTenantId());
         invitationActivity.setCreateTime(System.currentTimeMillis());
         invitationActivity.setUpdateTime(System.currentTimeMillis());
+        invitationActivity.setHours(Objects.isNull(query.getHours()) ? NumberConstant.ZERO : (query.getHours()));
+        invitationActivity.setMinutes(Objects.isNull(query.getMinutes()) ? NumberConstant.ZERO : (query.getMinutes()));
+    
+    
         Integer insert = this.insert(invitationActivity);
 
         if (insert > 0) {
@@ -192,13 +203,24 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
         invitationActivityUpdate.setId(query.getId());
         invitationActivityUpdate.setName(query.getName());
-        invitationActivityUpdate.setHours(query.getHours());
         invitationActivityUpdate.setDescription(query.getDescription());
         invitationActivityUpdate.setFirstReward(query.getFirstReward());
         invitationActivityUpdate.setOtherReward(query.getOtherReward());
         invitationActivityUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        // 设置有效期 兼容 小时和分钟：小时修改为小时或分钟修改为小时
+        if (Objects.nonNull(query.getHours()) && !Objects.equals(query.getHours(), NumberConstant.ZERO)){
+            invitationActivityUpdate.setHours(query.getHours());
+            invitationActivityUpdate.setMinutes(NumberConstant.ZERO);
+        }
+        // 设置有效期 兼容 小时和分钟：分钟修改为分钟或小时修改为分钟
+        if (Objects.nonNull(query.getMinutes()) && !Objects.equals(query.getMinutes(), NumberConstant.ZERO)){
+            invitationActivityUpdate.setMinutes(query.getMinutes());
+            invitationActivityUpdate.setHours(NumberConstant.ZERO);
+        }
+        
         Integer update = this.update(invitationActivityUpdate);
-
+        
         if (update > 0) {
             //删除绑定的套餐
             invitationActivityMemberCardService.deleteByActivityId(query.getId());
@@ -253,6 +275,15 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return invitationActivities.parallelStream().map(item -> {
             InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
             BeanUtils.copyProperties(item, invitationActivityVO);
+    
+            // 如果单位小时，timeType=1  如果单位分钟，timeType=2
+            if (Objects.nonNull(item.getHours()) && !Objects.equals(item.getHours(), NumberConstant.ZERO)) {
+                invitationActivityVO.setHours(item.getHours().doubleValue());
+                invitationActivityVO.setTimeType(NumberConstant.ONE);
+            } else {
+                invitationActivityVO.setMinutes(Objects.isNull(item.getMinutes()) ? NumberConstant.ZERO_L : item.getMinutes().longValue());
+                invitationActivityVO.setTimeType(NumberConstant.TWO);
+            }
 
             //List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
             /*if (!CollectionUtils.isEmpty(membercardIds)) {
@@ -369,6 +400,19 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
         invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
         invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+    
+        // 兼容旧版小程序
+        if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+            invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
+            invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
+            invitationActivityVO.setTimeType(NumberConstant.ONE);
+        }
+        if (Objects.nonNull(invitationActivity.getMinutes()) && !Objects.equals(invitationActivity.getMinutes(), NumberConstant.ZERO)){
+            invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
+            invitationActivityVO.setHours(
+                    Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+            invitationActivityVO.setTimeType(NumberConstant.TWO);
+        }
         
         return Triple.of(true, null, invitationActivityVO);
     }
@@ -401,6 +445,19 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 invitationActivityVO.setBatteryPackages(getBatteryPackages(invitationActivity.getId()));
                 invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 invitationActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(invitationActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+    
+                // 兼容旧版小程序
+                if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+                    invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
+                    invitationActivityVO.setMinutes(invitationActivity.getHours() * TimeConstant.HOURS_MINUTE);
+                    invitationActivityVO.setTimeType(NumberConstant.ONE);
+                }
+                if (Objects.nonNull(invitationActivity.getMinutes()) && !Objects.equals(invitationActivity.getMinutes(), NumberConstant.ZERO)){
+                    invitationActivityVO.setMinutes(invitationActivity.getMinutes().longValue());
+                    invitationActivityVO.setHours(
+                            Math.round((double) invitationActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+                    invitationActivityVO.setTimeType(NumberConstant.TWO);
+                }
             }
             return invitationActivityVO;
         }).collect(Collectors.toList());
@@ -413,7 +470,16 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         InvitationActivity invitationActivity = this.queryByIdFromCache(id);
         InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
         BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
-
+    
+        // 如果单位小时，timeType=1  如果单位分钟，timeType=2
+        if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+            invitationActivityVO.setHours(invitationActivity.getHours().doubleValue());
+            invitationActivityVO.setTimeType(NumberConstant.ONE);
+        } else {
+            invitationActivityVO.setMinutes(Objects.isNull(invitationActivity.getMinutes()) ? NumberConstant.ZERO_L : invitationActivity.getMinutes().longValue());
+            invitationActivityVO.setTimeType(NumberConstant.TWO);
+        }
+        
         invitationActivityVO.setBatteryPackages(getBatteryPackages(id));
 
         invitationActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));

@@ -154,9 +154,11 @@ public interface ElectricityCarService {
     
     Integer existsByWarehouseId(Long wareHouseId);
     
-    List<ElectricityCarVO> listByIds(Set<Long> idSet);
+    List<ElectricityCarVO> listByIds(Set<Integer> idSet);
     
     List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
     
     Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
+    
+    R queryCountByWarehouse(ElectricityCarQuery electricityCarQuery);
 }

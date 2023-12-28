@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -27,4 +29,10 @@ public class BindElectricityBatteryQuery {
      * 租户id
      */
     private Integer tenantId;
+    
+    /**
+     * 操作类型
+     * @see WarehouseOperateTypeEnum
+     */
+    private Integer type;
 }

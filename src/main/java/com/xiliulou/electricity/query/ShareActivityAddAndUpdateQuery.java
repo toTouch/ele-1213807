@@ -32,10 +32,14 @@ public class ShareActivityAddAndUpdateQuery {
     private Integer discountType;
 
     /**
-     * 有效时间
+     * 有效时间，单位：小时
      */
-    @NotNull(message = "有效时间不能为空!", groups = {CreateGroup.class})
     private Integer hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Integer minutes;
     /**
     * 活动状态，分为 1--上架，2--下架
     */

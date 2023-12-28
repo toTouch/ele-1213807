@@ -9,6 +9,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
@@ -44,7 +46,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -146,6 +147,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+		if (ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getHours()) && ObjectUtil.isEmpty(shareActivityAddAndUpdateQuery.getMinutes())) {
+			return R.fail("110209", "有效时间不能为空");
+		}
+		
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -190,6 +195,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setCreateTime(System.currentTimeMillis());
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 		shareActivity.setTenantId(tenantId);
+		shareActivity.setHours(Objects.isNull(shareActivityAddAndUpdateQuery.getHours()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getHours()));
+		shareActivity.setMinutes(Objects.isNull(shareActivityAddAndUpdateQuery.getMinutes()) ? NumberConstant.ZERO : (shareActivityAddAndUpdateQuery.getMinutes()));
 
 		if (Objects.isNull(shareActivity.getType())) {
 			shareActivity.setType(ShareActivity.SYSTEM);
@@ -383,6 +390,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		for(ShareActivity shareActivity : shareActivityList){
 			ShareActivityVO shareActivityVO = new ShareActivityVO();
 			BeanUtil.copyProperties(shareActivity, shareActivityVO);
+			
+			// 如果单位小时，timeType=1  如果单位分钟，timeType=2
+			if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
+				shareActivityVO.setHours(shareActivity.getHours().doubleValue());
+				shareActivityVO.setTimeType(NumberConstant.ONE);
+			} else {
+				shareActivityVO.setMinutes(Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO_L : shareActivity.getMinutes().longValue());
+				shareActivityVO.setTimeType(NumberConstant.TWO);
+			}
 
 			if(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode().equals(shareActivity.getInvitationCriteria())){
 				shareActivityVO.setBatteryPackages(getBatteryPackages(shareActivity.getId()));
@@ -537,6 +553,19 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
+		
+		// 兼容旧版小程序
+		if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
+			shareActivityVO.setHours(shareActivity.getHours().doubleValue());
+			shareActivityVO.setMinutes(shareActivity.getHours() * TimeConstant.HOURS_MINUTE);
+			shareActivityVO.setTimeType(NumberConstant.ONE);
+		}
+		if (Objects.nonNull(shareActivity.getMinutes()) && !Objects.equals(shareActivity.getMinutes(), NumberConstant.ZERO)){
+			shareActivityVO.setMinutes(shareActivity.getMinutes().longValue());
+			shareActivityVO.setHours(
+					Math.round((double) shareActivity.getMinutes().longValue() / TimeConstant.HOURS_MINUTE * NumberConstant.ONE_HUNDRED_D) / NumberConstant.ONE_HUNDRED_D);
+			shareActivityVO.setTimeType(NumberConstant.TWO);
+		}
 
 		if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
 			acquireUserCouponInfo(shareActivityVO,user.getUid());
@@ -628,6 +657,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
+		
+		// 如果单位小时，timeType=1  如果单位分钟，timeType=2
+		if (Objects.nonNull(shareActivity.getHours()) && !Objects.equals(shareActivity.getHours(), NumberConstant.ZERO)) {
+			shareActivityVO.setHours(shareActivity.getHours().doubleValue());
+			shareActivityVO.setTimeType(NumberConstant.ONE);
+		} else {
+			shareActivityVO.setMinutes(Objects.isNull(shareActivity.getMinutes()) ? NumberConstant.ZERO_L : shareActivity.getMinutes().longValue());
+			shareActivityVO.setTimeType(NumberConstant.TWO);
+		}
 
 		//重新设置购买的套餐信息,设置换电套餐信息
 		List<BatteryMemberCardVO> batteryPackageList = getBatteryPackages(shareActivity.getId());

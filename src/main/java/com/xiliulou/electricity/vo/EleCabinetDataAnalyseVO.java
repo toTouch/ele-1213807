@@ -120,5 +120,25 @@ public class EleCabinetDataAnalyseVO {
      * 服务到期时间
      */
     private Long serverEndTime;
+    
+    /**
+     * 日均换电次数
+     */
+    private Double averageNumber;
+    
+    /**
+     * 日均活跃度
+     */
+    private Double averageActivity;
+    
+    /**
+     * 今日换电数量
+     */
+    private Integer todayNumber ;
+    
+    /**
+     * 今日活跃度
+     */
+    private Integer todayActivity ;
 
 }

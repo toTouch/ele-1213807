@@ -509,7 +509,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
             //更新活动邀请次数
             invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
-        
+    
+            // 计算活动有效期
+            long expiredTime;
+            if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
+                expiredTime = System.currentTimeMillis() + invitationActivity.getHours() * TimeConstant.HOURS_MILLISECOND;
+            } else {
+                Integer minutes = Objects.isNull(invitationActivity.getMinutes()) ? NumberConstant.ZERO : invitationActivity.getMinutes();
+                expiredTime = System.currentTimeMillis() + minutes * TimeConstant.MINUTE_MILLISECOND;
+            }
+            
             //保存活动参与记录
             InvitationActivityJoinHistory invitationActivityJoinHistoryInsert = new InvitationActivityJoinHistory();
             invitationActivityJoinHistoryInsert.setUid(invitationUid);
@@ -518,7 +527,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setRecordId(invitationActivityRecord.getId());
             invitationActivityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_INIT);
             invitationActivityJoinHistoryInsert.setStartTime(System.currentTimeMillis());
-            invitationActivityJoinHistoryInsert.setExpiredTime(System.currentTimeMillis() + invitationActivity.getHours() * TimeConstant.HOURS_MILLISECOND);
+            invitationActivityJoinHistoryInsert.setExpiredTime(expiredTime);
             invitationActivityJoinHistoryInsert.setTenantId(TenantContextHolder.getTenantId());
             invitationActivityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());

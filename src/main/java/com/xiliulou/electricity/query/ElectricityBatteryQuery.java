@@ -59,4 +59,9 @@ public class ElectricityBatteryQuery {
      * 库存状态 0：在库  1：出库
      */
     private Integer stockStatus;
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
 }

@@ -124,8 +124,8 @@ public class JsonAdminBatteryAttrController {
 		String begin = formatter.format(beginLocalDateTime);
 		String end = formatter.format(endLocalDateTime);
 
-		if (verifyTime(begin, end, 5)) {
-			return R.failMsg("查询时间区间不能超过5天!");
+		if (verifyTime(begin, end, 90)) {
+			return R.failMsg("查询时间区间不能超过90天!");
 		}
 
 		if (StringUtils.isNotBlank(orderId)) {

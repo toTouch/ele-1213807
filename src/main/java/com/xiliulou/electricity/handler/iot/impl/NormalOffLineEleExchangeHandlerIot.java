@@ -194,7 +194,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //操作记录
         List<OperateMsgVo> operateMsgVoList = offlineEleOrderVo.getMsg();
         OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory = OffLineElectricityCabinetOrderOperHistory.builder()
-                .orderId(electricityCabinetOrder.getOrderId()).type(ORDER_SOURCE_FOR_OFFLINE).tenantId(electricityCabinet.getTenantId()).operateMsgVos(operateMsgVoList).build();
+                .orderId(electricityCabinetOrder.getOrderId()).type(offlineEleOrderVo.getOfflineOrderStatus()).tenantId(electricityCabinet.getTenantId()).operateMsgVos(operateMsgVoList).build();
         electricityCabinetOrderOperHistoryService.insertOffLineOperateHistory(offLineElectricityCabinetOrderOperHistory);
         
         senMsg(electricityCabinet, offlineEleOrderVo, user);

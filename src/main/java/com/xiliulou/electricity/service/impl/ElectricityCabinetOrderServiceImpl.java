@@ -329,11 +329,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            // 批量查询会员信息
+            Map<Long, String> userNameMap = new HashMap<>();
+            List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
+            List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
+            if (ObjectUtils.isNotEmpty(userInfos)) {
+                 userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
+            }
+            Map<Long, String> finalUserNameMap = userNameMap;
             
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
+                
+                // 设置会员名称
+                if (ObjectUtils.isNotEmpty(finalUserNameMap.get(e.getUid()))) {
+                    e.setUName(finalUserNameMap.get(e.getUid()));
+                }
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {

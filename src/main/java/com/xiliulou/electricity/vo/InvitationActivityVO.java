@@ -33,7 +33,18 @@ public class InvitationActivityVO {
     /**
      * 有效时间
      */
-    private Integer hours;
+    private Double hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Long minutes;
+    
+    /**
+     * 时间类型：1-小时 2-分钟
+     */
+    private Integer timeType;
+    
     /**
      * 奖励类型  1--固定金额  2--套餐比例
      */

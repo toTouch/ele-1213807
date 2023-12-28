@@ -1707,5 +1707,4 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         return Triple.of(true, null, null);
     }
-    
 }

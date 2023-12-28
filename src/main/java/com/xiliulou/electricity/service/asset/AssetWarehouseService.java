@@ -18,7 +18,7 @@ public interface AssetWarehouseService {
 
     R save(AssetWarehouseSaveOrUpdateRequest assetWarehouseSaveOrUpdateRequest, Long uid);
     
-    List<AssetWarehouseVO> listByFranchiseeId(AssetWarehouseRequest assetInventoryRequest);
+    List<AssetWarehouseVO> listByPage(AssetWarehouseRequest assetInventoryRequest);
     
     Integer countTotal(AssetWarehouseRequest assetInventoryRequest);
     
