@@ -202,7 +202,13 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         if (ObjectUtils.isEmpty(failureAlarmSaveRequest.getProtectMeasureList())) {
             return Triple.of(false, "300823", "保护措施不能为空");
         }
-        
+    
+        // 检测故障是否存在
+        FailureAlarm failureAlarmOld = this.queryById(failureAlarmSaveRequest.getId());
+        if (ObjectUtils.isEmpty(failureAlarmOld)) {
+            return Triple.of(false, "300820", "故障告警不存在");
+        }
+    
         // 检测错误码是否存在
         int errorCodeCount = this.checkErrorCode(failureAlarmSaveRequest.getSignalId(), failureAlarmSaveRequest.getId());
         if (errorCodeCount > 0) {
