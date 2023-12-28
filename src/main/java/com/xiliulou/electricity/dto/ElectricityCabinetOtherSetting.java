@@ -184,4 +184,9 @@ public class ElectricityCabinetOtherSetting {
      */
     private Integer checkSmokeSensor;
     
+    /**
+     * 离线换电密码
+     */
+    private String offlinePassword;
+    
 }
