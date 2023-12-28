@@ -7,6 +7,7 @@ import com.xiliulou.electricity.service.TenantNoteRechargeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +34,11 @@ public class TenantNoteRechargeController {
      * @author maxiaodong
      */
     @GetMapping("/admin/tenantNote/recharge/pageCount")
-    public R pageCount(@RequestParam(value = "tenantId", required = true) Integer tenantId) {
+    public R pageCount(@RequestParam(value = "tenantId") Integer tenantId) {
+        if (ObjectUtils.isEmpty(tenantId)) {
+            return R.fail("300824", "租户id不能为空");
+        }
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -54,7 +59,11 @@ public class TenantNoteRechargeController {
      * @author maxiaodong
      */
     @GetMapping("/admin/tenantNote/recharge/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "tenantId", required = true) Integer tenantId) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "tenantId") Integer tenantId) {
+        if (ObjectUtils.isEmpty(tenantId)) {
+            return R.fail("300824", "租户id不能为空");
+        }
+        
         if (size < 0 || size > 50) {
             size = 10L;
         }

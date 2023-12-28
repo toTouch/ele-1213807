@@ -3,12 +3,14 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.TenantNote;
 import com.xiliulou.electricity.entity.TenantNoteRecharge;
 import com.xiliulou.electricity.mapper.TenantNoteMapper;
 import com.xiliulou.electricity.request.tenantNote.TenantRechargeRequest;
 import com.xiliulou.electricity.service.TenantNoteRechargeService;
 import com.xiliulou.electricity.service.TenantNoteService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -35,6 +37,9 @@ public class TenantNoteServiceImpl implements TenantNoteService {
     
     @Resource
     private TenantNoteRechargeService rechargeService;
+    
+    @Resource
+    private TenantService tenantService;
     
     @Slave
     @Override
@@ -75,7 +80,12 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         if (!result) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
-        
+    
+        Tenant tenant = tenantService.queryByIdFromCache(rechargeRequest.getTenantId());
+        if (ObjectUtils.isEmpty(tenant)) {
+            return Triple.of(false, "ELECTRICITY.00101", "找不到租户");
+        }
+    
         // 检测数据是否存在
         TenantNote tenantNote = this.queryFromCacheByTenantId(rechargeRequest.getTenantId());
         
@@ -100,6 +110,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         recharge.setRechargeTime(System.currentTimeMillis());
         recharge.setTenantNoteId(addNote.getId());
         recharge.setUid(uid);
+        recharge.setTenantId(rechargeRequest.getTenantId());
         recharge.setCreateTime(System.currentTimeMillis());
         rechargeService.insertOne(recharge);
         
