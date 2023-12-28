@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.TenantNoteMapper">
+    <update id="reduceNoteNum" parameterType="com.xiliulou.electricity.entity.TenantNote">
+        update t_tenant_note
+        set note_num    = #{noteNum},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.TenantNote">
+        select id, tenant_id, note_num, recharge_time
+        from t_tenant_note
+        where tenant_id = #{tenantId};
+    </select>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_tenant_note(id, tenant_id, note_num, recharge_time, create_time)
+        values (#{id}, #{tenantId}, #{noteNum}, #{rechargeTime}, #{createTime})
+    </insert>
+    
+    <update id="addNoteNum" parameterType="com.xiliulou.electricity.entity.TenantNote">
+        update t_tenant_note
+        set note_num = note_num + #{noteNum},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+</mapper>
