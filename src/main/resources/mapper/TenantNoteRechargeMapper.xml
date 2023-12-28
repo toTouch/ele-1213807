@@ -14,9 +14,9 @@
         where tenant_id = #{tenantId};
     </select>
     
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_tenant_note(id, tenant_id, note_num, recharge_time, create_time)
-        values (#{id}, #{tenantId}, #{noteNum}, #{rechargeTime}, #{createTime})
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.TenantNote" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+        insert into t_tenant_note(tenant_id, note_num, recharge_time, create_time)
+        values (#{tenantId}, #{noteNum}, #{rechargeTime}, #{createTime})
     </insert>
     
     <update id="addNoteNum" parameterType="com.xiliulou.electricity.entity.TenantNote">

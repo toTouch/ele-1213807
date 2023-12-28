@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper">
+    
+    <select id="selectList" resultType="com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg">
+        SELECT
+            cabinet_id,
+            tenant_id,
+            msg_type,
+            txn_no,
+            signal_id,
+            alarm_desc,
+            alarm_flag,
+            alarm_id,
+            cell_no,
+            sn,
+            type,
+            occur_num,
+            grade,
+            device_type,
+            failure_alarm_name,
+            tenant_name,
+            dev_id,
+            recover_time,
+            report_time,
+            alarm_time,
+            create_time
+        FROM
+            t_ele_hardware_failure_warn_msg
+        <where>
+            alarm_id in 
+            <foreach collection="alarmIdList" close=")" open="(" separator="," item="alarmId">
+                #{alarmId}
+            </foreach>
+        </where>
+    </select>
+</mapper>
