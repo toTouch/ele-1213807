@@ -105,8 +105,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         
         // 添加充值记录
         TenantNoteRecharge recharge = new TenantNoteRecharge();
-        recharge.setTenantNoteId(recharge.getTenantNoteId());
-        recharge.setRechargeNum(recharge.getRechargeNum());
+        recharge.setRechargeNum(rechargeRequest.getRechargeNum());
         recharge.setRechargeTime(System.currentTimeMillis());
         recharge.setTenantNoteId(addNote.getId());
         recharge.setUid(uid);

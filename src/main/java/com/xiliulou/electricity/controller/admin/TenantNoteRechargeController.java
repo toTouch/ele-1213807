@@ -81,7 +81,7 @@ public class TenantNoteRechargeController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        TenantRechargePageRequest request = TenantRechargePageRequest.builder().tenantId(tenantId).build();
+        TenantRechargePageRequest request = TenantRechargePageRequest.builder().tenantId(tenantId).offset(offset).size(size).build();
     
         return R.ok(noteRechargeService.listByPage(request));
     }

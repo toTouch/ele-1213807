@@ -49,7 +49,7 @@ public class TenantNoteRechargeServiceImpl implements TenantNoteRechargeService 
     @Slave
     @Override
     public List<TenantNoteRechargeVo> listByPage(TenantRechargePageRequest request) {
-        TenantNoteRechargeQueryModel queryModel = TenantNoteRechargeQueryModel.builder().tenantId(request.getTenantId()).build();
+        TenantNoteRechargeQueryModel queryModel = TenantNoteRechargeQueryModel.builder().offset(request.getOffset()).size(request.getSize()).tenantId(request.getTenantId()).build();
         List<TenantNoteRecharge> tenantNotes = noteRechargeMapper.selectListByPage(queryModel);
         if (ObjectUtils.isEmpty(tenantNotes)) {
             return Collections.EMPTY_LIST;

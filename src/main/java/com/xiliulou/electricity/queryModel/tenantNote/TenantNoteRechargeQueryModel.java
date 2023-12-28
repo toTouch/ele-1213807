@@ -20,4 +20,8 @@ public class TenantNoteRechargeQueryModel {
      * 租户Id
      */
     private Integer tenantId;
+    
+    private Long offset;
+    
+    private Long size;
 }
