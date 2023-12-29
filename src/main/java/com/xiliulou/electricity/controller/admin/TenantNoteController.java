@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.tenantNote.TenantRechargeRequest;
+import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
 import com.xiliulou.electricity.service.TenantNoteService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -27,6 +28,8 @@ public class TenantNoteController {
     @Resource
     private TenantNoteService tenantNoteService;
     
+    @Resource
+    private EleHardwareFailureCabinetMsgService failureCabinetMsgService;
     /**
      * 短信充值
      *
@@ -35,6 +38,7 @@ public class TenantNoteController {
      */
     @PostMapping("/admin/tenant/note/recharge")
     public R recharge(@RequestBody @Validated TenantRechargeRequest rechargeRequest) {
+        failureCabinetMsgService.createFailureWarnData();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
