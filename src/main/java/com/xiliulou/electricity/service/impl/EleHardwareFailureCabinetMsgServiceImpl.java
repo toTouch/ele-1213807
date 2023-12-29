@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
@@ -10,7 +9,6 @@ import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.rocketmq.common.filter.impl.Op;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
