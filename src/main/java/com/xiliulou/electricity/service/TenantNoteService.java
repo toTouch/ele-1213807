@@ -18,5 +18,7 @@ public interface TenantNoteService {
     
     Triple<Boolean, String, Object> recharge(TenantRechargeRequest rechargeRequest, Long uid);
     
+    TenantNote queryFromDbByTenantId(Integer tenantId);
+    
     void deleteCache(Integer tenantId);
 }

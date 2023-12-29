@@ -49,7 +49,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
             return cache;
         }
         
-        TenantNote tenantNote = noteMapper.selectByTenantId(tenantId);
+        TenantNote tenantNote = this.queryFromDbByTenantId(tenantId);
         if (Objects.isNull(tenantNote)) {
             return null;
         }
@@ -87,7 +87,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         }
     
         // 检测数据是否存在
-        TenantNote tenantNote = this.queryFromCacheByTenantId(rechargeRequest.getTenantId());
+        TenantNote tenantNote = this.queryFromDbByTenantId(rechargeRequest.getTenantId());
         
         // 新增或者修改
         TenantNote addNote = new TenantNote();
@@ -115,6 +115,13 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         rechargeService.insertOne(recharge);
         
         return Triple.of(true, null, null);
+    }
+    
+    @Slave
+    @Override
+    public TenantNote queryFromDbByTenantId(Integer tenantId) {
+        TenantNote tenantNote = noteMapper.selectByTenantId(tenantId);
+        return tenantNote;
     }
     
     @Override

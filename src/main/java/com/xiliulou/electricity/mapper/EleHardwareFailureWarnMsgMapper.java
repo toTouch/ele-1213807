@@ -2,7 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
-import org.apache.ibatis.annotations.Param;
+import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
+import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 
 import java.util.List;
 
@@ -12,5 +13,5 @@ import java.util.List;
  */
 
 public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareFailureWarnMsg> {
-    List<EleHardwareFailureWarnMsg> selectList(@Param("alarmIdList") List<String> alarmIdList);
+    List<EleHardwareFailureWarnMsgVo> selectList(EleHardwareFailureWarnMsgQueryModel queryModel);
 }

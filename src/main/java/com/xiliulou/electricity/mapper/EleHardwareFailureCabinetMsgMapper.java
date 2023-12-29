@@ -2,6 +2,9 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author maxiaodong
@@ -9,5 +12,6 @@ import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
  * @desc
  */
 public interface EleHardwareFailureCabinetMsgMapper extends BaseMapper<EleHardwareFailureCabinetMsg> {
-
+    
+    int batchInsert(@Param("list") List<EleHardwareFailureCabinetMsg> failureCabinetMsgList);
 }
