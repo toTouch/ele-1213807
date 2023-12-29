@@ -38,17 +38,17 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Override
     public void createFailureWarnData() {
         EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
-        log.error("Hardware Failure CabinetMsg task start params={}", queryModel);
+        log.info("FailureCabinetMsgTaskParams={}", queryModel);
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
-        log.error("Hardware Failure CabinetMsg task queryWarn: {}", failureWarnMsgList);
+        log.info("FailureCabinetMsgTaskQueryWarn: {}", failureWarnMsgList);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
-            log.error("Hardware Failure CabinetMsg task is empty");
+            log.error("FailureCabinetMsgTask task is empty");
         }
     
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(
                 Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e))));
         
-        log.error("failure warn res={}", JsonUtil.toJson(cabinetMsgMap));
+        log.info("FailureCabinetMsgTaskRes={}", JsonUtil.toJson(cabinetMsgMap));
         if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
             List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
             failureCabinetMsgMapper.batchInsert(failureCabinetMsgList);
