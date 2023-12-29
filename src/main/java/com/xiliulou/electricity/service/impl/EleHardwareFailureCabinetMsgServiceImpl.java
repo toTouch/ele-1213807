@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
@@ -37,8 +38,9 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Override
     public void createFailureWarnData() {
         EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
-        
+        log.error("Hardware Failure CabinetMsg task start params={}", queryModel);
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
+        log.error("Hardware Failure CabinetMsg task queryWarn: {}", failureWarnMsgList);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
             log.error("Hardware Failure CabinetMsg task is empty");
         }
@@ -46,6 +48,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(
                 Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e))));
         
+        log.error("failure warn res={}", JsonUtil.toJson(cabinetMsgMap));
         if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
             List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
             failureCabinetMsgMapper.batchInsert(failureCabinetMsgList);
