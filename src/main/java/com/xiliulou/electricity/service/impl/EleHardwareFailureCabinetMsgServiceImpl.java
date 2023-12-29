@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.rocketmq.common.filter.impl.Op;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +18,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +76,15 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                 failureCabinetMsg.setWarnCount(item.getFailureWarnNum());
             }
         });
+    
+        Optional.ofNullable(failureCabinetMsg.getFailureCount()).ifPresent(item -> {
+            failureCabinetMsg.setFailureCount(0);
+        });
+    
+        Optional.ofNullable(failureCabinetMsg.getWarnCount()).ifPresent(item -> {
+            failureCabinetMsg.setWarnCount(0);
+        });
+        
         return failureCabinetMsg;
     }
     
