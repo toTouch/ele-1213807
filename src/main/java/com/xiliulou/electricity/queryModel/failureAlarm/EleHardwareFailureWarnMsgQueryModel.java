@@ -18,4 +18,5 @@ import lombok.NoArgsConstructor;
 public class EleHardwareFailureWarnMsgQueryModel {
     private Long startTime;
     private Long endTime;
+    private Long time;
 }

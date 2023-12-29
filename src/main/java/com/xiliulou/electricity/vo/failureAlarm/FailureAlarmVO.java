@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.vo.failureAlarm;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * 故障预警设置
@@ -85,9 +83,14 @@ public class FailureAlarmVO {
     private Long updateTime;
     
     /**
-     * 保护措施
+     * 保护措施名称
      */
     private String protectMeasure;
+    
+    /**
+     * 保护措施集合
+     */
+    private List<Integer> protectMeasureList;
     
 }
 

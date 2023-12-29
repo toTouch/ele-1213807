@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
+import com.xiliulou.electricity.handler.iot.impl.HardwareFailureWarnMsgHandler;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
 import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
 import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -35,8 +38,12 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Resource
     private EleHardwareFailureWarnMsgService failureWarnMsgService;
     
+    @Resource(name = ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_HANDLER)
+    private HardwareFailureWarnMsgHandler failureWarnMsgHandler;
+    
     @Override
     public void createFailureWarnData() {
+        testHandler();
         EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
@@ -57,13 +64,21 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     
     }
     
+    private void testHandler() {
+        ReceiverMessage receiverMessage = new ReceiverMessage();
+        receiverMessage.setProductKey("a1QqoBrbcT1");
+        receiverMessage.setDeviceName("222");
+        receiverMessage.setOriginContent("{\"msgType\":410,\"devId\":\"76\",\"t\":1703832074004,\"txnNo\":\"123456789\",\"alarmList\":[{\"id\":\"111\",\"alarmTime\":1703832074005,\"alarmDesc\":\"00\",\"alarmFlag\":1,\"alarmId\":\"123\",\"boxId\":9,\"type\":0,\"occurNum\":1}]}");
+        failureWarnMsgHandler.receiveMessageProcess(receiverMessage);
+    }
+    
     private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, EleHardwareFailureWarnMsgQueryModel queryModel) {
         EleHardwareFailureCabinetMsg failureCabinetMsg = new EleHardwareFailureCabinetMsg();
         failureWarnMsgVoList.forEach(item -> {
             if (ObjectUtils.isEmpty(failureCabinetMsg.getTenantId())) {
                 failureCabinetMsg.setCabinetId(item.getCabinetId());
                 failureCabinetMsg.setTenantId(item.getTenantId());
-                failureCabinetMsg.setCreateTime(queryModel.getEndTime());
+                failureCabinetMsg.setCreateTime(queryModel.getTime());
             }
             
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
@@ -106,9 +121,16 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         calendar.set(Calendar.SECOND, 59);
         
         long endTime = calendar.getTimeInMillis();
+    
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
         
+        long time = calendar.getTimeInMillis();
+    
         queryModel.setStartTime(startTime);
         queryModel.setEndTime(endTime);
+        queryModel.setTime(time);
         
         return queryModel;
     }

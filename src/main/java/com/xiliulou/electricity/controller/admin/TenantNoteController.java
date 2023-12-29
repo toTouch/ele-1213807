@@ -27,9 +27,6 @@ import java.util.Objects;
 public class TenantNoteController {
     @Resource
     private TenantNoteService tenantNoteService;
-    
-    @Resource
-    private EleHardwareFailureCabinetMsgService failureCabinetMsgService;
     /**
      * 短信充值
      *

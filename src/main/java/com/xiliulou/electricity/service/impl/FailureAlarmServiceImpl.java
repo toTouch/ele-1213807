@@ -173,6 +173,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
                     List<Integer> protectList = protectMeasureMap.get(failureAlarm.getId());
                     String protectMeasure = ProtectMeasureEnum.getDescByCodeList(protectList);
                     failureAlarmVO.setProtectMeasure(protectMeasure);
+                    failureAlarmVO.setProtectMeasureList(protectList);
                 }
                 
                 rspList.add(failureAlarmVO);

@@ -43,6 +43,31 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     @Resource
     TenantService tenantService;
     
+    public static void main(String[] args) {
+        HardwareFailureWarnMsg msg = new HardwareFailureWarnMsg();
+        msg.setMsgType(410);
+        msg.setDevId("76");
+        msg.setT(System.currentTimeMillis());
+        msg.setTxnNo("123456789");
+    
+        List<HardwareAlarmMsg> alarmList = new ArrayList<>();
+        HardwareAlarmMsg alarmMsg = new HardwareAlarmMsg();
+        alarmMsg.setId("111");
+        alarmMsg.setAlarmTime(System.currentTimeMillis());
+        alarmMsg.setAlarmDesc("00");
+        alarmMsg.setAlarmFlag(1);
+        alarmMsg.setAlarmId("123");
+        alarmMsg.setBoxId(9);
+        alarmMsg.setType(0);
+        alarmMsg.setOccurNum(1);
+        
+        alarmList.add(alarmMsg);
+    
+        msg.setAlarmList(alarmList);
+    
+        final String s = JsonUtil.toJson(msg);
+        System.out.printf(s);
+    }
     
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -53,7 +78,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         }
         
         List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
-        
+        log.info("HARDWARE FAILURE WARN SEND START MSG={}", JsonUtil.toJson(list));
         rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -126,6 +151,7 @@ class HardwareFailureWarnMsg {
      */
     private List<HardwareAlarmMsg> alarmList;
 }
+
 
 @Data
 class HardwareAlarmMsg {
