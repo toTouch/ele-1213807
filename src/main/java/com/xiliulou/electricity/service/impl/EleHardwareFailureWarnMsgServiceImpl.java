@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper;
+import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
+import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Slave
     @Override
-    public List<EleHardwareFailureWarnMsg> list(List<String> alarmIdList) {
-        return failureWarnMsgMapper.selectList(alarmIdList);
+    public List<EleHardwareFailureWarnMsgVo> list(EleHardwareFailureWarnMsgQueryModel queryModel) {
+        return failureWarnMsgMapper.selectList(queryModel);
     }
-    
 }

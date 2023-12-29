@@ -3,9 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
-import com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper;
 import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
 import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
+import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,13 +32,13 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     private EleHardwareFailureCabinetMsgMapper failureCabinetMsgMapper;
     
     @Resource
-    private EleHardwareFailureWarnMsgMapper failureWarnMsgMapper;
+    private EleHardwareFailureWarnMsgService failureWarnMsgService;
     
     @Override
     public void createFailureWarnData() {
         EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
         
-        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgMapper.selectList(queryModel);
+        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
             log.error("Hardware Failure CabinetMsg task is empty");
         }
