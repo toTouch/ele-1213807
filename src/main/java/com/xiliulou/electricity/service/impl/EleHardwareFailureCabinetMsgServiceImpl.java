@@ -81,6 +81,8 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
      * @return
      */
     private EleHardwareFailureWarnMsgQueryModel getQueryModel() {
+        EleHardwareFailureWarnMsgQueryModel queryModel = new EleHardwareFailureWarnMsgQueryModel();
+    
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, -1);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -95,7 +97,6 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         long endTime = calendar.getTimeInMillis();
         
-        EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
         queryModel.setStartTime(startTime);
         queryModel.setEndTime(endTime);
         
