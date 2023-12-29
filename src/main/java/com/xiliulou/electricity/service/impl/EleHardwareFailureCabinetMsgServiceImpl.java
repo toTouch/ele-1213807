@@ -38,31 +38,32 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Override
     public void createFailureWarnData() {
         EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
-        log.info("FailureCabinetMsgTaskParams={}", queryModel);
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
-        log.info("FailureCabinetMsgTaskQueryWarn: {}", failureWarnMsgList);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
-            log.error("FailureCabinetMsgTask task is empty");
+            log.error("Hardware Failure CabinetMsg task is empty");
         }
     
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(
-                Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e))));
+                Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, queryModel))));
         
-        log.info("FailureCabinetMsgTaskRes={}", JsonUtil.toJson(cabinetMsgMap));
         if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
+            // 删除昨天的历史数据
+            failureCabinetMsgMapper.batchDelete(queryModel.getStartTime(), queryModel.getEndTime());
+            
             List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
+            // 批量插入新的数据
             failureCabinetMsgMapper.batchInsert(failureCabinetMsgList);
         }
     
     }
     
-    private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList) {
+    private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, EleHardwareFailureWarnMsgQueryModel queryModel) {
         EleHardwareFailureCabinetMsg failureCabinetMsg = new EleHardwareFailureCabinetMsg();
         failureWarnMsgVoList.forEach(item -> {
             if (ObjectUtils.isEmpty(failureCabinetMsg.getTenantId())) {
                 failureCabinetMsg.setCabinetId(item.getCabinetId());
                 failureCabinetMsg.setTenantId(item.getTenantId());
-                failureCabinetMsg.setCreateTime(System.currentTimeMillis());
+                failureCabinetMsg.setCreateTime(queryModel.getEndTime());
             }
             
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.FAILURE)) {

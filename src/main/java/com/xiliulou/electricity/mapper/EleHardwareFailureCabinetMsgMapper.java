@@ -14,4 +14,6 @@ import java.util.List;
 public interface EleHardwareFailureCabinetMsgMapper extends BaseMapper<EleHardwareFailureCabinetMsg> {
     
     int batchInsert(@Param("list") List<EleHardwareFailureCabinetMsg> failureCabinetMsgList);
+    
+    void batchDelete(@Param("startTime") Long startTime,@Param("endTime") Long endTime);
 }
