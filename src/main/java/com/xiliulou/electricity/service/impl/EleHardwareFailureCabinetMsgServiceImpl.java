@@ -68,7 +68,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         ReceiverMessage receiverMessage = new ReceiverMessage();
         receiverMessage.setProductKey("a1QqoBrbcT1");
         receiverMessage.setDeviceName("222");
-        receiverMessage.setOriginContent("{\"msgType\":410,\"devId\":\"76\",\"t\":1703832074004,\"txnNo\":\"123456789\",\"alarmList\":[{\"id\":\"112\",\"alarmTime\":1703832074005,\"alarmDesc\":\"00\",\"alarmFlag\":0,\"alarmId\":\"123\",\"boxId\":9,\"type\":0,\"occurNum\":1}]}");
+        receiverMessage.setOriginContent("{\"msgType\":410,\"devId\":\"76\",\"t\":1703832074004,\"txnNo\":\"123456789\",\"alarmList\":[{\"id\":\"112\",\"alarmTime\":1703832074005,\"alarmDesc\":\"00\",\"alarmFlag\":0,\"alarmId\":\"123\",\"boxId\":9,\"type\":1,\"occurNum\":1}]}");
         failureWarnMsgHandler.receiveMessageProcess(receiverMessage);
     }
     
