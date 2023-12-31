@@ -107,6 +107,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
             msg.setCabinetId(electricityCabinet.getId());
             msg.setTenantId(electricityCabinet.getTenantId());
             msg.setAddress(electricityCabinet.getAddress());
+            msg.setMsgType(hardwareFailureWarnMsg.getMsgType());
             if (ObjectUtils.isEmpty(item.getBatterySn())) {
                 msg.setSn(electricityCabinet.getSn());
             } else {
