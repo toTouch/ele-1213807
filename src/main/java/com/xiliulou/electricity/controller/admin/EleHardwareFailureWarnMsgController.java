@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,7 @@ public class EleHardwareFailureWarnMsgController {
         // 非admin则限制故障告警的查询逻辑
         if (!SecurityUtils.isAdmin()) {
             tenantVisible = FailureAlarm.visible;
+            tenantId = TenantContextHolder.getTenantId();
         }
     
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
@@ -93,7 +95,9 @@ public class EleHardwareFailureWarnMsgController {
         // 非admin则限制故障告警的查询逻辑
         if (!SecurityUtils.isAdmin()) {
             tenantVisible = FailureAlarm.visible;
+            tenantId = TenantContextHolder.getTenantId();
         }
+        
     
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible).status(FailureAlarm.enable).build();

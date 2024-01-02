@@ -32,14 +32,6 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
-        
-            <if test="deviceType != null">
-                and device_type = #{deviceType}
-            </if>
-        
-            <if test="grade != null">
-                and grade = #{grade}
-            </if>
     
             <if test="signalId != null">
                 and signal_id = #{signalId}
@@ -55,6 +47,13 @@
         
             <if test="alarmFlag != null">
                 and alarm_flag  = #{alarmFlag}
+            </if>
+            
+            <if test="signalIdList != null and signalIdList.size() > 0">
+                and signal_id in
+                <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                    #{signalId}
+                </foreach>
             </if>
         </where>
     </sql>
