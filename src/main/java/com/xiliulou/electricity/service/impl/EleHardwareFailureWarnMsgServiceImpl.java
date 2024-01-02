@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -62,9 +63,13 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     public R listByPage(EleHardwareFailureWarnMsgPageRequest request) {
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        R r = checkAndInitQuery(request, queryModel);
-        if (!r.isSuccess()) {
-            return r;
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
+        
+        if (triple.getLeft() && !Objects.isNull(triple.getRight())) {
+            return R.ok(Collections.emptyList());
         }
     
         List<EleHardwareFailureWarnMsg> list = failureWarnMsgMapper.selectListByPage(queryModel);
@@ -94,7 +99,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return R.ok(list);
     }
     
-    private R checkAndInitQuery(EleHardwareFailureWarnMsgPageRequest request, FailureWarnMsgPageQueryModel queryModel) {
+    private Triple<Boolean, String, Object> checkAndInitQuery(EleHardwareFailureWarnMsgPageRequest request, FailureWarnMsgPageQueryModel queryModel) {
         // 计算查询时间不能大于三十天
         Calendar startDate = Calendar.getInstance();
         startDate.setTimeInMillis(request.getAlarmStartTime());
@@ -105,7 +110,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         long days = DateUtils.diffDay(request.getAlarmStartTime(), request.getAlarmEndTime());
     
         if (days > 30) {
-            return R.fail("300825", "查询天数不能大于30天");
+            return Triple.of(false, "300825", "查询天数不能大于30天");
         }
     
         // 设置查询参数
@@ -116,23 +121,27 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(queryModel.getDeviceType(), queryModel.getGrade(), request.getTenantVisible(),
                     request.getStatus());
             if (ObjectUtils.isEmpty(failureAlarmList)) {
-                return R.ok(Collections.emptyList());
+                return Triple.of(true, null, Collections.emptyList());
             }
         
             List<String> signalIdList = failureAlarmList.stream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
             queryModel.setSignalIdList(signalIdList);
         }
     
-        return R.ok();
+        return Triple.of(true, null, null);
     }
     
     @Override
     public R countTotal(EleHardwareFailureWarnMsgPageRequest request) {
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        R r = checkAndInitQuery(request, queryModel);
-        if (!r.isSuccess()) {
-            return r;
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
+    
+        if (triple.getLeft() && !Objects.isNull(triple.getRight())) {
+            return R.ok(Collections.emptyList());
         }
     
         Integer count = failureWarnMsgMapper.countTotal(queryModel);
