@@ -11,8 +11,7 @@
         FROM
         t_ele_hardware_failure_warn_msg
         WHERE
-            alarm_time <![CDATA[ >= ]]>  #{startTime}
-            AND alarm_time <![CDATA[ <= ]]>  #{endTime}
+            alarm_time between  #{startTime} and #{endTime}
         GROUP BY
         tenant_id,
         cabinet_id,
@@ -37,12 +36,8 @@
                 and signal_id = #{signalId}
             </if>
         
-            <if test="alarmStartTime != null">
-                and alarm_time <![CDATA[>=]]> #{alarmStartTime}
-            </if>
-        
-            <if test="alarmEndTime != null">
-                and alarm_time <![CDATA[<=]]> #{alarmEndTime}
+            <if test="alarmStartTime != null and alarmEndTime != null">
+                and alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
             </if>
         
             <if test="alarmFlag != null">
@@ -84,7 +79,7 @@
         FROM
         t_ele_hardware_failure_warn_msg
         <include refid="filter"/>
-        order by create_time desc
+        order by alarm_time desc
         limit #{offset}, #{size}
     </select>
     <select id="countTotal" resultType="java.lang.Integer">

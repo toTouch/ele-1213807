@@ -60,4 +60,81 @@ public class EleHardwareFailureWarnMsgPageVo {
      * 告警时间
      */
     private Long alarmTime;
+    
+    private Long id;
+    /**
+     * 换电柜Id
+     */
+    private Integer cabinetId;
+    
+    /**
+     * 租户Id
+     */
+    private Integer tenantId;
+    
+    /**
+     * 报文类型：410
+     */
+    private Integer msgType;
+    
+    /**
+     * 流水号
+     */
+    private String txnNo;
+    
+    /**
+     * 信号量
+     */
+    private String signalId;
+    
+    /**
+     * 告警事件描述
+     */
+    private String alarmDesc;
+    
+    /**
+     * 告警消息Id
+     */
+    private String alarmId;
+    
+    /**
+     * 类型：0-告警，1-故障
+     */
+    private Integer type;
+    
+    /**
+     * 故障发生次数
+     */
+    private Integer occurNum;
+    
+    /**
+     * 设备Id
+     */
+    private String devId;
+    
+    /**
+     * 上报时间
+     */
+    private Long reportTime;
+    
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    
+    /**
+     * 修改时间
+     */
+    
+    private Long updateTime;
+    
+    /**
+     * 换电柜地址
+     */
+    private String address;
+    
+    /**
+     * 柜机名称
+     */
+    private String cabinetName;
 }
