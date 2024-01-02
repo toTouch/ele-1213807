@@ -21,27 +21,27 @@
     </select>
     <sql id="pageFilter">
         <where>
-             del_flag = 0
+            t.del_flag = 0
             <if test="signalName != null and signalName != ''">
-                and signal_name like concat('%',concat(#{signalName}, '%'))
+                and t.signal_name like concat('%',concat(#{signalName}, '%'))
             </if>
             <if test="signalId != null">
-                AND signal_id like concat('%',concat(#{signalId}, '%'))
+                AND t.signal_id like concat('%',concat(#{signalId}, '%'))
             </if>
             <if test="type != null">
-                AND type = #{type}
+                AND t.type = #{type}
             </if>
             <if test="grade != null">
-                AND grade = #{grade}
+                AND t.grade = #{grade}
             </if>
             <if test="status != null">
-                AND status = #{status}
+                AND t.status = #{status}
             </if>
             <if test="deviceType != null">
-                AND device_type = #{deviceType}
+                AND t.device_type = #{deviceType}
             </if>
             <if test="tenantVisible != null">
-                AND tenant_visible = #{tenantVisible}
+                AND t.tenant_visible = #{tenantVisible}
             </if>
             <if test="protectMeasureList != null and protectMeasureList.size() > 0">
                 and EXISTS (
@@ -167,7 +167,7 @@
     
     <select id="selectBySignalId" resultType="com.xiliulou.electricity.entity.FailureAlarm">
         select <include refid="column"/>
-        from t_failure_alarm
+        from t_failure_alarm t
         where
         del_flag = 0
         and signal_id = #{signalId}
