@@ -57,6 +57,11 @@ public class FailureAlarmQueryModel {
      */
     private Integer tenantVisible;
     
+    /**
+     * id集合
+     */
+    private List<Long> idList;
+    
     private Long size;
     
     private Long offset;

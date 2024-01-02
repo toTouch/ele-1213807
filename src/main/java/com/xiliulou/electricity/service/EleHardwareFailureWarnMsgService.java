@@ -1,12 +1,19 @@
 package com.xiliulou.electricity.service;
 
 
-import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
+import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
 public interface EleHardwareFailureWarnMsgService {
     
-    List<EleHardwareFailureWarnMsgVo> list(EleHardwareFailureWarnMsgQueryModel queryModel);
+    List<EleHardwareFailureWarnMsgVo> list(FailureAlarmTaskQueryRequest request);
+    
+    R listByPage(EleHardwareFailureWarnMsgPageRequest request);
+    
+    R countTotal(EleHardwareFailureWarnMsgPageRequest request);
 }

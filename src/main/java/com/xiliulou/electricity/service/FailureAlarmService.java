@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmPageRequest;
@@ -35,4 +36,9 @@ public interface FailureAlarmService {
     void refreshCache(FailureAlarm failureAlarm);
     
     void deleteCache(FailureAlarm failureAlarm);
+    
+    List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status);
+    
+    @Slave
+    FailureAlarm queryFromCacheBySignalId(String signalId);
 }

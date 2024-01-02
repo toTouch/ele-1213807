@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper">
     
-    <select id="selectList" parameterType="com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+    <select id="selectList" parameterType="com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
         SELECT
             tenant_id as 'tenantId',
             cabinet_id as 'cabinetId',
@@ -17,5 +17,82 @@
         tenant_id,
         cabinet_id,
         type
+    </select>
+    
+    <sql id="filter">
+        <where>
+            <if test="type != null">
+                type  = #{type}
+            </if>
+        
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+        
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        
+            <if test="deviceType != null">
+                and device_type = #{deviceType}
+            </if>
+        
+            <if test="grade != null">
+                and grade = #{grade}
+            </if>
+    
+            <if test="signalId != null">
+                and signal_id = #{signalId}
+            </if>
+        
+            <if test="alarmStartTime != null">
+                and alarm_time <![CDATA[>=]]> #{alarmStartTime}
+            </if>
+        
+            <if test="alarmEndTime != null">
+                and alarm_time <![CDATA[<=]]> #{alarmEndTime}
+            </if>
+        
+            <if test="alarmFlag != null">
+                and alarm_flag  = #{alarmFlag}
+            </if>
+        </where>
+    </sql>
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg">
+        SELECT
+            id,
+            cabinet_id,
+            tenant_id,
+            msg_type,
+            txn_no,
+            signal_id,
+            alarm_desc,
+            alarm_flag,
+            alarm_id,
+            cell_no,
+            sn,
+            type,
+            occur_num,
+            grade,
+            device_type,
+            failure_alarm_name,
+            tenant_name,
+            dev_id,
+            recover_time,
+            report_time,
+            alarm_time,
+            create_time
+        FROM
+        t_ele_hardware_failure_warn_msg
+        <include refid="filter"/>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM
+        t_ele_hardware_failure_warn_msg
+        <include refid="filter"/>
     </select>
 </mapper>

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo.failureAlarm;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author maxiaodong
@@ -8,6 +11,9 @@ import lombok.Data;
  * @desc
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class EleHardwareFailureWarnMsgVo {
     /**
      * 租户Id

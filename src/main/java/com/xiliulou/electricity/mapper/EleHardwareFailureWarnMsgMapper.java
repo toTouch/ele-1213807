@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
-import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 
 import java.util.List;
@@ -13,5 +15,9 @@ import java.util.List;
  */
 
 public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareFailureWarnMsg> {
-    List<EleHardwareFailureWarnMsgVo> selectList(EleHardwareFailureWarnMsgQueryModel queryModel);
+    List<EleHardwareFailureWarnMsgVo> selectList(FailureWarnMsgTaskQueryModel queryModel);
+    
+    List<EleHardwareFailureWarnMsg> selectListByPage(FailureWarnMsgPageQueryModel queryModel);
+    
+    Integer countTotal(FailureWarnMsgPageQueryModel queryModel);
 }

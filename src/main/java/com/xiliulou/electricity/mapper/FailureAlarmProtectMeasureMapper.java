@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.entity.FailureAlarmProtectMeasure;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
 import org.apache.ibatis.annotations.Param;
 

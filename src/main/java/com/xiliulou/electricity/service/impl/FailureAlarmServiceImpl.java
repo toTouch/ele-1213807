@@ -26,7 +26,6 @@ import com.xiliulou.electricity.service.FailureAlarmProtectMeasureService;
 import com.xiliulou.electricity.service.FailureAlarmService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ChannelActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureAlarmExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureAlarmVO;
 import lombok.extern.slf4j.Slf4j;
@@ -147,11 +146,11 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
     @Slave
     @Override
-    public List<FailureAlarmVO> listByPage(FailureAlarmPageRequest allocateRecordPageRequest) {
+    public List<FailureAlarmVO> listByPage(FailureAlarmPageRequest request) {
         List<FailureAlarmVO> rspList = new ArrayList<>();
         
         FailureAlarmQueryModel failureAlarmQueryModel = new FailureAlarmQueryModel();
-        BeanUtils.copyProperties(allocateRecordPageRequest, failureAlarmQueryModel);
+        BeanUtils.copyProperties(request, failureAlarmQueryModel);
         
         List<FailureAlarm> failureAlarmVOList = this.failureAlarmMapper.selectListByPage(failureAlarmQueryModel);
         if (CollectionUtils.isNotEmpty(failureAlarmVOList)) {
@@ -325,7 +324,9 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
     @Slave
     public List<FailureAlarm> listByIdList(List<Long> idList) {
-        return this.failureAlarmMapper.selectList(idList);
+        FailureAlarmQueryModel queryModel = FailureAlarmQueryModel.builder().idList(idList).build();
+        
+        return this.failureAlarmMapper.selectList(queryModel);
     }
     
     @Override
@@ -423,5 +424,27 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     @Override
     public void deleteCache(FailureAlarm failureAlarm) {
         redisService.delete(CacheConstant.CACHE_FAILURE_ALARM + failureAlarm.getSignalId());
+    }
+    
+    
+    @Slave
+    @Override
+    public List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status) {
+        FailureAlarmQueryModel queryModel = FailureAlarmQueryModel.builder().deviceType(deviceType).grade(grade).tenantVisible(tenantVisible).status(status).build();
+        return failureAlarmMapper.selectList(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public FailureAlarm queryFromCacheBySignalId(String signalId) {
+        FailureAlarm failureAlarm = null;
+        failureAlarm = redisService.getWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, FailureAlarm.class);
+        if (Objects.isNull(failureAlarm)) {
+            failureAlarm = failureAlarmMapper.selectBySignalId(signalId);
+            if (Objects.nonNull(failureAlarm)) {
+                redisService.saveWithHash(CacheConstant.CACHE_FAILURE_ALARM + signalId, failureAlarm);
+            }
+        }
+        return failureAlarm;
     }
 }

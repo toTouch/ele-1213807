@@ -33,5 +33,8 @@ public interface FailureAlarmMapper extends BaseMapper<FailureAlarm>{
     
     int batchUpdateTenantVisible(@Param("idList") List<Long> idList,@Param("tenantVisible") Integer tenantVisible, @Param("updateTime") Long updateTime);
     
-    List<FailureAlarm> selectList(@Param("idList") List<Long> idList);
+    List<FailureAlarm> selectList(FailureAlarmQueryModel queryModel);
+    
+    FailureAlarm selectBySignalId(@Param("signalId") String signalId);
+    
 }

@@ -80,6 +80,12 @@ public class FailureAlarm {
 
 	public static final Integer DEL_NORMAL = 0;
 	public static final Integer DEL_DEL = 1;
+	
+	public static final Integer visible = 1;
+	public static final Integer invisible = 0;
+	
+	public static final Integer enable = 1;
+	public static final Integer disable = 0;
 
 }
 

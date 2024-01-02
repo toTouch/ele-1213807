@@ -123,7 +123,7 @@ public class FailureAlarmController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!SecurityUtils.isAdmin()) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
@@ -226,6 +226,26 @@ public class FailureAlarmController {
         FailureAlarmPageRequest allocateRecordPageRequest = FailureAlarmPageRequest.builder().build();
         
         failureAlarmService.exportExcel(allocateRecordPageRequest, response);
+    }
+    
+    /**
+     *
+     * @return
+     */
+    @GetMapping("/admin/failure/alarm/getDictList")
+    public R getDictList() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        Integer tenantVisible = null;
+        if (!SecurityUtils.isAdmin()) {
+            tenantVisible = FailureAlarm.visible;
+        }
+    
+        List<FailureAlarm> list = failureAlarmService.listByParams(null, null, tenantVisible, FailureAlarm.enable);
+        return R.ok(list);
     }
     
 }

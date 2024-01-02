@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.handler.iot.impl.HardwareFailureWarnMsgHandler;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
-import com.xiliulou.electricity.queryModel.failureAlarm.EleHardwareFailureWarnMsgQueryModel;
+import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
@@ -44,18 +44,18 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     @Override
     public void createFailureWarnData() {
         testHandler();
-        EleHardwareFailureWarnMsgQueryModel queryModel = this.getQueryModel();
-        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(queryModel);
+        FailureAlarmTaskQueryRequest request = this.getQueryRequest();
+        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(request);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
             log.error("Hardware Failure CabinetMsg task is empty");
         }
     
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(
-                Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, queryModel))));
+                Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, request))));
         
         if (ObjectUtils.isNotEmpty(cabinetMsgMap)) {
             // 删除昨天的历史数据
-            failureCabinetMsgMapper.batchDelete(queryModel.getStartTime(), queryModel.getEndTime());
+            failureCabinetMsgMapper.batchDelete(request.getStartTime(), request.getEndTime());
             
             List<EleHardwareFailureCabinetMsg> failureCabinetMsgList = cabinetMsgMap.values().parallelStream().collect(Collectors.toList());
             // 批量插入新的数据
@@ -72,13 +72,13 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         failureWarnMsgHandler.receiveMessageProcess(receiverMessage);
     }
     
-    private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, EleHardwareFailureWarnMsgQueryModel queryModel) {
+    private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, FailureAlarmTaskQueryRequest request) {
         EleHardwareFailureCabinetMsg failureCabinetMsg = new EleHardwareFailureCabinetMsg();
         failureWarnMsgVoList.forEach(item -> {
             if (ObjectUtils.isEmpty(failureCabinetMsg.getTenantId())) {
                 failureCabinetMsg.setCabinetId(item.getCabinetId());
                 failureCabinetMsg.setTenantId(item.getTenantId());
-                failureCabinetMsg.setCreateTime(queryModel.getTime());
+                failureCabinetMsg.setCreateTime(request.getTime());
             }
             
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
@@ -105,8 +105,8 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
      * 每天凌晨一点默认查询昨天的告警数据
      * @return
      */
-    private EleHardwareFailureWarnMsgQueryModel getQueryModel() {
-        EleHardwareFailureWarnMsgQueryModel queryModel = new EleHardwareFailureWarnMsgQueryModel();
+    private FailureAlarmTaskQueryRequest getQueryRequest() {
+        FailureAlarmTaskQueryRequest request = new FailureAlarmTaskQueryRequest();
     
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, -1);
@@ -128,10 +128,10 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         
         long time = calendar.getTimeInMillis();
     
-        queryModel.setStartTime(startTime);
-        queryModel.setEndTime(endTime);
-        queryModel.setTime(time);
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+        request.setTime(time);
         
-        return queryModel;
+        return request;
     }
 }

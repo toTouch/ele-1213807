@@ -103,10 +103,29 @@
         t_failure_alarm t
         <where>
              del_flag = 0
-            and t.id in
-            <foreach collection="idList" item="id" separator="," open="(" close=")">
-                #{id}
-            </foreach>
+             <if test="idList != null and idList.size() > 0">
+                 and t.id in
+                 <foreach collection="idList" item="id" separator="," open="(" close=")">
+                     #{id}
+                 </foreach>
+             </if>
+
+            <if test="deviceType != null">
+                and t.device_type = #{deviceType}
+            </if>
+        
+            <if test="grade != null">
+                and t.grade = #{grade}
+            </if>
+        
+            <if test="tenantVisible != null">
+                and t.tenant_visible = #{tenantVisible}
+            </if>
+
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+           
         </where>
     </select>
     
@@ -145,4 +164,12 @@
         from t_failure_alarm_protect_measure
         where failure_alarm_id = #{failureAlarmId}
     </delete>
+    
+    <select id="selectBySignalId" resultType="com.xiliulou.electricity.entity.FailureAlarm">
+        select <include refid="column"/>
+        from t_failure_alarm
+        where
+        del_flag = 0
+        and signal_id = #{signalId}
+    </select>
 </mapper>
