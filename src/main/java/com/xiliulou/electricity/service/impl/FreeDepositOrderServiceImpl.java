@@ -96,6 +96,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
@@ -2261,6 +2262,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if(!Objects.equals( BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())){
             log.warn("FREE DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "100275", "电池套餐不可用");
+        }
+    
+        //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+        if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
+            log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberCardId());
+            return Triple.of(false, "100376", "当前套餐为新租套餐, 不支持购买");
         }
 
         //是否有正在进行中的退押
