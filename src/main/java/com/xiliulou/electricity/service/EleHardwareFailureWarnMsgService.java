@@ -18,5 +18,5 @@ public interface EleHardwareFailureWarnMsgService {
     
     R countTotal(EleHardwareFailureWarnMsgPageRequest request);
     
-    FailureWarnFrequencyVo calculateFrequency(EleHardwareFailureWarnMsgPageRequest request);
+    Triple<Boolean, String, Object> calculateFrequency(EleHardwareFailureWarnMsgPageRequest request);
 }

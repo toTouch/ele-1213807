@@ -7,9 +7,9 @@ import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPa
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -90,7 +90,7 @@ public class EleHardwareFailureWarnMsgController {
     
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible).status(FailureAlarm.enable).build();
-        return R.ok(failureWarnMsgService.countTotal(request));
+        return failureWarnMsgService.countTotal(request);
     }
     
     /**
@@ -116,7 +116,7 @@ public class EleHardwareFailureWarnMsgController {
         
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
                 .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).status(FailureAlarm.enable).build();
-        return R.ok(failureWarnMsgService.countTotal(request));
+        return failureWarnMsgService.countTotal(request);
     }
     
     /**
@@ -165,7 +165,11 @@ public class EleHardwareFailureWarnMsgController {
     public R frequency(@RequestParam(value = "startTime", required = true) Long startTime,
             @RequestParam(value = "endTime", required = true) Long endTime) {
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmStartTime(endTime).build();
-        FailureWarnFrequencyVo vo = failureWarnMsgService.calculateFrequency(request);
-        return R.ok(vo);
+        Triple<Boolean, String, Object> triple = failureWarnMsgService.calculateFrequency(request);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
+        
+        return R.ok(triple.getRight());
     }
 }

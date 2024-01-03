@@ -50,5 +50,5 @@ public class FailureWarnFrequencyVo {
     /**
      * 使用天数
      */
-    private Integer usageDays;
+    private Long usageDays;
 }

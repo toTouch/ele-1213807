@@ -1,8 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateRange;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper;
@@ -26,10 +31,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -146,7 +155,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
     
         if (triple.getLeft() && !Objects.isNull(triple.getRight())) {
-            return R.ok(Collections.emptyList());
+            return R.ok(0);
         }
     
         Integer count = failureWarnMsgMapper.countTotal(queryModel);
@@ -158,8 +167,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
      * @param request
      * @return
      */
+    @Slave
     @Override
-    public FailureWarnFrequencyVo calculateFrequency(EleHardwareFailureWarnMsgPageRequest request) {
+    public Triple<Boolean, String, Object> calculateFrequency(EleHardwareFailureWarnMsgPageRequest request) {
         FailureWarnFrequencyVo vo = new FailureWarnFrequencyVo();
         // 统计平台中所有的柜机的数量
         ElectricityCabinetQuery electricityCabinetQuery = new ElectricityCabinetQuery();
@@ -168,7 +178,26 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             Integer count = (Integer) r.getData();
             vo.setCabinetShipment(count);
         });
-  
-        return vo;
+    
+        if (request.getAlarmStartTime() > request.getAlarmEndTime()) {
+            return Triple.of(false, "", "开始时间不能大于结束时间");
+        }
+        
+        // 使用天数
+        long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
+        vo.setUsageDays(usageDays);
+        
+        // 统计选中时间段的告警次数
+        FailureWarnMsgTaskQueryModel queryModel = FailureWarnMsgTaskQueryModel.builder().startTime(request.getAlarmStartTime()).endTime(request.getAlarmEndTime()).build();
+        List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgMapper.selectList(queryModel);
+    
+        if (ObjectUtils.isEmpty(failureWarnMsgList)) {
+            log.error("Hardware Failure CabinetMsg task is empty");
+        }
+    
+//        Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(
+//                Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId, Collectors.collectingAndThen(Collectors.toList(), e -> this.getCabinetFailureWarnMsg(e, request))));
+        
+        return Triple.of(true, null, null);
     }
 }
