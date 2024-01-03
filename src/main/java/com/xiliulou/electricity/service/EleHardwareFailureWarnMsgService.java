@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface EleHardwareFailureWarnMsgService {
     R listByPage(EleHardwareFailureWarnMsgPageRequest request);
     
     R countTotal(EleHardwareFailureWarnMsgPageRequest request);
+    
+    FailureWarnFrequencyVo calculateFrequency(EleHardwareFailureWarnMsgPageRequest request);
 }

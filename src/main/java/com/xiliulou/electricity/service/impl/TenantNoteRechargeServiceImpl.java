@@ -56,7 +56,7 @@ public class TenantNoteRechargeServiceImpl implements TenantNoteRechargeService 
         }
         
         List<TenantNoteRechargeVo> list = new ArrayList<>();
-        tenantNotes.parallelStream().forEach(item -> {
+        tenantNotes.stream().forEach(item -> {
             TenantNoteRechargeVo vo = new TenantNoteRechargeVo();
             BeanUtils.copyProperties(item, vo);
             
