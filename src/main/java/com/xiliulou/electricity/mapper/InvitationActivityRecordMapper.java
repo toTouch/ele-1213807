@@ -82,4 +82,6 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
     List<InvitationActivityRecord> selectByUid(@Param("uid") Long uid);
     
     Integer batchInsert(@Param("invitationActivityRecordList") List<InvitationActivityRecord> invitationActivityRecordList);
+    
+    List<InvitationActivityRecord> selectListByUidAndStartTime(@Param("uid")Long uid, @Param("startTime")Long startTime, @Param("endTime") Long endTime);
 }

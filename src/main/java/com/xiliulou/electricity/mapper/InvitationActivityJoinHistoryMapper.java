@@ -87,4 +87,6 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     List<InvitationActivityJoinHistory> selectListByJoinUid(Long uid);
     
     List<InvitationActivityJoinHistoryVO> selectUserHistoryByPage(InvitationActivityJoinHistoryQuery query);
+    
+    List<InvitationActivityJoinHistoryVO> selectListByInviterUid(InvitationActivityJoinHistoryQuery query);
 }

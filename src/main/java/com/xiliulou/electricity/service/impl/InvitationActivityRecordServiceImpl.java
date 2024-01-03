@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -14,17 +15,25 @@ import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
+import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityCodeVO;
+import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoListVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityDetailVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityLineDataVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityStaticsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -37,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -44,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -160,6 +171,196 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     @Override
     public List<InvitationActivityRecord> selectByUid(Long uid) {
         return this.invitationActivityRecordMapper.selectByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> countByStatics() {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+        
+        List<InvitationActivityRecord> recordList = selectByUid(userInfo.getUid());
+        if (CollectionUtils.isEmpty(recordList)) {
+            log.warn("INVITATION ACTIVITY WARN! not found activityRecords,uid={}", userInfo.getUid());
+            return Triple.of(true, null, null);
+        }
+        
+        BigDecimal totalMoney = BigDecimal.ZERO;
+        Integer totalInvitationCount = NumberConstant.ZERO;
+        for (InvitationActivityRecord record : recordList) {
+            totalMoney = totalMoney.add(record.getMoney());
+            totalInvitationCount += record.getInvitationCount();
+        }
+        
+        InvitationActivityStaticsVO invitationActivityRecordInfoVO = InvitationActivityStaticsVO.builder().totalInvitationCount(totalInvitationCount).totalMoney(totalMoney)
+                .build();
+        
+        return Triple.of(true, null, invitationActivityRecordInfoVO);
+        
+    }
+    
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request) {
+        // 封装结果集
+        InvitationActivityAnalysisVO activityAnalysisVO = new InvitationActivityAnalysisVO();
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+        
+        // 查询近7天的
+        long startTime = DateUtils.getLastDayStartTime(NumberConstant.SEVEN);
+        List<InvitationActivityRecord> recordList1 = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
+        if (CollectionUtils.isNotEmpty(recordList1)) {
+            // 近7天 每天的折线图数据
+            List<InvitationActivityLineDataVO> lineDataVOList = this.getLineData(recordList1);
+            
+            activityAnalysisVO.setLineDataVOList(lineDataVOList);
+        }
+        
+        // 根据时间范围查询：昨日/本月/累计
+        Integer timeType = request.getTimeType();
+        List<InvitationActivityRecord> recordList2;
+        if (Objects.equals(timeType, NumberConstant.ONE)) {
+            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            long endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
+            
+            // 查询昨日
+            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
+            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+            
+            // 查询本月
+            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
+        } else {
+            
+            // 查询累计
+            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), null, null);
+        }
+        
+        if (CollectionUtils.isNotEmpty(recordList2)) {
+            InvitationActivityAnalysisVO staticsByTimeTypeVO = this.getStaticsByTimeType(recordList2);
+            
+            activityAnalysisVO.setTotalShareCount(staticsByTimeTypeVO.getTotalShareCount());
+            activityAnalysisVO.setTotalInvitationCount(staticsByTimeTypeVO.getTotalInvitationCount());
+        }
+        
+        // 邀请明细查询
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).status(request.getStatus()).offset(request.getOffset())
+                .size(request.getSize()).build();
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
+        
+        List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
+            Long joinUid = item.getJoinUid();
+            UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+            
+            InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
+                    .activityId(item.getActivityId()).activityName(item.getActivityName()).build();
+            
+            Optional.ofNullable(joinUser).ifPresent(user -> {
+                invitationActivityDetailVO.setJoinName(user.getName());
+                invitationActivityDetailVO.setJoinPhone(user.getPhone());
+            });
+            
+            return invitationActivityDetailVO;
+            
+        }).collect(Collectors.toList());
+        
+        activityAnalysisVO.setDetailVOList(detailVOList);
+        
+        return Triple.of(true, null, activityAnalysisVO);
+    }
+    
+    /**
+     * 根据时间范围（昨日/本月/累计）获取邀请总数、邀请成功总数
+     */
+    private InvitationActivityAnalysisVO getStaticsByTimeType(List<InvitationActivityRecord> recordList) {
+        Integer totalShareCount = NumberConstant.ZERO;
+        Integer totalInvitationCount = NumberConstant.ZERO;
+        for (InvitationActivityRecord record : recordList) {
+            totalShareCount += record.getShareCount();
+            totalInvitationCount += record.getInvitationCount();
+        }
+        
+        InvitationActivityAnalysisVO invitationActivityAnalysisVO = new InvitationActivityAnalysisVO();
+        invitationActivityAnalysisVO.setTotalShareCount(totalShareCount);
+        invitationActivityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
+        
+        return invitationActivityAnalysisVO;
+    }
+    
+    /**
+     * 获取每天的折线图数据
+     */
+    private List<InvitationActivityLineDataVO> getLineData(List<InvitationActivityRecord> recordList) {
+        // 根据createTime进行分组，对统一组的数据进行加法计算
+        List<InvitationActivityLineDataVO> lineDataVOList = new ArrayList<>();
+        
+        // 将每天的数据进行分组
+        Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream()
+                .collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
+        
+        dateListMap.forEach((k, v) -> {
+            InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
+            Integer totalShareCount = NumberConstant.ZERO;
+            Integer totalInvitationCount = NumberConstant.ZERO;
+            
+            if (CollectionUtils.isNotEmpty(v)) {
+                if (Objects.equals(v.size(), NumberConstant.ONE)) {
+                    totalShareCount = v.get(NumberConstant.ZERO).getShareCount();
+                    totalInvitationCount = v.get(NumberConstant.ZERO).getInvitationCount();
+                } else {
+                    for (InvitationActivityRecord record : v) {
+                        totalShareCount += record.getShareCount();
+                        totalInvitationCount += record.getInvitationCount();
+                    }
+                }
+            }
+            
+            lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
+            lineDataVO.setTotalShareCount(totalShareCount);
+            lineDataVO.setTotalInvitationCount(totalInvitationCount);
+            
+            lineDataVOList.add(lineDataVO);
+        });
+        
+        if (CollectionUtils.isEmpty(lineDataVOList)) {
+            return Collections.emptyList();
+        }
+        
+        return lineDataVOList;
+    }
+    
+    @Slave
+    @Override
+    public List<InvitationActivityRecord> listByUidAndStartTime(Long uid, Long startTime, Long endTime) {
+        return invitationActivityRecordMapper.selectListByUidAndStartTime(uid, startTime, endTime);
     }
     
     @Override

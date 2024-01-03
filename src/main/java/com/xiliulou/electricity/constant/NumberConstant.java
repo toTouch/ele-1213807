@@ -14,6 +14,8 @@ public class NumberConstant {
     public static final Integer ONE = 1;
     public static final Integer TWO = 2;
     public static final Integer SIX = 6;
+    
+    public static final Integer SEVEN = 7;
 
     public static final Long ZERO_L = 0L;
     public static final Long ONE_L = 1L;

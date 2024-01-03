@@ -396,5 +396,30 @@
         order by iajh.id desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="selectListByInviterUid" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        tia.name as activityName,
+        iajh.status,
+        iajh.pay_count,
+        iajh.money,
+        iajh.create_time,
+        iajh.join_uid joinUid
+        from t_invitation_activity_join_history iajh
+        left join t_invitation_activity tia on tia.id = iajh.activity_id
+        <where>
+            iajh.uid = #{uid}
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by iajh.id desc
+        limit #{offset}, #{size}
+    </select>
 
 </mapper>

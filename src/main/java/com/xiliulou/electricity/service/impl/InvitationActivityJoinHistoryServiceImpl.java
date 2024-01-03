@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
@@ -186,5 +185,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public List<InvitationActivityJoinHistory> listByJoinUid(Long uid) {
         return invitationActivityJoinHistoryMapper.selectListByJoinUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query) {
+        return invitationActivityJoinHistoryMapper.selectListByInviterUid(query);
     }
 }

@@ -3,12 +3,14 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -62,5 +64,22 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     public R joinActivity(@RequestBody InvitationActivityQuery query) {
         return returnTripleResult(invitationActivityRecordService.joinActivity(query));
     }
-
+    
+    /**
+     * 我的战绩，获取 累计成功邀请人数、我的收入
+     */
+    @GetMapping("/user/invitation/activity/record/statics")
+    public R countByStatics() {
+        return returnTripleResult(invitationActivityRecordService.countByStatics());
+    }
+    
+    /**
+     * 邀请分析
+     */
+    @GetMapping("/user/invitation/activity/record/analysis")
+    public R listInvitationAnalysis(@RequestBody InvitationActivityAnalysisRequest request) {
+        return returnTripleResult(invitationActivityRecordService.listInvitationAnalysis(request));
+    }
+    
+    
 }
