@@ -657,7 +657,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private void doTenantOverviewWarnExport(List<TenantOverviewWarnExportVo> warnExportVoList, HttpServletResponse response) {
-        String fileName = "故障告警设置报表.xlsx";
+        String fileName = "运营商告警总览报表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
@@ -672,7 +672,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private void doTenantOverviewFailureExport(List<TenantOverviewFailureExportVo> failureExportVos, HttpServletResponse response) {
-        String fileName = "故障告警设置报表.xlsx";
+        String fileName = "运营商故障总览报表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
