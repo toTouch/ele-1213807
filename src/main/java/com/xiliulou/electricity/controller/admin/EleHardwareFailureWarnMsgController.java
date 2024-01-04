@@ -193,7 +193,7 @@ public class EleHardwareFailureWarnMsgController {
     /**
      * 故障告警数据导出
      */
-    @GetMapping(value = "/admin/failure/alarm/exportExcel")
+    @GetMapping(value = "/admin/failure/warn/exportExcel")
     public void exportExcel(HttpServletResponse response, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
