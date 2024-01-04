@@ -45,14 +45,12 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
-import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -60,9 +58,6 @@ import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
-import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
-import com.xiliulou.electricity.mq.producer.ActivityProducer;
-import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -625,6 +620,16 @@ public class UnionTradeOrderServiceImpl extends
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userInfo.getUid());
+                }
+                
+            });
         }
 
         //押金订单
@@ -747,6 +752,11 @@ public class UnionTradeOrderServiceImpl extends
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    
                     // 8. 处理分账
                     DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                     divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -960,6 +970,11 @@ public class UnionTradeOrderServiceImpl extends
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    
                     // 8. 处理分账
                     DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                     divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -1148,6 +1163,17 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                  
+                }
+            });
            
         }
     
@@ -1227,6 +1253,17 @@ public class UnionTradeOrderServiceImpl extends
 
                 insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
             }
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid() + ":" + updateOrAddInsuranceUserInfo.getType());
+            
+                }
+            });
+            
         }
 
         //保险订单
