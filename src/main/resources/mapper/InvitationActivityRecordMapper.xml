@@ -203,7 +203,7 @@
     </select>
     
     <select id="selectListByUidAndStartTime" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
-        select id, activity_id, code, uid, share_count, invitation_count, status, money
+        select id, activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id
         from t_invitation_activity_record
         <where>
             uid = #{uid}

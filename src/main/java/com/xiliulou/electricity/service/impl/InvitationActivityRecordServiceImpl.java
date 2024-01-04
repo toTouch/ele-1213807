@@ -291,8 +291,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
         if (CollectionUtils.isNotEmpty(recordList)) {
             // 将每天的数据进行分组
-            Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream()
-                    .collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
+            Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream().collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
         
             dateListMap.forEach((k, v) -> {
                 InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
