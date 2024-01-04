@@ -27,9 +27,12 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureAlarmExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnTenantOverviewVo;
+import com.xiliulou.electricity.vo.failureAlarm.TenantOverviewFailureExportVo;
+import com.xiliulou.electricity.vo.failureAlarm.TenantOverviewWarnExportVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -527,7 +530,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         List<FailureWarnTenantOverviewVo> list = new ArrayList<>();
         
         FailureWarnMsgPageQueryModel queryModel = FailureWarnMsgPageQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
-                .build();
+                .size(request.getSize()).offset(request.getOffset()).build();
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             list = failureWarnMsgMapper.selectListForFailure(queryModel);
         }
@@ -536,6 +539,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             list = failureWarnMsgMapper.selectListForWarn(queryModel);
         }
         
+        tenantOverviewInfo(list, request);
+        
+        return Triple.of(true, null, list);
+    }
+    
+    private void tenantOverviewInfo(List<FailureWarnTenantOverviewVo> list, EleHardwareFailureWarnMsgPageRequest request) {
         if (ObjectUtils.isNotEmpty(list)) {
             Set<Integer> tenantIdSet = list.stream().map(FailureWarnTenantOverviewVo::getTenantId).collect(Collectors.toSet());
             List<Integer> tenantIdList = tenantIdSet.stream().collect(Collectors.toList());
@@ -544,8 +553,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             Map<Integer, Integer> cabinetCountMap = new HashMap<>();
             List<ElectricityCabinetCountVO> cabinetCountVOList = cabinetService.queryCabinetCount(cabinetQuery);
             if (ObjectUtils.isNotEmpty(cabinetCountVOList)) {
-                 cabinetCountMap = cabinetCountVOList.stream()
-                        .collect(Collectors.toMap(ElectricityCabinetCountVO::getTenantId, ElectricityCabinetCountVO::getCabinetCount));
+                cabinetCountMap = cabinetCountVOList.stream().collect(Collectors.toMap(ElectricityCabinetCountVO::getTenantId, ElectricityCabinetCountVO::getCabinetCount));
             }
             
             for (FailureWarnTenantOverviewVo vo : list) {
@@ -559,17 +567,17 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setCabinetShipment(integer);
                 });
                 
-                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE) && ObjectUtils.isNotEmpty(vo.getFailureCount())
-                        && ObjectUtils.isNotEmpty(vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
+                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE) && ObjectUtils.isNotEmpty(vo.getFailureCount()) && ObjectUtils.isNotEmpty(
+                        vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
                     // 故障率 故障次数 / 柜机出货量* 100
                     BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
                     BigDecimal failureRate = failureCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
                     vo.setFailureRate(failureRate);
                 }
-    
-                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) && ObjectUtils.isNotEmpty(vo.getWarnCount())
-                        && ObjectUtils.isNotEmpty(vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
+                
+                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) && ObjectUtils.isNotEmpty(vo.getWarnCount()) && ObjectUtils.isNotEmpty(
+                        vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
                     // 告警率 故障次数 / 柜机出货量* 100
                     BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
@@ -578,7 +586,156 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 }
             }
         }
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> tenantOverviewPageCount(EleHardwareFailureWarnMsgPageRequest request) {
+        if (request.getAlarmStartTime() > request.getAlarmEndTime()) {
+            return Triple.of(false, "300826", "查询结束时间不能小于开始时间");
+        }
         
-        return Triple.of(true, null, list);
+        // 使用天数
+        long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
+        
+        if (usageDays > 30) {
+            return Triple.of(false, "300825", "查询天数不能大于30天");
+        }
+        
+        if (!(Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) || Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE))) {
+            return Triple.of(false, "300827", "请选择正确的故障类型");
+        }
+        
+        FailureWarnMsgPageQueryModel queryModel = FailureWarnMsgPageQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
+                .build();
+        Integer count = failureWarnMsgMapper.countTenantOverview(queryModel);
+        
+        return Triple.of(true, null, count);
+    }
+    
+    @Override
+    public void tenantOverviewExport(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response) {
+        if (request.getAlarmStartTime() > request.getAlarmEndTime()) {
+            throw new CustomBusinessException("查询结束时间不能小于开始时间");
+        }
+        
+        // 使用天数
+        long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
+        
+        if (usageDays > 30) {
+            throw new CustomBusinessException("查询天数不能大于30天");
+        }
+        
+        if (!(Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) || Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE))) {
+            throw new CustomBusinessException("请选择正确的故障类型");
+        }
+        
+        List<FailureWarnTenantOverviewVo> list = new ArrayList<>();
+        
+        FailureWarnMsgPageQueryModel queryModel = FailureWarnMsgPageQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
+                .offset(0L).size(2000L).build();
+    
+        List<TenantOverviewFailureExportVo> failureExportVos = new ArrayList<>();
+        List<TenantOverviewWarnExportVo> warnExportVoList = new ArrayList<>();
+        
+        if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
+            // 查询
+            list = failureWarnMsgMapper.selectListForFailure(queryModel);
+            // 设置信息
+            setTeanantOverviewExport(failureExportVos, warnExportVoList, request, list);
+            // 导出
+            doTenantOverviewFailureExport(failureExportVos, response);
+        }
+        
+        if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
+            // 查询
+            list = failureWarnMsgMapper.selectListForWarn(queryModel);
+            // 设置信息
+            setTeanantOverviewExport(failureExportVos, warnExportVoList, request, list);
+            // 导出
+            doTenantOverviewWarnExport(warnExportVoList, response);
+        }
+    }
+    
+    private void doTenantOverviewWarnExport(List<TenantOverviewWarnExportVo> warnExportVoList, HttpServletResponse response) {
+        String fileName = "故障告警设置报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, TenantOverviewWarnExportVo.class).sheet("sheet").doWrite(warnExportVoList);
+            return;
+        } catch (IOException e) {
+            log.error("tenant Overview Warn Export error", e);
+        }
+    }
+    
+    private void doTenantOverviewFailureExport(List<TenantOverviewFailureExportVo> failureExportVos, HttpServletResponse response) {
+        String fileName = "故障告警设置报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, TenantOverviewFailureExportVo.class).sheet("sheet").doWrite(failureExportVos);
+            return;
+        } catch (IOException e) {
+            log.error("tenant Overview failure Export error", e);
+        }
+    }
+    
+    private void setTeanantOverviewExport(List<TenantOverviewFailureExportVo> failureExportVos, List<TenantOverviewWarnExportVo> warnExportVoList,
+            EleHardwareFailureWarnMsgPageRequest request, List<FailureWarnTenantOverviewVo> list) {
+        if (ObjectUtils.isNotEmpty(list)) {
+            Set<Integer> tenantIdSet = list.stream().map(FailureWarnTenantOverviewVo::getTenantId).collect(Collectors.toSet());
+            List<Integer> tenantIdList = tenantIdSet.stream().collect(Collectors.toList());
+            // 查询柜机的出货量
+            ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().tenantIdList(tenantIdList).build();
+            Map<Integer, Integer> cabinetCountMap = new HashMap<>();
+            List<ElectricityCabinetCountVO> cabinetCountVOList = cabinetService.queryCabinetCount(cabinetQuery);
+            if (ObjectUtils.isNotEmpty(cabinetCountVOList)) {
+                cabinetCountMap = cabinetCountVOList.stream().collect(Collectors.toMap(ElectricityCabinetCountVO::getTenantId, ElectricityCabinetCountVO::getCabinetCount));
+            }
+        
+            for (FailureWarnTenantOverviewVo vo : list) {
+                // 租户名称
+                Optional.ofNullable(tenantService.queryByIdFromCache(vo.getTenantId())).ifPresent(t -> {
+                    vo.setTenantName(t.getName());
+                });
+            
+                // 柜机出货量
+                Optional.ofNullable(cabinetCountMap.get(vo.getTenantId())).ifPresent(integer -> {
+                    vo.setCabinetShipment(integer);
+                });
+            
+                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE) && ObjectUtils.isNotEmpty(vo.getFailureCount()) && ObjectUtils.isNotEmpty(
+                        vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
+                    // 故障率 故障次数 / 柜机出货量* 100
+                    BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
+                    BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
+                    BigDecimal failureRate = failureCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    vo.setFailureRate(failureRate);
+                
+                    TenantOverviewFailureExportVo failureExportVo = new TenantOverviewFailureExportVo();
+                    BeanUtils.copyProperties(vo, failureExportVo);
+                    failureExportVos.add(failureExportVo);
+                }
+            
+                if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) && ObjectUtils.isNotEmpty(vo.getWarnCount()) && ObjectUtils.isNotEmpty(
+                        vo.getCabinetShipment()) && vo.getCabinetShipment() > 0) {
+                    // 告警率 故障次数 / 柜机出货量* 100
+                    BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
+                    BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
+                    BigDecimal warnRate = warnCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    vo.setWarnRate(warnRate);
+                
+                    TenantOverviewWarnExportVo warnExportVo = new TenantOverviewWarnExportVo();
+                    BeanUtils.copyProperties(vo, warnExportVo);
+                    warnExportVoList.add(warnExportVo);
+                }
+            }
+        }
     }
 }

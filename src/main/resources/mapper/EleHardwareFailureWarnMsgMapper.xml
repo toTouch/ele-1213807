@@ -141,7 +141,7 @@
                       FROM
                           t_ele_hardware_failure_cabinet_msg
                       where
-                          create_time BETWEEN 1702436156000 and 1704357716000
+                          create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
                       GROUP BY
                           tenant_id
                       ) s
@@ -156,12 +156,20 @@
                           FROM
                               t_ele_hardware_failure_cabinet_msg
                           where
-                              create_time BETWEEN 1702436156000 and 1704357716000
+                              create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
                           GROUP BY
                               tenant_id
                       ) s
         order by s.warnCount desc
         limit #{offset}, #{size}
+    </select>
+    <select id="countTenantOverview" resultType="java.lang.Integer">
+        SELECT
+            count(tenant_id)
+        FROM
+            t_ele_hardware_failure_cabinet_msg
+        WHERE
+            create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
     </select>
     
     <insert id="batchInsert">

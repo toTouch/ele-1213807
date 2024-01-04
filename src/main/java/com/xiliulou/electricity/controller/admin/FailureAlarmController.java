@@ -213,7 +213,6 @@ public class FailureAlarmController {
      */
     @GetMapping(value = "/admin/failure/alarm/exportExcel")
     public void exportExcel(HttpServletResponse response) {
-        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             throw new CustomBusinessException("未查询到用户");

@@ -32,4 +32,6 @@ public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareF
     List<FailureWarnTenantOverviewVo> selectListForFailure(FailureWarnMsgPageQueryModel queryModel);
     
     List<FailureWarnTenantOverviewVo> selectListForWarn(FailureWarnMsgPageQueryModel queryModel);
+    
+    Integer countTenantOverview(FailureWarnMsgPageQueryModel queryModel);
 }
