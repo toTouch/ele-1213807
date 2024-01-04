@@ -397,7 +397,7 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectListByInviterUid" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+    <select id="selectListByInviterUidOfAdmin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
         select
         iajh.id,
         iajh.uid,
@@ -438,6 +438,42 @@
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
+            </if>
+        </where>
+        order by iajh.id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectListByInviterUid" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        tia.name as activityName,
+        iajh.status,
+        iajh.pay_count,
+        iajh.money,
+        iajh.create_time,
+        iajh.join_uid joinUid
+        from t_invitation_activity_join_history iajh
+        left join t_invitation_activity tia on tia.id = iajh.activity_id
+        <where>
+            iajh.uid = #{uid}
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and iajh.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and iajh.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
         </where>
         order by iajh.id desc

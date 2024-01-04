@@ -200,7 +200,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         query.setEndTime(endTime);
     
         //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
-        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(query);
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTimeOfAdmin(query);
         if (CollectionUtils.isNotEmpty(recordList)) {
             int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
             int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
@@ -220,7 +220,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 .beginTime(startTime)
                 .endTime(endTime)
                 .build();
-        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidOfAdmin(historyQuery);
         if (CollectionUtils.isNotEmpty(historyVOList)) {
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
@@ -504,6 +504,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         
         return incomeDetailVO;
+    }
+    
+    @Slave
+    @Override
+    public List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query) {
+        return invitationActivityRecordMapper.selectListByUidAndStartTimeOfAdmin(query);
     }
     
     @Slave

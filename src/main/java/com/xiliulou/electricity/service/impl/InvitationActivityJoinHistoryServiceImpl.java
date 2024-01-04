@@ -189,6 +189,12 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     
     @Slave
     @Override
+    public List<InvitationActivityJoinHistoryVO> listByInviterUidOfAdmin(InvitationActivityJoinHistoryQuery query) {
+        return invitationActivityJoinHistoryMapper.selectListByInviterUidOfAdmin(query);
+    }
+    
+    @Slave
+    @Override
     public List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query) {
         return invitationActivityJoinHistoryMapper.selectListByInviterUid(query);
     }

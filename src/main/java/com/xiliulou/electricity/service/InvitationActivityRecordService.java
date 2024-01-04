@@ -88,6 +88,8 @@ public interface InvitationActivityRecordService {
     
     List<InvitationActivityRecord> selectByUid(Long uid);
     
+    List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query);
+    
     List<InvitationActivityRecord> listByUidAndStartTime(InvitationActivityRecordQuery query);
     
     Triple<Boolean, String, Object> countByStatics();

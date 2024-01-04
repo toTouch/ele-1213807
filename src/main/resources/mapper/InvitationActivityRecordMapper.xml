@@ -202,7 +202,7 @@
         </where>
     </select>
     
-    <select id="selectListByUidAndStartTime" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
+    <select id="selectListByUidAndStartTimeOfAdmin" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
         select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
         from t_invitation_activity_record iar
         left join t_user_info tui on tui.uid=iar.uid
@@ -228,6 +228,24 @@
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
+            </if>
+        </where>
+        order by iar.id desc
+    </select>
+    
+    <select id="selectListByUidAndStartTime" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
+        select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
+        from t_invitation_activity_record iar
+        <where>
+            iar.uid = #{uid}
+            <if test="beginTime != null ">
+                and iar.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and iar.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+            <if test="tenantId != null">
+                and iar.tenant_id = #{tenantId}
             </if>
         </where>
         order by iar.id desc

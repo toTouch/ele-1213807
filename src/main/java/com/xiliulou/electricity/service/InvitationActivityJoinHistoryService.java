@@ -85,5 +85,7 @@ public interface InvitationActivityJoinHistoryService {
     
     List<InvitationActivityJoinHistory> listByJoinUid(Long uid);
     
+    List<InvitationActivityJoinHistoryVO> listByInviterUidOfAdmin(InvitationActivityJoinHistoryQuery query);
+    
     List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query);
 }
