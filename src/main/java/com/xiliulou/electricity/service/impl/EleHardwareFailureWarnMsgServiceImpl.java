@@ -364,7 +364,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setAlarmTimeExport(sdf.format(date));
                 }
                 
-                if (ObjectUtils.isNotEmpty(vo.getRecoverTimeExport())) {
+                if (ObjectUtils.isNotEmpty(vo.getRecoverTime())) {
                     date.setTime(vo.getRecoverTime());
                     vo.setRecoverTimeExport(sdf.format(date));
                 }
@@ -477,7 +477,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setAlarmTimeExport(sdf.format(date));
                 }
             
-                if (ObjectUtils.isNotEmpty(vo.getRecoverTimeExport())) {
+                if (ObjectUtils.isNotEmpty(vo.getRecoverTime())) {
                     date.setTime(vo.getRecoverTime());
                     vo.setRecoverTimeExport(sdf.format(date));
                 }
