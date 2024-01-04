@@ -421,10 +421,10 @@
                 and iajh.status = #{status}
             </if>
             <if test="beginTime != null ">
-                and create_time <![CDATA[ >=  ]]> #{beginTime}
+                and iajh.create_time <![CDATA[ >=  ]]> #{beginTime}
             </if>
             <if test="endTime != null ">
-                and create_time <![CDATA[ <=  ]]> #{endTime}
+                and iajh.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
             <if test="franchiseeIds != null">
                 and iajh.franchisee_id in
