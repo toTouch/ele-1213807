@@ -212,7 +212,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(request.getAlarmStartTime());
         calendar.add(Calendar.DAY_OF_MONTH, diffDays);
-        request.setAlarmStartTime(request.getAlarmStartTime());
+        request.setAlarmStartTime(calendar.getTimeInMillis());
         
         // 计算上一个周期的结束时间
         calendar.setTimeInMillis(request.getAlarmEndTime());
@@ -230,12 +230,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             Map<Integer, Integer> failureNumMap = failureWarnMsgList.stream()
                     .collect(Collectors.toMap(EleHardwareFailureWarnMsgVo::getType, EleHardwareFailureWarnMsgVo::getFailureWarnNum));
             // 故障次数
-            if (ObjectUtils.isNotEmpty(failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()))) {
+            if (ObjectUtils.isNotEmpty(failureNumMap.get(EleHardwareFailureWarnMsg.FAILURE))) {
                 failureNum = failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode());
             }
         
             // 告警次数
-            if (ObjectUtils.isNotEmpty(failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()))) {
+            if (ObjectUtils.isNotEmpty(failureNumMap.get(EleHardwareFailureWarnMsg.WARN))) {
                 warnNum = failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode());
             }
         }
