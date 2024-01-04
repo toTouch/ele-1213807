@@ -236,6 +236,34 @@ public class EleHardwareFailureWarnMsgController {
     }
     
     /**
+     * 故障统计分析
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/admin/super/failure/warn/tenantOverview")
+    public R tenantOverview(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime,
+            @RequestParam(value = "type", required = true) Integer type, @RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmEndTime(endTime)
+                .type(type).offset(offset).size(size).build();
+        Triple<Boolean, String, Object> triple = failureWarnMsgService.tenantOverview(request);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
+        
+        return R.ok(triple.getRight());
+    }
+    
+    /**
      * 故障告警数据导出
      */
     @GetMapping(value = "/admin/failure/warn/exportExcel")

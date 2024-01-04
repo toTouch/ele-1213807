@@ -19,7 +19,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -74,29 +73,26 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
     
     private EleHardwareFailureCabinetMsg getCabinetFailureWarnMsg(List<EleHardwareFailureWarnMsgVo> failureWarnMsgVoList, FailureAlarmTaskQueryRequest request) {
         EleHardwareFailureCabinetMsg failureCabinetMsg = new EleHardwareFailureCabinetMsg();
-        failureWarnMsgVoList.forEach(item -> {
+        Integer failureNum = 0;
+        Integer warnNum = 0;
+        for (EleHardwareFailureWarnMsgVo item : failureWarnMsgVoList) {
             if (ObjectUtils.isEmpty(failureCabinetMsg.getTenantId())) {
                 failureCabinetMsg.setCabinetId(item.getCabinetId());
                 failureCabinetMsg.setTenantId(item.getTenantId());
                 failureCabinetMsg.setCreateTime(request.getTime());
             }
-            
+    
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
-                failureCabinetMsg.setFailureCount(item.getFailureWarnNum());
+                failureNum += item.getFailureWarnNum();
             }
-            
+    
             if (Objects.equals(item.getType(), EleHardwareFailureWarnMsg.WARN)) {
-                failureCabinetMsg.setWarnCount(item.getFailureWarnNum());
+                warnNum += item.getFailureWarnNum();
             }
-        });
+        }
     
-        Optional.ofNullable(failureCabinetMsg.getFailureCount()).ifPresent(item -> {
-            failureCabinetMsg.setFailureCount(0);
-        });
-    
-        Optional.ofNullable(failureCabinetMsg.getWarnCount()).ifPresent(item -> {
-            failureCabinetMsg.setWarnCount(0);
-        });
+        failureCabinetMsg.setFailureCount(failureNum);
+        failureCabinetMsg.setWarnCount(warnNum);
         
         return failureCabinetMsg;
     }

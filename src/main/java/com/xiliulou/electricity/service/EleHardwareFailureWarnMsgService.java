@@ -25,4 +25,6 @@ public interface EleHardwareFailureWarnMsgService {
     R test();
     
     R superExportPage(EleHardwareFailureWarnMsgPageRequest request);
+    
+    Triple<Boolean, String, Object> tenantOverview(EleHardwareFailureWarnMsgPageRequest request);
 }

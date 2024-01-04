@@ -12,10 +12,10 @@ import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -250,4 +250,6 @@ public interface ElectricityCabinetService {
     R showBatteryVAndCapacity(Integer electricityCabinetId);
     
     R homeOneV2();
+    
+    List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
 }
