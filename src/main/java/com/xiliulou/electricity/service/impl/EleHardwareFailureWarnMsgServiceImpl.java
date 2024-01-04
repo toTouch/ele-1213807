@@ -197,7 +197,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 .limitFailureAlarmStatus(FailureAlarm.enable).build();
         
         // 设置故障信息
-        setFailureInfo(request, usageDays, vo, queryModel);
+        setFailureInfo(usageDays, vo, queryModel);
         
         // 设置故障和告警环比
         setFailureCycleRate(request, usageDays, vo, queryModel);
@@ -258,7 +258,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         vo.setWarnCycleRate(warnCycleRate);
     }
     
-    private void setFailureInfo(EleHardwareFailureWarnMsgPageRequest request, long usageDays, FailureWarnFrequencyVo vo, FailureWarnMsgTaskQueryModel queryModel) {
+    private void setFailureInfo(long usageDays, FailureWarnFrequencyVo vo, FailureWarnMsgTaskQueryModel queryModel) {
         // 统计平台中所有的柜机的数量
         ElectricityCabinetQuery electricityCabinetQuery = new ElectricityCabinetQuery();
         R r = cabinetService.queryCount(electricityCabinetQuery);
