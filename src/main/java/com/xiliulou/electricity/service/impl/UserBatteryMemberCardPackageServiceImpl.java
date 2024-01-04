@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * (UserBatteryMemberCardPackage)表服务实现类
@@ -41,6 +43,11 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
+    
+    @Autowired
+    private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    ExecutorService memberCardTransferThreadPool = XllThreadPoolExecutors.newFixedThreadPool("MEMBER_CARD_TRANSFER_POOL", 1, "member_card_transfer_thread");
     
     /**
      * 通过ID查询单条数据从DB
@@ -252,6 +259,63 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={},orderId={}", userBatteryMemberCard.getUid(),
+                    userBatteryMemberCardPackageLatest.getOrderId());
+            return;
+        }
+        
+        //更新用户电池型号
+        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+    }
+    
+    public void asyncHandleUpdateUserBatteryMemberCardInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo){
+        memberCardTransferThreadPool.execute(()->{
+            updateUserBatteryMemberCardPackageInfo(userBatteryMemberCard,userInfo);
+        });
+    }
+    
+    
+    private void updateUserBatteryMemberCardPackageInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
+        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(userBatteryMemberCard.getUid());
+        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            return;
+        }
+        
+        //更新当前用户绑定的套餐数据
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+        userBatteryMemberCardUpdate.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
+        userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(
+                userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+        userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        
+        //删除资源包
+        userBatteryMemberCardPackageService.deleteByOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        
+        //更新原来绑定的套餐订单状态
+        ElectricityMemberCardOrder oldMemberCardOrder = new ElectricityMemberCardOrder();
+        oldMemberCardOrder.setOrderId(userBatteryMemberCard.getOrderId());
+        oldMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+        oldMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCardOrderService.updateStatusByOrderNo(oldMemberCardOrder);
+        
+        //更新新绑定的套餐订单的状态
+        ElectricityMemberCardOrder currentMemberCardOrder = new ElectricityMemberCardOrder();
+        currentMemberCardOrder.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
+        currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+        currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
+        
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE ERROR!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
                     userBatteryMemberCardPackageLatest.getOrderId());
             return;
         }
