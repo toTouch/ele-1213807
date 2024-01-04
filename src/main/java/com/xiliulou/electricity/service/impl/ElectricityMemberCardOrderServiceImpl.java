@@ -3651,6 +3651,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(batteryMemberCard)) {
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
+    
+        //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+        if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
+            log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
+            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+        }
         
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
                 batteryMemberCard.getFranchiseeId())) {
@@ -4004,6 +4010,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
             return Triple.of(false, "100275", "电池套餐不可用");
+        }
+    
+        //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+        if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
+            log.warn("The rent type of current package is a new rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
+            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
