@@ -13,11 +13,6 @@ import java.util.List;
 public class InvitationActivityAnalysisVO {
     
     /**
-     * 折现图数据
-     */
-    private List<InvitationActivityLineDataVO> lineDataVOList;
-    
-    /**
      * 邀请总人数(昨日/本月/累计)
      */
     private Integer totalShareCount;

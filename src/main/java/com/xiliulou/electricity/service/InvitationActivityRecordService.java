@@ -86,10 +86,14 @@ public interface InvitationActivityRecordService {
     
     List<InvitationActivityRecord> selectByUid(Long uid);
     
+    List<InvitationActivityRecord> listByUidAndStartTime(Long uid, Long startTime, Long endTime);
+    
     Triple<Boolean, String, Object> countByStatics();
+    
+    Triple<Boolean, String, Object> listInvitationLineData();
     
     Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request);
     
-    List<InvitationActivityRecord> listByUidAndStartTime(Long uid, Long startTime, Long endTime);
+    Triple<Boolean, String, Object> listInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
     
 }

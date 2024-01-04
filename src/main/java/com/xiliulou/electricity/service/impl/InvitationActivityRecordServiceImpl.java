@@ -32,10 +32,12 @@ import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityDetailVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityIncomeDetailVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityLineDataVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityStaticsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -192,7 +194,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
-        List<InvitationActivityRecord> recordList = selectByUid(userInfo.getUid());
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(userInfo.getUid(), null, null);
         if (CollectionUtils.isEmpty(recordList)) {
             log.warn("INVITATION ACTIVITY WARN! not found activityRecords,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
@@ -212,149 +214,225 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
     }
     
-    @Slave
     @Override
-    public Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request) {
-        // 封装结果集
-        InvitationActivityAnalysisVO activityAnalysisVO = new InvitationActivityAnalysisVO();
-        
+    public Triple<Boolean, String, Object> listInvitationLineData() {
+        List<InvitationActivityLineDataVO> lineDataVOList = new ArrayList<>();
+    
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        
+    
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-        
+    
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-        
+    
         // 查询近7天的
-        long startTime = DateUtils.getLastDayStartTime(NumberConstant.SEVEN);
-        List<InvitationActivityRecord> recordList1 = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
-        if (CollectionUtils.isNotEmpty(recordList1)) {
-            // 近7天 每天的折线图数据
-            List<InvitationActivityLineDataVO> lineDataVOList = this.getLineData(recordList1);
-            
-            activityAnalysisVO.setLineDataVOList(lineDataVOList);
-        }
+        Long startTime = DateUtils.getLastDayStartTime(NumberConstant.SEVEN);
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            // 将每天的数据进行分组
+            Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream()
+                    .collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
         
+            dateListMap.forEach((k, v) -> {
+                InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
+                Integer totalShareCount = NumberConstant.ZERO;
+                Integer totalInvitationCount = NumberConstant.ZERO;
+            
+                if (CollectionUtils.isNotEmpty(v)) {
+                    if (Objects.equals(v.size(), NumberConstant.ONE)) {
+                        totalShareCount = v.get(NumberConstant.ZERO).getShareCount();
+                        totalInvitationCount = v.get(NumberConstant.ZERO).getInvitationCount();
+                    } else {
+                        for (InvitationActivityRecord record : v) {
+                            totalShareCount += record.getShareCount();
+                            totalInvitationCount += record.getInvitationCount();
+                        }
+                    }
+                }
+            
+                lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
+                lineDataVO.setTotalShareCount(totalShareCount);
+                lineDataVO.setTotalInvitationCount(totalInvitationCount);
+            
+                lineDataVOList.add(lineDataVO);
+            });
+        }
+    
+        return Triple.of(true, null, lineDataVOList);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request) {
+        // 封装结果集
+        InvitationActivityAnalysisVO activityAnalysisVO = new InvitationActivityAnalysisVO();
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+    
         // 根据时间范围查询：昨日/本月/累计
         Integer timeType = request.getTimeType();
-        List<InvitationActivityRecord> recordList2;
+        List<InvitationActivityRecord> recordList;
+        Long startTime = null;
+        Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
-            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
-            long endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
-            
             // 查询昨日
-            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
         } else if (Objects.equals(timeType, NumberConstant.TWO)) {
-            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
-            
             // 查询本月
-            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
-        } else {
-            
-            // 查询累计
-            recordList2 = this.listByUidAndStartTime(userInfo.getUid(), null, null);
+            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+        }
+        // startTime=null、endTime = null 查询累计
+    
+        // 邀请总人数、邀请成功总人数
+        recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
+            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
+        
+            activityAnalysisVO.setTotalShareCount(totalShareCount);
+            activityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
         }
         
-        if (CollectionUtils.isNotEmpty(recordList2)) {
-            InvitationActivityAnalysisVO staticsByTimeTypeVO = this.getStaticsByTimeType(recordList2);
-            
-            activityAnalysisVO.setTotalShareCount(staticsByTimeTypeVO.getTotalShareCount());
-            activityAnalysisVO.setTotalInvitationCount(staticsByTimeTypeVO.getTotalInvitationCount());
-        }
-        
-        // 邀请明细查询
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).status(request.getStatus()).offset(request.getOffset())
-                .size(request.getSize()).build();
+        // 邀请明细
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
+                .status(request.getStatus()).offset(request.getOffset()).size(request.getSize()).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
-        
+    
         List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
             Long joinUid = item.getJoinUid();
             UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
-            
+        
             InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
                     .activityId(item.getActivityId()).activityName(item.getActivityName()).build();
-            
+        
             Optional.ofNullable(joinUser).ifPresent(user -> {
                 invitationActivityDetailVO.setJoinName(user.getName());
                 invitationActivityDetailVO.setJoinPhone(user.getPhone());
             });
-            
+        
             return invitationActivityDetailVO;
-            
+        
         }).collect(Collectors.toList());
-        
+    
         activityAnalysisVO.setDetailVOList(detailVOList);
-        
+    
         return Triple.of(true, null, activityAnalysisVO);
     }
     
-    /**
-     * 根据时间范围（昨日/本月/累计）获取邀请总数、邀请成功总数
-     */
-    private InvitationActivityAnalysisVO getStaticsByTimeType(List<InvitationActivityRecord> recordList) {
-        Integer totalShareCount = NumberConstant.ZERO;
-        Integer totalInvitationCount = NumberConstant.ZERO;
-        for (InvitationActivityRecord record : recordList) {
-            totalShareCount += record.getShareCount();
-            totalInvitationCount += record.getInvitationCount();
+    @Override
+    public Triple<Boolean, String, Object> listInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
+        // 封装结果集
+        InvitationActivityIncomeDetailVO incomeDetailVO = new InvitationActivityIncomeDetailVO();
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        
-        InvitationActivityAnalysisVO invitationActivityAnalysisVO = new InvitationActivityAnalysisVO();
-        invitationActivityAnalysisVO.setTotalShareCount(totalShareCount);
-        invitationActivityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
-        
-        return invitationActivityAnalysisVO;
+    
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+    
+        // 根据时间范围查询：昨日/本月/累计
+        Integer timeType = request.getTimeType();
+        List<InvitationActivityRecord> recordList;
+        Long startTime = null;
+        Long endTime = null;
+        if (Objects.equals(timeType, NumberConstant.ONE)) {
+            // 查询昨日
+            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
+        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
+            // 查询本月
+            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+        }
+        // startTime=null、endTime = null 查询累计
+    
+        recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+    
+        // 总收入
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            incomeDetailVO.setTotalIncome(totalIncome);
+        }
+    
+        // 首返奖励及人数、续返奖励及人数、收入明细
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
+                .status(request.getStatus()).offset(request.getOffset()).size(request.getSize()).build();
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
+    
+        InvitationActivityIncomeDetailVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
+        incomeDetailVO.setFirstTotalIncome(incomeAndMemCountVO.getFirstTotalIncome());
+        incomeDetailVO.setFirstTotalMemCount(incomeAndMemCountVO.getFirstTotalMemCount());
+        incomeDetailVO.setRenewTotalIncome(incomeAndMemCountVO.getRenewTotalIncome());
+        incomeDetailVO.setRenewTotalMemCount(incomeAndMemCountVO.getRenewTotalMemCount());
+    
+        return Triple.of(true, null, incomeDetailVO);
     }
     
-    /**
-     * 获取每天的折线图数据
-     */
-    private List<InvitationActivityLineDataVO> getLineData(List<InvitationActivityRecord> recordList) {
-        // 根据createTime进行分组，对统一组的数据进行加法计算
-        List<InvitationActivityLineDataVO> lineDataVOList = new ArrayList<>();
+    private InvitationActivityIncomeDetailVO getIncomeAndMemCount(List<InvitationActivityJoinHistoryVO> historyVOList) {
+        InvitationActivityIncomeDetailVO incomeDetailVO = new InvitationActivityIncomeDetailVO();
         
-        // 将每天的数据进行分组
-        Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream()
-                .collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
-        
-        dateListMap.forEach((k, v) -> {
-            InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
-            Integer totalShareCount = NumberConstant.ZERO;
-            Integer totalInvitationCount = NumberConstant.ZERO;
+        if (CollectionUtils.isEmpty(historyVOList)) {
+            // 根据 payCount=1为1组，不等于1为另一组
+            Map<Boolean, List<InvitationActivityJoinHistoryVO>> groupedByPayCount = historyVOList.stream()
+                    .collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE)));
             
-            if (CollectionUtils.isNotEmpty(v)) {
-                if (Objects.equals(v.size(), NumberConstant.ONE)) {
-                    totalShareCount = v.get(NumberConstant.ZERO).getShareCount();
-                    totalInvitationCount = v.get(NumberConstant.ZERO).getInvitationCount();
-                } else {
-                    for (InvitationActivityRecord record : v) {
-                        totalShareCount += record.getShareCount();
-                        totalInvitationCount += record.getInvitationCount();
-                    }
-                }
+            List<InvitationActivityJoinHistoryVO> firstHistoryList = groupedByPayCount.get(Boolean.TRUE);
+            List<InvitationActivityJoinHistoryVO> renewHistoryList = groupedByPayCount.get(Boolean.FALSE);
+            
+            //首返奖励及人数
+            if (CollectionUtils.isNotEmpty(firstHistoryList)) {
+                BigDecimal firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
+                incomeDetailVO.setFirstTotalMemCount(firstHistoryList.size());
             }
             
-            lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
-            lineDataVO.setTotalShareCount(totalShareCount);
-            lineDataVO.setTotalInvitationCount(totalInvitationCount);
-            
-            lineDataVOList.add(lineDataVO);
-        });
-        
-        if (CollectionUtils.isEmpty(lineDataVOList)) {
-            return Collections.emptyList();
+            //续返奖励及人数
+            if (CollectionUtils.isNotEmpty(renewHistoryList)) {
+                BigDecimal renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = renewHistoryList.stream()
+                        .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
+                if (MapUtils.isNotEmpty(joinUidGroupMap)) {
+                    incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
+                    incomeDetailVO.setRenewTotalMemCount(joinUidGroupMap.size());
+                }
+            }
         }
         
-        return lineDataVOList;
+        return incomeDetailVO;
     }
     
     @Slave

@@ -3,6 +3,8 @@ package com.xiliulou.electricity.vo.activity;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 小程序-返现活动-我的战绩-累计成功邀请详情-邀请明细
@@ -41,4 +43,14 @@ public class InvitationActivityDetailVO {
      * 活动名称
      */
     private String activityName;
+    
+    /**
+     * 购买次数
+     */
+    private Integer payCount;
+    
+    /**
+     * 返现金额
+     */
+    private BigDecimal money;
 }

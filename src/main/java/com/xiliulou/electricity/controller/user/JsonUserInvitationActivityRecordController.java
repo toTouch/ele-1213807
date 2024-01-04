@@ -7,10 +7,10 @@ import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisReque
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -74,12 +74,29 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     }
     
     /**
+     * 邀请分析-折线图
+     */
+    @GetMapping("/user/invitation/activity/record/analysis/lineData")
+    public R listInvitationLineData() {
+        return returnTripleResult(invitationActivityRecordService.listInvitationLineData());
+    }
+    
+    /**
      * 邀请分析
+     *          -时间范围（昨日/本月/累计  统计邀请总人数及成功邀请总人数）
+     *          -邀请明细
      */
     @GetMapping("/user/invitation/activity/record/analysis")
-    public R listInvitationAnalysis(@RequestBody InvitationActivityAnalysisRequest request) {
+    public R listInvitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
         return returnTripleResult(invitationActivityRecordService.listInvitationAnalysis(request));
     }
     
+    /**
+     * 收入明细
+     */
+    @GetMapping("/user/invitation/activity/record/income/detail")
+    public R listInvitationIncomeDetail(@RequestBody InvitationActivityAnalysisRequest request) {
+        return returnTripleResult(invitationActivityRecordService.listInvitationIncomeDetail(request));
+    }
     
 }

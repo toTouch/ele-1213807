@@ -417,9 +417,20 @@
             <if test="tenantId != null">
                 and iajh.tenant_id = #{tenantId}
             </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and create_time <![CDATA[ >=  ]]> #{endTime}
+            </if>
         </where>
         order by iajh.id desc
-        limit #{offset}, #{size}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
 </mapper>
