@@ -434,7 +434,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 1);
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 30);
         if (!triple.getLeft()) {
             log.error("failure warn msg export check error info={}", triple.getRight());
             throw new CustomBusinessException((String) triple.getRight());
