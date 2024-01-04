@@ -119,4 +119,18 @@
         order by alarm_time desc
         limit #{offset}, #{size}
     </select>
+    <select id="countFailureWarnNum" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+        SELECT
+            type,
+            count( 1 ) AS 'failureWarnNum'
+        FROM
+        t_ele_hardware_failure_warn_msg t
+        WHERE
+        alarm_time between  #{startTime} and #{endTime}
+        <if test="limitFailureAlarmStatus != null">
+            AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 1  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
+        </if>
+        GROUP BY
+        type
+    </select>
 </mapper>

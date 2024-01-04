@@ -22,4 +22,6 @@ public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareF
     Integer countTotal(FailureWarnMsgPageQueryModel queryModel);
     
     List<FailureWarnMsgExcelVo> selectListExport(FailureWarnMsgPageQueryModel queryModel);
+    
+    List<EleHardwareFailureWarnMsgVo> countFailureWarnNum(FailureWarnMsgTaskQueryModel queryModel);
 }

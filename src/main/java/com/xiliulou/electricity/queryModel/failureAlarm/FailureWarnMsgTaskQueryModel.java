@@ -31,4 +31,9 @@ public class FailureWarnMsgTaskQueryModel {
      * 当天的中午十二点
      */
     private Long time;
+    
+    /**
+     * 限制故障告警的状态：启用
+     */
+    private Integer limitFailureAlarmStatus;
 }

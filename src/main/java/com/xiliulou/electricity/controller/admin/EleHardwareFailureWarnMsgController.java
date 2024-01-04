@@ -179,8 +179,17 @@ public class EleHardwareFailureWarnMsgController {
         return failureWarnMsgService.listByPage(request);
     }
     
-    @GetMapping("/admin/failure/warn/frequency")
+    @GetMapping("/admin/super/failure/warn/frequency")
     public R frequency(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmStartTime(endTime).build();
         Triple<Boolean, String, Object> triple = failureWarnMsgService.calculateFrequency(request);
         if (!triple.getLeft()) {

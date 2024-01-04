@@ -38,6 +38,11 @@ public class FailureWarnFrequencyVo {
     private Integer failureCount;
     
     /**
+     * 告警次数
+     */
+    private Integer warnCount;
+    
+    /**
      * 告警频率
      */
     private BigDecimal warnRate;
