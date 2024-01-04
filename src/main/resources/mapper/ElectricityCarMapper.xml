@@ -55,6 +55,9 @@
         <if test="query.stockStatus != null ">
             and tec.stock_status = #{query.stockStatus}
         </if>
+        <if test="query.warehouseId != null">
+            and tec.warehouse_id = #{query.warehouseId}
+        </if>
         <if test="query.phone != null and query.phone != '' ">
             and tec.phone = #{query.phone}
         </if>
@@ -107,6 +110,9 @@
         </if>
         <if test="query.stockStatus != null ">
             and tec.stock_status = #{query.stockStatus}
+        </if>
+        <if test="query.warehouseId != null">
+            and tec.warehouse_id = #{query.warehouseId}
         </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
@@ -664,7 +670,8 @@
     </select>
     
     <select id="selectListByFranchiseeIdAndStockStatus" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         where del_flag=0 and tenant_id = #{tenantId}
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
@@ -718,18 +725,20 @@
     </select>
     
     <select id="existsByWarehouseId" resultType="java.lang.Integer">
-        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 limit 1;
+        select 1 from t_electricity_car where warehouse_id = #{wareHouseId} and del_flag = 0 and stock_status=0 limit 1;
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         where del_flag = 0 and id in
         <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </select>
     <select id="selectListEnableExitWarehouseCar" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
-        <include refid="selectElectricityCar"/>
+        select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type, warehouse_id
+        from t_electricity_car
         <where>
             del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
             <if test="franchiseeId != null">
@@ -742,6 +751,60 @@
                 </foreach>
             </if>
         </where>
+    </select>
+    
+    <select id="queryCountByWarehouse" resultType="java.lang.Integer">
+        select count(1)
+        from t_electricity_car tec
+        where tec.del_flag=0
+        <if test="query.sn != null and query.sn!=''">
+            and tec.sn like concat('%', #{query.sn}, '%')
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and tec.model like concat('%', #{query.model}, '%')
+        </if>
+        <if test="query.status != null ">
+            and tec.status = #{query.status}
+        </if>
+        <if test="query.stockStatus != null ">
+            and tec.stock_status = #{query.stockStatus}
+        </if>
+        <if test="query.warehouseId != null">
+            and tec.warehouse_id = #{query.warehouseId}
+        </if>
+        <if test="query.storeId != null ">
+            and tec.store_id = #{query.storeId}
+        </if>
+        <if test="query.storeIds != null ">
+            and tec.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.franchiseeIds != null ">
+            and tec.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and tec.phone = #{query.phone}
+        </if>
+        <if test="query.uid != null">
+            and tec.uid = #{query.uid}
+        </if>
+        <if test="query.batterySn != null and query.batterySn!=''">
+            and tec.battery_sn = #{query.batterySn}
+        </if>
+        <if test="query.beginTime != null">
+            and tec.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tec.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.tenantId != null ">
+            and tec.tenant_id = #{query.tenantId}
+        </if>
     </select>
     
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">

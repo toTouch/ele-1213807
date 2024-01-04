@@ -108,6 +108,9 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
     
     List<ElectricityCabinetVO> selectListByPage(@Param("size") Long size, @Param("offset") Long offset);
+    
     List<ElectricityCabinetVO> selectListForStatistics(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    
+    List<ElectricityCabinetBO> selectListByIdList(@Param("idList") List<Integer> idList);
     
 }

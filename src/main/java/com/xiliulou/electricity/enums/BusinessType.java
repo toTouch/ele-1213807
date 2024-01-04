@@ -71,7 +71,9 @@ public enum BusinessType {
     // 资产退库
     ASSET_EXIT_WAREHOUSE(71),
     // 资产调拨
-    ASSET_ALLOCATE(72);
+    ASSET_ALLOCATE(72),
+    
+    ASSET_WAREHOUSE_RECORD(73);
 
     private final Integer business;
 

@@ -20,7 +20,7 @@ public interface AssetWarehouseMapper {
     
     Integer insertOne(AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel);
     
-    List<AssetWarehouseBO> selectListByFranchiseeId(AssetWarehouseQueryModel assetWarehouseQueryModel);
+    List<AssetWarehouseBO> selectListByPage(AssetWarehouseQueryModel assetWarehouseQueryModel);
     
     Integer countTotal(AssetWarehouseQueryModel assetWarehouseQueryModel);
     

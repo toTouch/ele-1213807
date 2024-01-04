@@ -127,7 +127,7 @@ public class JsonAdminWarehouseController {
         
         AssetWarehouseRequest assetInventoryRequest = AssetWarehouseRequest.builder().size(size).offset(offset).name(name).build();
         
-        return R.ok(assetWarehouseService.listByFranchiseeId(assetInventoryRequest));
+        return R.ok(assetWarehouseService.listByPage(assetInventoryRequest));
     }
     
 }
