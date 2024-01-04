@@ -35,6 +35,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
@@ -114,6 +115,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+    
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
@@ -521,10 +525,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         
-        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        /*UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);*/
+        // 更新资源包
+        userBatteryMemberCardPackageService.asyncHandleUpdateUserBatteryMemberCardInfo(userBatteryMemberCard,userInfo);
     }
     
     

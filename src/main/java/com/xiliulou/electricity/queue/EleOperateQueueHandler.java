@@ -43,6 +43,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -155,6 +156,9 @@ public class EleOperateQueueHandler {
     
     @Autowired
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
@@ -825,10 +829,11 @@ public class EleOperateQueueHandler {
             return;
         }
         
-        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        /*UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);*/
+        userBatteryMemberCardPackageService.asyncHandleUpdateUserBatteryMemberCardInfo(userBatteryMemberCard,userInfo);
     }
     
     private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
