@@ -207,7 +207,7 @@
         from t_invitation_activity_record
         <where>
             uid = #{uid}
-            <if test="startTime != null ">
+            <if test="beginTime != null ">
                 and create_time <![CDATA[ >=  ]]> #{beginTime}
             </if>
             <if test="endTime != null ">
