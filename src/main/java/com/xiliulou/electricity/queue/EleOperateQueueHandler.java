@@ -825,7 +825,7 @@ public class EleOperateQueueHandler {
             return;
         }
         
-        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getOrderRemainingNumber() <= 0))) {
             return;
         }
         
