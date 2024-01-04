@@ -1193,4 +1193,9 @@
             </foreach>
         </where>
     </select>
+    
+    <update id="updatePhoneByUid">
+        update t_user_info set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
+    
 </mapper>

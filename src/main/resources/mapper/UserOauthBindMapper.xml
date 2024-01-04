@@ -44,5 +44,13 @@
                 uid = #{uid} and tenant_id=#{tenantId}
 
     </select>
+    
+    <update id="updateOpenIdByUid">
+        update t_user_oauth_bind set open_id=#{openId} where uid=#{uid} and tenant_id=#{tenantId}
+    </update>
+    
+    <update id="updatePhoneByUid">
+        update t_user_oauth_bind set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

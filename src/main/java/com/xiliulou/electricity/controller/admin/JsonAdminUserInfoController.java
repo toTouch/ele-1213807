@@ -506,6 +506,22 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
+     * 会员列表详情解绑微信
+     */
+    @PostMapping(value = "/admin/userInfo/details/openId/unbind")
+    public R unbindOpenId(@RequestParam("uid") Long uid) {
+        return userInfoService.unbindOpenId(uid);
+    }
+    
+    /**
+     * 会员列表详情更换手机号
+     */
+    @PostMapping(value = "/admin/userInfo/details/userPhone/update")
+    public R updateUserPhone(@RequestParam("uid") Long uid, @RequestParam("phone") String phone) {
+        return userInfoService.updateUserPhone(uid,phone);
+    }
+    
+    /**
      * 会员列表详情信息（电池信息）
      */
     @GetMapping(value = "/admin/userInfo/details/batteryInfo")

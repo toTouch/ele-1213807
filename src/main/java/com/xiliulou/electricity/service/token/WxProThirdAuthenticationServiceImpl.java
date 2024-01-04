@@ -19,6 +19,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -154,6 +155,14 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
+                // 如果openId不一致，则报错
+                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
+                if (Objects.nonNull(userOauthBind) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
+                    log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdUid={},userId={}", result.getOpenid(),
+                            userOauthBind.getThirdId(),existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
+                    throw new AuthenticationServiceException("该账户已绑定其他微信，请联系客服处理");
+                }
+                
                 //uid不同，异常处理
                 if (!existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
                     log.error(
@@ -179,7 +188,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             }
 
             //如果openId存在.手机号不存在,替换掉以前的手机号
-            if (existsOpenId.getLeft() && !existPhone.getLeft()) {
+           /* if (existsOpenId.getLeft() && !existPhone.getLeft()) {
                 //这里不能为空
                 User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
                 if (Objects.isNull(user)) {
@@ -237,6 +246,11 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 }
                 return createSecurityUser(user, existsOpenId.getRight());
 
+            }*/
+            
+            //如果openId存在.手机号不存在,则新增账号
+            if (existsOpenId.getLeft() && !existPhone.getLeft()) {
+                return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
             }
 
             //openid不存在的时候,手机号存在
@@ -245,6 +259,13 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(),
                         UserOauthBind.SOURCE_WX_PRO, tenantId);
                 if (Objects.nonNull(userOauthBind)) {
+                    // 如果openid不存在,手机号存在,并且传入手机号的openid已经绑定过,则直接拦截
+                    if (Objects.nonNull(userOauthBind.getThirdId())) {
+                        log.error("TOKEN ERROR! openId not exists,phone exists and phone third id exist! thirdUid={},userId={}", userOauthBind.getUid(),
+                                existPhone.getRight().getUid());
+                        throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+                    }
+                    
                     //这里uid必须相同
                     if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
                         log.error(

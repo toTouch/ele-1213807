@@ -786,5 +786,9 @@
             #{c.updateTime}, #{c.delFlag}, #{c.tenantId}, #{c.lockType}, #{c.franchiseeId})
         </foreach>
     </insert>
+    
+    <update id="updatePhoneByUid">
+        update t_electricity_car set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>
