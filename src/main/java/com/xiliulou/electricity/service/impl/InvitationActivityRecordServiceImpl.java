@@ -18,6 +18,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisAdminRequest;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoListVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityDetailVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityIncomeDetailVO;
@@ -175,6 +177,62 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return this.invitationActivityRecordMapper.selectByUid(uid);
     }
     
+    @Override
+    public InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, InvitationActivityAnalysisAdminRequest request) {
+        InvitationActivityAnalysisAdminVO invitationActivityAnalysisAdminVO = new InvitationActivityAnalysisAdminVO();
+    
+        Integer timeType = request.getTimeType();
+        Long startTime;
+        Long endTime = null;
+        if (Objects.equals(timeType, NumberConstant.ONE)) {
+            // 查询昨日
+            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
+        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
+            // 查询本月
+            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+        } else {
+            startTime = request.getBeginTime();
+            endTime = request.getEndTime();
+        }
+    
+        query.setBeginTime(startTime);
+        query.setEndTime(endTime);
+    
+        //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(query);
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
+            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
+            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+    
+            invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
+            invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
+            invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
+        }
+        
+        // 已获奖励（首次、续费）
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder()
+                .uid(query.getUid())
+                .tenantId(query.getTenantId())
+                .storeIds(query.getStoreIds())
+                .franchiseeIds(query.getFranchiseeIds())
+                .beginTime(startTime)
+                .endTime(endTime)
+                .build();
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
+        if (CollectionUtils.isNotEmpty(historyVOList)) {
+            // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
+            Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
+                    Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
+    
+            invitationActivityAnalysisAdminVO.setFirstTotalIncome(result.get(Boolean.TRUE));
+            invitationActivityAnalysisAdminVO.setRenewTotalIncome(result.get(Boolean.FALSE));
+        }
+    
+        return invitationActivityAnalysisAdminVO;
+    }
+    
     @Slave
     @Override
     public Triple<Boolean, String, Object> countByStatics() {
@@ -183,35 +241,28 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        
+    
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-        
+    
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
+    
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).build();
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
+        InvitationActivityStaticsVO invitationActivityRecordInfoVO = null;
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            BigDecimal totalMoney = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            Integer totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
         
-        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(userInfo.getUid(), null, null);
-        if (CollectionUtils.isEmpty(recordList)) {
-            log.warn("INVITATION ACTIVITY WARN! not found activityRecords,uid={}", userInfo.getUid());
-            return Triple.of(true, null, null);
+            invitationActivityRecordInfoVO = InvitationActivityStaticsVO.builder().totalInvitationCount(totalInvitationCount).totalMoney(totalMoney).build();
         }
-        
-        BigDecimal totalMoney = BigDecimal.ZERO;
-        Integer totalInvitationCount = NumberConstant.ZERO;
-        for (InvitationActivityRecord record : recordList) {
-            totalMoney = totalMoney.add(record.getMoney());
-            totalInvitationCount += record.getInvitationCount();
-        }
-        
-        InvitationActivityStaticsVO invitationActivityRecordInfoVO = InvitationActivityStaticsVO.builder().totalInvitationCount(totalInvitationCount).totalMoney(totalMoney)
-                .build();
-        
+    
         return Triple.of(true, null, invitationActivityRecordInfoVO);
-        
     }
     
     @Override
@@ -236,7 +287,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 查询近7天的
         Long startTime = DateUtils.getLastDayStartTime(NumberConstant.SEVEN);
-        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, null);
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).build();
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
         if (CollectionUtils.isNotEmpty(recordList)) {
             // 将每天的数据进行分组
             Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream()
@@ -267,11 +319,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             });
         }
     
+        if (CollectionUtils.isEmpty(lineDataVOList)) {
+            return Triple.of(true, null, Collections.emptyList());
+        }
+    
         return Triple.of(true, null, lineDataVOList);
     }
     
     @Override
-    public Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request) {
+    public Triple<Boolean, String, Object> queryInvitationAnalysis(InvitationActivityAnalysisRequest request) {
         // 封装结果集
         InvitationActivityAnalysisVO activityAnalysisVO = new InvitationActivityAnalysisVO();
     
@@ -307,7 +363,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         // startTime=null、endTime = null 查询累计
     
         // 邀请总人数、邀请成功总人数
-        recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
+        recordList = this.listByUidAndStartTime(recordQuery);
         if (CollectionUtils.isNotEmpty(recordList)) {
             int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
             int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
@@ -343,7 +400,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
     
     @Override
-    public Triple<Boolean, String, Object> listInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
+    public Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
         // 封装结果集
         InvitationActivityIncomeDetailVO incomeDetailVO = new InvitationActivityIncomeDetailVO();
     
@@ -378,7 +435,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         // startTime=null、endTime = null 查询累计
     
-        recordList = this.listByUidAndStartTime(userInfo.getUid(), startTime, endTime);
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
+        recordList = this.listByUidAndStartTime(recordQuery);
     
         // 总收入
         if (CollectionUtils.isNotEmpty(recordList)) {
@@ -387,9 +445,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
     
         // 首返奖励及人数、续返奖励及人数、收入明细
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .status(request.getStatus()).offset(request.getOffset()).size(request.getSize()).build();
-        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
     
         InvitationActivityIncomeDetailVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
         incomeDetailVO.setFirstTotalIncome(incomeAndMemCountVO.getFirstTotalIncome());
@@ -437,8 +495,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
     @Slave
     @Override
-    public List<InvitationActivityRecord> listByUidAndStartTime(Long uid, Long startTime, Long endTime) {
-        return invitationActivityRecordMapper.selectListByUidAndStartTime(uid, startTime, endTime);
+    public List<InvitationActivityRecord> listByUidAndStartTime(InvitationActivityRecordQuery query) {
+        return invitationActivityRecordMapper.selectListByUidAndStartTime(query);
     }
     
     @Override

@@ -4,8 +4,10 @@ import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisAdminRequest;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -86,14 +88,15 @@ public interface InvitationActivityRecordService {
     
     List<InvitationActivityRecord> selectByUid(Long uid);
     
-    List<InvitationActivityRecord> listByUidAndStartTime(Long uid, Long startTime, Long endTime);
+    List<InvitationActivityRecord> listByUidAndStartTime(InvitationActivityRecordQuery query);
     
     Triple<Boolean, String, Object> countByStatics();
     
     Triple<Boolean, String, Object> listInvitationLineData();
     
-    Triple<Boolean, String, Object> listInvitationAnalysis(InvitationActivityAnalysisRequest request);
+    Triple<Boolean, String, Object> queryInvitationAnalysis(InvitationActivityAnalysisRequest request);
     
-    Triple<Boolean, String, Object> listInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
+    Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
     
+    InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, InvitationActivityAnalysisAdminRequest request);
 }

@@ -77,7 +77,7 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
      * 邀请分析-折线图
      */
     @GetMapping("/user/invitation/activity/record/analysis/lineData")
-    public R listInvitationLineData() {
+    public R invitationLineData() {
         return returnTripleResult(invitationActivityRecordService.listInvitationLineData());
     }
     
@@ -87,16 +87,16 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
      *          -邀请明细
      */
     @GetMapping("/user/invitation/activity/record/analysis")
-    public R listInvitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
-        return returnTripleResult(invitationActivityRecordService.listInvitationAnalysis(request));
+    public R invitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
+        return returnTripleResult(invitationActivityRecordService.queryInvitationAnalysis(request));
     }
     
     /**
      * 收入明细
      */
     @GetMapping("/user/invitation/activity/record/income/detail")
-    public R listInvitationIncomeDetail(@RequestBody InvitationActivityAnalysisRequest request) {
-        return returnTripleResult(invitationActivityRecordService.listInvitationIncomeDetail(request));
+    public R invitationIncomeDetail(@RequestBody InvitationActivityAnalysisRequest request) {
+        return returnTripleResult(invitationActivityRecordService.queryInvitationIncomeDetail(request));
     }
     
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisAdminRequest;
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -10,7 +11,9 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -126,6 +129,44 @@ public class JsonAdminInvitationActivityRecordController {
 
         return R.ok(invitationActivityRecordService.selectByPageCount(query));
     }
-
+    
+    /**
+     * @description 根据时间范围查询 邀请分析（邀请总数、邀请成功）、已获奖励（首次、非首次）
+     * @date 2024/1/4 13:41:17
+     * @author HeYafeng
+     */
+    @GetMapping("/admin/invitationActivityRecord/analysis")
+    public R invitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisAdminRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery
+                .builder()
+                .uid(user.getUid())
+                .tenantId(TenantContextHolder.getTenantId())
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
+                .build();
+        
+        return R.ok(invitationActivityRecordService.queryInvitationAdminAnalysis(query, request));
+    }
 
 }
