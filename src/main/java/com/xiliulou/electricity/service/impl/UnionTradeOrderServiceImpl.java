@@ -620,6 +620,16 @@ public class UnionTradeOrderServiceImpl extends
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userInfo.getUid());
+                }
+                
+            });
         }
 
         //押金订单
@@ -742,6 +752,11 @@ public class UnionTradeOrderServiceImpl extends
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    
                     // 8. 处理分账
                     DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                     divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -955,6 +970,11 @@ public class UnionTradeOrderServiceImpl extends
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                    
                     // 8. 处理分账
                     DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                     divisionAccountOrderDTO.setOrderNo(orderNo);
@@ -1143,6 +1163,17 @@ public class UnionTradeOrderServiceImpl extends
             userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userInfo.getUid());
+                    redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+                  
+                }
+            });
            
         }
     
@@ -1222,6 +1253,17 @@ public class UnionTradeOrderServiceImpl extends
 
                 insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
             }
+    
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    //清理缓存，避免缓存操作和数据库提交在同一个事务中失效的问题。如有其他业务，请加在清理缓存之后处理
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid());
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + updateOrAddInsuranceUserInfo.getUid() + ":" + updateOrAddInsuranceUserInfo.getType());
+            
+                }
+            });
+            
         }
 
         //保险订单

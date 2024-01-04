@@ -2267,7 +2267,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberCardId());
-            return Triple.of(false, "100376", "当前套餐为新租套餐, 不支持购买");
+            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
         }
 
         //是否有正在进行中的退押
