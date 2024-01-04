@@ -73,4 +73,9 @@ public class EleHardwareFailureWarnMsgPageRequest {
     private Long size;
     
     private Long offset;
+    
+    /**
+     * 导出查询添加限制
+     */
+    private Integer days;
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
@@ -9,12 +10,16 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -25,12 +30,22 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
+@RefreshScope
 public class EleHardwareFailureWarnMsgController {
+    
     @Resource
     private EleHardwareFailureWarnMsgService failureWarnMsgService;
     
+    @Value("${export.size}")
+    private Long exportSize;
+    
+    @Value("${export.days}")
+    private Integer days;
+    
+    
     /**
      * 故障告警记录超级管理员查看分页接口
+     *
      * @param size
      * @param offset
      * @param sn
@@ -59,12 +74,13 @@ public class EleHardwareFailureWarnMsgController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantVisible  = FailureAlarm.visible;
+        
+        Integer tenantVisible = FailureAlarm.visible;
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
-                .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible).status(FailureAlarm.enable).size(size).offset(offset).build();
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
+                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
+                .status(FailureAlarm.enable).size(size).offset(offset).build();
         
         return failureWarnMsgService.listByPage(request);
     }
@@ -76,20 +92,21 @@ public class EleHardwareFailureWarnMsgController {
      * @author maxiaodong
      */
     @GetMapping("/admin/failure/warn/pageCount")
-    public R pageCount(
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
-            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
+    public R pageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "deviceType", required = false) Integer deviceType,
+            @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "signalId", required = false) Integer signalId,
+            @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
+            @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        Integer tenantVisible  = FailureAlarm.visible;
+        
+        Integer tenantVisible = FailureAlarm.visible;
         Integer tenantId = TenantContextHolder.getTenantId();
-    
-        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
-                .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible).status(FailureAlarm.enable).build();
+        
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId)
+                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
+                .status(FailureAlarm.enable).build();
         return failureWarnMsgService.countTotal(request);
     }
     
@@ -100,11 +117,11 @@ public class EleHardwareFailureWarnMsgController {
      * @author maxiaodong
      */
     @GetMapping("/admin/super/failure/warn/pageCount")
-    public R superPageCount(@RequestParam(value = "type", required = true) Integer type,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "tenantId", required = false) Integer tenantId,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
-            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
+    public R superPageCount(@RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "deviceType", required = false) Integer deviceType,
+            @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "signalId", required = false) Integer signalId,
+            @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
+            @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -121,6 +138,7 @@ public class EleHardwareFailureWarnMsgController {
     
     /**
      * 故障告警记录超级管理员查看分页接口
+     *
      * @param size
      * @param offset
      * @param sn
@@ -150,7 +168,7 @@ public class EleHardwareFailureWarnMsgController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!SecurityUtils.isAdmin()) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -162,8 +180,7 @@ public class EleHardwareFailureWarnMsgController {
     }
     
     @GetMapping("/admin/failure/warn/frequency")
-    public R frequency(@RequestParam(value = "startTime", required = true) Long startTime,
-            @RequestParam(value = "endTime", required = true) Long endTime) {
+    public R frequency(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime) {
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmStartTime(endTime).build();
         Triple<Boolean, String, Object> triple = failureWarnMsgService.calculateFrequency(request);
         if (!triple.getLeft()) {
@@ -171,5 +188,36 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         return R.ok(triple.getRight());
+    }
+    
+    /**
+     * 故障告警数据导出
+     */
+    @GetMapping(value = "/admin/failure/alarm/exportExcel")
+    public void exportExcel(HttpServletResponse response, @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+        
+        if (ObjectUtils.isEmpty(exportSize)) {
+            log.error("fail warn msg not find export size");
+        }
+    
+        if (ObjectUtils.isEmpty(days)) {
+            log.error("fail warn msg not find days");
+        }
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Integer tenantVisible = FailureAlarm.visible;
+    
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).days(days)
+                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
+                .status(FailureAlarm.enable).size(exportSize).offset(0L).build();
+        failureWarnMsgService.exportExcel(request, response);
     }
 }

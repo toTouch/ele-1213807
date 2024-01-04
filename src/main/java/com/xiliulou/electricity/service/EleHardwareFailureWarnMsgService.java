@@ -5,9 +5,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 public interface EleHardwareFailureWarnMsgService {
@@ -19,4 +19,6 @@ public interface EleHardwareFailureWarnMsgService {
     R countTotal(EleHardwareFailureWarnMsgPageRequest request);
     
     Triple<Boolean, String, Object> calculateFrequency(EleHardwareFailureWarnMsgPageRequest request);
+    
+    void exportExcel(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response);
 }

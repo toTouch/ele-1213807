@@ -89,4 +89,34 @@
         t_ele_hardware_failure_warn_msg
         <include refid="filter"/>
     </select>
+    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo">
+        SELECT
+        id,
+        cabinet_id,
+        tenant_id,
+        msg_type,
+        txn_no,
+        signal_id,
+        alarm_desc,
+        alarm_flag,
+        alarm_id,
+        cell_no,
+        sn,
+        type,
+        occur_num,
+        grade,
+        device_type,
+        failure_alarm_name,
+        tenant_name,
+        dev_id,
+        recover_time,
+        report_time,
+        alarm_time,
+        create_time
+        FROM
+        t_ele_hardware_failure_warn_msg
+        <include refid="filter"/>
+        order by alarm_time desc
+        limit #{offset}, #{size}
+    </select>
 </mapper>
