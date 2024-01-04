@@ -179,6 +179,42 @@ public class EleHardwareFailureWarnMsgController {
         return failureWarnMsgService.listByPage(request);
     }
     
+    
+    /**
+     * 故障告警记录超级管理员查看分页接口
+     *
+     * @param size
+     * @param offset
+     * @param sn
+     * @param deviceType
+     * @param grade
+     * @param signalId
+     * @param alarmStartTime
+     * @param alarmEndTime
+     * @param alarmFlag
+     * @return
+     */
+    @GetMapping("/admin/super/failure/warn/export/page")
+    public R superExportPage(@RequestParam("size") long size, @RequestParam(value = "offset", required = true) long offset, @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "type", required = true) Integer type,
+            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
+            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
+                .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).status(FailureAlarm.enable).size(size).offset(offset).build();
+        
+        return failureWarnMsgService.superExportPage(request);
+    }
+    
     @GetMapping("/admin/super/failure/warn/frequency")
     public R frequency(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -228,5 +264,24 @@ public class EleHardwareFailureWarnMsgController {
                 .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
                 .status(FailureAlarm.enable).size(exportSize).offset(0L).build();
         failureWarnMsgService.exportExcel(request, response);
+    }
+    
+    /**
+     * @param
+     * @description 故障告警记录数量统计
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/super/failure/warn/test")
+    public R test() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return failureWarnMsgService.test();
     }
 }

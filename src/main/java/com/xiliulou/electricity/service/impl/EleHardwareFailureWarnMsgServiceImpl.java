@@ -128,7 +128,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             return Triple.of(false, "300826", "查询结束时间不能小于开始时间");
         }
         
-        long days = DateUtils.diffDay(request.getAlarmStartTime(), request.getAlarmEndTime());
+        long days = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
         if (days > daySize) {
             return Triple.of(false, "300825", String.format("查询天数不能大于%s天", daySize));
         }
@@ -389,5 +389,107 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         } catch (IOException e) {
             log.error("failure warn msg export error", e);
         }
+    }
+    
+    @Override
+    public R test() {
+        List<EleHardwareFailureWarnMsg> list = new ArrayList<>();
+        for (int i = 0;i < 100000; i++) {
+            EleHardwareFailureWarnMsg failureWarnMsg = new EleHardwareFailureWarnMsg();
+            failureWarnMsg.setCabinetId(76);
+            failureWarnMsg.setTenantId(80);
+            failureWarnMsg.setMsgType(410);
+            failureWarnMsg.setTxnNo("123456789");
+            failureWarnMsg.setSignalId("111");
+            failureWarnMsg.setAlarmDesc("00");
+            failureWarnMsg.setAlarmFlag(0);
+            failureWarnMsg.setAlarmId("123");
+            failureWarnMsg.setCellNo(1);
+            failureWarnMsg.setSn("qqqq");
+            failureWarnMsg.setType(0);
+            failureWarnMsg.setOccurNum(1);
+            failureWarnMsg.setGrade(1);
+            failureWarnMsg.setDeviceType(2);
+            failureWarnMsg.setFailureAlarmName("cxvxcv,fsdfds");
+            failureWarnMsg.setTenantName("aaa");
+            failureWarnMsg.setDevId("76");
+            failureWarnMsg.setRecoverTime(1703832074005L);
+            failureWarnMsg.setReportTime(1703832074004L);
+            failureWarnMsg.setAlarmTime(1703832074005L);
+            failureWarnMsg.setCreateTime(1704024919954L);
+            list.add(failureWarnMsg);
+            if (list.size() == 500) {
+                failureWarnMsgMapper.batchInsert(list);
+                list.clear();
+            }
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public R superExportPage(EleHardwareFailureWarnMsgPageRequest request) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+    
+        FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
+        // 检测数据
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 1);
+        if (!triple.getLeft()) {
+            log.error("failure warn msg export check error info={}", triple.getRight());
+            throw new CustomBusinessException((String) triple.getRight());
+        }
+    
+        List<FailureWarnMsgExcelVo> list = new ArrayList<>();
+        if (triple.getLeft() && Objects.isNull(triple.getRight())) {
+            list = failureWarnMsgMapper.selectListExport(queryModel);
+        }
+    
+        if (ObjectUtils.isNotEmpty(list)) {
+            for (FailureWarnMsgExcelVo vo : list) {
+                // 上报的记录没有
+                if (ObjectUtils.isEmpty(vo.getDeviceType())) {
+                    FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
+                    Optional.ofNullable(failureAlarm).ifPresent(i -> {
+                        String signalName = failureAlarm.getSignalName();
+                        if (StringUtils.isNotEmpty(failureAlarm.getEventDesc())) {
+                            signalName = signalName + CommonConstant.STR_COMMA + failureAlarm.getEventDesc();
+                        }
+                        vo.setFailureAlarmName(signalName);
+                        vo.setGrade(String.valueOf(failureAlarm.getGrade()));
+                        vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
+                    
+                    });
+                }
+            
+                FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
+                if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
+                    vo.setDeviceType(deviceTypeEnum.getDesc());
+                }
+            
+                FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getGrade()), FailureAlarmGradeEnum.class);
+                if (ObjectUtils.isNotEmpty(gradeEnum)) {
+                    vo.setGrade(gradeEnum.getDesc());
+                }
+            
+                if (ObjectUtils.isNotEmpty(vo.getAlarmTime())) {
+                    date.setTime(vo.getAlarmTime());
+                    vo.setAlarmTimeExport(sdf.format(date));
+                }
+            
+                if (ObjectUtils.isNotEmpty(vo.getRecoverTimeExport())) {
+                    date.setTime(vo.getRecoverTime());
+                    vo.setRecoverTimeExport(sdf.format(date));
+                }
+            
+                FailureWarnMsgStatusEnum statusEnum = BasicEnum.getEnum(vo.getAlarmFlag(), FailureWarnMsgStatusEnum.class);
+                if (ObjectUtils.isNotEmpty(statusEnum)) {
+                    vo.setAlarmFlagExport(statusEnum.getDesc());
+                }
+            
+            }
+        }
+        
+        return R.ok(list);
     }
 }

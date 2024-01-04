@@ -133,4 +133,17 @@
         GROUP BY
         type
     </select>
+    
+    <insert id="batchInsert">
+        insert into t_ele_hardware_failure_warn_msg(
+        cabinet_id, tenant_id, msg_type, txn_no, signal_id, alarm_desc, alarm_flag, alarm_id, cell_no,
+        sn, type, occur_num, grade, device_type, failure_alarm_name,
+        tenant_name, dev_id, recover_time, report_time, alarm_time, create_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.cabinetId}, #{item.tenantId}, #{item.msgType}, #{item.txnNo}, #{item.signalId}, #{item.alarmDesc},
+            #{item.alarmFlag}, #{item.alarmId}, #{item.cellNo}, #{item.sn}, #{item.type}, #{item.occurNum}, #{item.grade},
+            #{item.deviceType}, #{item.failureAlarmName}, #{item.tenantName}, #{item.devId}, #{item.recoverTime},
+            #{item.reportTime}, #{item.alarmTime}, #{item.createTime})
+        </foreach>
+    </insert>
 </mapper>
