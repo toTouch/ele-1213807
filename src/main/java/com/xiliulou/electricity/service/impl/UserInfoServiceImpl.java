@@ -2007,11 +2007,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 更换手机号的前提：新手机号在系统中不存在
         UserInfo updatePhone = this.queryUserInfoByPhone(phone, TenantContextHolder.getTenantId());
         if (Objects.nonNull(updatePhone)) {
-            return R.fail("100564", "手机号已被使用，请重新输入");
+            return R.fail("100565", "手机号已被使用，请重新输入");
         }
         
         if (StringUtils.equals(userInfo.getPhone(),phone)) {
-            return R.fail("100565", "新手机号与原手机号一致，请重新输入");
+            return R.fail("100566", "新手机号与原手机号一致，请重新输入");
         }
         
         // 更新用戶
