@@ -374,7 +374,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         // 邀请明细
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
-                .status(request.getStatus()).offset(request.getOffset()).size(request.getSize()).build();
+                .offset(request.getOffset()).size(request.getSize()).build();
+    
+        Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
+        Integer status = request.getStatus();
+        if (Objects.nonNull(status) && statusSet.contains(status)) {
+            query.setStatus(status);
+        }
+        
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
     
         List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
@@ -382,7 +389,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
         
             InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
-                    .activityId(item.getActivityId()).activityName(item.getActivityName()).build();
+                    .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(item.getPayCount()).money(item.getMoney()).build();
         
             Optional.ofNullable(joinUser).ifPresent(user -> {
                 invitationActivityDetailVO.setJoinName(user.getName());
@@ -445,7 +452,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 首返奖励及人数、续返奖励及人数、收入明细
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
-                .status(request.getStatus()).offset(request.getOffset()).size(request.getSize()).build();
+                .offset(request.getOffset()).size(request.getSize()).build();
+    
+        Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
+        Integer status = request.getStatus();
+        if (Objects.nonNull(status) && statusSet.contains(status)) {
+            historyQuery.setStatus(status);
+        }
+        
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
     
         InvitationActivityIncomeDetailVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);

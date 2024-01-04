@@ -31,7 +31,7 @@ public class InvitationActivityAnalysisRequest {
     private Integer timeType;
     
     /**
-     * 参与状态： 默认全部-不传参数，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
+     * 参与状态： 0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
     private Integer status;
     
