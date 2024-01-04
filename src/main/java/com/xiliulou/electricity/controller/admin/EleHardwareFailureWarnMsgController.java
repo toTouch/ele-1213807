@@ -226,7 +226,7 @@ public class EleHardwareFailureWarnMsgController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmStartTime(endTime).build();
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmEndTime(endTime).build();
         Triple<Boolean, String, Object> triple = failureWarnMsgService.calculateFrequency(request);
         if (!triple.getLeft()) {
             return R.fail(triple.getMiddle(), (String) triple.getRight());
