@@ -1983,9 +1983,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             DbUtils.dbOperateSuccessThenHandleCache(userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
                 // 添加解绑操作记录
-                EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_MODEL_USER_ACCOUNT,
-                        EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX, EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION,
-                        EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
+                EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
+                        EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
                 eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
             });
             
@@ -1993,9 +1992,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
-    private EleUserOperateHistory buildEleUserOperateHistory(UserInfo userInfo, Integer operateModel, Integer operateContent, String oldOperateInfo, String newOperateInfo) {
-        return EleUserOperateHistory.builder().operateType(EleUserOperateHistoryConstant.OPERATE_TYPE_USER).operateModel(operateModel).operateContent(operateContent)
-                .oldOperateInfo(oldOperateInfo).newOperateInfo(newOperateInfo).uid(userInfo.getUid())
+    private EleUserOperateHistory buildEleUserOperateHistory(UserInfo userInfo, Integer operateContent, String oldOperateInfo, String newOperateInfo) {
+        return EleUserOperateHistory.builder().operateType(EleUserOperateHistoryConstant.OPERATE_TYPE_USER).operateModel(EleUserOperateHistoryConstant.OPERATE_MODEL_USER_ACCOUNT)
+                .operateContent(operateContent).oldOperateInfo(oldOperateInfo).newOperateInfo(newOperateInfo).uid(userInfo.getUid())
                 .operatorName(Objects.nonNull(SecurityUtils.getUserInfo()) ? SecurityUtils.getUserInfo().getUsername() : StringUtils.EMPTY)
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
     }
@@ -2033,8 +2032,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
         
         // 添加更換手机号操作记录
-        EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_MODEL_USER_ACCOUNT,
-                EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
+        EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
         eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone);
         return R.ok();

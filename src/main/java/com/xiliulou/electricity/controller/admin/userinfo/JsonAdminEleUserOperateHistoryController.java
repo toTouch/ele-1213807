@@ -30,20 +30,12 @@ public class JsonAdminEleUserOperateHistoryController {
     EleUserOperateHistoryService eleUserOperateHistoryService;
     
     @GetMapping("/admin/userInfo/userOperateHistory")
-    public R queryUserOperateHistory(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam("uid") Long uid) {
-        if (Objects.isNull(size) || size < 0 || size > 5) {
-            size = 5L;
-        }
-        
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
-        
+    public R queryUserOperateHistory(@RequestParam("uid") Long uid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        EleUserOperateHistoryQueryModel queryModel = EleUserOperateHistoryQueryModel.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).uid(uid)
+        EleUserOperateHistoryQueryModel queryModel = EleUserOperateHistoryQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).uid(uid)
                 .build();
         return eleUserOperateHistoryService.listEleUserOperateHistory(queryModel);
     }

@@ -15,10 +15,6 @@ import lombok.Data;
 @Builder
 public class EleUserOperateHistoryQueryModel {
     
-    private Long size;
-    
-    private Long offset;
-    
     private Integer tenantId;
     
     private Long uid;

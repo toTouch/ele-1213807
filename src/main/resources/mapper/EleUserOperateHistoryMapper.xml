@@ -12,7 +12,6 @@
             </if>
         </where>
         order by create_time desc
-        limit #{offset}, #{size}
     </select>
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
