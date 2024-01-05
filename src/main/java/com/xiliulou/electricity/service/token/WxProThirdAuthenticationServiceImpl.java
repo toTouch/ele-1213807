@@ -161,7 +161,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 if (Objects.nonNull(userOauthBind) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
                     log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdUid={},userId={}", result.getOpenid(),
                             userOauthBind.getThirdId(),existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
-                    throw new AuthenticationServiceException("该账户已绑定其他微信，请联系客服处理");
+                    throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
                 }
                 
                 //uid不同，异常处理
