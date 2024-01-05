@@ -1,4 +1,4 @@
-﻿package com.xiliulou.electricity.request.asset.user;
+package com.xiliulou.electricity.request.asset.user;
 
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
