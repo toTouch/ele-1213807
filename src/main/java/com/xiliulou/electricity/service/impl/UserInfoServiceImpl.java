@@ -1929,7 +1929,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public R queryDetailsBasicInfo(Long uid) {
-        UserInfo userInfo = this.queryByUidFromCache(uid);
+        UserInfo userInfo = this.queryByUidFromDb(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
@@ -2037,7 +2037,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public R queryDetailsBatteryInfo(Long uid) {
-        UserInfo userInfo = this.queryByUidFromCache(uid);
+        UserInfo userInfo = this.queryByUidFromDb(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
