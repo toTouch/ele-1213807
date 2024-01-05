@@ -37,6 +37,8 @@ import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.asset.user.UnbindOpenIdRequest;
+import com.xiliulou.electricity.request.asset.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -1969,7 +1971,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    public R unbindOpenId(Long uid) {
+    public R unbindOpenId(UnbindOpenIdRequest unbindOpenIdRequest) {
+        Long uid = unbindOpenIdRequest.getUid();
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1998,7 +2001,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    public R updateUserPhone(Long uid, String phone) {
+    public R updateUserPhone(UpdateUserPhoneRequest updateUserPhoneRequest) {
+        Long uid = updateUserPhoneRequest.getUid();
+        String phone = updateUserPhoneRequest.getPhone();
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -2010,7 +2015,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("100565", "手机号已被使用，请重新输入");
         }
         
-        if (StringUtils.equals(userInfo.getPhone(),phone)) {
+        if (StringUtils.equals(userInfo.getPhone(), phone)) {
             return R.fail("100566", "新手机号与原手机号一致，请重新输入");
         }
         

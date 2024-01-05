@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.asset.user.UnbindOpenIdRequest;
+import com.xiliulou.electricity.request.asset.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -149,9 +151,9 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBasicInfo(Long uid);
     
-    R unbindOpenId(Long uid);
+    R unbindOpenId(UnbindOpenIdRequest unbindOpenIdRequest);
     
-    R updateUserPhone(Long uid,String phone);
+    R updateUserPhone(UpdateUserPhoneRequest updateUserPhoneRequest);
     
     R queryDetailsBatteryInfo(Long uid);
     

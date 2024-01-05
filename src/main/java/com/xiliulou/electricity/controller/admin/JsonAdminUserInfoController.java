@@ -14,6 +14,8 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.asset.user.UnbindOpenIdRequest;
+import com.xiliulou.electricity.request.asset.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -509,16 +511,16 @@ public class JsonAdminUserInfoController extends BaseController {
      * 会员列表详情解绑微信
      */
     @PostMapping(value = "/admin/userInfo/details/openId/unbind")
-    public R unbindOpenId(@RequestParam("uid") Long uid) {
-        return userInfoService.unbindOpenId(uid);
+    public R unbindOpenId(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
+        return userInfoService.unbindOpenId(unbindOpenIdRequest);
     }
     
     /**
      * 会员列表详情更换手机号
      */
     @PostMapping(value = "/admin/userInfo/details/userPhone/update")
-    public R updateUserPhone(@RequestParam("uid") Long uid, @RequestParam("phone") String phone) {
-        return userInfoService.updateUserPhone(uid,phone);
+    public R updateUserPhone(@RequestBody @Validated(value = UpdateGroup.class) UpdateUserPhoneRequest updateUserPhoneRequest) {
+        return userInfoService.updateUserPhone(updateUserPhoneRequest);
     }
     
     /**
