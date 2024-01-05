@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -11,6 +12,7 @@ import lombok.Data;
  */
 
 @Data
+@Builder
 public class EleUserOperateHistoryQueryModel {
     
     private Long size;
@@ -18,5 +20,7 @@ public class EleUserOperateHistoryQueryModel {
     private Long offset;
     
     private Integer tenantId;
+    
+    private Long uid;
     
 }

@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
 
 /**
  * Description: EleUserOperateHistoryService
@@ -17,4 +19,6 @@ public interface EleUserOperateHistoryService {
     void asyncHandleEleUserOperateHistory(EleUserOperateHistory eleUserOperateHistory);
     
     void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone);
+    
+    R listEleUserOperateHistory(EleUserOperateHistoryQueryModel queryModel);
 }

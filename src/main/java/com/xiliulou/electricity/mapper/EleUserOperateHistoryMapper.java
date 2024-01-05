@@ -1,11 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
 import com.xiliulou.electricity.vo.EleUserOperateHistoryVO;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

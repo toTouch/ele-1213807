@@ -3,12 +3,14 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.EleUserOperateHistoryMapper;
+import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
@@ -172,7 +174,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             carRefundOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             couponIssueOperateRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             eleBatteryServiceFeeOrderService.updatePhoneByUid(tenantId, uid, newPhone);
-            eleBindCarRecordService.updatePhoneByUid(tenantId, uid, newPhone);
+          //  eleBindCarRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             eleDepositOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             eleDisableMemberCardRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             electricityCabinetOrderService.updatePhoneByUid(tenantId, uid, newPhone);
@@ -202,13 +204,13 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             freeDepositOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             insuranceOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             loginInfoService.updatePhoneByUid(tenantId, uid, newPhone);
-            maintenanceRecordService.updatePhoneByUid(tenantId, uid, newPhone);
+          /*  maintenanceRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             maintenanceUserNotifyConfigService.updatePhoneByUid(tenantId, uid, newPhone);
             
             DbUtils.dbOperateSuccessThenHandleCache(carUpdate, i -> {
                 log.info("delete maintenanceUserNotifyConfigService cache");
                 redisService.delete(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + tenantId);
-            });
+            });*/
             
             rentBatteryOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             userInfoService.updatePhoneByUid(tenantId, uid, newPhone);
@@ -221,8 +223,14 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             
             userCouponService.updatePhoneByUid(tenantId, uid, newPhone);
             userOauthBindService.updatePhoneByUid(tenantId, uid, newPhone);
-            verificationCodeService.updatePhoneByUid(tenantId, uid, newPhone);
+          //  verificationCodeService.updatePhoneByUid(tenantId, uid, newPhone);
             log.info("end update user phone");
         });
     }
+    
+    @Override
+    public R listEleUserOperateHistory(EleUserOperateHistoryQueryModel queryModel) {
+        return R.ok(historyMapper.selectListUserOperateHistory(queryModel));
+    }
+    
 }
