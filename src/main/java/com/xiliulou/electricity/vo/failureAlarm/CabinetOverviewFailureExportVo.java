@@ -34,7 +34,7 @@ public class CabinetOverviewFailureExportVo {
      * 累计使用天数
      */
     @ExcelProperty("累计使用天数")
-    private Integer usageDays;
+    private Integer useDays;
     
     /**
      * 失败率

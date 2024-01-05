@@ -34,7 +34,7 @@ public class CabinetOverviewWarnExportVo {
      * 累计使用天数
      */
     @ExcelProperty("累计使用天数")
-    private Integer usageDays;
+    private Integer useDays;
     
     /**
      * 失败率
@@ -48,10 +48,4 @@ public class CabinetOverviewWarnExportVo {
      */
     @ExcelProperty("所属运营商")
     private String tenantName;
-    
-
-   
-   
-    
-   
 }
