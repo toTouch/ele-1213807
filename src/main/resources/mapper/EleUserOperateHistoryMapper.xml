@@ -16,8 +16,8 @@
     </select>
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_user_operate_history(operate_type, operate_model, operate_content, old_operate_info, new_operate_info,operator_id , uid ,tenant_id , create_time, update_time)
-        values (#{operateType}, #{operateModel}, #{operateContent}, #{oldOperateInfo}, #{newOperateInfo}, #{operateUid}, #{uid}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_ele_user_operate_history(operate_type, operate_model, operate_content, old_operate_info, new_operate_info,operator_name , uid ,tenant_id , create_time, update_time)
+        values (#{operateType}, #{operateModel}, #{operateContent}, #{oldOperateInfo}, #{newOperateInfo}, #{operatorName}, #{uid}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
    
     
