@@ -24,7 +24,7 @@ public class EleUserOperateHistory {
     /**
      * 主键
      */
-    private Integer id;
+    private Long id;
     
     /**
      * 操作类型 1-用户

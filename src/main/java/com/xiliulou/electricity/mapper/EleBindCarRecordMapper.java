@@ -27,9 +27,9 @@ public interface EleBindCarRecordMapper extends BaseMapper<EleBindCarRecord> {
     /**
      * 根据更换手机号
      * @param tenantId 租户ID
-     * @param uid 用户ID
      * @param newPhone 新号码
+     * @param oldPhone 旧号码
      * @return 影响行数
      */
-    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    Integer updatePhoneByOldPhone(@Param("tenantId") Integer tenantId, @Param("newPhone") String newPhone, @Param("oldPhone") String oldPhone);
 }

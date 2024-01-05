@@ -49,7 +49,7 @@ public class EleUserOperateHistoryVO {
     /**
      * 操作人
      */
-    private String operateName;
+    private String operatorName;
     
     /**
      * 被操作用户

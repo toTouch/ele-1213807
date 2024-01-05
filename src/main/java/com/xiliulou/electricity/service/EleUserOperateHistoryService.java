@@ -18,7 +18,7 @@ public interface EleUserOperateHistoryService {
     
     void asyncHandleEleUserOperateHistory(EleUserOperateHistory eleUserOperateHistory);
     
-    void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone);
+    void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone,String oldPhone);
     
     R listEleUserOperateHistory(EleUserOperateHistoryQueryModel queryModel);
 }

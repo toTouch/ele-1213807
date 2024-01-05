@@ -165,7 +165,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
     }
     
     @Override
-    public void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone) {
+    public void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone, String oldPhone) {
         eleUserOperateHistoryService.execute(() -> {
             log.info("start update user phone,uid={}, newPhone={}",uid,newPhone);
             batteryMembercardRefundOrderService.updatePhoneByUid(tenantId, uid, newPhone);
@@ -174,7 +174,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             carRefundOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             couponIssueOperateRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             eleBatteryServiceFeeOrderService.updatePhoneByUid(tenantId, uid, newPhone);
-          //  eleBindCarRecordService.updatePhoneByUid(tenantId, uid, newPhone);
+            eleBindCarRecordService.updatePhoneByOldPhone(tenantId, oldPhone, newPhone);
             eleDepositOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             eleDisableMemberCardRecordService.updatePhoneByUid(tenantId, uid, newPhone);
             electricityCabinetOrderService.updatePhoneByUid(tenantId, uid, newPhone);

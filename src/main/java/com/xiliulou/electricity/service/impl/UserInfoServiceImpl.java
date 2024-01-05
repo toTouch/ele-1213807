@@ -2034,7 +2034,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 添加更換手机号操作记录
         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
-        eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone);
+        eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, userInfo.getPhone());
         return R.ok();
     }
     

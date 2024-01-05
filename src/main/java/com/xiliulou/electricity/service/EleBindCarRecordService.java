@@ -32,5 +32,5 @@ public interface EleBindCarRecordService extends IService<EleBindCarRecord> {
      * @param newPhone 新号码
      * @return 影响行数
      */
-    Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
+    Integer updatePhoneByOldPhone(Integer tenantId, String newPhone, String oldPhone);
 }
