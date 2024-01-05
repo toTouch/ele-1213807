@@ -1,4 +1,4 @@
-﻿package com.xiliulou.electricity.controller.admin.userinfo;
+package com.xiliulou.electricity.controller.admin.userinfo;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
