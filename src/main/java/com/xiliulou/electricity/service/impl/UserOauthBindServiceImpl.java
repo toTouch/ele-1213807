@@ -160,6 +160,12 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
        return userOauthBindMapper.updateOpenIdByUid(openId, uid, tenantId);
     }
     
+    @Override
+    @Slave
+    public UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId){
+        return userOauthBindMapper.selectByUidAndPhone(phone, uid, tenantId);
+    }
+    
     /**
      * 更新用户手机号
      *

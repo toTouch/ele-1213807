@@ -56,6 +56,8 @@ public interface UserOauthBindService {
     
     Boolean checkOpenIdByJsCode(String jsCode);
     
+    UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
+    
     Integer updateOpenIdByUid(String openId, Long uid, Integer tenantId);
     
     /**

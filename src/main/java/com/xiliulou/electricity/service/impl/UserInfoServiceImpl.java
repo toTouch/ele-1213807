@@ -1960,7 +1960,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 根据openId判断是否可解绑微信
-        UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(vo.getPhone(), UserOauthBind.SOURCE_WX_PRO, TenantContextHolder.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid , TenantContextHolder.getTenantId());
         if (Objects.nonNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())) {
             vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
         } else {
