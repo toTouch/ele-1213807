@@ -133,44 +133,6 @@
         GROUP BY
         type
     </select>
-    <select id="selectListForFailure" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnTenantOverviewVo">
-        select * from (
-                      SELECT
-                          tenant_id,
-                          sum(failure_count) as 'failureCount'
-                      FROM
-                          t_ele_hardware_failure_cabinet_msg
-                      where
-                          create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
-                      GROUP BY
-                          tenant_id
-                      ) s
-        order by s.failureCount desc
-        limit #{offset}, #{size}
-    </select>
-    <select id="selectListForWarn" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnTenantOverviewVo">
-        select * from (
-                          SELECT
-                              tenant_id,
-                              sum(warn_count) as 'warnCount'
-                          FROM
-                              t_ele_hardware_failure_cabinet_msg
-                          where
-                              create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
-                          GROUP BY
-                              tenant_id
-                      ) s
-        order by s.warnCount desc
-        limit #{offset}, #{size}
-    </select>
-    <select id="countTenantOverview" resultType="java.lang.Integer">
-        SELECT
-            count(tenant_id)
-        FROM
-            t_ele_hardware_failure_cabinet_msg
-        WHERE
-            create_time BETWEEN #{alarmStartTime} and #{alarmEndTime}
-    </select>
     
     <insert id="batchInsert">
         insert into t_ele_hardware_failure_warn_msg(
