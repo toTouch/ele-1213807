@@ -31,6 +31,6 @@ public class EleUserOperateHistoryConstant {
      */
     public static final Integer OPERATE_CONTENT_UPDATE_PHONE= 2;
     
-    public static final String UNBIND_VX_OLD_OPERATION = "綁定微信";
+    public static final String UNBIND_VX_OLD_OPERATION = "绑定微信";
     public static final String UNBIND_VX_NEW_OPERATION = "解绑微信";
 }
