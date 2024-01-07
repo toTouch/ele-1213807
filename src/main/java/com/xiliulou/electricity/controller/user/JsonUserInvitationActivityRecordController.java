@@ -86,7 +86,7 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
      *          -时间范围（昨日/本月/累计  统计邀请总人数及成功邀请总人数）
      *          -邀请明细
      */
-    @GetMapping("/user/invitation/activity/record/analysis")
+    @PostMapping("/user/invitation/activity/record/analysis")
     public R invitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
         return returnTripleResult(invitationActivityRecordService.queryInvitationAnalysis(request));
     }
@@ -94,8 +94,8 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     /**
      * 收入明细
      */
-    @GetMapping("/user/invitation/activity/record/income/detail")
-    public R invitationIncomeDetail(@RequestBody InvitationActivityAnalysisRequest request) {
+    @PostMapping("/user/invitation/activity/record/income/detail")
+    public R invitationIncomeDetail(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
         return returnTripleResult(invitationActivityRecordService.queryInvitationIncomeDetail(request));
     }
     

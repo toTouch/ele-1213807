@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -135,7 +136,7 @@ public class JsonAdminInvitationActivityRecordController {
      * @date 2024/1/4 13:41:17
      * @author HeYafeng
      */
-    @GetMapping("/admin/invitationActivityRecord/analysis")
+    @PostMapping("/admin/invitationActivityRecord/analysis")
     public R invitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisAdminRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
