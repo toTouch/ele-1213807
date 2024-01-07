@@ -130,6 +130,7 @@ public class JsonAdminInvitationActivityRecordController {
     /**
      * @description 根据时间范围查询 邀请分析（邀请总数、邀请成功）、已获奖励（首次、非首次）
      * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
+     *                 timeType=3时，beginTime和endTime入参
      * @date 2024/1/4 13:41:17
      * @author HeYafeng
      */
