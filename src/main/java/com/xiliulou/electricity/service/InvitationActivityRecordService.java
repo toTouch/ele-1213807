@@ -4,7 +4,6 @@ import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
-import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisAdminRequest;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
@@ -100,5 +99,5 @@ public interface InvitationActivityRecordService {
     
     Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
     
-    InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, InvitationActivityAnalysisAdminRequest request);
+    InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, Integer timeType, Long beginTime, Long endTime);
 }

@@ -18,7 +18,6 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
-import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisAdminRequest;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -178,25 +177,19 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
     
     @Override
-    public InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, InvitationActivityAnalysisAdminRequest request) {
+    public InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, Integer timeType, Long beginTime, Long endTime) {
         InvitationActivityAnalysisAdminVO invitationActivityAnalysisAdminVO = new InvitationActivityAnalysisAdminVO();
     
-        Integer timeType = request.getTimeType();
-        Long startTime;
-        Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
             // 查询昨日
-            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            beginTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
             endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
         } else if (Objects.equals(timeType, NumberConstant.TWO)) {
             // 查询本月
-            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
-        } else {
-            startTime = request.getBeginTime();
-            endTime = request.getEndTime();
+            beginTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
     
-        query.setBeginTime(startTime);
+        query.setBeginTime(beginTime);
         query.setEndTime(endTime);
     
         //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
@@ -205,27 +198,21 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
             int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
             BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-    
+        
             invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
             invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
             invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
         }
-        
+    
         // 已获奖励（首次、续费）
-        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder()
-                .uid(query.getUid())
-                .tenantId(query.getTenantId())
-                .storeIds(query.getStoreIds())
-                .franchiseeIds(query.getFranchiseeIds())
-                .beginTime(startTime)
-                .endTime(endTime)
-                .build();
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
+                .storeIds(query.getStoreIds()).franchiseeIds(query.getFranchiseeIds()).beginTime(beginTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidOfAdmin(historyQuery);
         if (CollectionUtils.isNotEmpty(historyVOList)) {
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
                     Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
-    
+        
             invitationActivityAnalysisAdminVO.setFirstTotalIncome(result.get(Boolean.TRUE));
             invitationActivityAnalysisAdminVO.setRenewTotalIncome(result.get(Boolean.FALSE));
         }

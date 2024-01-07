@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -86,16 +87,38 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
      *          -时间范围（昨日/本月/累计  统计邀请总人数及成功邀请总人数）
      *          -邀请明细
      */
-    @PostMapping("/user/invitation/activity/record/analysis")
-    public R invitationAnalysis(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
+    @GetMapping("/user/invitation/activity/record/analysis")
+    public R invitationAnalysis(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,
+            @RequestParam("status") Integer status) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().size(size).offset(offset).timeType(timeType).status(status).build();
+    
         return returnTripleResult(invitationActivityRecordService.queryInvitationAnalysis(request));
     }
     
     /**
      * 收入明细
      */
-    @PostMapping("/user/invitation/activity/record/income/detail")
-    public R invitationIncomeDetail(@RequestBody @Validated InvitationActivityAnalysisRequest request) {
+    @GetMapping("/user/invitation/activity/record/income/detail")
+    public R invitationIncomeDetail(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,
+            @RequestParam("status") Integer status) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+    
+        InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().size(size).offset(offset).timeType(timeType).status(status).build();
+    
         return returnTripleResult(invitationActivityRecordService.queryInvitationIncomeDetail(request));
     }
     
