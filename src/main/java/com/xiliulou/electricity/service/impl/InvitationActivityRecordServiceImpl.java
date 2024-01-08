@@ -444,10 +444,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
         
         InvitationActivityIncomeAnalysisVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
-        analysisVO.setFirstTotalIncome(incomeAndMemCountVO.getFirstTotalIncome());
-        analysisVO.setFirstTotalMemCount(incomeAndMemCountVO.getFirstTotalMemCount());
-        analysisVO.setRenewTotalIncome(incomeAndMemCountVO.getRenewTotalIncome());
-        analysisVO.setRenewTotalMemCount(incomeAndMemCountVO.getRenewTotalMemCount());
+        analysisVO.setFirstTotalIncome(Objects.isNull(incomeAndMemCountVO.getFirstTotalIncome()) ? BigDecimal.ZERO : incomeAndMemCountVO.getFirstTotalIncome());
+        analysisVO.setFirstTotalMemCount(Objects.isNull(incomeAndMemCountVO.getFirstTotalMemCount()) ? NumberConstant.ZERO : incomeAndMemCountVO.getFirstTotalMemCount());
+        analysisVO.setRenewTotalIncome(Objects.isNull(incomeAndMemCountVO.getRenewTotalIncome()) ? BigDecimal.ZERO : incomeAndMemCountVO.getRenewTotalIncome());
+        analysisVO.setRenewTotalMemCount(Objects.isNull(incomeAndMemCountVO.getRenewTotalMemCount()) ? NumberConstant.ZERO : incomeAndMemCountVO.getRenewTotalMemCount());
         
         return Triple.of(true, null, analysisVO);
     }
@@ -497,10 +497,21 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
         List<InvitationActivityDetailVO> rspList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(historyVOList)) {
-            rspList = historyVOList.stream()
-                    .map(item -> InvitationActivityDetailVO.builder().activityId(item.getActivityId()).activityName(item.getActivityName()).joinUid(item.getJoinUid())
-                            .joinPhone(item.getJoinUserPhone()).joinName(item.getUserName()).money(item.getMoney()).payCount(item.getPayCount()).build())
-                    .collect(Collectors.toList());
+            rspList = historyVOList.stream().map(item -> {
+                InvitationActivityDetailVO vo = InvitationActivityDetailVO.builder().activityId(item.getActivityId()).activityName(item.getActivityName())
+                        .joinUid(item.getJoinUid()).joinTime(item.getCreateTime()).money(Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney())
+                        .payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount()).build();
+            
+                UserInfo joinUser = userInfoService.queryByUidFromCache(item.getJoinUid());
+                Optional.ofNullable(joinUser).ifPresent(u -> {
+                    vo.setJoinPhone(u.getPhone());
+                    vo.setJoinName(u.getName());
+                });
+            
+                return vo;
+            
+            }).collect(Collectors.toList());
+        
         }
     
         if (CollectionUtils.isEmpty(rspList)) {
@@ -523,31 +534,27 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             List<InvitationActivityJoinHistoryVO> renewHistoryList = groupedByPayCount.get(Boolean.FALSE);
             
             //首返奖励及人数
-            BigDecimal firstTotalIncome = BigDecimal.ZERO;
-            Integer firstTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
-                firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                firstTotalMemCount = firstHistoryList.size();
+                BigDecimal firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                Integer firstTotalMemCount = firstHistoryList.size();
+                
+                incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
+                incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
             }
             
-            incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
-            incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
-            
             //续返奖励及人数
-            BigDecimal renewTotalIncome = BigDecimal.ZERO;
-            Integer renewTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
-                renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
                 
                 Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = renewHistoryList.stream()
                         .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
                 if (MapUtils.isNotEmpty(joinUidGroupMap)) {
-                    renewTotalMemCount = joinUidGroupMap.size();
+                    Integer renewTotalMemCount = joinUidGroupMap.size();
+                    
+                    incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
+                    incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
                 }
             }
-            
-            incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
-            incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
             
         }
         
