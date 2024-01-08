@@ -58,7 +58,7 @@ public interface UserOauthBindService {
     
     UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
     
-    Integer updateOpenIdByUid(String openId, Long uid, Integer tenantId);
+    Integer updateOpenIdByUid(String openId, String accessToken, String refreshToken, Integer status, Long uid, Integer tenantId);
     
     /**
      * 根据更换手机号

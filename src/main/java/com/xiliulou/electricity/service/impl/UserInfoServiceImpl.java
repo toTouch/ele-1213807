@@ -1960,7 +1960,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 根据openId判断是否可解绑微信
-        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid , TenantContextHolder.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());
         if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
             vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
         } else {
@@ -1981,12 +1981,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
         if (Objects.nonNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())) {
             
-            DbUtils.dbOperateSuccessThenHandleCache(userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, userOauthBind.getUid(), TenantContextHolder.getTenantId()), i -> {
-                // 添加解绑操作记录
-                EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
-                        EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
-                eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
-            });
+            DbUtils.dbOperateSuccessThenHandleCache(
+                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
+                            TenantContextHolder.getTenantId()), i -> {
+                        // 添加解绑操作记录
+                        EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
+                                EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
+                        eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
+                    });
             
         }
         return R.ok();

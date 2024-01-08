@@ -65,7 +65,7 @@
     </select>
     
     <update id="updateOpenIdByUid">
-        update t_user_oauth_bind set third_id=#{openId} where uid=#{uid} and tenant_id=#{tenantId}
+        update t_user_oauth_bind set third_id=#{openId},access_token=#{accessToken},refresh_token=#{refreshToken}, status =#{status} where uid=#{uid} and tenant_id=#{tenantId}
     </update>
     
     <update id="updatePhoneByUid">
