@@ -136,14 +136,14 @@ public class JsonAdminInvitationActivityRecordController {
      * @author HeYafeng
      */
     @GetMapping("/admin/invitationActivityRecord/analysis")
-    public R invitationAnalysis(@RequestParam(value = "timeType") Integer timeType, @RequestParam(value = "beginTime", required = false) Long beginTime,
+    public R invitationAnalysis(@RequestParam("uid") Long uid, @RequestParam(value = "timeType") Integer timeType, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "beginTime", required = false) Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(user.getUid()).tenantId(TenantContextHolder.getTenantId()).build();
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(uid).tenantId(TenantContextHolder.getTenantId()).build();
     
         return R.ok(invitationActivityRecordService.queryInvitationAdminAnalysis(query, timeType, beginTime, endTime));
     }
