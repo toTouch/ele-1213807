@@ -1988,7 +1988,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         // 解绑微信成功后 强制用户重新登录
                         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
                         if (DataUtil.collectionIsUsable(userOauthBinds)) {
-                            delUserOauthBindAndClearToken(userOauthBinds);
+                            clearUserOauthBindToken(userOauthBinds);
                         }
                         // 添加解绑操作记录
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
@@ -2000,7 +2000,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
-    private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
+    private void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();
             List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + CacheConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
@@ -2009,7 +2009,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + CacheConstant.CLIENT_ID + s);
                 });
             }
-            userOauthBindService.deleteById(e.getId());
         });
         
     }
