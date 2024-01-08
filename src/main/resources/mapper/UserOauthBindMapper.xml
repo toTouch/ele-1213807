@@ -64,6 +64,25 @@
             uid = #{uid} and tenant_id=#{tenantId} and phone=#{phone}
     </select>
     
+    <select id="selectUserByPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT
+            id,
+            uid,
+            source,
+            third_id,
+            third_nick,
+            access_token,
+            refresh_token,
+            status,
+            phone,
+            create_time,
+            update_time
+        FROM
+            t_user_oauth_bind
+        WHERE
+            phone=#{phone}  and tenant_id=#{tenantId} and source=#{source}
+    </select>
+    
     <update id="updateOpenIdByUid">
         update t_user_oauth_bind set third_id=#{openId},access_token=#{accessToken},refresh_token=#{refreshToken}, status =#{status} where uid=#{uid} and tenant_id=#{tenantId}
     </update>

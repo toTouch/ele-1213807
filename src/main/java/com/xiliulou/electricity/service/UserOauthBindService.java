@@ -58,6 +58,8 @@ public interface UserOauthBindService {
     
     UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
     
+    UserOauthBind selectUserByPhone(String phone,Integer source,Integer tenantId);
+    
     Integer updateOpenIdByUid(String openId, String accessToken, String refreshToken, Integer status, Long uid, Integer tenantId);
     
     /**

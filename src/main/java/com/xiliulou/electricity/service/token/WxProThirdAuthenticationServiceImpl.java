@@ -257,7 +257,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             //openid不存在的时候,手机号存在
             if (!existsOpenId.getLeft() && existPhone.getLeft()) {
 
-                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(),
+                UserOauthBind userOauthBind = userOauthBindService.selectUserByPhone(existPhone.getRight().getPhone(),
                         UserOauthBind.SOURCE_WX_PRO, tenantId);
                 if (Objects.nonNull(userOauthBind)) {
                     // 如果openid不存在,手机号存在,并且传入手机号的openid已经绑定过,则直接拦截
