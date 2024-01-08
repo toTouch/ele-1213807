@@ -10,6 +10,9 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
         </where>
         order by create_time desc
     </select>
