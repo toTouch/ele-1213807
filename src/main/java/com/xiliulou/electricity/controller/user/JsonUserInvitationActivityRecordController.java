@@ -115,6 +115,16 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     
     /**
      * 收入明细
+     *
+     * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
+     */
+    @GetMapping("/user/invitation/activity/record/income/analysis")
+    public R invitationIncomeAnalysis(@RequestParam("timeType") Integer timeType) {
+        return returnTripleResult(invitationActivityRecordService.queryInvitationIncomeAnalysis(timeType));
+    }
+    
+    /**
+     * 收入明细
      * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
      * @param status 0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
@@ -124,13 +134,13 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().size(size).offset(offset).timeType(timeType).status(status).build();
-    
+        
         return returnTripleResult(invitationActivityRecordService.queryInvitationIncomeDetail(request));
     }
     

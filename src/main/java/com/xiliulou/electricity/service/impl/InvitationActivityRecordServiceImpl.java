@@ -32,7 +32,7 @@ import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityDetailVO;
-import com.xiliulou.electricity.vo.activity.InvitationActivityIncomeDetailVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityIncomeAnalysisVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityLineDataVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityStaticsVO;
 import lombok.extern.slf4j.Slf4j;
@@ -179,6 +179,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     @Slave
     @Override
     public Triple<Boolean, String, Object> countByStatics() {
+        // 封装结果集
+        InvitationActivityStaticsVO invitationActivityStaticsVO = new InvitationActivityStaticsVO();
+    
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
@@ -197,15 +200,18 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).build();
         List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
-        InvitationActivityStaticsVO invitationActivityRecordInfoVO = null;
+    
+        BigDecimal totalMoney = BigDecimal.ZERO;
+        Integer totalInvitationCount = NumberConstant.ZERO;
         if (CollectionUtils.isNotEmpty(recordList)) {
-            BigDecimal totalMoney = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-            Integer totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
-        
-            invitationActivityRecordInfoVO = InvitationActivityStaticsVO.builder().totalInvitationCount(totalInvitationCount).totalMoney(totalMoney).build();
+            totalMoney = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
         }
     
-        return Triple.of(true, null, invitationActivityRecordInfoVO);
+        invitationActivityStaticsVO.setTotalMoney(totalMoney);
+        invitationActivityStaticsVO.setTotalInvitationCount(totalInvitationCount);
+    
+        return Triple.of(true, null, invitationActivityStaticsVO);
     }
     
     @Override
@@ -292,7 +298,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
     
         // 根据时间范围查询：昨日/本月/累计
-        List<InvitationActivityRecord> recordList;
         Long startTime = null;
         Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
@@ -307,14 +312,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 邀请总人数、邀请成功总人数
         InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
-        recordList = this.listByUidAndStartTime(recordQuery);
-        if (CollectionUtils.isNotEmpty(recordList)) {
-            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
-            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
+        List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
         
-            activityAnalysisVO.setTotalShareCount(totalShareCount);
-            activityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
+        Integer totalShareCount = NumberConstant.ZERO;
+        Integer totalInvitationCount = NumberConstant.ZERO;
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
+            totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
         }
+    
+        activityAnalysisVO.setTotalShareCount(totalShareCount);
+        activityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
     
         return Triple.of(true, null, activityAnalysisVO);
     }
@@ -385,10 +393,67 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
     
     @Override
-    public Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
+    public Triple<Boolean, String, Object> queryInvitationIncomeAnalysis(Integer timeType) {
         // 封装结果集
-        InvitationActivityIncomeDetailVO incomeDetailVO = new InvitationActivityIncomeDetailVO();
+        InvitationActivityIncomeAnalysisVO analysisVO = new InvitationActivityIncomeAnalysisVO();
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("INVITATION ACTIVITY ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("INVITATION ACTIVITY ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+        
+        // 根据时间范围查询：昨日/本月/累计
+        List<InvitationActivityRecord> recordList;
+        Long startTime = null;
+        Long endTime = null;
+        if (Objects.equals(timeType, NumberConstant.ONE)) {
+            // 查询昨日
+            startTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
+        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
+            // 查询本月
+            startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+        }
+        // startTime=null、endTime = null 查询累计
+        
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
+        recordList = this.listByUidAndStartTime(recordQuery);
+        
+        // 总收入
+        BigDecimal totalIncome = BigDecimal.ZERO;
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+        
+        analysisVO.setTotalIncome(totalIncome);
+        
+        // 首返奖励及人数、续返奖励及人数
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
+        
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
+        
+        InvitationActivityIncomeAnalysisVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
+        analysisVO.setFirstTotalIncome(incomeAndMemCountVO.getFirstTotalIncome());
+        analysisVO.setFirstTotalMemCount(incomeAndMemCountVO.getFirstTotalMemCount());
+        analysisVO.setRenewTotalIncome(incomeAndMemCountVO.getRenewTotalIncome());
+        analysisVO.setRenewTotalMemCount(incomeAndMemCountVO.getRenewTotalMemCount());
+        
+        return Triple.of(true, null, analysisVO);
+    }
     
+    @Override
+    public Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("INVITATION ACTIVITY ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
@@ -407,7 +472,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 根据时间范围查询：昨日/本月/累计
         Integer timeType = request.getTimeType();
-        List<InvitationActivityRecord> recordList;
         Long startTime = null;
         Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
@@ -420,16 +484,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         // startTime=null、endTime = null 查询累计
     
-        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
-        recordList = this.listByUidAndStartTime(recordQuery);
-    
-        // 总收入
-        if (CollectionUtils.isNotEmpty(recordList)) {
-            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-            incomeDetailVO.setTotalIncome(totalIncome);
-        }
-    
-        // 首返奖励及人数、续返奖励及人数、收入明细
+        // 收入明细
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .offset(request.getOffset()).size(request.getSize()).build();
     
@@ -438,20 +493,25 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (Objects.nonNull(status) && statusSet.contains(status)) {
             historyQuery.setStatus(status);
         }
-        
+    
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
+        List<InvitationActivityDetailVO> rspList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(historyVOList)) {
+            rspList = historyVOList.stream()
+                    .map(item -> InvitationActivityDetailVO.builder().activityId(item.getActivityId()).activityName(item.getActivityName()).joinUid(item.getJoinUid())
+                            .joinPhone(item.getJoinUserPhone()).joinName(item.getUserName()).money(item.getMoney()).payCount(item.getPayCount()).build())
+                    .collect(Collectors.toList());
+        }
     
-        InvitationActivityIncomeDetailVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
-        incomeDetailVO.setFirstTotalIncome(incomeAndMemCountVO.getFirstTotalIncome());
-        incomeDetailVO.setFirstTotalMemCount(incomeAndMemCountVO.getFirstTotalMemCount());
-        incomeDetailVO.setRenewTotalIncome(incomeAndMemCountVO.getRenewTotalIncome());
-        incomeDetailVO.setRenewTotalMemCount(incomeAndMemCountVO.getRenewTotalMemCount());
+        if (CollectionUtils.isEmpty(rspList)) {
+            rspList = Collections.emptyList();
+        }
     
-        return Triple.of(true, null, incomeDetailVO);
+        return Triple.of(true, null, rspList);
     }
     
-    private InvitationActivityIncomeDetailVO getIncomeAndMemCount(List<InvitationActivityJoinHistoryVO> historyVOList) {
-        InvitationActivityIncomeDetailVO incomeDetailVO = new InvitationActivityIncomeDetailVO();
+    private InvitationActivityIncomeAnalysisVO getIncomeAndMemCount(List<InvitationActivityJoinHistoryVO> historyVOList) {
+        InvitationActivityIncomeAnalysisVO incomeDetailVO = new InvitationActivityIncomeAnalysisVO();
         
         if (CollectionUtils.isEmpty(historyVOList)) {
             // 根据 payCount=1为1组，不等于1为另一组
@@ -463,24 +523,32 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             List<InvitationActivityJoinHistoryVO> renewHistoryList = groupedByPayCount.get(Boolean.FALSE);
             
             //首返奖励及人数
+            BigDecimal firstTotalIncome = BigDecimal.ZERO;
+            Integer firstTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
-                BigDecimal firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                
-                incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
-                incomeDetailVO.setFirstTotalMemCount(firstHistoryList.size());
+                firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                firstTotalMemCount = firstHistoryList.size();
             }
             
+            incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
+            incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
+            
             //续返奖励及人数
+            BigDecimal renewTotalIncome = BigDecimal.ZERO;
+            Integer renewTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
-                BigDecimal renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
                 
                 Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = renewHistoryList.stream()
                         .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
                 if (MapUtils.isNotEmpty(joinUidGroupMap)) {
-                    incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
-                    incomeDetailVO.setRenewTotalMemCount(joinUidGroupMap.size());
+                    renewTotalMemCount = joinUidGroupMap.size();
                 }
             }
+            
+            incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
+            incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
+            
         }
         
         return incomeDetailVO;

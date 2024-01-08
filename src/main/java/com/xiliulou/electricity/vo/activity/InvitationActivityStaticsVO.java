@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.activity;
 
+import com.xiliulou.electricity.constant.NumberConstant;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +11,6 @@ import java.math.BigDecimal;
  * @description 小程序-返现活动-我的战绩
  * @date 2024/1/2 16:30:40
  */
-@Builder
 @Data
 public class InvitationActivityStaticsVO {
     

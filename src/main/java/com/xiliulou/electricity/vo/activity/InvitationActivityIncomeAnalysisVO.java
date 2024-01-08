@@ -3,7 +3,6 @@ package com.xiliulou.electricity.vo.activity;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author HeYafeng
@@ -11,7 +10,7 @@ import java.util.List;
  * @date 2024/1/2 16:30:40
  */
 @Data
-public class InvitationActivityIncomeDetailVO {
+public class InvitationActivityIncomeAnalysisVO {
     
     /**
      * 已获奖励
@@ -37,10 +36,5 @@ public class InvitationActivityIncomeDetailVO {
      * 续返奖励总人数
      */
     private Integer renewTotalMemCount;
-    
-    /**
-     * 邀请明细
-     */
-    private List<InvitationActivityDetailVO> detailVOList;
     
 }

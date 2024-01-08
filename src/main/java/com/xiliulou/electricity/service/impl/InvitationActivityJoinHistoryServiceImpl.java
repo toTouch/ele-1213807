@@ -235,29 +235,39 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     
         //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
         List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(query);
+        int totalShareCount = NumberConstant.ZERO;
+        int totalInvitationCount = NumberConstant.ZERO;
+        BigDecimal totalIncome = BigDecimal.ZERO;
+    
         if (CollectionUtils.isNotEmpty(recordList)) {
-            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
-            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
-            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-            invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
-            invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
-            invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
+            totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
+            totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
+            totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
+    
+        invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
+        invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
+        invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
     
         // 已获奖励（首次、续费）
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
                 .storeIds(query.getStoreIds()).franchiseeIds(query.getFranchiseeIds()).beginTime(beginTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = this.listByInviterUidOfAdmin(historyQuery);
+    
+        BigDecimal firstTotalIncome = BigDecimal.ZERO;
+        BigDecimal renewTotalIncome = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(historyVOList)) {
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney())).collect(
                     Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
                             Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
         
-            invitationActivityAnalysisAdminVO.setFirstTotalIncome(result.get(Boolean.TRUE));
-            invitationActivityAnalysisAdminVO.setRenewTotalIncome(result.get(Boolean.FALSE));
+            firstTotalIncome = result.get(Boolean.TRUE);
+            renewTotalIncome = result.get(Boolean.FALSE);
         }
+    
+        invitationActivityAnalysisAdminVO.setFirstTotalIncome(firstTotalIncome);
+        invitationActivityAnalysisAdminVO.setRenewTotalIncome(renewTotalIncome);
     
         return invitationActivityAnalysisAdminVO;
     }

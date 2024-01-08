@@ -98,6 +98,8 @@ public interface InvitationActivityRecordService {
     
     Triple<Boolean, String, Object> queryInvitationDetail(InvitationActivityAnalysisRequest request);
     
+    Triple<Boolean, String, Object> queryInvitationIncomeAnalysis(Integer timeType);
+    
     Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
     
 }
