@@ -324,6 +324,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             }
         } catch (Exception e) {
             if (e instanceof UserLoginException) {
+                log.error("该账户已绑定其他微信，请联系客服处理");
                 throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
             }
             log.error("ELE AUTH ERROR!", e);
