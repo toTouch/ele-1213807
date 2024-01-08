@@ -1981,15 +1981,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
         if (Objects.nonNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())) {
-            
+            // 解绑微信成功后 强制用户重新登录
+            List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+            if (DataUtil.collectionIsUsable(userOauthBinds)) {
+                clearUserOauthBindToken(userOauthBinds);
+            }
             DbUtils.dbOperateSuccessThenHandleCache(
                     userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
                             TenantContextHolder.getTenantId()), i -> {
-                        // 解绑微信成功后 强制用户重新登录
-                        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
-                        if (DataUtil.collectionIsUsable(userOauthBinds)) {
-                            clearUserOauthBindToken(userOauthBinds);
-                        }
                         // 添加解绑操作记录
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
                                 EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
