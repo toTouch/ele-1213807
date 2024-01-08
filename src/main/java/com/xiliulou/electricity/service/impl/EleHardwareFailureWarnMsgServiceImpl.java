@@ -565,7 +565,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
             FailureWarnProportionVo vo = new FailureWarnProportionVo();
-            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE);
+            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getDesc());
             vo.setPath(vo.getName());
             Integer count = 0;
             if (ObjectUtils.isNotEmpty(gradeMap.get(alarmGradeEnum.getCode()))) {
@@ -605,7 +605,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
             FailureWarnProportionVo vo = new FailureWarnProportionVo();
-            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING);
+            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getDesc());
             vo.setPath(vo.getName());
             Integer count = 0;
             if (ObjectUtils.isNotEmpty(gradeMap.get(alarmGradeEnum.getCode()))) {
