@@ -94,7 +94,9 @@ public interface InvitationActivityRecordService {
     
     Triple<Boolean, String, Object> listInvitationLineData();
     
-    Triple<Boolean, String, Object> queryInvitationAnalysis(InvitationActivityAnalysisRequest request);
+    Triple<Boolean, String, Object> queryInvitationAnalysis(Integer timeType);
+    
+    Triple<Boolean, String, Object> queryInvitationDetail(InvitationActivityAnalysisRequest request);
     
     Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
     

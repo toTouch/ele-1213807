@@ -83,26 +83,34 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     }
     
     /**
-     * 邀请分析
-     *          -时间范围（昨日/本月/累计  统计邀请总人数及成功邀请总人数）
-     *          -邀请明细
+     * 邀请分析-时间范围（昨日/本月/累计  统计邀请总人数及成功邀请总人数）
+     *
+     * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-累计
+     */
+    @GetMapping("/user/invitation/activity/record/analysis")
+    public R invitationAnalysis(@RequestParam("timeType") Integer timeType) {
+        return returnTripleResult(invitationActivityRecordService.queryInvitationAnalysis(timeType));
+    }
+    
+    /**
+     * 邀请分析-邀请明细
      *@param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-累计
      *@param status 0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
-    @GetMapping("/user/invitation/activity/record/analysis")
-    public R invitationAnalysis(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,
+    @GetMapping("/user/invitation/activity/record/analysis/detail")
+    public R invitationDetails(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,
             @RequestParam("status") Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-    
+        
         if (offset < 0) {
             offset = 0L;
         }
-    
+        
         InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().size(size).offset(offset).timeType(timeType).status(status).build();
-    
-        return returnTripleResult(invitationActivityRecordService.queryInvitationAnalysis(request));
+        
+        return returnTripleResult(invitationActivityRecordService.queryInvitationDetail(request));
     }
     
     /**

@@ -2,8 +2,6 @@ package com.xiliulou.electricity.vo.activity;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * @author HeYafeng
  * @description 小程序-返现活动-我的战绩-累计成功邀请详情
@@ -21,10 +19,5 @@ public class InvitationActivityAnalysisVO {
      * 邀请成功总人数(昨日/本月/累计)
      */
     private Integer totalInvitationCount;
-    
-    /**
-     * 邀请明细
-     */
-    private List<InvitationActivityDetailVO> detailVOList;
     
 }
