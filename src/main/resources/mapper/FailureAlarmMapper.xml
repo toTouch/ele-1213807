@@ -125,6 +125,10 @@
             <if test="status != null">
                 and t.status = #{status}
             </if>
+    
+            <if test="type != null">
+                and t.type = #{type}
+            </if>
            
         </where>
     </select>

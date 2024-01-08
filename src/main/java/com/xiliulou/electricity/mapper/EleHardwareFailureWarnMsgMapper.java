@@ -6,7 +6,7 @@ import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryM
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
-import com.xiliulou.electricity.vo.failureAlarm.FailureWarnTenantOverviewVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -28,4 +28,6 @@ public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareF
     List<EleHardwareFailureWarnMsgVo> countFailureWarnNum(FailureWarnMsgTaskQueryModel queryModel);
     
     void batchInsert(@Param("list") List<EleHardwareFailureWarnMsg> list);
+    
+    List<FailureWarnProportionVo> selectListProportion(FailureWarnMsgPageQueryModel queryModel);
 }

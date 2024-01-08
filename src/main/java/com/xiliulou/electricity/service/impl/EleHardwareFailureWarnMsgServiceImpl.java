@@ -13,7 +13,9 @@ import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmGradeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureWarnMsgStatusEnum;
 import com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper;
+import com.xiliulou.electricity.mapper.FailureAlarmMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
@@ -28,6 +30,7 @@ import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,6 +70,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Resource
     private FailureAlarmService failureAlarmService;
+    
+    @Resource
+    private FailureAlarmMapper failureAlarmMapper;
     
     @Resource
     private ElectricityCabinetService cabinetService;
@@ -130,7 +137,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isEmpty(request.getAlarmStartTime())) {
             return Triple.of(false, "300828", "查询开始时间不能为空");
         }
-    
+        
         if (ObjectUtils.isEmpty(request.getAlarmEndTime())) {
             return Triple.of(false, "300829", "查询结束时间不能为空");
         }
@@ -193,7 +200,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isEmpty(request.getAlarmStartTime())) {
             return Triple.of(false, "300828", "查询开始时间不能为空");
         }
-    
+        
         if (ObjectUtils.isEmpty(request.getAlarmEndTime())) {
             return Triple.of(false, "300829", "查询结束时间不能为空");
         }
@@ -512,5 +519,143 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         return R.ok(list);
     }
-   
+    
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request) {
+        Triple<Boolean, String, Object> triple = checkParams(request);
+        if (!triple.getLeft()) {
+            return triple;
+        }
+        
+        FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
+        queryModel.setType(request.getType());
+        queryModel.setAlarmStartTime(request.getAlarmStartTime());
+        queryModel.setAlarmEndTime(request.getAlarmEndTime());
+        
+        // 统计每个信号量故障或者告警的数量
+        List<FailureWarnProportionVo> list = failureWarnMsgMapper.selectListProportion(queryModel);
+        Map<String, Integer> failureMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(list)) {
+            failureMap = list.stream().collect(Collectors.toMap(FailureWarnProportionVo::getSignalId, FailureWarnProportionVo::getCount));
+        }
+        
+        List<FailureWarnProportionVo> result = null;
+        
+        if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN)) {
+            result = warnProportion(failureMap);
+        } else if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
+            result = failureProportion(failureMap);
+        }
+        
+        return Triple.of(true, null, result);
+    }
+    
+    private List<FailureWarnProportionVo> failureProportion(Map<String, Integer> failureMap) {
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(EleHardwareFailureWarnMsg.FAILURE).build();
+        List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
+        Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(failureAlarmList)) {
+            gradeMap = failureAlarmList.stream().collect(Collectors.groupingBy(FailureAlarm::getGrade));
+        }
+        
+        List<FailureWarnProportionVo> resultList = new ArrayList<>();
+        
+        for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
+            FailureWarnProportionVo vo = new FailureWarnProportionVo();
+            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE);
+            vo.setPath(vo.getName());
+            Integer count = 0;
+            if (ObjectUtils.isNotEmpty(gradeMap.get(alarmGradeEnum.getCode()))) {
+                List<FailureWarnProportionVo> children = new ArrayList<>();
+                List<FailureAlarm> alarmList = gradeMap.get(alarmGradeEnum.getCode());
+                for (FailureAlarm failureAlarm : alarmList) {
+                    if (ObjectUtils.isNotEmpty(failureMap.get(failureAlarm.getSignalId()))) {
+                        count += failureMap.get(failureAlarm.getSignalId());
+                        FailureWarnProportionVo failureWarnProportionVo = new FailureWarnProportionVo();
+                        failureWarnProportionVo.setName(failureAlarm.getSignalName());
+                        failureWarnProportionVo.setPath(vo.getPath() + "/" + failureAlarm.getSignalName());
+                        failureWarnProportionVo.setValue(failureMap.get(failureAlarm.getSignalId()));
+                        children.add(failureWarnProportionVo);
+                    }
+                }
+                
+                if (count > 0) {
+                    vo.setChildren(children);
+                    vo.setValue(count);
+                    resultList.add(vo);
+                }
+            }
+        }
+        
+        return resultList;
+    }
+    
+    private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(EleHardwareFailureWarnMsg.WARN).build();
+        List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
+        Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(failureAlarmList)) {
+            gradeMap = failureAlarmList.stream().collect(Collectors.groupingBy(FailureAlarm::getGrade));
+        }
+        
+        List<FailureWarnProportionVo> resultList = new ArrayList<>();
+        
+        for (FailureAlarmGradeEnum alarmGradeEnum : FailureAlarmGradeEnum.values()) {
+            FailureWarnProportionVo vo = new FailureWarnProportionVo();
+            vo.setName(alarmGradeEnum.getDesc() + FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING);
+            vo.setPath(vo.getName());
+            Integer count = 0;
+            if (ObjectUtils.isNotEmpty(gradeMap.get(alarmGradeEnum.getCode()))) {
+                List<FailureWarnProportionVo> children = new ArrayList<>();
+                List<FailureAlarm> alarmList = gradeMap.get(alarmGradeEnum.getCode());
+                for (FailureAlarm failureAlarm : alarmList) {
+                    if (ObjectUtils.isNotEmpty(failureMap.get(failureAlarm.getSignalId()))) {
+                        count += failureMap.get(failureAlarm.getSignalId());
+                        FailureWarnProportionVo failureWarnProportionVo = new FailureWarnProportionVo();
+                        failureWarnProportionVo.setName(failureAlarm.getSignalName());
+                        failureWarnProportionVo.setPath(vo.getPath() + "/" + failureAlarm.getSignalName());
+                        failureWarnProportionVo.setValue(failureMap.get(failureAlarm.getSignalId()));
+                        children.add(failureWarnProportionVo);
+                    }
+                }
+                
+                if (count > 0) {
+                    vo.setChildren(children);
+                    vo.setValue(count);
+                    resultList.add(vo);
+                }
+            }
+        }
+        
+        return resultList;
+    }
+    
+    private Triple<Boolean, String, Object> checkParams(EleHardwareFailureWarnMsgPageRequest request) {
+        if (ObjectUtils.isEmpty(request.getAlarmStartTime())) {
+            return Triple.of(false, "300828", "查询开始时间不能为空");
+        }
+        
+        if (ObjectUtils.isEmpty(request.getAlarmEndTime())) {
+            return Triple.of(false, "300829", "查询结束时间不能为空");
+        }
+        
+        if (request.getAlarmStartTime() > request.getAlarmEndTime()) {
+            return Triple.of(false, "300826", "查询结束时间不能小于开始时间");
+        }
+        
+        if (!(Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) || Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE))) {
+            return Triple.of(false, "300827", "请选择正确的故障类型");
+        }
+        
+        // 使用天数
+        long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
+        
+        if (usageDays > 30) {
+            return Triple.of(false, "300825", "查询天数不能大于30天");
+        }
+        
+        return Triple.of(true, null, null);
+    }
+    
 }

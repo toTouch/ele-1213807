@@ -28,7 +28,7 @@ public class FailureWarnCabinetOverviewVo {
     private Integer cabinetId;
     
     /**
-     * 租户名称
+     * 设备编号
      */
     private String sn;
     
