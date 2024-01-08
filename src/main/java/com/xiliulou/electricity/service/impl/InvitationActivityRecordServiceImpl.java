@@ -347,7 +347,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         // 根据时间范围查询：昨日/本月/累计
         Integer timeType = request.getTimeType();
-        List<InvitationActivityRecord> recordList;
         Long startTime = null;
         Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
@@ -364,7 +363,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .offset(request.getOffset()).size(request.getSize()).build();
     
-        Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
+        Set<Integer> statusSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
             // status=0 查全部
@@ -490,7 +489,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .offset(request.getOffset()).size(request.getSize()).build();
     
-        Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
+        Set<Integer> statusSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
             // status=0 查全部
