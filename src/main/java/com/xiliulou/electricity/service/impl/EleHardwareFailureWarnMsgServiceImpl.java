@@ -554,7 +554,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private List<FailureWarnProportionVo> failureProportion(Map<String, Integer> failureMap) {
-        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(EleHardwareFailureWarnMsg.FAILURE).build();
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
@@ -594,7 +594,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
-        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(EleHardwareFailureWarnMsg.WARN).build();
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
