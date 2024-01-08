@@ -329,21 +329,22 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
     
-        List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
-            Long joinUid = item.getJoinUid();
-            UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
-        
-            InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
-                    .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(item.getPayCount()).money(item.getMoney()).build();
-        
-            Optional.ofNullable(joinUser).ifPresent(user -> {
-                invitationActivityDetailVO.setJoinName(user.getName());
-                invitationActivityDetailVO.setJoinPhone(user.getPhone());
-            });
-        
-            return invitationActivityDetailVO;
-        
-        }).collect(Collectors.toList());
+        List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney()))
+                .map(item -> {
+                    Long joinUid = item.getJoinUid();
+                    UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+                
+                    InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
+                            .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(item.getPayCount()).money(item.getMoney()).build();
+                
+                    Optional.ofNullable(joinUser).ifPresent(user -> {
+                        invitationActivityDetailVO.setJoinName(user.getName());
+                        invitationActivityDetailVO.setJoinPhone(user.getPhone());
+                    });
+                
+                    return invitationActivityDetailVO;
+                
+                }).collect(Collectors.toList());
     
         activityAnalysisVO.setDetailVOList(detailVOList);
     
@@ -422,6 +423,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (CollectionUtils.isEmpty(historyVOList)) {
             // 根据 payCount=1为1组，不等于1为另一组
             Map<Boolean, List<InvitationActivityJoinHistoryVO>> groupedByPayCount = historyVOList.stream()
+                    .filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney()))
                     .collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE)));
             
             List<InvitationActivityJoinHistoryVO> firstHistoryList = groupedByPayCount.get(Boolean.TRUE);
