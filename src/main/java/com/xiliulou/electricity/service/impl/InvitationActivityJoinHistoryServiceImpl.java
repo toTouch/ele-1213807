@@ -3,13 +3,20 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
+import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
+import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -37,6 +46,9 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     private InvitationActivityJoinHistoryMapper invitationActivityJoinHistoryMapper;
     @Autowired
     private UserInfoService userInfoService;
+    
+    @Resource
+    private InvitationActivityRecordService invitationActivityRecordService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -197,5 +209,55 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query) {
         return invitationActivityJoinHistoryMapper.selectListByInviterUid(query);
+    }
+    
+    @Override
+    public InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityAnalysisRequest request) {
+        InvitationActivityAnalysisAdminVO invitationActivityAnalysisAdminVO = new InvitationActivityAnalysisAdminVO();
+    
+        Integer timeType = request.getTimeType();
+        Long beginTime = request.getBeginTime();
+        Long endTime = request.getEndTime();
+    
+        if (Objects.equals(timeType, NumberConstant.ONE)) {
+            // 查询昨日
+            beginTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
+            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
+        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
+            // 查询本月
+            beginTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
+        }
+    
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(request.getUid()).build();
+    
+        query.setBeginTime(beginTime);
+        query.setEndTime(endTime);
+    
+        //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
+        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(query);
+        if (CollectionUtils.isNotEmpty(recordList)) {
+            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
+            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
+            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+            invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
+            invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
+            invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
+        }
+    
+        // 已获奖励（首次、续费）
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
+                .storeIds(query.getStoreIds()).franchiseeIds(query.getFranchiseeIds()).beginTime(beginTime).endTime(endTime).build();
+        List<InvitationActivityJoinHistoryVO> historyVOList = this.listByInviterUidOfAdmin(historyQuery);
+        if (CollectionUtils.isNotEmpty(historyVOList)) {
+            // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
+            Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
+                    Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
+        
+            invitationActivityAnalysisAdminVO.setFirstTotalIncome(result.get(Boolean.TRUE));
+            invitationActivityAnalysisAdminVO.setRenewTotalIncome(result.get(Boolean.FALSE));
+        }
+    
+        return invitationActivityAnalysisAdminVO;
     }
 }

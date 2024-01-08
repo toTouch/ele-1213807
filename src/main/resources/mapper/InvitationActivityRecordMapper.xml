@@ -205,7 +205,6 @@
     <select id="selectListByUidAndStartTimeOfAdmin" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
         select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
         from t_invitation_activity_record iar
-        left join t_user_info tui on tui.uid=iar.uid
         <where>
             iar.uid = #{uid}
             <if test="beginTime != null ">
@@ -216,18 +215,6 @@
             </if>
             <if test="tenantId != null">
                 and iar.tenant_id = #{tenantId}
-            </if>
-            <if test="franchiseeIds != null">
-                and tui.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="storeIds != null">
-                and tui.store_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
-                    #{id}
-                </foreach>
             </if>
         </where>
         order by iar.id desc

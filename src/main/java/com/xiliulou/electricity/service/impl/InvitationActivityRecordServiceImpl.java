@@ -30,7 +30,6 @@ import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoListVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordInfoVO;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
-import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityDetailVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityIncomeDetailVO;
@@ -175,50 +174,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     @Override
     public List<InvitationActivityRecord> selectByUid(Long uid) {
         return this.invitationActivityRecordMapper.selectByUid(uid);
-    }
-    
-    @Override
-    public InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityRecordQuery query, Integer timeType, Long beginTime, Long endTime) {
-        InvitationActivityAnalysisAdminVO invitationActivityAnalysisAdminVO = new InvitationActivityAnalysisAdminVO();
-    
-        if (Objects.equals(timeType, NumberConstant.ONE)) {
-            // 查询昨日
-            beginTime = DateUtils.getTimeAgoStartTime(NumberConstant.ONE);
-            endTime = DateUtils.getTimeAgoEndTime(NumberConstant.ONE);
-        } else if (Objects.equals(timeType, NumberConstant.TWO)) {
-            // 查询本月
-            beginTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
-        }
-    
-        query.setBeginTime(beginTime);
-        query.setEndTime(endTime);
-    
-        //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
-        List<InvitationActivityRecord> recordList = this.listByUidAndStartTimeOfAdmin(query);
-        if (CollectionUtils.isNotEmpty(recordList)) {
-            int totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
-            int totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
-            BigDecimal totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-            invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
-            invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
-            invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
-        }
-    
-        // 已获奖励（首次、续费）
-        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
-                .storeIds(query.getStoreIds()).franchiseeIds(query.getFranchiseeIds()).beginTime(beginTime).endTime(endTime).build();
-        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidOfAdmin(historyQuery);
-        if (CollectionUtils.isNotEmpty(historyVOList)) {
-            // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
-            Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
-                    Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
-        
-            invitationActivityAnalysisAdminVO.setFirstTotalIncome(result.get(Boolean.TRUE));
-            invitationActivityAnalysisAdminVO.setRenewTotalIncome(result.get(Boolean.FALSE));
-        }
-    
-        return invitationActivityAnalysisAdminVO;
     }
     
     @Slave

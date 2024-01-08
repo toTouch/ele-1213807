@@ -38,4 +38,8 @@ public class InvitationActivityAnalysisRequest {
     private Long beginTime;
     
     private Long endTime;
+    
+    private Long uid;
+    
+    
 }
