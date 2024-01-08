@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.activity;
 
+import com.xiliulou.electricity.utils.DateUtils;
 import lombok.Data;
 
 /**

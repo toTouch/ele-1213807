@@ -131,6 +131,7 @@ public class JsonAdminInvitationActivityRecordController {
      * @description 根据时间范围查询 邀请分析（邀请总数、邀请成功）、已获奖励（首次、非首次）
      * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
      *                 timeType=3时，beginTime和endTime入参
+     * 数据权限：详情列表（/admin/invitationActivityJoinHistory/page）没有加数据权限，此处与其保持一致
      * @date 2024/1/4 13:41:17
      * @author HeYafeng
      */
@@ -142,24 +143,7 @@ public class JsonAdminInvitationActivityRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-    
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(user.getUid()).tenantId(TenantContextHolder.getTenantId()).storeIds(storeIds)
-                .franchiseeIds(franchiseeIds).build();
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(user.getUid()).tenantId(TenantContextHolder.getTenantId()).build();
     
         return R.ok(invitationActivityRecordService.queryInvitationAdminAnalysis(query, timeType, beginTime, endTime));
     }

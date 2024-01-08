@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -277,9 +278,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(userInfo.getUid()).beginTime(startTime).build();
         List<InvitationActivityRecord> recordList = this.listByUidAndStartTime(recordQuery);
         if (CollectionUtils.isNotEmpty(recordList)) {
-            // 将每天的数据进行分组
-            Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream().collect(Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND)));
-        
+            // 将每天的数据进行分组，并按createTime升序排序
+            Map<LocalDate, List<InvitationActivityRecord>> dateListMap = recordList.stream().collect(
+                    Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND), Collectors.collectingAndThen(Collectors.toList(),
+                            list -> list.stream().sorted(Comparator.comparingLong(InvitationActivityRecord::getCreateTime)).collect(Collectors.toList()))));
+    
             dateListMap.forEach((k, v) -> {
                 InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
                 Integer totalShareCount = NumberConstant.ZERO;
