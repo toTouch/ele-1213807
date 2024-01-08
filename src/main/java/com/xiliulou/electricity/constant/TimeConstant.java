@@ -44,4 +44,6 @@ public interface TimeConstant {
      */
     long HOURS_MINUTE = 60L;
     
+    Integer ONE_MONTH = 31;
+    
 }

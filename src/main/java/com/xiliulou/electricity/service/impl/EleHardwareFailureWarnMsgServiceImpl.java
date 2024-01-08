@@ -5,6 +5,8 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
@@ -97,7 +99,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     public R listByPage(EleHardwareFailureWarnMsgPageRequest request) {
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 30);
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
         if (!triple.getLeft()) {
             return R.fail(triple.getMiddle(), (String) triple.getRight());
         }
@@ -175,7 +177,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     public R countTotal(EleHardwareFailureWarnMsgPageRequest request) {
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 30);
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
         if (!triple.getLeft()) {
             return R.fail(triple.getMiddle(), (String) triple.getRight());
         }
@@ -212,7 +214,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 使用天数
         long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
         
-        if (usageDays > 30) {
+        if (usageDays > TimeConstant.ONE_MONTH) {
             return Triple.of(false, "300825", "查询天数不能大于30天");
         }
         
@@ -461,7 +463,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         // 检测数据
-        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, 30);
+        Triple<Boolean, String, Object> triple = checkAndInitQuery(request, queryModel, TimeConstant.ONE_MONTH);
         if (!triple.getLeft()) {
             log.error("failure warn msg export check error info={}", triple.getRight());
             throw new CustomBusinessException((String) triple.getRight());
@@ -574,7 +576,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         count += failureMap.get(failureAlarm.getSignalId());
                         FailureWarnProportionVo failureWarnProportionVo = new FailureWarnProportionVo();
                         failureWarnProportionVo.setName(failureAlarm.getSignalName());
-                        failureWarnProportionVo.setPath(vo.getPath() + "/" + failureAlarm.getSignalName());
+                        failureWarnProportionVo.setPath(vo.getPath() + StringConstant.FORWARD_SLASH + failureAlarm.getSignalName());
                         failureWarnProportionVo.setValue(failureMap.get(failureAlarm.getSignalId()));
                         children.add(failureWarnProportionVo);
                     }
@@ -614,7 +616,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         count += failureMap.get(failureAlarm.getSignalId());
                         FailureWarnProportionVo failureWarnProportionVo = new FailureWarnProportionVo();
                         failureWarnProportionVo.setName(failureAlarm.getSignalName());
-                        failureWarnProportionVo.setPath(vo.getPath() + "/" + failureAlarm.getSignalName());
+                        failureWarnProportionVo.setPath(vo.getPath() + StringConstant.FORWARD_SLASH + failureAlarm.getSignalName());
                         failureWarnProportionVo.setValue(failureMap.get(failureAlarm.getSignalId()));
                         children.add(failureWarnProportionVo);
                     }
@@ -651,7 +653,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 使用天数
         long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
         
-        if (usageDays > 30) {
+        if (usageDays > TimeConstant.ONE_MONTH) {
             return Triple.of(false, "300825", "查询天数不能大于30天");
         }
         

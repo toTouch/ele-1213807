@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.handler.iot.impl.HardwareFailureWarnMsgHandler;
@@ -543,7 +544,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         // 使用天数
         long usageDays = DateUtils.diffDayV2(request.getAlarmStartTime(), request.getAlarmEndTime());
         
-        if (usageDays > 30) {
+        if (usageDays > TimeConstant.ONE_MONTH) {
             return Triple.of(false, "300825", "查询天数不能大于30天");
         }
         
