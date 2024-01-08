@@ -140,7 +140,7 @@
         FROM
             t_ele_hardware_failure_warn_msg
         WHERE
-          alarm_time between  #{startTime} and #{endTime}
+          alarm_time between  #{alarmStartTime} and #{alarmEndTime}
           and type = #{type}
         GROUP BY signal_id
     </select>
