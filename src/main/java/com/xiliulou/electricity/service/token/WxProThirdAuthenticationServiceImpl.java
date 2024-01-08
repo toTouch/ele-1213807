@@ -157,18 +157,17 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
                 // 如果openId不一致，则报错
-                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
-                if (Objects.nonNull(userOauthBind) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
+                UserOauthBind userOauthBind = userOauthBindService.selectUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
+                if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
                     log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdUid={},userId={}", result.getOpenid(),
                             userOauthBind.getThirdId(),existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
                     throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
                 }
                 
                 //uid不同，异常处理
-                if (!existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
-                    log.error(
-                            "TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                            existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
+                if (StringUtils.isNotBlank(userOauthBind.getThirdId()) && !existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
+                    log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}", existsOpenId.getRight().getUid(),
+                            existPhone.getRight().getUid());
                     throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                 }
 
@@ -184,6 +183,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
                 }
+                
+                if(StringUtils.isBlank(userOauthBind.getThirdId())){
+                    //这里更改openId
+                    userOauthBind.setThirdId(result.getOpenid());
+                    userOauthBind.setUpdateTime(System.currentTimeMillis());
+                    userOauthBind.setStatus(UserOauthBind.STATUS_BIND);
+                    userOauthBindService.update(userOauthBind);
+                }
+                
                 //相同登录
                 return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
             }
