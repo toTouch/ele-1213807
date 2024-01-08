@@ -206,15 +206,18 @@
         select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
         from t_invitation_activity_record iar
         <where>
-            iar.uid = #{uid}
-            <if test="beginTime != null ">
-                and iar.create_time <![CDATA[ >=  ]]> #{beginTime}
+            iar.uid = #{query.uid}
+            <if test="query.beginTime != null ">
+                and iar.create_time <![CDATA[ >=  ]]> #{query.beginTime}
             </if>
-            <if test="endTime != null ">
-                and iar.create_time <![CDATA[ <=  ]]> #{endTime}
+            <if test="query.endTime != null ">
+                and iar.create_time <![CDATA[ <=  ]]> #{query.endTime}
             </if>
-            <if test="tenantId != null">
-                and iar.tenant_id = #{tenantId}
+            <if test="query.tenantId != null">
+                and iar.tenant_id = #{query.tenantId}
+            </if>
+            <if test="activityId != null">
+                and iar.activity_id = #{activityId}
             </if>
         </where>
         order by iar.id desc

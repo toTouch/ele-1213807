@@ -41,5 +41,6 @@ public class InvitationActivityAnalysisRequest {
     
     private Long uid;
     
+    private Long activityId;
     
 }

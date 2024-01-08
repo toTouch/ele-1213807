@@ -111,14 +111,14 @@ public class JsonAdminInvitationActivityJoinHistoryController {
      * @author HeYafeng
      */
     @GetMapping("/admin/invitationActivityJoinHistory/analysis")
-    public R invitationAnalysis(@RequestParam("uid") Long uid, @RequestParam(value = "timeType") Integer timeType, @RequestParam(value = "beginTime", required = false) Long beginTime,
+    public R invitationAnalysis(@RequestParam("uid") Long uid, @RequestParam("activityId") Long activityId, @RequestParam(value = "timeType") Integer timeType, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().uid(uid).timeType(timeType).beginTime(beginTime).endTime(endTime).build();
+        InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().uid(uid).activityId(activityId).timeType(timeType).beginTime(beginTime).endTime(endTime).build();
         
         return R.ok(invitationActivityJoinHistoryService.queryInvitationAdminAnalysis(request));
     }

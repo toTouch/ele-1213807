@@ -85,5 +85,5 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
     
     List<InvitationActivityRecord> selectListByUidAndStartTime(InvitationActivityRecordQuery query);
     
-    List<InvitationActivityRecord> selectListByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query);
+    List<InvitationActivityRecord> selectListByUidAndStartTimeOfAdmin(@Param("query") InvitationActivityRecordQuery query, @Param("activityId") Long activityId);
 }

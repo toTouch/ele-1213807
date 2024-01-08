@@ -234,7 +234,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         query.setEndTime(endTime);
     
         //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
-        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(query);
+        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(query, request.getActivityId());
         int totalShareCount = NumberConstant.ZERO;
         int totalInvitationCount = NumberConstant.ZERO;
         BigDecimal totalIncome = BigDecimal.ZERO;
@@ -251,7 +251,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     
         // 已获奖励（首次、续费）
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
-                .storeIds(query.getStoreIds()).franchiseeIds(query.getFranchiseeIds()).beginTime(beginTime).endTime(endTime).build();
+                .activityId(request.getActivityId()).beginTime(beginTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = this.listByInviterUidOfAdmin(historyQuery);
     
         BigDecimal firstTotalIncome = BigDecimal.ZERO;

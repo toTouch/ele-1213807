@@ -367,6 +367,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
+            // status=0 查全部
+            status = Objects.equals(status, NumberConstant.ZERO) ? null : status;
             query.setStatus(status);
         }
     
@@ -491,6 +493,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Set<Integer> statusSet = Set.of(NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
+            // status=0 查全部
+            status = Objects.equals(status, NumberConstant.ZERO) ? null : status;
             historyQuery.setStatus(status);
         }
     
@@ -563,8 +567,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
     @Slave
     @Override
-    public List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query) {
-        return invitationActivityRecordMapper.selectListByUidAndStartTimeOfAdmin(query);
+    public List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query, Long activityId) {
+        return invitationActivityRecordMapper.selectListByUidAndStartTimeOfAdmin(query, activityId);
     }
     
     @Slave

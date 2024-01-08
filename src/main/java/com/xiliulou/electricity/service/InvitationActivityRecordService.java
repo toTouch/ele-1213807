@@ -86,7 +86,7 @@ public interface InvitationActivityRecordService {
     
     List<InvitationActivityRecord> selectByUid(Long uid);
     
-    List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query);
+    List<InvitationActivityRecord> listByUidAndStartTimeOfAdmin(InvitationActivityRecordQuery query, Long activityId);
     
     List<InvitationActivityRecord> listByUidAndStartTime(InvitationActivityRecordQuery query);
     
