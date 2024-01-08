@@ -855,6 +855,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(true, null, null);
         }
     
+        // 是否自己扫自己的码
+        if (Objects.equals(userInfo.getUid(), invitationUid)) {
+            return Triple.of(true, null, null);
+        }
+    
         UserInfo invitationUserInfo = userInfoService.queryByUidFromCache(invitationUid);
         if (Objects.isNull(invitationUserInfo)) {
             log.error("INVITATION ACTIVITY ERROR! not found invitationUserInfo,invitationUid={},uid={}", invitationUid, userInfo.getUid());
