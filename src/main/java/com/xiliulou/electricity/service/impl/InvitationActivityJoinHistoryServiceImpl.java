@@ -5,11 +5,9 @@ import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
-import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
-import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
@@ -228,35 +226,20 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             beginTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
     
-        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(request.getUid()).build();
-    
-        recordQuery.setBeginTime(beginTime);
-        recordQuery.setEndTime(endTime);
-    
-        //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
-        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(recordQuery, request.getActivityId());
-        int totalShareCount = NumberConstant.ZERO;
-        int totalInvitationCount = NumberConstant.ZERO;
-        BigDecimal totalIncome = BigDecimal.ZERO;
-    
-        if (CollectionUtils.isNotEmpty(recordList)) {
-            totalShareCount = recordList.stream().mapToInt(InvitationActivityRecord::getShareCount).sum();
-            totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
-            totalIncome = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-    
-        invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
-        invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
-        invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
-    
         // 已获奖励（首次、续费）
-        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(recordQuery.getUid()).activityId(request.getActivityId())
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(request.getUid()).activityId(request.getActivityId())
                 .beginTime(beginTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = this.listByInviterUidOfAdmin(historyQuery);
     
+        Integer totalShareCount = NumberConstant.ZERO;
+        int totalInvitationCount = NumberConstant.ZERO;
+        BigDecimal totalIncome = BigDecimal.ZERO;
         BigDecimal firstTotalIncome = BigDecimal.ZERO;
         BigDecimal renewTotalIncome = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(historyVOList)) {
+            totalShareCount = historyVOList.size();
+            totalInvitationCount = (int) historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney())).collect(
                     Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
@@ -264,8 +247,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         
             firstTotalIncome = result.get(Boolean.TRUE);
             renewTotalIncome = result.get(Boolean.FALSE);
+    
+            totalIncome = renewTotalIncome.add(renewTotalIncome);
         }
     
+        invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
+        invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
+        invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
         invitationActivityAnalysisAdminVO.setFirstTotalIncome(firstTotalIncome);
         invitationActivityAnalysisAdminVO.setRenewTotalIncome(renewTotalIncome);
     

@@ -202,45 +202,6 @@
         </where>
     </select>
     
-    <select id="selectListByUidAndStartTimeOfAdmin" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
-        select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
-        from t_invitation_activity_record iar
-        <where>
-            iar.uid = #{query.uid}
-            <if test="query.beginTime != null ">
-                and iar.create_time <![CDATA[ >=  ]]> #{query.beginTime}
-            </if>
-            <if test="query.endTime != null ">
-                and iar.create_time <![CDATA[ <=  ]]> #{query.endTime}
-            </if>
-            <if test="query.tenantId != null">
-                and iar.tenant_id = #{query.tenantId}
-            </if>
-            <if test="activityId != null">
-                and iar.activity_id = #{activityId}
-            </if>
-        </where>
-        order by iar.id desc
-    </select>
-    
-    <select id="selectListByUidAndStartTime" resultType="com.xiliulou.electricity.entity.InvitationActivityRecord">
-        select iar.id, iar.activity_id, iar.code, iar.uid, iar.share_count, iar.invitation_count, iar.status, iar.money, iar.create_time, iar.update_time, iar.tenant_id
-        from t_invitation_activity_record iar
-        <where>
-            iar.uid = #{uid}
-            <if test="beginTime != null ">
-                and iar.create_time <![CDATA[ >=  ]]> #{beginTime}
-            </if>
-            <if test="endTime != null ">
-                and iar.create_time <![CDATA[ <=  ]]> #{endTime}
-            </if>
-            <if test="tenantId != null">
-                and iar.tenant_id = #{tenantId}
-            </if>
-        </where>
-        order by iar.id desc
-    </select>
-    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id)

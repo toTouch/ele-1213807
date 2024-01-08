@@ -114,7 +114,7 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     }
     
     /**
-     * 收入明细
+     * 已获奖励
      *
      * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
      */
