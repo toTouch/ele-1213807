@@ -228,13 +228,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             beginTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
     
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().uid(request.getUid()).build();
+        InvitationActivityRecordQuery recordQuery = InvitationActivityRecordQuery.builder().uid(request.getUid()).build();
     
-        query.setBeginTime(beginTime);
-        query.setEndTime(endTime);
+        recordQuery.setBeginTime(beginTime);
+        recordQuery.setEndTime(endTime);
     
         //邀请分析(邀请总数、邀请成功)、已获奖励 总奖励
-        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(query, request.getActivityId());
+        List<InvitationActivityRecord> recordList = invitationActivityRecordService.listByUidAndStartTimeOfAdmin(recordQuery, request.getActivityId());
         int totalShareCount = NumberConstant.ZERO;
         int totalInvitationCount = NumberConstant.ZERO;
         BigDecimal totalIncome = BigDecimal.ZERO;
@@ -250,8 +250,8 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
     
         // 已获奖励（首次、续费）
-        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(query.getUid()).tenantId(query.getTenantId())
-                .activityId(request.getActivityId()).beginTime(beginTime).endTime(endTime).build();
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(recordQuery.getUid()).activityId(request.getActivityId())
+                .beginTime(beginTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = this.listByInviterUidOfAdmin(historyQuery);
     
         BigDecimal firstTotalIncome = BigDecimal.ZERO;

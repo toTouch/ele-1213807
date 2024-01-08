@@ -412,7 +412,6 @@
         iajh.join_uid joinUid
         from t_invitation_activity_join_history iajh
         left join t_invitation_activity tia on tia.id = iajh.activity_id
-        left join t_user_info tui on tui.uid = iajh.uid
         <where>
             iajh.uid = #{uid}
             <if test="tenantId != null">
