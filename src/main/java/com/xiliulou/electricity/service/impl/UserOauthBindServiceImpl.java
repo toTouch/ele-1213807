@@ -156,8 +156,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
-    public Integer updateOpenIdByUid(String openId, String accessToken, String refreshToken, Integer status, Long uid, Integer tenantId) {
-        return userOauthBindMapper.updateOpenIdByUid(openId, accessToken, refreshToken, status, uid, tenantId);
+    public Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId) {
+        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId);
     }
     
     @Override

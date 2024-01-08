@@ -1987,7 +1987,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 clearUserOauthBindToken(userOauthBinds);
             }
             DbUtils.dbOperateSuccessThenHandleCache(
-                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
+                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
                             TenantContextHolder.getTenantId()), i -> {
                         // 添加解绑操作记录
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
