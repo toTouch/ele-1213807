@@ -410,7 +410,6 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         
         // 根据时间范围查询：昨日/本月/累计
-        List<InvitationActivityRecord> recordList;
         Long startTime = null;
         Long endTime = null;
         if (Objects.equals(timeType, NumberConstant.ONE)) {
