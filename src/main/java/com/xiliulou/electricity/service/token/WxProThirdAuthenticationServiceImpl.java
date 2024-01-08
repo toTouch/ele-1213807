@@ -279,6 +279,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     //这里更改openId
                     userOauthBind.setThirdId(result.getOpenid());
                     userOauthBind.setUpdateTime(System.currentTimeMillis());
+                    userOauthBind.setStatus(UserOauthBind.STATUS_BIND);
                     userOauthBindService.update(userOauthBind);
                 } else {
                     userOauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis())
