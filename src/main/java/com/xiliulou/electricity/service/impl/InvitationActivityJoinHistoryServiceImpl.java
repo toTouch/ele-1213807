@@ -239,7 +239,7 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         if (CollectionUtils.isNotEmpty(historyVOList)) {
             totalShareCount = historyVOList.size();
             totalInvitationCount = (int) historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
-            
+        
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney())).collect(
                     Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
@@ -247,15 +247,15 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         
             firstTotalIncome = result.get(Boolean.TRUE);
             renewTotalIncome = result.get(Boolean.FALSE);
-    
-            totalIncome = renewTotalIncome.add(renewTotalIncome);
+        
+            totalIncome = firstTotalIncome.add(renewTotalIncome);
         }
     
         invitationActivityAnalysisAdminVO.setTotalShareCount(totalShareCount);
         invitationActivityAnalysisAdminVO.setTotalInvitationCount(totalInvitationCount);
-        invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
         invitationActivityAnalysisAdminVO.setFirstTotalIncome(firstTotalIncome);
         invitationActivityAnalysisAdminVO.setRenewTotalIncome(renewTotalIncome);
+        invitationActivityAnalysisAdminVO.setTotalIncome(totalIncome);
     
         return invitationActivityAnalysisAdminVO;
     }
