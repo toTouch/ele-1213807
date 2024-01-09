@@ -295,7 +295,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
                 log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), integratedPaymentAdd.getMemberCardId());
-                return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+                return Triple.of(false, "100376", "您已购买过当前类型的套餐，请勿重复购买");
             }
 
             //获取扫码柜机
@@ -488,7 +488,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
                 log.warn("PAY MEMBER CARD AND INSURANCE WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberId());
-                return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+                return Triple.of(false, "100376", "您已购买过当前类型的套餐，请勿重复购买");
             }
 
             List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
