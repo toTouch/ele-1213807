@@ -298,10 +298,10 @@
                 update_time = #{updateTime},
             </if>
             <if test="packageId != null">
-                package_Id = #{packageId}
+                package_Id = #{packageId},
             </if>
             <if test="packageType != null">
-                package_type = #{packageType}
+                package_type = #{packageType},
             </if>
         </set>
         where id = #{id}
