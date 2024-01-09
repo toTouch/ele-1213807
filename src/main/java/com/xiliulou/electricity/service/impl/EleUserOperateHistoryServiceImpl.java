@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserPhoneModifyRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.EleUserOperateHistoryMapper;
 import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
@@ -37,6 +38,7 @@ import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserPhoneModifyRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.VerificationCodeService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -152,6 +154,9 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
     @Autowired
     UserService userService;
     
+    @Autowired
+    UserPhoneModifyRecordService userPhoneModifyRecordService;
+    
     @Override
     public void insertOne(EleUserOperateHistory EleUserOperateHistory) {
         historyMapper.insertOne(EleUserOperateHistory);
@@ -167,7 +172,14 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
     @Override
     public void asyncHandleUpdateUserPhone(Integer tenantId, Long uid, String newPhone, String oldPhone) {
         eleUserOperateHistoryService.execute(() -> {
-            log.info("start update user phone,uid={}, newPhone={}",uid,newPhone);
+            UserPhoneModifyRecord userPhoneModifyRecord = new UserPhoneModifyRecord();
+            userPhoneModifyRecord.setUid(uid);
+            userPhoneModifyRecord.setOldPhone(oldPhone);
+            userPhoneModifyRecord.setNewPhone(newPhone);
+            userPhoneModifyRecord.setCreateTime(System.currentTimeMillis());
+            userPhoneModifyRecord.setUpdateTime(System.currentTimeMillis());
+            userPhoneModifyRecordService.insertOne(userPhoneModifyRecord);
+          /*  log.info("start update user phone,uid={}, newPhone={}",uid,newPhone);
             batteryMembercardRefundOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             carDepositOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             carLockCtrlHistoryService.updatePhoneByUid(tenantId, uid, newPhone);
@@ -205,12 +217,12 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             insuranceOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             loginInfoService.updatePhoneByUid(tenantId, uid, newPhone);
             maintenanceRecordService.updatePhoneByUid(tenantId, uid, newPhone);
-            /*  maintenanceUserNotifyConfigService.updatePhoneByUid(tenantId, uid, newPhone);
+            *//*  maintenanceUserNotifyConfigService.updatePhoneByUid(tenantId, uid, newPhone);
             
             DbUtils.dbOperateSuccessThenHandleCache(carUpdate, i -> {
                 log.info("delete maintenanceUserNotifyConfigService cache");
                 redisService.delete(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + tenantId);
-            });*/
+            });*//*
             
             rentBatteryOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             userInfoService.updatePhoneByUid(tenantId, uid, newPhone);
@@ -223,7 +235,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             
             userCouponService.updatePhoneByUid(tenantId, uid, newPhone);
           //  verificationCodeService.updatePhoneByUid(tenantId, uid, newPhone);
-            log.info("end update user phone");
+            log.info("end update user phone");*/
         });
     }
     

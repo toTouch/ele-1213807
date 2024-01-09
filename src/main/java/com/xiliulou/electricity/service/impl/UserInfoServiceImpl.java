@@ -2028,6 +2028,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
+        String oldPhone = userInfo.getPhone();
+        
         // 更换手机号的前提：新手机号在系统中不存在
         UserInfo updatePhone = this.queryUserInfoByPhone(phone, TenantContextHolder.getTenantId());
         if (Objects.nonNull(updatePhone)) {
@@ -2062,7 +2064,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 添加更換手机号操作记录
         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
-        eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, userInfo.getPhone());
+        eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, oldPhone);
         return R.ok();
     }
     
