@@ -55,4 +55,10 @@ public class InvitationActivityDetailVO {
     private BigDecimal money;
     
     private Integer status;
+    
+    private Long packageId;
+    
+    private String packageName;
+    
+    private Integer packageType;
 }

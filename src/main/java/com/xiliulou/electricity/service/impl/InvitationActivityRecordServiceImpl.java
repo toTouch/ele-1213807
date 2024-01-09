@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -106,6 +108,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
     @Autowired
     private CarRentalPackageOrderService carRentalPackageOrderService;
+    
+    @Resource
+    private BatteryMemberCardService batteryMemberCardService;
+    
+    @Resource
+    private CarRentalPackageService carRentalPackageService;
 
     @Override
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
@@ -495,9 +503,26 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     vo.setJoinPhone(u.getPhone());
                     vo.setJoinName(u.getName());
                 });
-            
+    
+                Long packageId = item.getPackageId();
+                Integer packageType = item.getPackageType();
+                if (Objects.equals(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), packageType)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                    Optional.ofNullable(batteryMemberCard).ifPresent(b -> {
+                        vo.setPackageId(packageId);
+                        vo.setPackageName(b.getName());
+                        vo.setPackageType(packageType);
+                    });
+                } else {
+                    CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(packageId);
+                    Optional.ofNullable(carRentalPackagePo).ifPresent(b -> {
+                        vo.setPackageId(packageId);
+                        vo.setPackageName(b.getName());
+                        vo.setPackageType(packageType);
+                    });
+                }
+    
                 return vo;
-            
             }).collect(Collectors.toList());
         
         }
@@ -522,19 +547,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             //首返奖励及人数
             BigDecimal firstTotalIncome = BigDecimal.ZERO;
-            Integer firstTotalMemCount;
+            Integer firstTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 firstTotalMemCount = firstHistoryList.size();
-                
-                incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
-                incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
             }
             
             //续返奖励及人数
             BigDecimal renewTotalIncome = BigDecimal.ZERO;
-            Integer renewTotalMemCount;
+            Integer renewTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
                 renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -543,13 +565,19 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                         .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
                 if (MapUtils.isNotEmpty(joinUidGroupMap)) {
                     renewTotalMemCount = joinUidGroupMap.size();
-                    
-                    incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
-                    incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
                 }
             }
-            
+    
             BigDecimal totalIncome = firstTotalIncome.add(renewTotalIncome);
+            
+            // 收入为0时，人数也为0
+            firstTotalMemCount = Objects.equals(firstTotalIncome, BigDecimal.ZERO) ? NumberConstant.ZERO : firstTotalMemCount;
+            renewTotalMemCount = Objects.equals(renewTotalIncome, BigDecimal.ZERO) ? NumberConstant.ZERO : renewTotalMemCount;
+    
+            incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
+            incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
+            incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
+            incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
             incomeDetailVO.setTotalIncome(totalIncome);
         }
         
@@ -1145,6 +1173,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
                 activityJoinHistoryUpdate.setMoney(rewardAmount);
                 activityJoinHistoryUpdate.setPayCount(payCount);
+                activityJoinHistoryUpdate.setPackageId(packageId);
+                activityJoinHistoryUpdate.setPackageType(packageType);
                 activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
             
@@ -1173,6 +1203,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setPayCount(payCount);
                 activityJoinHistoryInsert.setMoney(rewardAmount);
                 activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
+                activityJoinHistoryInsert.setPackageId(packageId);
+                activityJoinHistoryInsert.setPackageType(packageType);
                 activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
                 activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);

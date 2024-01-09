@@ -448,7 +448,9 @@
         iajh.pay_count,
         iajh.money,
         iajh.create_time,
-        iajh.join_uid joinUid
+        iajh.join_uid joinUid,
+        iajh.package_id,
+        iajh.package_type
         from t_invitation_activity_join_history iajh
         left join t_invitation_activity tia on tia.id = iajh.activity_id
         <where>
