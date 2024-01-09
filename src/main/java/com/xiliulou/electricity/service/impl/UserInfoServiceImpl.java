@@ -2051,6 +2051,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         });
     
+        // 更新成功后 强制用户重新登录
+        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+        if (DataUtil.collectionIsUsable(userOauthBinds)) {
+            clearUserOauthBindToken(userOauthBinds);
+        }
+        
         userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);
     
         // 添加更換手机号操作记录
