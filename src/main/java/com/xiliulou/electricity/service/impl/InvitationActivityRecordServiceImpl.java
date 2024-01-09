@@ -506,22 +506,23 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
                 Long packageId = item.getPackageId();
                 Integer packageType = item.getPackageType();
-                if (Objects.equals(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), packageType)) {
-                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
-                    Optional.ofNullable(batteryMemberCard).ifPresent(b -> {
-                        vo.setPackageId(packageId);
-                        vo.setPackageName(b.getName());
-                        vo.setPackageType(packageType);
-                    });
-                } else {
-                    CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(packageId);
-                    Optional.ofNullable(carRentalPackagePo).ifPresent(b -> {
-                        vo.setPackageId(packageId);
-                        vo.setPackageName(b.getName());
-                        vo.setPackageType(packageType);
-                    });
+                if(Objects.nonNull(packageId) && Objects.nonNull(packageType)) {
+                    if (Objects.equals(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), packageType)) {
+                        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                        Optional.ofNullable(batteryMemberCard).ifPresent(b -> {
+                            vo.setPackageId(packageId);
+                            vo.setPackageName(b.getName());
+                            vo.setPackageType(packageType);
+                        });
+                    } else {
+                        CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(packageId);
+                        Optional.ofNullable(carRentalPackagePo).ifPresent(b -> {
+                            vo.setPackageId(packageId);
+                            vo.setPackageName(b.getName());
+                            vo.setPackageType(packageType);
+                        });
+                    }
                 }
-    
                 return vo;
             }).collect(Collectors.toList());
         
