@@ -241,9 +241,8 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             totalInvitationCount = (int) historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
         
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
-            Map<Boolean, BigDecimal> result = historyVOList.stream().filter(history -> Objects.nonNull(history.getPayCount()) && Objects.nonNull(history.getMoney())).collect(
-                    Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
-                            Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
+            Map<Boolean, BigDecimal> result = historyVOList.stream().collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE),
+                    Collectors.reducing(BigDecimal.ZERO, InvitationActivityJoinHistoryVO::getMoney, BigDecimal::add)));
         
             firstTotalIncome = result.get(Boolean.TRUE);
             renewTotalIncome = result.get(Boolean.FALSE);
