@@ -2031,13 +2031,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String oldPhone = userInfo.getPhone();
         
         // 更换手机号的前提：新手机号在系统中不存在
+        if (StringUtils.equals(userInfo.getPhone(), phone)) {
+            return R.fail("100566", "新手机号与原手机号一致，请重新输入");
+        }
+        
         UserInfo updatePhone = this.queryUserInfoByPhone(phone, TenantContextHolder.getTenantId());
         if (Objects.nonNull(updatePhone)) {
             return R.fail("100565", "手机号已被使用，请重新输入");
-        }
-        
-        if (StringUtils.equals(userInfo.getPhone(), phone)) {
-            return R.fail("100566", "新手机号与原手机号一致，请重新输入");
         }
         
         // 更新用戶
