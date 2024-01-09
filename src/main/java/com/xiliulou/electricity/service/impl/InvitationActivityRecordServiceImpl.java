@@ -552,7 +552,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-                firstTotalMemCount = firstHistoryList.size();
+    
+                Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = firstHistoryList.stream()
+                        .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
+                if (MapUtils.isNotEmpty(joinUidGroupMap)) {
+                    firstTotalMemCount = joinUidGroupMap.size();
+                }
             }
             
             //续返奖励及人数
