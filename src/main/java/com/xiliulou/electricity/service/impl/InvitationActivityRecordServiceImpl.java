@@ -512,7 +512,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     private InvitationActivityIncomeAnalysisVO getIncomeAndMemCount(List<InvitationActivityJoinHistoryVO> historyVOList) {
         InvitationActivityIncomeAnalysisVO incomeDetailVO = new InvitationActivityIncomeAnalysisVO();
         
-        if (CollectionUtils.isEmpty(historyVOList)) {
+        if (CollectionUtils.isNotEmpty(historyVOList)) {
             // 根据 payCount=1为1组，不等于1为另一组
             Map<Boolean, List<InvitationActivityJoinHistoryVO>> groupedByPayCount = historyVOList.stream()
                     .collect(Collectors.partitioningBy(history -> Objects.equals(Optional.ofNullable(history.getPayCount()).orElse(NumberConstant.ZERO), NumberConstant.ONE)));
@@ -522,7 +522,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             //首返奖励及人数
             BigDecimal firstTotalIncome = BigDecimal.ZERO;
-            Integer firstTotalMemCount = NumberConstant.ZERO;
+            Integer firstTotalMemCount;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -534,7 +534,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             //续返奖励及人数
             BigDecimal renewTotalIncome = BigDecimal.ZERO;
-            Integer renewTotalMemCount = NumberConstant.ZERO;
+            Integer renewTotalMemCount;
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
                 renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
