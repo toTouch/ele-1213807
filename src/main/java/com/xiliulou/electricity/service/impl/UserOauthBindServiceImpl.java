@@ -20,6 +20,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -99,6 +100,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     public UserOauthBind queryOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
         return this.userOauthBindMapper.selectOne(
                 new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getThirdId, openid).eq(UserOauthBind::getSource, source).eq(UserOauthBind::getTenantId, tenantId));
+    }
+    
+    @Override
+    public List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
+        return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid,source,tenantId);
     }
     
     @Override
@@ -229,13 +235,13 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         }
         
         String openId = result.getOpenid();
-        UserOauthBind userOauthBind = this.queryOauthByOpenIdAndSource(openId, UserOauthBind.SOURCE_WX_PRO, tenantId.intValue());
+        List<UserOauthBind> userOauthBindList = this.selectListOauthByOpenIdAndSource(openId, UserOauthBind.SOURCE_WX_PRO, tenantId.intValue());
         
-        if (Objects.isNull(userOauthBind)) {
+        if (CollectionUtils.isEmpty(userOauthBindList)) {
             return Boolean.FALSE;
         }
         
-        if (userOauthBind.getThirdId().equals(openId)) {
+        if (userOauthBindList.get(0).getThirdId().equals(openId)) {
             return Boolean.TRUE;
         }
         

@@ -28,4 +28,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
             @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    List<UserOauthBind> selectListOauthByOpenIdAndSource(@Param("openId") String openId, @Param("source") Integer source,@Param("tenantId") Integer tenantId);
 }

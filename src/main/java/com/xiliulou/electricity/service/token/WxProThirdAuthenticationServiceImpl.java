@@ -20,6 +20,8 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,9 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: eclair
@@ -145,7 +149,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
             //先检查openId存在吗
-            Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(), tenantId);
+            Pair<Boolean, List<UserOauthBind>> existsOpenId = checkOpenIdExists(result.getOpenid(), tenantId);
             //检查手机号是否存在
             Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber, tenantId);
             log.info("new user logon, existsOpenId = {}, existPhone = {}", JsonUtil.toJson(existsOpenId), JsonUtil.toJson(existPhone));
@@ -159,14 +163,17 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 // 如果openId不一致，则报错
                 UserOauthBind userOauthBind = userOauthBindService.selectUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
                 if (Objects.nonNull(userOauthBind) && Objects.equals(userOauthBind.getStatus(),UserOauthBind.STATUS_BIND) && !StringUtils.equals(result.getOpenid(), userOauthBind.getThirdId())) {
-                    log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdUid={},userId={}", result.getOpenid(),
-                            userOauthBind.getThirdId(),existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
+                    log.error("TOKEN ERROR! thirdId not equals user login thirdId={}! openId={},thirdId={},userId={}", result.getOpenid(),
+                            userOauthBind.getThirdId(),existsOpenId.getRight().get(0).getThirdId(), existPhone.getRight().getUid());
                     throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
                 }
                 
+                List<UserOauthBind> oauthBindList = existsOpenId.getRight();
+                List<Long> uidList = oauthBindList.stream().map(UserOauthBind::getUid).collect(Collectors.toList());
+                
                 //uid不同，异常处理
-                if (StringUtils.isNotBlank(userOauthBind.getThirdId()) && !existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
-                    log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}", existsOpenId.getRight().getUid(),
+                if (StringUtils.isNotBlank(userOauthBind.getThirdId()) && !uidList.contains(existPhone.getRight().getUid())) {
+                    log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! uidList={},userId={}", JsonUtil.toJson(uidList),
                             existPhone.getRight().getUid());
                     throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                 }
@@ -193,7 +200,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 }
                 
                 //相同登录
-                return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
+                return createSecurityUser(existPhone.getRight(), oauthBindList.get(0));
             }
 
             //如果openId存在.手机号不存在,替换掉以前的手机号
@@ -424,10 +431,10 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
 
-    private Pair<Boolean, UserOauthBind> checkOpenIdExists(String openid, Integer tenantId) {
-        UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(openid,
+    private Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
+        List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid,
                 UserOauthBind.SOURCE_WX_PRO, tenantId);
-        return Objects.nonNull(userOauthBind) ? Pair.of(true, userOauthBind) : Pair.of(false, null);
+        return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
     }
 
     public String decryptWxData(String encrydata, String iv, Object key) {

@@ -41,6 +41,8 @@ public interface UserOauthBindService {
 
 
     UserOauthBind queryOauthByOpenIdAndSource(String openid, int source,Integer tenantId);
+    
+    List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
 
     UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId);
 
