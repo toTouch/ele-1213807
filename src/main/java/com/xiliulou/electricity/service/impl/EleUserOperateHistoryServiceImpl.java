@@ -174,6 +174,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
         eleUserOperateHistoryService.execute(() -> {
             UserPhoneModifyRecord userPhoneModifyRecord = new UserPhoneModifyRecord();
             userPhoneModifyRecord.setUid(uid);
+            userPhoneModifyRecord.setTenantId(tenantId);
             userPhoneModifyRecord.setOldPhone(oldPhone);
             userPhoneModifyRecord.setNewPhone(newPhone);
             userPhoneModifyRecord.setCreateTime(System.currentTimeMillis());
