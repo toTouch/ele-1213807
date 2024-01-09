@@ -222,7 +222,6 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             });
             
             userCouponService.updatePhoneByUid(tenantId, uid, newPhone);
-            userOauthBindService.updatePhoneByUid(tenantId, uid, newPhone);
           //  verificationCodeService.updatePhoneByUid(tenantId, uid, newPhone);
             log.info("end update user phone");
         });
