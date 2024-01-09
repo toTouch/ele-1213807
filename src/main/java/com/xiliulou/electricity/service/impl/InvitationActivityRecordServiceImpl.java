@@ -517,7 +517,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (CollectionUtils.isEmpty(historyVOList)) {
             // 根据 payCount=1为1组，不等于1为另一组
             Map<Boolean, List<InvitationActivityJoinHistoryVO>> groupedByPayCount = historyVOList.stream()
-                    .collect(Collectors.partitioningBy(history -> Objects.equals(history.getPayCount(), NumberConstant.ONE)));
+                    .collect(Collectors.partitioningBy(history -> Objects.equals(Optional.ofNullable(history.getPayCount()).orElse(NumberConstant.ZERO), NumberConstant.ONE)));
             
             List<InvitationActivityJoinHistoryVO> firstHistoryList = groupedByPayCount.get(Boolean.TRUE);
             List<InvitationActivityJoinHistoryVO> renewHistoryList = groupedByPayCount.get(Boolean.FALSE);
