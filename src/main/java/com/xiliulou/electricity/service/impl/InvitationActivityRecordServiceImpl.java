@@ -522,10 +522,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             //首返奖励及人数
             BigDecimal firstTotalIncome = BigDecimal.ZERO;
+            Integer firstTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-                Integer firstTotalMemCount = firstHistoryList.size();
+                firstTotalMemCount = firstHistoryList.size();
                 
                 incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
                 incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
@@ -533,13 +534,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             //续返奖励及人数
             BigDecimal renewTotalIncome = BigDecimal.ZERO;
+            Integer renewTotalMemCount = NumberConstant.ZERO;
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
-                renewTotalIncome = renewHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 
                 Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = renewHistoryList.stream()
                         .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
                 if (MapUtils.isNotEmpty(joinUidGroupMap)) {
-                    Integer renewTotalMemCount = joinUidGroupMap.size();
+                    renewTotalMemCount = joinUidGroupMap.size();
                     
                     incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
                     incomeDetailVO.setRenewTotalMemCount(renewTotalMemCount);
