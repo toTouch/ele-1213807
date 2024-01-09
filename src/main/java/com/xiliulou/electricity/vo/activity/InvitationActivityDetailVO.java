@@ -53,4 +53,6 @@ public class InvitationActivityDetailVO {
      * 返现金额
      */
     private BigDecimal money;
+    
+    private Integer status;
 }

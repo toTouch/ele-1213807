@@ -369,23 +369,21 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
     
         List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
-                    Long joinUid = item.getJoinUid();
-                    UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
-                
-                    Integer payCount = Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount();
-                    BigDecimal money = Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney();
-                    
-                    InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
-                            .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(payCount).money(money).build();
-                
-                    Optional.ofNullable(joinUser).ifPresent(user -> {
-                        invitationActivityDetailVO.setJoinName(user.getName());
-                        invitationActivityDetailVO.setJoinPhone(user.getPhone());
-                    });
-                
-                    return invitationActivityDetailVO;
-                
-                }).collect(Collectors.toList());
+            Long joinUid = item.getJoinUid();
+            UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+        
+            InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
+                    .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount())
+                    .money(Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney()).status(item.getStatus()).build();
+        
+            Optional.ofNullable(joinUser).ifPresent(user -> {
+                invitationActivityDetailVO.setJoinName(user.getName());
+                invitationActivityDetailVO.setJoinPhone(user.getPhone());
+            });
+        
+            return invitationActivityDetailVO;
+        
+        }).collect(Collectors.toList());
     
         return Triple.of(true, null, detailVOList);
     }
@@ -490,7 +488,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             rspList = historyVOList.stream().map(item -> {
                 InvitationActivityDetailVO vo = InvitationActivityDetailVO.builder().activityId(item.getActivityId()).activityName(item.getActivityName())
                         .joinUid(item.getJoinUid()).joinTime(item.getCreateTime()).money(Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney())
-                        .payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount()).build();
+                        .payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount()).status(item.getStatus()).build();
             
                 UserInfo joinUser = userInfoService.queryByUidFromCache(item.getJoinUid());
                 Optional.ofNullable(joinUser).ifPresent(u -> {
@@ -525,7 +523,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             //首返奖励及人数
             BigDecimal firstTotalIncome = BigDecimal.ZERO;
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
-                firstTotalIncome = firstHistoryList.stream().map(InvitationActivityJoinHistoryVO::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 Integer firstTotalMemCount = firstHistoryList.size();
                 
                 incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
