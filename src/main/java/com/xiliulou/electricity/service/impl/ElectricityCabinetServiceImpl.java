@@ -168,6 +168,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -610,6 +611,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
             
+            //更新换电柜GEO信息
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getSn(), new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
+            
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -652,6 +656,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             
+            //删除柜机GEO信息
+            redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getSn());
+    
             //删除格挡
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             
@@ -861,6 +868,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetUpdate.setLatitude(eleCabinetAddressQuery.getLatitude());
         electricityCabinetUpdate.setLongitude(eleCabinetAddressQuery.getLongitude());
         this.electricityCabinetMapper.updateById(electricityCabinetUpdate);
+        //更新柜机GEO缓存信息
+        redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getSn(), new Point(eleCabinetAddressQuery.getLongitude(), eleCabinetAddressQuery.getLatitude()));
+    
         return Triple.of(true, null, null);
     }
     

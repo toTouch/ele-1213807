@@ -44,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -218,6 +219,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             //修改柜机服务时间信息
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+            //缓存柜机GEO信息
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinet.getTenantId(), electricityCabinet.getSn(), new Point(electricityCabinet.getLongitude(), electricityCabinet.getLatitude()));
     
             // 异步记录
             List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(List.of(outWarehouseRequest.getId()));
@@ -301,6 +304,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         electricityCabinetList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
+            //缓存柜机GEO信息
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getSn(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
         });
     
         // 异步记录
