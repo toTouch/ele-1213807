@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.asset.user.UnbindOpenIdRequest;
+import com.xiliulou.electricity.request.asset.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -149,6 +151,10 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBasicInfo(Long uid);
     
+    R unbindOpenId(UnbindOpenIdRequest unbindOpenIdRequest);
+    
+    R updateUserPhone(UpdateUserPhoneRequest updateUserPhoneRequest);
+    
     R queryDetailsBatteryInfo(Long uid);
     
     R queryDetailsCarInfo(Long uid);
@@ -165,4 +171,14 @@ public interface UserInfoService extends IService<UserInfo> {
     void deleteCache(Long uid);
     
     List<UserInfo> listByUidList(List<Long> uidList);
+    
+    /**
+     * 根据更换手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
 }

@@ -37,6 +37,15 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     R queryList(BatteryServiceFeeOrderQuery query);
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
 
     /**
      * 后台查询电池服务费支付记录

@@ -24,5 +24,13 @@ public interface EleBindCarRecordService extends IService<EleBindCarRecord> {
     R queryList(EleBindCarRecordQuery eleBindCarRecordQuery);
 
     R queryCount(EleBindCarRecordQuery eleBindCarRecordQuery);
-
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByOldPhone(Integer tenantId, String newPhone, String oldPhone);
 }

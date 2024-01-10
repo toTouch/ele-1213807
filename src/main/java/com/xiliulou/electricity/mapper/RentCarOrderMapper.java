@@ -64,4 +64,6 @@ public interface RentCarOrderMapper extends BaseMapper<RentCarOrder> {
     int deleteById(Long id);
 
     Integer selectPageCount(RentCarOrderQuery rentCarOrderQuery);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

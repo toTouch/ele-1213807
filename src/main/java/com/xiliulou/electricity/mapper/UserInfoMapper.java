@@ -162,4 +162,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     Integer queryEleListCount(@Param("query") UserInfoQuery userInfoQuery);
     
     List<UserInfo> selectListByUidList(@Param("uidList") List<Long> uidList);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

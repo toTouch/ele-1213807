@@ -281,5 +281,9 @@
             and create_time &lt;=#{endTime}
         </if>
     </select>
+    
+    <update id="updatePhoneByUid">
+        update t_ele_battery_service_fee_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

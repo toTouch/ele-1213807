@@ -329,4 +329,8 @@
         and teco.status='COMPLETE_BATTERY_TAKE_SUCCESS'
         order by teco.id desc limit 1
     </select>
+    
+    <update id="updatePhoneByUid">
+        update t_electricity_cabinet_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 </mapper>
