@@ -41,6 +41,8 @@ public interface UserOauthBindService {
 
 
     UserOauthBind queryOauthByOpenIdAndSource(String openid, int source,Integer tenantId);
+    
+    List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
 
     UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId);
 
@@ -55,4 +57,20 @@ public interface UserOauthBindService {
     Boolean deleteById(Long id);
     
     Boolean checkOpenIdByJsCode(String jsCode);
+    
+    UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
+    
+    UserOauthBind selectUserByPhone(String phone,Integer source,Integer tenantId);
+    
+    Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId);
+    
+    /**
+     * 根据更换手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
 }

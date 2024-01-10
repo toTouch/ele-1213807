@@ -132,5 +132,9 @@
     <delete id="deleteById">
         delete from t_verification_code where id = #{id}
     </delete>
+    
+    <update id="updatePhoneByUid">
+        update t_verification_code set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

@@ -64,4 +64,13 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
     
     EleDepositOrder queryByUidAndSourceOrderNo(@Param("uid") Long uid, @Param("sourceOrderNo") String sourceOrderNo);
     
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

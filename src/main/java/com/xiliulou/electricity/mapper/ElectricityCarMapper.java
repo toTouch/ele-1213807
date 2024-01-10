@@ -169,4 +169,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer updateFranchiseeIdAndStoreId(ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
     
     Integer queryCountByWarehouse(@Param("query") ElectricityCarQuery electricityCarQuery);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

@@ -288,4 +288,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     public EleDisableMemberCardRecord selectByDisableMemberCardNo(String disableMemberCardNo) {
         return eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo,disableMemberCardNo));
     }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return eleDisableMemberCardRecordMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
 }
