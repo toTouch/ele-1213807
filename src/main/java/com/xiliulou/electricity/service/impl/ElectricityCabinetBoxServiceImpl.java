@@ -4,8 +4,10 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
+import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -153,7 +156,15 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return R.ok(electricityCabinetBoxVOList);
         }
-
+    
+        List<BatteryModel> batteryModels = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        Map<String, String> batteryModelMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(batteryModels)) {
+            batteryModelMap =
+                    batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2));
+        }
+    
+        Map<String, String> finalBatteryModelMap = batteryModelMap;
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = electricityCabinetBoxVOList.parallelStream().peek(item -> {
             if (StringUtils.isBlank(item.getSn())) {
                 return;
@@ -171,8 +182,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
             //设置电池短型号
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
-                String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
-                item.setBatteryShortType(batteryShortType);
+                if (finalBatteryModelMap.containsKey(electricityBatteryVO.getModel())) {
+                    item.setBatteryShortType(finalBatteryModelMap.getOrDefault(electricityBatteryVO.getModel(),""));
+                }
             }
         }).collect(Collectors.toList());
     
