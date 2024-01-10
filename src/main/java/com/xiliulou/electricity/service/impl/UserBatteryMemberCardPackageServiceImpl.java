@@ -230,8 +230,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
         userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
-        userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis())
-        ;
+        userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
         
         // 如果限制次数用完到期 更改总套餐过期时间
