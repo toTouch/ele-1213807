@@ -216,17 +216,9 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
             freeDepositAlipayHistoryService.updatePhoneByUid(tenantId, uid, newPhone);
             freeDepositOrderService.updatePhoneByUid(tenantId, uid, newPhone);
             insuranceOrderService.updatePhoneByUid(tenantId, uid, newPhone);
-            loginInfoService.updatePhoneByUid(tenantId, uid, newPhone);
             maintenanceRecordService.updatePhoneByUid(tenantId, uid, newPhone);
-            *//*  maintenanceUserNotifyConfigService.updatePhoneByUid(tenantId, uid, newPhone);
-            
-            DbUtils.dbOperateSuccessThenHandleCache(carUpdate, i -> {
-                log.info("delete maintenanceUserNotifyConfigService cache");
-                redisService.delete(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + tenantId);
-            });*//*
             
             rentBatteryOrderService.updatePhoneByUid(tenantId, uid, newPhone);
-            userInfoService.updatePhoneByUid(tenantId, uid, newPhone);
             
             userActiveInfoService.updatePhoneByUid(tenantId, uid, newPhone);
             DbUtils.dbOperateSuccessThenHandleCache(carUpdate, i -> {

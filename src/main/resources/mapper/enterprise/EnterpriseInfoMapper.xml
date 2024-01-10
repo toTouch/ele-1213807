@@ -192,6 +192,6 @@
     </delete>
     
     <update id="updatePhoneByUid">
-        update t_ele_disable_member_card_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_enterprise_info set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
 </mapper>
