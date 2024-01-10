@@ -80,6 +80,11 @@ public class EnterpriseInfo {
      */
     private String remark;
     
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

@@ -96,6 +96,7 @@ import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -118,6 +119,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -315,6 +318,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Collections.EMPTY_LIST;
         }
         
+        Set<Long> enterpriseIdList = list.stream().map(EnterpriseInfoPackageVO::getId).collect(Collectors.toSet());
+        List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.listByEnterpriseId(enterpriseIdList);
+        Map<Long, Integer> userMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(enterpriseChannelUserList)) {
+            userMap = enterpriseChannelUserList.stream().collect(Collectors.groupingBy(EnterpriseChannelUser::getEnterpriseId, Collectors.collectingAndThen(Collectors.toList(), e -> e.size())));
+        }
+    
+        Map<Long, Integer> finalUserMap = userMap;
         return list.stream().map(item -> {
             EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
             BeanUtils.copyProperties(item, enterpriseInfoVO);
@@ -330,6 +341,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseInfoVO.setMemcardName(listPair.getRight());
             enterpriseInfoVO.setPackageIds(listPair.getLeft());
             
+            Optional.ofNullable(finalUserMap.get(item.getId())).ifPresent(integer -> {
+                enterpriseInfoVO.setChannelUserCount(integer);
+            });
             return enterpriseInfoVO;
         }).collect(Collectors.toList());
     }

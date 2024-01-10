@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.enterprise;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 
 import java.util.List;
+import java.util.Set;
 
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.vo.SearchVo;
@@ -119,4 +120,5 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     
     int updateChannelUserByUid(EnterpriseChannelUser enterpriseChannelUser);
     
+    List<EnterpriseChannelUser> selectListByEnterpriseId(@Param("list") Set<Long> enterpriseIdList);
 }

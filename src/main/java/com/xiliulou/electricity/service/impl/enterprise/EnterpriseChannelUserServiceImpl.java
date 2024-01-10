@@ -42,6 +42,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -446,6 +447,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return;
         }
         updatePaymentStatusByUid(uid, paymentStatus);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterpriseChannelUser> listByEnterpriseId(Set<Long> enterpriseIdList) {
+        return enterpriseChannelUserMapper.selectListByEnterpriseId(enterpriseIdList);
     }
     
     @Override

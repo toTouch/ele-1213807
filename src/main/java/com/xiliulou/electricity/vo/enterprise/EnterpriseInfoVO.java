@@ -76,4 +76,6 @@ public class EnterpriseInfoVO {
     private List<String> memcardName;
     
     private List<Long> packageIds;
+    
+    private Integer channelUserCount;
 }

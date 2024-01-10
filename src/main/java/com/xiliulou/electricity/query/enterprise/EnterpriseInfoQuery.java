@@ -72,4 +72,9 @@ public class EnterpriseInfoQuery {
     private Long packageId;
 
     private Integer packageType;
+    
+    /**
+     * 会员代付权限 0：关，1：开
+     */
+    private Integer purchaseAuthority;
 }

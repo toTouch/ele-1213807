@@ -318,6 +318,19 @@
         </where>
        
     </select>
+    <select id="selectListByEnterpriseId"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser">
+        SELECT
+            enterprise_id,
+            id
+        FROM
+            t_enterprise_channel_user
+        WHERE
+            enterprise_id IN
+        <foreach collection="list" item="enterpriseId" separator="," open="(" close=")">
+            #{enterpriseId}
+        </foreach>
+    </select>
     
     <update id="updateRenewStatus">
         update t_enterprise_channel_user

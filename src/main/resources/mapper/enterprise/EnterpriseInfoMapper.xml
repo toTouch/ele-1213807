@@ -177,6 +177,9 @@
             <if test="remark != null and remark != ''">
                 remark = #{remark},
             </if>
+            <if test="purchaseAuthority != null">
+                purchase_authority = #{purchaseAuthority},
+            </if>
         </set>
         where id = #{id}
     </update>

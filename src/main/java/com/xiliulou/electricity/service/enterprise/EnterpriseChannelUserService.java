@@ -7,6 +7,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author BaoYu
@@ -97,4 +98,6 @@ public interface EnterpriseChannelUserService {
     int updatePaymentStatusByUid(Long uid, Integer paymentStatus);
     
     void updatePaymentStatusForRefundDeposit(Long uid, Integer paymentStatus);
+    
+    List<EnterpriseChannelUser> listByEnterpriseId(Set<Long> enterpriseIdList);
 }
