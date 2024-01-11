@@ -154,7 +154,12 @@ public class PictureServiceImpl implements PictureService {
     public int deleteByBusinessId(Long id) {
         return this.pictureMapper.deleteByBusinessId(id);
     }
-
+    
+    @Override
+    public int deleteByBusinessIdImgType(PictureQuery pictureQuery) {
+        return this.pictureMapper.deleteByBusinessIdImgType(pictureQuery);
+    }
+    
     @Override
     public List<Picture> selectByByBusinessId(Long id) {
         return this.pictureMapper.selectByByBusinessId(id);
@@ -167,7 +172,9 @@ public class PictureServiceImpl implements PictureService {
         }
 
         //删除车辆型号图片
-        this.deleteByBusinessId(callBackQuery.getOtherId());
+        PictureQuery pictureQuery = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).imgType(callBackQuery.getFileType()).businessId(callBackQuery.getOtherId())
+                .build();
+        this.deleteByBusinessIdImgType(pictureQuery);
 
         List<Picture> list = Lists.newArrayList();
 
