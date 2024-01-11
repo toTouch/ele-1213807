@@ -1599,7 +1599,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCardUdpate = new UserBatteryMemberCard();
         
         // 申请冻结的天数
-        Long chooseTime = eleDisableMemberCardRecord.getCardDays() * TimeConstant.DAY_MILLISECOND;
+        Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
         // 实际的冻结时间
         Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
         
@@ -1613,7 +1613,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUdpate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUdpate.setUpdateTime(System.currentTimeMillis());
         
-        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("").pauseOrderNo("").expireOrderNo("")
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("")
                 .serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime)).franchiseeId(userInfo.getFranchiseeId()).tenantId(eleDisableMemberCardRecord.getTenantId()).uid(user.getUid())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
@@ -2057,7 +2057,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         
         // 申请冻结的天数
-        Long chooseTime = eleDisableMemberCardRecord.getCardDays() * TimeConstant.DAY_MILLISECOND;
+        Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
         // 实际的冻结时间
         Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
   
