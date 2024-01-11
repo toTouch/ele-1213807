@@ -199,7 +199,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("check open id failed, not found user,uid={}", userInfo.getUid());
+            log.warn("check open id failed, not found user,uid={}", uid);
             return Boolean.FALSE;
         }
         
