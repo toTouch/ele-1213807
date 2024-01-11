@@ -455,7 +455,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());
 
-        List<ElectricityCarModel> electricityCarModels = electricityCarModelMapper.selectByQuery(electricityCarModelQuery);
+        List<ElectricityCarModel> electricityCarModels = electricityCarModelMapper.selectByStoreId(electricityCarModelQuery);
         if (CollectionUtils.isEmpty(electricityCarModels)) {
             return R.ok(Collections.EMPTY_LIST);
         }
