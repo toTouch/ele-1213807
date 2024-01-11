@@ -14,6 +14,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
@@ -690,8 +691,8 @@ public class StoreServiceImpl implements StoreService {
         }
 
         return list.parallelStream().map(item -> {
-
-            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
+            PictureQuery query = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(item.getId()).imgType(Picture.TYPE_STORE_IMG).build();
+            List<Picture> pictures = pictureService.queryListByQuery(query);
             if (!CollectionUtils.isEmpty(pictures)) {
                 item.setPictureList(pictureService.pictureParseVO(pictures));
             }
@@ -712,8 +713,9 @@ public class StoreServiceImpl implements StoreService {
         }
 
         BeanUtils.copyProperties(store, storeVO);
-
-        List<Picture> pictures = pictureService.selectByByBusinessId(id);
+    
+        PictureQuery pictureQuery = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(id).imgType(Picture.TYPE_STORE_IMG).build();
+        List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
         if (!CollectionUtils.isEmpty(pictures)) {
             storeVO.setPictureList(pictureService.pictureParseVO(pictures));
         }
@@ -769,7 +771,8 @@ public class StoreServiceImpl implements StoreService {
             }
 
             // 图片信息
-            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
+            PictureQuery pictureQuery = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(item.getId()).imgType(Picture.TYPE_STORE_IMG).build();
+            List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
             if (!CollectionUtils.isEmpty(pictures)) {
                 item.setPictureList(pictureService.pictureParseVO(pictures));
             }
