@@ -64,6 +64,6 @@ public interface VerificationCodeMapper extends BaseMapper<VerificationCode> {
      * @return 影响行数
      */
     int deleteById(Long id);
-
-
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

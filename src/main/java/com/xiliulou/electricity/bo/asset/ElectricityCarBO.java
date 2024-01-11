@@ -81,5 +81,10 @@ public class ElectricityCarBO {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 库房id
+     */
+    private Long warehouseId;
 
 }

@@ -611,13 +611,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 获取加锁 KEY
         String bindingUidLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
+        // 加锁
+        if (!redisService.setNx(bindingUidLockKey, uid.toString(), 5 * 1000L, false)) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
         
         try {
-            // 加锁
-            if (!redisService.setNx(bindingUidLockKey, uid.toString(), 5 * 1000L, false)) {
-                throw new BizException("ELECTRICITY.0034", "操作频繁");
-            }
-            
             // 1 获取用户信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
@@ -2454,13 +2453,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 获取加锁 KEY
         String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
+    
+        // 加锁
+        if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
         
         try {
-            // 加锁
-            if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
-                return R.fail("ELECTRICITY.0034", "操作频繁");
-            }
-            
             // 1 获取用户信息
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {

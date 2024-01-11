@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserInfo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -54,4 +56,5 @@ public interface UserBatteryMemberCardPackageService {
     UserBatteryMemberCardPackage selectByOrderNo(String orderId);
 
     Integer checkUserBatteryMemberCardPackageByUid(Long uid);
+    
 }

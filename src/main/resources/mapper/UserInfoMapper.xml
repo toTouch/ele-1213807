@@ -1180,4 +1180,22 @@
             and tui.phone =#{query.phone}
         </if>
     </select>
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
+        SELECT
+            name,
+            uid
+        FROM
+        t_user_info
+        <where>
+             uid in
+            <foreach collection="uidList" item="uid" separator="," open="(" close=")">
+                #{uid}
+            </foreach>
+        </where>
+    </select>
+    
+    <update id="updatePhoneByUid">
+        update t_user_info set phone=#{newPhone},update_time=now() where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
+    
 </mapper>

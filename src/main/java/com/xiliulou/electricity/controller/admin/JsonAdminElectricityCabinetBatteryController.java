@@ -130,7 +130,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
-            @RequestParam(value = "stockStatus", required = false) Integer stockStatus) {
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
         
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -171,6 +172,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
+        electricityBatteryQuery.setWarehouseId(warehouseId);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
@@ -215,7 +217,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
-            @RequestParam(value = "stockStatus", required = false) Integer stockStatus) {
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -248,6 +251,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
+        electricityBatteryQuery.setWarehouseId(warehouseId);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
@@ -267,7 +271,9 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
         
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -294,6 +300,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setStockStatus(stockStatus);
+        electricityBatteryQuery.setWarehouseId(warehouseId);
         
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }

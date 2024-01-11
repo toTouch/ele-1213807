@@ -192,6 +192,19 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     public Integer update(CarDepositOrder carDepositOrder) {
         return this.carDepositOrderMapper.update(carDepositOrder);
     }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return this.carDepositOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
 
     /**
      * 通过主键删除数据

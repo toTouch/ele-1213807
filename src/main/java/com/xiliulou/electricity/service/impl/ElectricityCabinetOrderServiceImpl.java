@@ -36,6 +36,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -328,10 +329,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            // 批量查询会员信息
+            Map<Long, String> userNameMap = new HashMap<>();
+            List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
+            List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
+            if (ObjectUtils.isNotEmpty(userInfos)) {
+                 userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
+            }
+            Map<Long, String> finalUserNameMap = userNameMap;
+            
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
+                
+                // 设置会员名称
+                if (ObjectUtils.isNotEmpty(finalUserNameMap.get(e.getUid()))) {
+                    e.setUName(finalUserNameMap.get(e.getUid()));
+                }
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
@@ -2049,6 +2064,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid) {
         return electricityCabinetOrderMapper.selectLatestOrderAndCabinetInfo(uid);
+    }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return electricityCabinetOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
     @Slave

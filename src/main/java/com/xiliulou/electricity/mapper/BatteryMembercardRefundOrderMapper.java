@@ -32,6 +32,15 @@ public interface BatteryMembercardRefundOrderMapper  extends BaseMapper<BatteryM
      * @return 影响行数
      */
     int update(BatteryMembercardRefundOrder batteryMembercardRefundOrder);
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 
     /**
      * 通过主键删除数据

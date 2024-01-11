@@ -1,9 +1,6 @@
 package com.xiliulou.electricity.service.impl.asset;
 
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailQueryModel;
 import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
@@ -26,9 +23,6 @@ import java.util.List;
 public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDetailService {
     
     @Autowired
-    private RedisService redisService;
-    
-    @Autowired
     private AssetExitWarehouseDetailMapper assetExitWarehouseDetailMapper;
     
     @Slave
@@ -43,16 +37,7 @@ public class AssetExitWarehouseDetailServiceImpl implements AssetExitWarehouseDe
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
-        boolean result = redisService.setNx(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator, "1", 3 * 1000L, false);
-        if (!result) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
-        try {
-            return R.ok(assetExitWarehouseDetailMapper.batchInsert(detailSaveQueryModelList));
-        } finally {
-            redisService.delete(CacheConstant.CACHE_ASSET_EXIT_WAREHOUSE_DETAIL_LOCK + operator);
-        }
+    public Integer batchInsert(List<AssetExitWarehouseDetailSaveQueryModel> detailSaveQueryModelList, Long operator) {
+        return assetExitWarehouseDetailMapper.batchInsert(detailSaveQueryModelList);
     }
 }

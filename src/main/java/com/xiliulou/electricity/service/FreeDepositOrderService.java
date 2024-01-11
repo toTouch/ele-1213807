@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -92,8 +95,20 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> selectFreeDepositOrderDetail();
 
     Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 query);
+    
+    Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig);
 
     Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
     
     void freeDepositOrderUpdateStatusTask();
+    
+    /**
+     * 根据更换手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
 }

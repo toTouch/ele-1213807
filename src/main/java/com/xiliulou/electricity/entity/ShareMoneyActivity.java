@@ -74,9 +74,14 @@ public class ShareMoneyActivity {
     private Integer tenantId;
 
     /**
-     * 小时
+     * 有效时间，单位：小时
      */
     private Integer hours;
+    
+    /**
+     * 有效时间，单位：分钟
+     */
+    private Integer minutes;
 
     /**
      * 金额

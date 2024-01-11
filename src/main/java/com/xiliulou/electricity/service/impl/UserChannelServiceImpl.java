@@ -7,7 +7,6 @@ import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
@@ -16,9 +15,6 @@ import com.xiliulou.electricity.query.UserChannelQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -251,7 +247,7 @@ public class UserChannelServiceImpl implements UserChannelService {
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("USER CHANNEL ERROR! not found user, uid", uid);
+            log.error("USER CHANNEL ERROR! not found user, uid = {}", uid);
             return Triple.of(false, "100001", "用户不存在");
         }
         
@@ -265,7 +261,7 @@ public class UserChannelServiceImpl implements UserChannelService {
         //        }
     
         if (!userBuyMemberCardCheck(userInfo.getUid())) {
-            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
+            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
         

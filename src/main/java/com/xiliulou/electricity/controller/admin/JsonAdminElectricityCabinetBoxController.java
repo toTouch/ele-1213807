@@ -80,7 +80,7 @@ public class JsonAdminElectricityCabinetBoxController {
     public R selectBoxList(@RequestParam("size") Long size,
             @RequestParam("offset") Long offset,
             @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-        if (size < 0 || size > 50) {
+        if (size < 0 || size > 61) {
             size = 10L;
         }
         
@@ -105,7 +105,7 @@ public class JsonAdminElectricityCabinetBoxController {
     public R selectBoxListSuper(@RequestParam("size") Long size,
             @RequestParam("offset") Long offset,
             @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-        if (size < 0 || size > 50) {
+        if (size < 0 || size > 61) {
             size = 10L;
         }
         

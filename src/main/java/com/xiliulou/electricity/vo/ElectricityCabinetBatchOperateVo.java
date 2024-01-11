@@ -25,4 +25,9 @@ public class ElectricityCabinetBatchOperateVo {
     private String modelName;
 
     private Integer modelId;
+    
+    /**
+     * 版本
+     */
+    private String version;
 }

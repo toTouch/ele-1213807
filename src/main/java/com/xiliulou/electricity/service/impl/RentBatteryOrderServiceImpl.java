@@ -8,6 +8,8 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -1574,6 +1576,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrderMapper.selectByUidAndTime(uid,startTime,endTime);
     }
     
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return rentBatteryOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {
         //营业时间
         if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
@@ -1594,6 +1609,71 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
         }
         return false;
+    }
+    
+    /**
+     * 根据用户id获取对应的电池套餐或者车电一体套餐是否限制
+     * @param uid
+     * @return
+     */
+    @Override
+    public R queryRentBatteryOrderLimitCountByUid(Long uid) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        // 查询用户信息并且判断租户是否与当前登录账户所在租户一致
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        // 判断用户是否未缴纳押金
+        if (!(Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()))) {
+            return R.fail("100209", "用户未缴纳押金");
+        }
+        
+        // 套餐限制信息
+        Integer limit = null;
+        
+        // 判断订单对应的电池套餐是否限制
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            // 获取用户电池套餐卡信息
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+            // 用户退租或者退押以后套餐id为零
+            if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
+                return R.fail("100210", "未购买套餐");
+            }
+            
+            // 获取卡对应的套餐详情
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.nonNull(batteryMemberCard)) {
+                // 返回会员套餐限制信息
+                limit = batteryMemberCard.getLimitCount();
+            } else {
+                // 套餐不存在
+                return R.fail("110202", "换电套餐不存在");
+            }
+        }
+        
+        // 判断会员车店一体套餐的限制信息
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            // 查询车电一体的会员期限信息
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            // todo 判断套餐id是否为空
+            if (Objects.isNull(memberTermEntity) || Objects.isNull(memberTermEntity.getRentalPackageId())) {
+                // 套餐不存在
+                return R.fail("110204", "车电一体套餐不存在");
+            }
+            limit = memberTermEntity.getRentalPackageConfine();
+        }
+        
+        // 返回限制信息
+        return R.ok(limit);
     }
     
     public Long getTime(Long time) {
@@ -1640,5 +1720,4 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         return Triple.of(true, null, null);
     }
-    
 }

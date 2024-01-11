@@ -162,9 +162,13 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     Integer existsByWarehouseId(Long wareHouseId);
     
-    List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Long> idSet);
+    List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Integer> idSet);
     
     List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus")Integer stockStatus);
     
     Integer updateFranchiseeIdAndStoreId(ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
+    
+    Integer queryCountByWarehouse(@Param("query") ElectricityCarQuery electricityCarQuery);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

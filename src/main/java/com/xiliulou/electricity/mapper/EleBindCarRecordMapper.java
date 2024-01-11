@@ -23,5 +23,13 @@ public interface EleBindCarRecordMapper extends BaseMapper<EleBindCarRecord> {
     List<EleBindCarRecord> queryList(@Param("query") EleBindCarRecordQuery eleBindCarRecordQuery);
 
     Integer queryCount(@Param("query") EleBindCarRecordQuery eleBindCarRecordQuery);
-
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param newPhone 新号码
+     * @param oldPhone 旧号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByOldPhone(@Param("tenantId") Integer tenantId, @Param("newPhone") String newPhone, @Param("oldPhone") String oldPhone);
 }

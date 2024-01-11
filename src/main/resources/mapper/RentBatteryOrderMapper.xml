@@ -210,5 +210,8 @@
 
         </where>
     </select>
-
+    
+    <update id="updatePhoneByUid">
+        update t_rent_battery_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 </mapper>

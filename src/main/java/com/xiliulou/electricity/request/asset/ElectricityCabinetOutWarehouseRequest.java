@@ -40,13 +40,13 @@ public class ElectricityCabinetOutWarehouseRequest {
     private String name;
     
     /**
-     * 物联网productKey
+     * 加盟商id
      */
     @NotNull(message = "加盟商不能为空!", groups = {UpdateGroup.class})
     private Long franchiseeId;
     
     /**
-     * 物联网deviceName
+     * 门店id
      */
     @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
     private Long storeId;
@@ -68,6 +68,12 @@ public class ElectricityCabinetOutWarehouseRequest {
      */
     @NotNull(message = "地址纬度不能为空!", groups = {UpdateGroup.class})
     private Double latitude;
+    
+    /**
+     * 电柜类型
+     */
+    @NotNull(message = "电柜类型exchangeType不能为空!", groups = {UpdateGroup.class})
+    private Integer exchangeType;
     
     /**
      * 营业时间类型

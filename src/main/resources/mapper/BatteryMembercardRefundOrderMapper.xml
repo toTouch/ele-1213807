@@ -208,6 +208,10 @@
         where id = #{id}
     </update>
 
+    <update id="updatePhoneByUid">
+        update t_battery_membercard_refund_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_battery_membercard_refund_order where id = #{id}

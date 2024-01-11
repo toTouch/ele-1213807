@@ -203,6 +203,11 @@ public class OtherSettingParamTemplateRequestDTO {
      */
     private Integer checkSmokeSensor;
     
+    /**
+     * 离线换电密码
+     */
+    private String offlinePassword;
+    
     
     /**
      * 是否开启分时段充电
