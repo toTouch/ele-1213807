@@ -208,4 +208,15 @@ public class OtherSettingParamTemplateRequestDTO {
      */
     private String offlinePassword;
     
+    
+    /**
+     * 是否开启分时段充电
+     */
+    private Integer checkTimedCharge;
+    
+    /**
+     * 分时段充电参数
+     */
+    private String timedChargeParams;
+    
 }

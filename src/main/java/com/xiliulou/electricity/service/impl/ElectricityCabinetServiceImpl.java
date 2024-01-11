@@ -216,6 +216,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
     
+    private static final String OPEN_FAN_CONDITION_KEY = "openFanCondition";
+    
+    private static final String OPEN_HEAT_CONDITION_KEY = "openHeatCondition";
+    
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
     
@@ -1918,6 +1922,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             dataMap = Maps.newHashMap();
         } else {
             dataMap = eleOuterCommandQuery.getData();
+        }
+        
+        try {
+            // 校验高温散热参数
+            if (dataMap.containsKey(OPEN_FAN_CONDITION_KEY)) {
+                String fanStr = (String) dataMap.get(OPEN_FAN_CONDITION_KEY);
+                int fan = Integer.parseInt(fanStr);
+                if (fan < -50) {
+                    fan = -50;
+                } else if (fan > 150) {
+                    fan = 150;
+                }
+                dataMap.put(OPEN_FAN_CONDITION_KEY, fan);
+            }
+            
+            // 校验低温加热参数
+            if (dataMap.containsKey(OPEN_HEAT_CONDITION_KEY)) {
+                String heatStr = (String) dataMap.get(OPEN_HEAT_CONDITION_KEY);
+                int heat = Integer.parseInt(heatStr);
+                if (heat < -50) {
+                    heat = -50;
+                } else if (heat > 50) {
+                    heat = 50;
+                }
+                dataMap.put(OPEN_HEAT_CONDITION_KEY, heat);
+            }
+        } catch (Exception e) {
+            log.error("openFanCondition or openHeatCondition check fail");
         }
         
         dataMap.put("uid", SecurityUtils.getUid());
