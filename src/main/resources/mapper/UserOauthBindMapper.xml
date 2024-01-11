@@ -84,11 +84,11 @@
     </select>
     
     <update id="updateOpenIdByUid">
-        update t_user_oauth_bind set third_id=#{openId}, status =#{status},update_time=now() where uid=#{uid} and tenant_id=#{tenantId}
+        update t_user_oauth_bind set third_id=#{openId}, status =#{status},update_time=#{updateTime} where uid=#{uid} and tenant_id=#{tenantId}
     </update>
     
     <update id="updatePhoneByUid">
-        update t_user_oauth_bind set phone=#{newPhone},update_time=now() where uid=#{uid} and tenant_id = #{tenantId}
+        update t_user_oauth_bind set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
     
     <select id="selectListOauthByOpenIdAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">

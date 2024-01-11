@@ -199,6 +199,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setCarModelId(carModelId);
         qryModel.setStatus(UpDownEnum.UP.getCode());
         qryModel.setConfine(confine);
+        qryModel.setName(qryReq.getName());
         List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);
         if (CollectionUtils.isEmpty(packageEntityList)) {
             return Collections.emptyList();

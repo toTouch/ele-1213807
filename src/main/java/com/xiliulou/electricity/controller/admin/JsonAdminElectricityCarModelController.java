@@ -196,11 +196,12 @@ public class JsonAdminElectricityCarModelController {
 
     //列表查询
     @GetMapping(value = "/admin/electricityCarModel/selectByStoreId")
-    public R queryCount(@RequestParam(value = "storeId", required = false) Long storeId) {
+    public R queryCount(@RequestParam(value = "storeId", required = false) Long storeId, @RequestParam(value = "name", required = false) String name) {
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .delFlag(ElectricityCarModel.DEL_NORMAL)
                 .storeId(storeId)
+                .name(name)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return electricityCarModelService.selectByStoreId(electricityCarModelQuery);

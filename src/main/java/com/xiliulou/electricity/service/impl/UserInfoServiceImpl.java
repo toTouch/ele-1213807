@@ -2041,7 +2041,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 更新用戶
-        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone), i -> {
+        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone,System.currentTimeMillis()), i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
         });
         
@@ -2945,6 +2945,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
-        return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone);
+        return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
 }
