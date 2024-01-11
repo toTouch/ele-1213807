@@ -21,6 +21,7 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -1838,6 +1839,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
         userBatteryMemberCardUpdate.setDisableMemberCardTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        // 套餐过期时间需要加上冻结的时间
+        Long frozenTime = days * TimeConstant.DAY_MILLISECOND;
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + frozenTime);
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + frozenTime);
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();

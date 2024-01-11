@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -212,6 +213,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
             updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
             updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
+            
+            // 套餐过期时间需要加上冻结的时间
+            Long frozenTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+            updateUserBatteryMemberCard.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime()+frozenTime);
+            updateUserBatteryMemberCard.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + frozenTime);
             userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
            
             //用户是否绑定电池
