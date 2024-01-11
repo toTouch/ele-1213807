@@ -32,6 +32,7 @@ import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.queryModel.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
@@ -1368,4 +1369,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok(electricityCarMapper.queryCountByWarehouse(electricityCarQuery));
     }
     
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return electricityCarMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
 }

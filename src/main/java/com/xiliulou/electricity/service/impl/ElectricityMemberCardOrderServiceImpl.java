@@ -833,6 +833,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery query, HttpServletRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -3661,7 +3662,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
-            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
         }
         
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
@@ -4021,7 +4022,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("The rent type of current package is a new rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
-            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -4525,6 +4526,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     /**
      * 处理套餐绑定的活动
      */
+    @Deprecated
     public Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber) {
         if (Objects.isNull(electricityMemberCard) || Objects.isNull(electricityMemberCard.getActivityId()) || !Objects.equals(electricityMemberCard.getIsBindActivity(),
                 ElectricityMemberCard.BIND_ACTIVITY)) {

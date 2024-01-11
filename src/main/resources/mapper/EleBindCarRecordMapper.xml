@@ -58,6 +58,9 @@
             </if>
         </where>
     </select>
-
+    
+    <update id="updatePhoneByOldPhone">
+        update t_ele_bind_car_record set phone=#{newPhone} where phone=#{oldPhone} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

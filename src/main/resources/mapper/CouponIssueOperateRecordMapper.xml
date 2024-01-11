@@ -137,5 +137,9 @@
 
         </where>
     </select>
+    
+    <update id="updatePhoneByUid">
+        update t_coupon_issue_operate_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

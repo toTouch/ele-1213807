@@ -126,4 +126,17 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     public Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory) {
         return freeDepositAlipayHistoryMapper.updateByOrderId(freeDepositAlipayHistory);
     }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return freeDepositAlipayHistoryMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
 }

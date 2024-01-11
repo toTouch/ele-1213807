@@ -91,4 +91,8 @@
 			</if>
 		</where>
 	</select>
+	
+	<update id="updatePhoneByUid">
+		update t_maintenance_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+	</update>
 </mapper>
