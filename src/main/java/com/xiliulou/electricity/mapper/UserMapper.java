@@ -38,5 +38,5 @@ public interface UserMapper extends BaseMapper<User> {
     
     List<UserSearchVO> search(UserInfoQuery query);
     
-    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone, @Param("updateTime") Long updateTime);
 }

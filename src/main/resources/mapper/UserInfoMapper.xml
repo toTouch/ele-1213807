@@ -1195,7 +1195,7 @@
     </select>
     
     <update id="updatePhoneByUid">
-        update t_user_info set phone=#{newPhone},update_time=now() where uid=#{uid} and tenant_id = #{tenantId}
+        update t_user_info set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
     
 </mapper>

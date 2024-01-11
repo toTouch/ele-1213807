@@ -53,4 +53,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     List<ElectricityCarModel> selectListManufactureNameAndModel(ElectricityCarModelQuery query);
     
     ElectricityCarModel selectByModelId(@Param("modelId") Integer modelId,@Param("tenantId") Integer tenantId);
+    
+    List<ElectricityCarModel> selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery);
 }
