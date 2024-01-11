@@ -1597,16 +1597,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         enableMemberCardRecordService.insert(enableMemberCardRecord);
         
         UserBatteryMemberCard userBatteryMemberCardUdpate = new UserBatteryMemberCard();
-        Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+        
+        // 申请冻结的天数
+        Long chooseTime = eleDisableMemberCardRecord.getCardDays() * TimeConstant.DAY_MILLISECOND;
+        // 实际的冻结时间
+        Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+        
+       // Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
         userBatteryMemberCardUdpate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUdpate.setOrderExpireTime(
+       /* userBatteryMemberCardUdpate.setOrderExpireTime(
                 System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
-        userBatteryMemberCardUdpate.setMemberCardExpireTime(memberCardExpireTime);
+        userBatteryMemberCardUdpate.setMemberCardExpireTime(memberCardExpireTime);*/
+        userBatteryMemberCardUdpate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime));
+        userBatteryMemberCardUdpate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime));
         userBatteryMemberCardUdpate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUdpate.setUpdateTime(System.currentTimeMillis());
         
-        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
-                .serviceFeeGenerateTime(memberCardExpireTime).franchiseeId(userInfo.getFranchiseeId()).tenantId(eleDisableMemberCardRecord.getTenantId()).uid(user.getUid())
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("").pauseOrderNo("").expireOrderNo("")
+                .serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime)).franchiseeId(userInfo.getFranchiseeId()).tenantId(eleDisableMemberCardRecord.getTenantId()).uid(user.getUid())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
@@ -2047,17 +2055,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //更新用户套餐过期时间
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUpdate.setOrderExpireTime(
+        
+        // 申请冻结的天数
+        Long chooseTime = eleDisableMemberCardRecord.getCardDays() * TimeConstant.DAY_MILLISECOND;
+        // 实际的冻结时间
+        Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+  
+       /* userBatteryMemberCardUpdate.setOrderExpireTime(
                 userBatteryMemberCard.getOrderExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));
         userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                userBatteryMemberCard.getMemberCardExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));
+                userBatteryMemberCard.getMemberCardExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));*/
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime));
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime));
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         //更新用户服务费产生时间 解绑用户停卡单号和滞纳金单号
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("").pauseOrderNo("").expireOrderNo("")
-                .franchiseeId(userInfo.getFranchiseeId()).serviceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime())
+                .franchiseeId(userInfo.getFranchiseeId()).serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime))
                 .tenantId(eleDisableMemberCardRecord.getTenantId()).uid(uid).updateTime(System.currentTimeMillis()).build();
         
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
