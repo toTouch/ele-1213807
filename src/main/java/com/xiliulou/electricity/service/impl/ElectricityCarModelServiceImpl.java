@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.UserCarQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -347,8 +348,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return electricityCarModels.parallelStream().map(item -> {
             ElectricityCarModelVO carModelVO = new ElectricityCarModelVO();
             BeanUtils.copyProperties(item, carModelVO);
-
-            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId().longValue());
+            
+            PictureQuery pictureQuery = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(item.getId().longValue()).imgType(Picture.TYPE_CAR_IMG).build();
+            List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
+            
             carModelVO.setPictures(pictureService.pictureParseVO(pictures));
 
             List<CarModelTag> tagList = carModelTagService.selectByCarModelId(item.getId());
@@ -386,8 +389,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         BeanUtils.copyProperties(electricityCarModel, carModelVO);
-
-        List<Picture> pictures = pictureService.selectByByBusinessId(id);
+        PictureQuery query = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(id).imgType(Picture.TYPE_CAR_IMG).build();
+        List<Picture> pictures = pictureService.queryListByQuery(query);
         carModelVO.setPictures(pictureService.pictureParseVO(pictures));
 
         List<CarModelTag> carModelTags = carModelTagService.selectByCarModelId(id.intValue());

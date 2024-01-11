@@ -28,13 +28,14 @@ public class JsonAdminPictureController extends BaseController {
      * 查询图片
      */
     @GetMapping("/admin/picture/list")
-    public R storePicture(@RequestParam("businessId") Long businessId){
+    public R storePicture(@RequestParam("businessId") Long businessId, @RequestParam(value = "fileType", required = false) Integer fileType){
 
         PictureQuery pictureQuery = new PictureQuery();
         pictureQuery.setBusinessId(businessId);
         pictureQuery.setStatus(Picture.STATUS_ENABLE);
         pictureQuery.setDelFlag(Picture.DEL_NORMAL);
         pictureQuery.setTenantId(TenantContextHolder.getTenantId());
+        pictureQuery.setImgType(fileType);
 
         return R.ok(pictureService.selectByQuery(pictureQuery));
     }
