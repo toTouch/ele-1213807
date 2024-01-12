@@ -995,14 +995,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> resultVo;
         //若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
-            log.info("Get location distance from redis geo start, query params = {}", electricityCabinetQuery);
+            log.info("Get location distance from redis geo start, query params = {}, tenant id = {}", electricityCabinetQuery, TenantContextHolder.getTenantId());
             RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands
                     .GeoRadiusCommandArgs
                     .newGeoRadiusArgs()
                     .includeDistance()
                     .includeCoordinates()
                     .sortAscending();
-            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), new Circle(new Point(electricityCabinetQuery.getLongitude(), electricityCabinetQuery.getLatitude()), new Distance(electricityCabinetQuery.getDistance(), Metrics.KILOMETERS)), geoRadiusCommandArgs);
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()), new Distance(electricityCabinetQuery.getDistance(), Metrics.KILOMETERS)), geoRadiusCommandArgs);
             if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
                 log.error("GEO results is null, query info = {}", electricityCabinetQuery);
                 return null;
