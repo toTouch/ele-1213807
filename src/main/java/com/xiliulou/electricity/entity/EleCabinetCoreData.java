@@ -99,6 +99,11 @@ public class EleCabinetCoreData {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 整柜加热;0：开启，1：关闭
+     */
+    private Integer heatOpen;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
