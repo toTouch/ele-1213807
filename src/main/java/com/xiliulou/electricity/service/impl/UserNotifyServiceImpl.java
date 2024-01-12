@@ -145,8 +145,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_ON)) {
-            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(
-                    userNotifyQuery.getContent())) {
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(
+                    userNotifyQuery.getContent()))) {
                 return R.fail("100368", "用户通知标题和内容不能为空");
             }
             
