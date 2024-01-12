@@ -193,6 +193,10 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             if (redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             }
+            
+            if(redisService.hasKey(CacheConstant.CACHE_USER_DEPOSIT + uid)){
+                redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
+            }
         }, 1, TimeUnit.SECONDS);
     }
 }

@@ -74,6 +74,13 @@ public class ElectricityIotConstant {
     
     
     
+    
+    /**
+     * 离线换电密码设置
+     */
+    public static final String NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER = "normalOfflineExchangePasswordHandler";
+
+
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
     }
@@ -350,6 +357,16 @@ public class ElectricityIotConstant {
      */
     public static final String HARDWARE_FAILURE_WARN_MSG = "hardware_failure_warn_msg";
     public static final String HARDWARE_FAILURE_WARN_MSG_ACK = "hardware_failure_warn_msg_ack";
+    
+    /**
+     * 离线换电
+     */
+    /*public static final String ELE_BATTERY_OFFLINE_EXCHANGE = "battery_offline_exchange";*/
+    
+    /**
+     * 设置离线换电密码
+     */
+    public static final String  ELE_BATTERY_OFFLINE_PASSWORD_RESET = "offline_password_reset";
 
 
     static {
@@ -433,6 +450,7 @@ public class ElectricityIotConstant {
         SEND_COMMAND_SETS.add(ELE_CELL_CLOSE_CHARGE);
         SEND_COMMAND_SETS.add(CUPBOARD_RESUME_CYCLE);
         SEND_COMMAND_SETS.add(ELE_CELL_OPEN_CHARGE);
+        SEND_COMMAND_SETS.add(ELE_BATTERY_OFFLINE_PASSWORD_RESET);
 
 
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -575,5 +593,11 @@ public class ElectricityIotConstant {
     
         COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG, HARDWARE_FAILURE_WARN_MSG_HANDLER);
         COMMAND_HANDLER_MAPS.put(HARDWARE_FAILURE_WARN_MSG_ACK, HARDWARE_FAILURE_WARN_MSG_HANDLER);
+    
+        /**
+         * 离线换电密码设置
+         */
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_OFFLINE_PASSWORD_RESET, NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER);
+        
     }
 }

@@ -73,4 +73,6 @@ public interface UserActiveInfoMapper extends BaseMapper<UserActiveInfo> {
     List<UserActiveInfoVo> queryList(UserActiveInfoQuery query);
     
     Long queryCount(UserActiveInfoQuery query);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

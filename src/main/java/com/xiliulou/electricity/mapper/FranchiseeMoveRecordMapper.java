@@ -64,5 +64,6 @@ public interface FranchiseeMoveRecordMapper extends BaseMapper<FranchiseeMoveRec
      * @return 影响行数
      */
     int deleteById(Integer id);
-
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

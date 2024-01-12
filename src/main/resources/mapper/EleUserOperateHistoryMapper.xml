@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleUserOperateHistoryMapper">
+    
+    <select id="selectListUserOperateHistory" resultType="com.xiliulou.electricity.vo.EleUserOperateHistoryVO">
+        select
+        id, operate_type , operate_model , operate_content , old_operate_info , new_operate_info , operator_name , uid ,tenant_id , create_time, update_time
+        from t_ele_user_operate_history
+        <where>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_user_operate_history(operate_type, operate_model, operate_content, old_operate_info, new_operate_info,operator_name , uid ,tenant_id , create_time, update_time)
+        values (#{operateType}, #{operateModel}, #{operateContent}, #{oldOperateInfo}, #{newOperateInfo}, #{operatorName}, #{uid}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+   
+    
+</mapper>

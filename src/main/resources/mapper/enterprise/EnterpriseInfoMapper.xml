@@ -190,5 +190,8 @@
     <delete id="deleteById">
         delete from t_enterprise_info where id = #{id}
     </delete>
-
+    
+    <update id="updatePhoneByUid">
+        update t_enterprise_info set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 </mapper>

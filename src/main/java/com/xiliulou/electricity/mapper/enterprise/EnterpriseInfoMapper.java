@@ -49,4 +49,6 @@ public interface EnterpriseInfoMapper extends BaseMapper<EnterpriseInfo> {
     EnterpriseInfo selectByUid(Long uid);
     
     int addCloudBean(@Param("id") Long id, @Param("totalCloudBean") BigDecimal totalCloudBean);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

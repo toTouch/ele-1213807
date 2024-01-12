@@ -214,5 +214,8 @@
     <update id="updateUserCouponStatus">
             update t_user_coupon set  status = #{status}, order_id=#{orderId}, update_time = #{updateTime}  where id = #{id}
     </update>
-
+    
+    <update id="updatePhoneByUid">
+        update t_user_coupon set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
 </mapper>

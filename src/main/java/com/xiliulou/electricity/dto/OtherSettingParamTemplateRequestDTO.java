@@ -203,4 +203,9 @@ public class OtherSettingParamTemplateRequestDTO {
      */
     private Integer checkSmokeSensor;
     
+    /**
+     * 离线换电密码
+     */
+    private String offlinePassword;
+    
 }

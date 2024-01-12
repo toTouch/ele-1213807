@@ -123,9 +123,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -212,10 +215,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
-                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -302,11 +307,13 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).name(name)
                 .usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
-                .tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList).build();
+                .tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
     }
@@ -392,12 +399,13 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).storeId(storeId)
                 .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address)
-                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectLockPageCount(cabinetQuery));
     }
@@ -485,10 +493,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }
@@ -576,10 +586,12 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 return R.ok(0);
             }
         }
-
+        
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }
