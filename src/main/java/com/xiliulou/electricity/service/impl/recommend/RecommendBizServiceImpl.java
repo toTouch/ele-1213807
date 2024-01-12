@@ -90,7 +90,7 @@ public class RecommendBizServiceImpl implements RecommendBizService {
         List<Long> carModelLongIds = carModelIntegerIds.stream().map(Long::valueOf).collect(Collectors.toList());
 
         // 获取车辆型号图片
-        Map<Long, List<Picture>> pictureMap = null;
+        Map<Long, List<Picture>> pictureMap = new HashMap<>();
         PictureQuery pictureQuery = new PictureQuery();
         pictureQuery.setStatus(Picture.STATUS_ENABLE);
         pictureQuery.setImgType(Picture.TYPE_CAR_IMG);
@@ -103,7 +103,7 @@ public class RecommendBizServiceImpl implements RecommendBizService {
         }
 
         // 获取车辆型号标签
-        Map<Long, List<CarModelTag>> carModelTagMap = null;
+        Map<Long, List<CarModelTag>> carModelTagMap = new HashMap<>();
         List<CarModelTag> carModelTags = carModelTagService.selectByCarModelIds(carModelIntegerIds);
         if(!CollectionUtils.isEmpty(carModelTags)){
             carModelTagMap = carModelTags.stream().collect(Collectors.groupingBy(CarModelTag::getCarModelId));
