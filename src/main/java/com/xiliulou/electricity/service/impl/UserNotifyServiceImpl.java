@@ -163,7 +163,6 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         UserNotify updateAndInsert = new UserNotify();
-        updateAndInsert.setContent(userNotifyQuery.getContent());
         updateAndInsert.setTitle(userNotifyQuery.getTitle());
         updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
         updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
@@ -171,14 +170,17 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
         updateAndInsert.setUpdateTime(System.currentTimeMillis());
         
-        List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
-        if (CollectionUtils.isNotEmpty(pictureInfoList)) {
-            updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
-        }
         if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE)) {
             updateAndInsert.setType(UserNotifyConstant.TYPE_PICTURE);
+            List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
+            if (CollectionUtils.isNotEmpty(pictureInfoList)) {
+                updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
+            }
+            updateAndInsert.setContent(StringUtils.EMPTY);
         } else {
             updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
+            updateAndInsert.setContent(userNotifyQuery.getContent());
+            updateAndInsert.setPictureInfo(null);
         }
         
         updateAndInsert.setContent(userNotifyQuery.getContent());
