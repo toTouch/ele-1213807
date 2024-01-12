@@ -26,7 +26,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
-import com.xiliulou.electricity.vo.activity.ShareMoneyAndShareActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -605,26 +604,9 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
     
     @Override
-    public R checkExistActivity() {
-        
-        ShareMoneyAndShareActivityVO shareActivityVO = new ShareMoneyAndShareActivityVO();
-        //查询该租户是否有邀请活动，
-        Integer shareMoeneyActivityCount = shareMoneyActivityMapper.existShareMoneyActivity(TenantContextHolder.getTenantId());
-        if (Objects.nonNull(shareMoeneyActivityCount)) {
-            shareActivityVO.setExistShareMoneyActivity(Boolean.TRUE);
-        }else {
-            shareActivityVO.setExistShareMoneyActivity(Boolean.FALSE);
-        }
-    
-        //查询该租户是否有邀请活动，
-        Integer shareActivityCount = shareActivityMapper.existShareActivity(TenantContextHolder.getTenantId());
-        if (Objects.nonNull(shareMoeneyActivityCount)) {
-            shareActivityVO.setExistShareActivity(Boolean.TRUE);
-        }else {
-            shareActivityVO.setExistShareActivity(Boolean.FALSE);
-        }
-        
-        return R.ok(shareActivityVO);
+    public Integer existShareMoneyActivity(Integer tenantId) {
+        return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
     }
+    
 }
 

@@ -214,16 +214,4 @@ public class JsonAdminShareMoneyActivityController {
 			return R.ok(carRentalPackageService.count(qryModel));
 		}
 	}
-	
-	@GetMapping(value = "/admin/shareMoneyActivity/checkExistActivity")
-	public R checkExistActivity(){
-		//用户
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("order  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		
-		return shareMoneyActivityService.checkExistActivity();
-	}
 }

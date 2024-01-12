@@ -52,5 +52,5 @@ public interface ShareMoneyActivityService {
 
     R checkActivityStatusOn();
     
-    R checkExistActivity();
+    Integer existShareMoneyActivity(Integer tenantId);
 }
