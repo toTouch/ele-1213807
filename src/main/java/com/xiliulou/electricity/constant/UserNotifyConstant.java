@@ -25,12 +25,12 @@ public class UserNotifyConstant {
     public static final Integer TYPE_PICTURE = 1;
     
     /**
-     * 通知状态：0：关闭  1：打开
+     * 通知状态：0：打开  1：关闭
      */
-    public static final Integer STATUS_OFF = 0;
+    public static final Integer STATUS_OFF = 1;
     
     /**
-     * 通知状态：0：关闭  1：打开
+     * 通知状态：0：打开  1：关闭
      */
-    public static final Integer STATUS_ON = 1;
+    public static final Integer STATUS_ON = 0;
 }
