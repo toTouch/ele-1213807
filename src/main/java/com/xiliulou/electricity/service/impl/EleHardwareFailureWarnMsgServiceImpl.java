@@ -527,6 +527,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     public Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request) {
         Triple<Boolean, String, Object> triple = checkParams(request);
         if (!triple.getLeft()) {
+            log.error("failure warn proportion params is error={}", triple.getRight());
             return triple;
         }
         
