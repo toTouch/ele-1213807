@@ -10,9 +10,9 @@ public interface CacheConstant {
     //换电柜型号缓存
     String CACHE_ELECTRICITY_CABINET_MODEL = "electricity_cabinet_model:";
     //换电柜GEO缓存
-    String CACHE_ELECTRICITY_CABINET_GEO = "electricity_cabinet_geo";
+    String CACHE_ELECTRICITY_CABINET_GEO = "electricity_cabinet_geo:";
     //加载换电柜GEO缓存锁
-    String CACHE_RELOAD_ELECTRICITY_CABINET_GEO = "reload_electricity_cabinet_geo";
+    String CACHE_RELOAD_ELECTRICITY_CABINET_GEO = "reload_electricity_cabinet_geo:";
     
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
