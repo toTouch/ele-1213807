@@ -161,4 +161,14 @@ public interface ElectricityCarService {
     Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
     
     R queryCountByWarehouse(ElectricityCarQuery electricityCarQuery);
+    
+    /**
+     * 根据更换手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
 }

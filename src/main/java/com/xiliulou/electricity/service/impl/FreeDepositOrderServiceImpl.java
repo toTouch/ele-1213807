@@ -2267,7 +2267,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberCardId());
-            return Triple.of(false, "100376", "您已成功购买该套餐，请勿重复购买");
+            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
         }
 
         //是否有正在进行中的退押
@@ -2397,6 +2397,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 this.update(freeDepositOrderUpdate);
             }
         }
+    }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return freeDepositOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
     private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, FreeBatteryDepositHybridOrderQuery query, ElectricityCabinet electricityCabinet) {

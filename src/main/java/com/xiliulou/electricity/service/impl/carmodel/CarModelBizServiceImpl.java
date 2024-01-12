@@ -13,6 +13,7 @@ import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.PictureService;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.vo.car.CarModelDetailVo;
@@ -90,7 +92,8 @@ public class CarModelBizServiceImpl implements CarModelBizService {
 
         // 查询车辆型号图片信息
         List<String> pictureUrls = null;
-        List<Picture> pictures = pictureService.selectByByBusinessId(Long.valueOf(carModel.getId()));
+        PictureQuery query = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).businessId(Long.valueOf(carModel.getId())).imgType(Picture.TYPE_CAR_IMG).build();
+        List<Picture> pictures = pictureService.queryListByQuery(query);
         if (!CollectionUtils.isEmpty(pictures)) {
             List<PictureVO> pictureVOList = pictureService.pictureParseVO(pictures);
             if (!CollectionUtils.isEmpty(pictureVOList)) {

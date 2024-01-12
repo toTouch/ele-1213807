@@ -41,4 +41,17 @@ public class EleBindCarRecordServiceImpl extends ServiceImpl<EleBindCarRecordMap
     public R queryCount(EleBindCarRecordQuery eleBindCarRecordQuery) {
         return R.ok(eleBindCarRecordMapper.queryCount(eleBindCarRecordQuery));
     }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param newPhone 新号码
+     * @param oldPhone 旧号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByOldPhone(Integer tenantId,String newPhone,String oldPhone) {
+        return eleBindCarRecordMapper.updatePhoneByOldPhone(tenantId,newPhone,oldPhone);
+    }
 }

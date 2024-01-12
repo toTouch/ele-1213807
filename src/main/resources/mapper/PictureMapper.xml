@@ -131,5 +131,9 @@
     <delete id="deleteByBusinessId">
         delete from t_picture where business_id = #{businessId}
     </delete>
+    
+    <delete id="deleteByBusinessIdImgType">
+        delete from t_picture where business_id = #{businessId} and img_type = #{imgType} and tenant_id = #{tenantId}
+    </delete>
 
 </mapper>
