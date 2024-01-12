@@ -273,6 +273,11 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         });
     }
     
+    @Override
+    public Integer deleteChannelMemberCardByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.deleteChannelMemberCardByUid(uid);
+    }
+    
     
     private void updateUserBatteryMemberCardPackageInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
         UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(userBatteryMemberCard.getUid());

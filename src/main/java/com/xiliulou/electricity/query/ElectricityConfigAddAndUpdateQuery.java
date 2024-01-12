@@ -136,6 +136,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    
+    /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
 }
 
 

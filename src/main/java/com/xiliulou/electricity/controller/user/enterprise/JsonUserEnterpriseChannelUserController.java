@@ -6,11 +6,13 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseUserCostRecordQuery;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.service.enterprise.EnterpriseBatteryPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
@@ -73,6 +75,45 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         
     }
     
+    @PostMapping("/user/enterprise/addUserNew")
+    public R addUserNew(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
+        
+        return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
+    }
+    
+    /**
+     * 骑手自主续费检测
+     * @param request
+     * @return
+     */
+    @PostMapping("/user/enterprise/channelUserExitCheck")
+    public R channelUserExitCheck(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
+        
+        return returnTripleResult(enterpriseChannelUserService.channelUserExitCheck(request));
+    }
+    
+    /**
+     * 骑手自主续费检测
+     * @param request
+     * @return
+     */
+    @PostMapping("/user/enterprise/channelUserExitCheckAll")
+    public R channelUserExitCheckAll(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
+        
+        return returnTripleResult(enterpriseChannelUserService.channelUserExitCheckAll(request));
+    }
+    
+    /**
+     * 骑手自主续费
+     * @param request
+     * @return
+     */
+    @PostMapping("/user/enterprise/channelUserExit")
+    public R channelUserExit(@RequestBody @Validated EnterpriseUserExitCheckRequest request) {
+        
+        return returnTripleResult(enterpriseChannelUserService.channelUserExit(request));
+    }
+    
     /**
      * 根据手机号查询当前加盟商下的企业渠道用户信息
      *
@@ -124,6 +165,23 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).renewalStatus(renewalStatus).build();
         
         return returnTripleResult(enterpriseChannelUserService.updateUserAfterQRScan(enterpriseChannelUserQuery));
+    }
+    
+    /**
+     * 被邀请用户扫码后，将该用户添加至关联的企业中
+     *
+     * @param id
+     * @param uid
+     * @param renewalStatus
+     * @return
+     */
+    @GetMapping("/user/enterprise/addUserByScanNew")
+    public R addUserByScanNew(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid,
+            @RequestParam(value = "renewalStatus", required = true) Integer renewalStatus) {
+        
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).renewalStatus(renewalStatus).build();
+        
+        return returnTripleResult(enterpriseChannelUserService.updateUserAfterQRScanNew(enterpriseChannelUserQuery));
     }
     
     @GetMapping("/user/enterprise/checkChannelUser")

@@ -4344,6 +4344,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
+    public Integer batchUpdateChannelOrderStatusByOrderNo(List<String> orderIds, Integer useStatus) {
+        if (CollectionUtils.isEmpty(orderIds)) {
+            return NumberConstant.ZERO;
+        }
+        return this.baseMapper.batchUpdateChannelOrderStatusByOrderNo(orderIds, useStatus);
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {

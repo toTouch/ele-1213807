@@ -108,6 +108,9 @@
             <if test="allowFreezeWithAssets != null">
                 allow_freeze_with_assets = #{allowFreezeWithAssets},
             </if>
+            <if test="channelTimeLimit != null">
+                channel_time_limit = #{channelTimeLimit},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}

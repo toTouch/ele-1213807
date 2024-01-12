@@ -245,7 +245,9 @@
             <if test="phone != null ">
                 and tui.phone = #{phone}
             </if>
-        
+            <if test="uid != null">
+                and tui.uid != #{uid}
+            </if>
         </where>
         limit 1
     </select>

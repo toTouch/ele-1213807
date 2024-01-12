@@ -58,4 +58,6 @@ public interface UserBatteryMemberCardPackageService {
     Integer checkUserBatteryMemberCardPackageByUid(Long uid);
     
     void asyncHandleUpdateUserBatteryMemberCardInfo(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo);
+    
+    Integer deleteChannelMemberCardByUid(Long uid);
 }

@@ -95,5 +95,16 @@
     <delete id="deleteByOrderId">
         delete from t_user_battery_member_card_package where order_id = #{orderId}
     </delete>
+    
+    <delete id="deleteChannelMemberCardByUid">
+        delete
+        FROM
+            t_user_battery_member_card_package a
+        WHERE
+            uid = #{uid}
+          AND EXISTS (
+            SELECT 1 FROM t_battery_member_card b WHERE a.member_card_id = b.id and b.business_type = 1
+            )
+    </delete>
 
 </mapper>

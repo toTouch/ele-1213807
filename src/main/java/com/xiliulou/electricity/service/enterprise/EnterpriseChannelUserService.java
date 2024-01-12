@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.enterprise;
 
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -100,4 +101,14 @@ public interface EnterpriseChannelUserService {
     void updatePaymentStatusForRefundDeposit(Long uid, Integer paymentStatus);
     
     List<EnterpriseChannelUser> listByEnterpriseId(Set<Long> enterpriseIdList);
+    
+    Triple<Boolean, String, Object> updateUserAfterQRScanNew(EnterpriseChannelUserQuery enterpriseChannelUserQuery);
+    
+    Triple<Boolean, String, Object> addUserNew(EnterpriseChannelUserQuery query);
+    
+    Triple<Boolean, String, Object> channelUserExitCheck(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserExitCheckAll(EnterpriseUserExitCheckRequest request);
 }
