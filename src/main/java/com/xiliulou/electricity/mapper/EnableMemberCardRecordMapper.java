@@ -26,4 +26,6 @@ public interface EnableMemberCardRecordMapper extends BaseMapper<EnableMemberCar
     Integer queryCount(EnableMemberCardRecordQuery enableMemberCardRecordQuery);
 
     EnableMemberCardRecord selectLatestByUid(Long uid);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

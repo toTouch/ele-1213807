@@ -17,6 +17,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
@@ -36,6 +37,8 @@ import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.asset.user.UnbindOpenIdRequest;
+import com.xiliulou.electricity.request.asset.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -57,6 +60,7 @@ import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -254,6 +258,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
+    @Autowired
+    UserOauthBindService userOauthBindService;
+    
+    @Autowired
+    EleUserOperateHistoryService eleUserOperateHistoryService;
     
     /**
      * 分页查询
@@ -1061,7 +1071,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
             
-            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
                 orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
             }
             
@@ -1129,7 +1139,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
-    
+        
         Integer finalOrderType = orderType;
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
@@ -1177,7 +1187,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(electricityBattery);
-    
+            
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
             
             //记录企业用户租电池记录
@@ -1281,9 +1291,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.error("WEBBIND ERROR ERROR! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
-    
+            
             //根据套餐类型，设置租退订单类型
-            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())){
+            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
                 orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
             }
             
@@ -1347,9 +1357,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-    
+        
         enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
-    
+        
         //记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         
@@ -1436,10 +1446,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectOne(
                 new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
-
+    
     @Override
     public UserInfo queryUserByPhoneAndFranchisee(String phone, Integer franchiseeId, Integer tenantId) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getFranchiseeId, franchiseeId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+        return userInfoMapper.selectOne(
+                new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getFranchiseeId, franchiseeId)
+                        .eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
     
     @Slave
@@ -1941,14 +1953,119 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         vo.setCarRentalPackageOrderAmountTotal(carRentalPackageOrderBizService.queryAmountTotalByUid(userInfo.getTenantId(), userInfo.getUid()));
         vo.setCarRentalPackageOrderSlippageAmountTotal(carRentalPackageOrderSlippageService.selectPaySuccessAmountTotal(userInfo.getTenantId(), userInfo.getUid()));
-    
+        
         // 设置企业信息
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(uid);
-        if(Objects.nonNull(enterpriseChannelUserVO)){
+        if (Objects.nonNull(enterpriseChannelUserVO)) {
             vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
         }
         
+        // 根据openId判断是否可解绑微信
+        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, TenantContextHolder.getTenantId());
+        if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
+            vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
+        } else {
+            vo.setBindWX(UserOauthBind.STATUS_UN_BIND_VX);
+        }
+        
         return R.ok(vo);
+    }
+    
+    @Override
+    public R unbindOpenId(UnbindOpenIdRequest unbindOpenIdRequest) {
+        Long uid = unbindOpenIdRequest.getUid();
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
+        if (Objects.nonNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())) {
+            // 解绑微信成功后 强制用户重新登录
+            List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+            if (DataUtil.collectionIsUsable(userOauthBinds)) {
+                clearUserOauthBindToken(userOauthBinds);
+            }
+            DbUtils.dbOperateSuccessThenHandleCache(
+                    userOauthBindService.updateOpenIdByUid(StringUtils.EMPTY, UserOauthBind.STATUS_UN_BIND, userOauthBind.getUid(),
+                            TenantContextHolder.getTenantId()), i -> {
+                        // 添加解绑操作记录
+                        EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX,
+                                EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION, EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION);
+                        eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
+                    });
+            
+        }
+        return R.ok();
+    }
+    
+    private void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds) {
+        userOauthBinds.parallelStream().forEach(e -> {
+            String thirdId = e.getThirdId();
+            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + CacheConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
+            if (DataUtil.collectionIsUsable(tokens)) {
+                tokens.stream().forEach(s -> {
+                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + CacheConstant.CLIENT_ID + s);
+                });
+            }
+        });
+        
+    }
+    
+    private EleUserOperateHistory buildEleUserOperateHistory(UserInfo userInfo, Integer operateContent, String oldOperateInfo, String newOperateInfo) {
+        return EleUserOperateHistory.builder().operateType(EleUserOperateHistoryConstant.OPERATE_TYPE_USER).operateModel(EleUserOperateHistoryConstant.OPERATE_MODEL_USER_ACCOUNT)
+                .operateContent(operateContent).oldOperateInfo(oldOperateInfo).newOperateInfo(newOperateInfo).uid(userInfo.getUid())
+                .operatorName(Objects.nonNull(SecurityUtils.getUserInfo()) ? SecurityUtils.getUserInfo().getUsername() : StringUtils.EMPTY)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+    }
+    
+    @Override
+    public R updateUserPhone(UpdateUserPhoneRequest updateUserPhoneRequest) {
+        Long uid = updateUserPhoneRequest.getUid();
+        String phone = updateUserPhoneRequest.getPhone();
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        String oldPhone = userInfo.getPhone();
+        
+        // 更换手机号的前提：新手机号在系统中不存在
+        if (StringUtils.equals(userInfo.getPhone(), phone)) {
+            return R.fail("100566", "新手机号与原手机号一致，请重新输入");
+        }
+        
+        UserInfo updatePhone = this.queryUserInfoByPhone(phone, TenantContextHolder.getTenantId());
+        if (Objects.nonNull(updatePhone)) {
+            return R.fail("100565", "手机号已被使用，请重新输入");
+        }
+        
+        // 更新用戶
+        DbUtils.dbOperateSuccessThenHandleCache(userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone,System.currentTimeMillis()), i -> {
+            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        });
+        
+        User user = userService.queryByUidFromCache(uid);
+        DbUtils.dbOperateSuccessThenHandleCache(userService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone), i -> {
+            if (Objects.nonNull(user)) {
+                redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + TenantContextHolder.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
+            }
+        });
+    
+        // 更新成功后 强制用户重新登录
+        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+        if (DataUtil.collectionIsUsable(userOauthBinds)) {
+            clearUserOauthBindToken(userOauthBinds);
+        }
+        
+        userOauthBindService.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone);
+    
+        // 添加更換手机号操作记录
+        EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, EleUserOperateHistoryConstant.OPERATE_CONTENT_UPDATE_PHONE, userInfo.getPhone(), phone);
+        eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
+        eleUserOperateHistoryService.asyncHandleUpdateUserPhone(TenantContextHolder.getTenantId(), uid, phone, oldPhone);
+        return R.ok();
     }
     
     @Override
@@ -2514,7 +2631,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         //檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
-        if(Objects.nonNull(enterpriseChannelUserVO)){
+        if (Objects.nonNull(enterpriseChannelUserVO)) {
             return;
         }
         
@@ -2761,7 +2878,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 设置企业信息
                 EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(item.getUid());
-                if(Objects.nonNull(enterpriseChannelUserVO)){
+                if (Objects.nonNull(enterpriseChannelUserVO)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
                 
@@ -2818,4 +2935,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectListByUidList(uidList);
     }
     
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
+    }
 }

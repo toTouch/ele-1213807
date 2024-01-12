@@ -20,6 +20,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,6 +103,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
+    public List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
+        return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid,source,tenantId);
+    }
+    
+    @Override
     public UserOauthBind queryByUserPhone(String phone, int source, Integer tenantId) {
         return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
                 .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
@@ -156,6 +162,36 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
+    public Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId) {
+        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId, System.currentTimeMillis());
+    }
+    
+    @Override
+    @Slave
+    public UserOauthBind selectByUidAndPhone(String phone, Long uid, Integer tenantId) {
+        return userOauthBindMapper.selectByUidAndPhone(phone, uid, tenantId);
+    }
+    
+    @Override
+    @Slave
+    public UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId) {
+        return userOauthBindMapper.selectUserByPhone(phone, source, tenantId);
+    }
+    
+    /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return userOauthBindMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {
         Long uid = SecurityUtils.getUid();
@@ -163,7 +199,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("check open id failed, not found user,uid={}", userInfo.getUid());
+            log.warn("check open id failed, not found user,uid={}", uid);
             return Boolean.FALSE;
         }
         
@@ -199,13 +235,13 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         }
         
         String openId = result.getOpenid();
-        UserOauthBind userOauthBind = this.queryOauthByOpenIdAndSource(openId, UserOauthBind.SOURCE_WX_PRO, tenantId.intValue());
+        List<UserOauthBind> userOauthBindList = this.selectListOauthByOpenIdAndSource(openId, UserOauthBind.SOURCE_WX_PRO, tenantId.intValue());
         
-        if (Objects.isNull(userOauthBind)) {
+        if (CollectionUtils.isEmpty(userOauthBindList)) {
             return Boolean.FALSE;
         }
         
-        if (userOauthBind.getThirdId().equals(openId)) {
+        if (userOauthBindList.get(0).getThirdId().equals(openId)) {
             return Boolean.TRUE;
         }
         

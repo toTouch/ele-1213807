@@ -39,6 +39,7 @@ public class Picture {
     private Integer seq;
     /**
      * 图片类型 0:小程序
+     * 1-门店 3-车辆
      */
     private Integer imgType;
     /**
@@ -67,5 +68,6 @@ public class Picture {
     public static final Integer STATUS_DISABLE = 1;
     
     public static final Integer TYPE_CAR_IMG = 3;
+    public static final Integer TYPE_STORE_IMG = 1;
 
 }

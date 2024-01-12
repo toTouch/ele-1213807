@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.MaintenanceRecord;
 import com.xiliulou.electricity.query.MaintenanceRecordListQuery;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -17,4 +19,6 @@ public interface MaintenanceRecordMapper extends BaseMapper<MaintenanceRecord>{
     List<MaintenanceRecord> queryList(MaintenanceRecordListQuery query);
 
 	Integer queryCount(MaintenanceRecordListQuery query);
+    
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

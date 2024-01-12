@@ -4566,6 +4566,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}", electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
+    
+        Set<Integer> versionTypeSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE);
+        if (!versionTypeSet.contains(versionType)) {
+            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},versionType={}", electricityCabinet, versionType);
+            return R.fail("100302", "ota操作类型不合法");
+        }
         
         // 查询柜机当前版本
         Integer versionPrefix = getVersionPrefix(eid);
@@ -4575,7 +4581,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 版本号前缀：旧版（大于等于50）、新版（小于10）、六合一版（大于等于10且小于20）
-        String sessionPrefix = getSessionPrefix(operateType, versionType, versionPrefix);
+        String sessionPrefix = getSessionPrefix(versionType, versionPrefix, eid);
         String sessionId = sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
         
         Map<String, Object> data = Maps.newHashMap();
@@ -4600,11 +4606,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(sessionId);
     }
     
-    private String getSessionPrefix(Integer operateType, Integer versionType, Integer versionPrefix) {
+    private String getSessionPrefix(Integer versionType, Integer versionPrefix, Integer eid) {
         String sessionPrefix = null;
         // 下载时 versionType:1--旧的（版本号>=50.0） 2--新的（版本号<10） 3--六合一（10.0<=版本<20.0）
         // 同步和升级时 versionType=0
-        if (OtaConstant.OTA_TYPE_DOWNLOAD.equals(operateType) || OtaConstant.OTA_SIX_IN_ONE_TYPE_DOWNLOAD.equals(operateType)) {
+        
+        // 如果是同步和升级 操作，需要从数据库查询versionType
+        if (Objects.equals(versionType, NumberConstant.ZERO)) {
+            EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
+            if (Objects.nonNull(eleOtaFile)) {
+                versionType = eleOtaFile.getFileType();
+            }
+        }
+        
+        // 通过versionType解析sessionPrefix
+        if (Objects.nonNull(versionType)) {
+            // 如果数据库查询的versionType=0，则 认为是新版本
+            versionType = Objects.equals(versionType, NumberConstant.ZERO) ? OtaConstant.OTA_VERSIONTYPE_NEW : versionType;
+            
             switch (versionType) {
                 case OtaConstant.OTA_VERSIONTYPE_OLD:
                     sessionPrefix = OtaConstant.SESSION_PREFIX_OLD;
@@ -4620,6 +4639,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     break;
             }
         } else {
+            // 通过versionPrefix解析sessionPrefix
             if (OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION > versionPrefix) {
                 sessionPrefix = OtaConstant.SESSION_PREFIX_NEW;
             } else if (OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION <= versionPrefix && versionPrefix < OtaFileConfig.MAX_SIX_IN_ONE_BOARD_VERSION) {
@@ -4628,6 +4648,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 sessionPrefix = OtaConstant.SESSION_PREFIX_OLD;
             }
         }
+        
         return sessionPrefix;
     }
     
