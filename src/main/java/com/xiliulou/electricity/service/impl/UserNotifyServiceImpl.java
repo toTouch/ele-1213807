@@ -157,6 +157,12 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
                 return R.fail("100369", "用户通知时间间隔不能为空");
             }
+    
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && StringUtils.isNotBlank(userNotifyQuery.getContent())) {
+                if (userNotifyQuery.getContent().length() > 100) {
+                    return R.fail("100370", "参数校验错误");
+                }
+            }
         }
         
         UserNotify userNotify = queryByTenantId();
