@@ -310,7 +310,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
             //缓存柜机GEO信息
-            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getId(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getId().toString(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
         });
     
         // 异步记录
@@ -486,7 +486,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                         return;
                     }
                     //缓存柜机GEO信息
-                    redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + e.getTenantId(), e.getId(), new Point(e.getLongitude(), e.getLatitude()));
+                    redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + e.getTenantId(), e.getId().toString(), new Point(e.getLongitude(), e.getLatitude()));
                 });
                 offset += size;
             }
