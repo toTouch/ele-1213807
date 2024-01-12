@@ -13,14 +13,18 @@ import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.NotifyPictureInfoVO;
 import com.xiliulou.electricity.vo.UserNotifyVo;
+import com.xiliulou.storage.config.StorageConfig;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,6 +45,9 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     
     @Resource
     RedisService redisService;
+    
+    @Autowired
+    StorageConfig storageConfig;
     
     /**
      * 通过ID查询单条数据从DB
@@ -199,7 +206,15 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         String pictureInfo = userNotify.getPictureInfo();
         if (StringUtils.isNotBlank(pictureInfo)) {
             List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
-            vo.setPictureInfoList(pictureInfoList);
+            List<NotifyPictureInfoVO> pictureInfoVOList = new ArrayList<>();
+            for (NotifyPictureInfo info:pictureInfoList){
+                NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
+                infoVo.setActivityType(info.getActivityType());
+                infoVo.setPictureUrl(info.getPictureUrl());
+                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                pictureInfoVOList.add(infoVo);
+            }
+            vo.setPictureInfoList(pictureInfoVOList);
         }
         
         if (!Objects.equals(newVersion, UserNotifyConstant.NEW_VERSION) && Objects.equals(userNotify.getType(), UserNotifyConstant.TYPE_PICTURE) && Objects.equals(
@@ -223,7 +238,15 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         String pictureInfo = userNotify.getPictureInfo();
         if (StringUtils.isNotBlank(pictureInfo)) {
             List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
-            vo.setPictureInfoList(pictureInfoList);
+            List<NotifyPictureInfoVO> pictureInfoVOList = new ArrayList<>();
+            for (NotifyPictureInfo info:pictureInfoList){
+                NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
+                infoVo.setActivityType(info.getActivityType());
+                infoVo.setPictureUrl(info.getPictureUrl());
+                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                pictureInfoVOList.add(infoVo);
+            }
+            vo.setPictureInfoList(pictureInfoVOList);
         }
         
         return R.ok(vo);

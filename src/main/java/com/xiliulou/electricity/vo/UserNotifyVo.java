@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.query.NotifyPictureInfo;
 import lombok.Data;
 
 import java.util.List;
@@ -43,7 +42,7 @@ public class UserNotifyVo {
      */
     private Integer type;
     
-    private List<NotifyPictureInfo> pictureInfoList;
+    private List<NotifyPictureInfoVO> pictureInfoList;
     
     private Long updateTime;
 }
