@@ -117,7 +117,7 @@
     
     <select id="queryByTenantId" resultMap="UserNotifyMap">
     select
-    id, status, begin_time, end_time, title, content,type,picture_info create_time, update_time, tenant_id
+    id, status, begin_time, end_time, title, content,type,picture_info,create_time, update_time, tenant_id
     from t_user_notify where tenant_id = #{tenantId}
   </select>
 </mapper>
