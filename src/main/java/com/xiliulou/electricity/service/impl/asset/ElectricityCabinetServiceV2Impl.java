@@ -476,7 +476,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             Long offset = 0L;
             Long size = 200L;
             while (true) {
-                List<ElectricityCabinetVO> eleCabinets = electricityCabinetMapper.selectListByPage(offset, size);
+                List<ElectricityCabinetVO> eleCabinets = electricityCabinetMapper.selectListByPage(size, offset);
                 if (!DataUtil.collectionIsUsable(eleCabinets)) {
                     break;
                 }
