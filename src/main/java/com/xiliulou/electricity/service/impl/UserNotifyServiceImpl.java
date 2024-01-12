@@ -2,15 +2,19 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.UserNotifyConstant;
 import com.xiliulou.electricity.entity.UserNotify;
 import com.xiliulou.electricity.mapper.UserNotifyMapper;
+import com.xiliulou.electricity.query.NotifyPictureInfo;
 import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserNotifyVo;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -159,6 +163,19 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
         updateAndInsert.setUpdateTime(System.currentTimeMillis());
         
+        List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
+        if (CollectionUtils.isNotEmpty(pictureInfoList)) {
+            updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
+        }
+        if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE)) {
+            updateAndInsert.setType(UserNotifyConstant.TYPE_PICTURE);
+        } else {
+            updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
+        }
+        
+        updateAndInsert.setContent(userNotifyQuery.getContent());
+        updateAndInsert.setType(userNotifyQuery.getType());
+        
         if (Objects.isNull(userNotify)) {
             updateAndInsert.setCreateTime(System.currentTimeMillis());
             insert(updateAndInsert);
@@ -171,7 +188,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     }
     
     @Override
-    public R queryOne() {
+    public R queryOne(Integer newVersion) {
         UserNotify userNotify = this.queryByTenantId();
         if (Objects.isNull(userNotify)) {
             return R.ok();
@@ -179,6 +196,36 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         
         UserNotifyVo vo = new UserNotifyVo();
         BeanUtils.copyProperties(userNotify, vo);
+        String pictureInfo = userNotify.getPictureInfo();
+        if (StringUtils.isNotBlank(pictureInfo)) {
+            List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
+            vo.setPictureInfoList(pictureInfoList);
+        }
+        
+        if (!Objects.equals(newVersion, UserNotifyConstant.NEW_VERSION) && Objects.equals(userNotify.getType(), UserNotifyConstant.TYPE_PICTURE) && Objects.equals(
+                userNotify.getStatus(), UserNotifyConstant.STATUS_ON)) {
+            // 通知状态 0--关闭 1--开启
+            vo.setStatus(UserNotifyConstant.STATUS_OFF);
+        }
+        
+        return R.ok(vo);
+    }
+    
+    @Override
+    public R queryOneForAdmin() {
+        UserNotify userNotify = this.queryByTenantId();
+        if (Objects.isNull(userNotify)) {
+            return R.ok();
+        }
+        
+        UserNotifyVo vo = new UserNotifyVo();
+        BeanUtils.copyProperties(userNotify, vo);
+        String pictureInfo = userNotify.getPictureInfo();
+        if (StringUtils.isNotBlank(pictureInfo)) {
+            List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
+            vo.setPictureInfoList(pictureInfoList);
+        }
+        
         return R.ok(vo);
     }
 }

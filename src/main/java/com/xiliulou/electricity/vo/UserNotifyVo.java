@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.query.NotifyPictureInfo;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author zgw
@@ -34,6 +37,13 @@ public class UserNotifyVo {
      * 内容
      */
     private String content;
+    
+    /**
+     * 0：文字 1：图片
+     */
+    private Integer type;
+    
+    private List<NotifyPictureInfo> pictureInfoList;
     
     private Long updateTime;
 }
