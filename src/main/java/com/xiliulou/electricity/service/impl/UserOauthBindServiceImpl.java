@@ -163,7 +163,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     
     @Override
     public Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId) {
-        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId);
+        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId, System.currentTimeMillis());
     }
     
     @Override
@@ -188,7 +188,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
      */
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
-        return userOauthBindMapper.updatePhoneByUid(tenantId, uid, newPhone);
+        return userOauthBindMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
     @Override
@@ -199,7 +199,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("check open id failed, not found user,uid={}", userInfo.getUid());
+            log.warn("check open id failed, not found user,uid={}", uid);
             return Boolean.FALSE;
         }
         

@@ -35,6 +35,8 @@ public class PictureQuery {
     private Integer seq;
     /**
      * 图片类型 0:小程序
+     *
+     * 1-门店  3-车辆型号
      */
     private Integer imgType;
     /**
