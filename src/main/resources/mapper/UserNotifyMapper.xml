@@ -68,7 +68,7 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_notify(status, begin_time, end_time, title, content, type,picture_info create_time, update_time, tenant_id)
+        insert into t_user_notify(status, begin_time, end_time, title, content, type,picture_info,create_time, update_time, tenant_id)
         values (#{status}, #{beginTime}, #{endTime}, #{title}, #{content}, #{type},#{pictureInfo},#{createTime}, #{updateTime}, #{tenantId})
     </insert>
     
@@ -85,16 +85,16 @@
             <if test="endTime != null">
                 end_time = #{endTime},
             </if>
-            <if test="title != null and title != ''">
+            <if test="title != null">
                 title = #{title},
             </if>
-            <if test="content != null and content != ''">
+            <if test="content != null">
                 content = #{content},
             </if>
             <if test="type != null">
                 type = #{type},
             </if>
-            <if test="pictureInfo != null and pictureInfo != ''">
+            <if test="pictureInfo != null">
                 picture_info = #{pictureInfo},
             </if>
             <if test="createTime != null">
