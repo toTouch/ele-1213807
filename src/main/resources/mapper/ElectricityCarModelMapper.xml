@@ -283,5 +283,44 @@
     <select id="selectByModelId" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
         select id,name,franchisee_id,store_id,manufacturer_name from t_electricity_car_model where tenant_id=#{tenantId} and id = #{modelId} and del_flag=0
     </select>
+    
+    <select id="selectByStoreId" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+        <include refid="selectElectricityCarModel"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="rentType != null and rentType != ''">
+                and rent_type = #{rentType}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test=" rentedQuantity != null ">
+                AND `rented_quantity` = #{rentedQuantity}
+            </if>
+        </where>
+    </select>
 
 </mapper>

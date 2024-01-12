@@ -69,4 +69,6 @@ public interface PictureMapper extends BaseMapper<Picture> {
     int deleteByBusinessId(@Param("businessId") Long businessId);
 
     List<Picture> selectByByBusinessId(@Param("businessId")  Long id);
+    
+    int deleteByBusinessIdImgType(PictureQuery pictureQuery);
 }

@@ -438,7 +438,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
-        return userMapper.updatePhoneByUid(tenantId, uid, newPhone);
+        return userMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
     @Override

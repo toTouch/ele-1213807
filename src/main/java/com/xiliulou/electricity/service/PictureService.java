@@ -65,6 +65,8 @@ public interface PictureService {
     List<Picture> queryListByQuery(PictureQuery pictureQuery);
 
     int deleteByBusinessId(Long id);
+    
+    int deleteByBusinessIdImgType(PictureQuery pictureQuery);
 
     List<Picture> selectByByBusinessId(Long id);
 
