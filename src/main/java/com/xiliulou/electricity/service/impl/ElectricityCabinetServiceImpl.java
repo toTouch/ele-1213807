@@ -1014,6 +1014,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer eid = Integer.valueOf(e.getContent().getName());
                 ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
                 
+                log.info("found electricity cabinet, eid = {}, cabinet = {}", eid, electricityCabinet);
                 if(Objects.isNull(electricityCabinet)){
                     log.error("query cabinet error! eid = {}", eid);
                     return null;
