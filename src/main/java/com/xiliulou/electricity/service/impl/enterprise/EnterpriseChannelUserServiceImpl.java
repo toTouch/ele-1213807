@@ -1138,7 +1138,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         query.setEnterpriseId(enterpriseInfoVO.getId());
         query.setFranchiseeId(enterpriseInfoVO.getFranchiseeId());*/
-        query.setEnterpriseId(181L);
+        query.setEnterpriseId(184L);
         query.setFranchiseeId(157L);
         
         // 0. 添加的骑手不能是企业站长
