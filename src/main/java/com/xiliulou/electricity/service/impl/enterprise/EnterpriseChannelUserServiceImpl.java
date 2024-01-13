@@ -886,6 +886,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
+            log.error("channel user exit all  user data user is empty, uid={}", uid);
+            return Triple.of(false, "300082", "未找到骑手信息");
+        }
+    
+        List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
+        if (ObjectUtils.isEmpty(channelUserList)) {
+            log.error("channel user exit all  user data user is empty, uid={}", uid);
             return Triple.of(false, "300082", "未找到骑手信息");
         }
     
