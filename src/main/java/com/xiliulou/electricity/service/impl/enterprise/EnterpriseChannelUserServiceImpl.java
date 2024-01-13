@@ -1042,16 +1042,20 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 return Triple.of(false, "300831", "切换站点的加盟商必须一致");
             }
             
-            // 检测用户能否退出
-            Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
-            if (!tripleCheck.getLeft()) {
-                return tripleCheck;
-            }
-        
-            // 回收云豆
-            Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
-            if (!triple.getLeft()) {
-                return triple;
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                // 检测用户能否退出
+                Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
+                if (!tripleCheck.getLeft()) {
+                    return tripleCheck;
+                }
+    
+                // 回收云豆
+                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
+                if (!triple.getLeft()) {
+                    return triple;
+                }
             }
     
             // 修改新站点的信息
