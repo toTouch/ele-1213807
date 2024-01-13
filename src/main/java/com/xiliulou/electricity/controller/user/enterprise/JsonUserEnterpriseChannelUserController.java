@@ -86,7 +86,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExitCheck")
+    @PostMapping("/admin/super/user/enterprise/channelUserExitCheck")
     public R channelUserExitCheck(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExitCheck(request));
@@ -108,7 +108,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/user/enterprise/channelUserExit")
+    @PostMapping("/admin/super/user/enterprise/channelUserExit")
     public R channelUserExit(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExit(request));
@@ -208,10 +208,9 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      *
      * @param id
      * @param uid
-     * @param renewalStatus
      * @return
      */
-    @GetMapping("/admin/super/user/enterprise/addUserByScanNew")
+    @GetMapping("/user/enterprise/addUserByScanNew")
     public R addUserByScanNew(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid) {
         
         EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).build();
