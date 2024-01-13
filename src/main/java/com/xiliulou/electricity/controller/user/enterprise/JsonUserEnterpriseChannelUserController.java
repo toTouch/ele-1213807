@@ -86,7 +86,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/admin/super/user/enterprise/channelUserExitCheck")
+    @PostMapping("/user/enterprise/channelUserExitCheck")
     public R channelUserExitCheck(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExitCheck(request));
@@ -108,7 +108,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param request
      * @return
      */
-    @PostMapping("/admin/super/user/enterprise/channelUserExit")
+    @PostMapping("/user/enterprise/channelUserExit")
     public R channelUserExit(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExit(request));
@@ -142,7 +142,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/user/enterprise/user/queryEnterpriseChannelUserList")
+    @GetMapping("/admin/super/user/enterprise/user/queryEnterpriseChannelUserList")
     public R queryEnterpriseChannelUserList() {
         
         return R.ok(returnTripleResult(enterpriseChannelUserService.queryEnterpriseChannelUserList()));
