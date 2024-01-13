@@ -643,7 +643,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         Long uid = request.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("channel User Exit Check WARN! userInfo is null,uid={}", uid);
+            log.warn("channel User Exit Check WARN! userInfo is null,uid={},id={}", uid ,id);
             return Triple.of(false, "100247", "用户信息不存在");
         }
     
@@ -653,10 +653,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "300082", "骑手不存在");
         }
         
-        if (!Objects.equals(user.getEnterpriseId(), enterpriseInfoVO.getId())) {
-            log.error("channel User Exit Check user diff exists, uid={}", uid);
+     /*   if (!Objects.equals(user.getEnterpriseId(), enterpriseInfoVO.getId())) {
+            log.error("channel User Exit Check user diff exists, ,uid={},id={}", uid ,id);
             return Triple.of(false, "300082", "骑手不存在");
-        }
+        }*/
         
         if (!Objects.equals(user.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.error("channel User Exit Check user renewal Status close, uid={}", uid);
