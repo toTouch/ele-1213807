@@ -1033,7 +1033,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "300830", "已是该渠道用户，无需重复添加");
         }
         
-        if (Objects.nonNull(channelUser)  && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(), query.getEnterpriseId())) {
+        if (Objects.nonNull(channelUser)  && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && !Objects.equals(channelUser.getEnterpriseId(), query.getEnterpriseId())) {
             log.info("enterprise channel switch user");
             // 切换站点
             // 判断两个加盟商是否一致
