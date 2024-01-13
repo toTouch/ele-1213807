@@ -456,9 +456,20 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.error("Not found battery member card for query package by battery V, uid = {}, mid = {}", enterpriseUserId, userBatteryMemberCard.getMemberCardId());
                 return Triple.of(true, "", Collections.emptyList());
             }
+    
+            boolean isMember = false;
             
-            query.setDeposit(batteryMemberCard.getDeposit());
-            query.setLimitCount(batteryMemberCard.getLimitCount());
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
+            
+            // 企业用户并且用户押金为企业代付
+            if (!isMember) {
+                query.setDeposit(batteryMemberCard.getDeposit());
+                query.setLimitCount(batteryMemberCard.getLimitCount());
+            }
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(enterpriseUserId) : null);
         }

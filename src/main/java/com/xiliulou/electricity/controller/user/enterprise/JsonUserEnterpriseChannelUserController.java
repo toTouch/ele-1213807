@@ -109,10 +109,46 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @PostMapping("/user/enterprise/channelUserExit")
-    public R channelUserExit(@RequestBody @Validated EnterpriseUserExitCheckRequest request) {
+    public R channelUserExit(@RequestBody @Validated(UpdateGroup.class) EnterpriseUserExitCheckRequest request) {
         
         return returnTripleResult(enterpriseChannelUserService.channelUserExit(request));
     }
+    
+    /**
+     * 骑手自主续费
+     * @param request
+     * @return
+     */
+    @PostMapping("/user/enterprise/channelUserExitAll")
+    public R channelUserExitAll(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
+        
+        return returnTripleResult(enterpriseChannelUserService.channelUserExitAll(request));
+    }
+    
+    /**
+     * 骑手自主续费关闭
+     * @param request
+     * @return
+     */
+    @PostMapping("/user/enterprise/channelUserClose")
+    public R channelUserClose(@RequestBody @Validated(CreateGroup.class) EnterpriseUserExitCheckRequest request) {
+        
+        return returnTripleResult(enterpriseChannelUserService.channelUserClose(request));
+    }
+    
+    
+    /**
+     * 骑手概览
+     *
+     * @return
+     */
+    @GetMapping("/user/enterprise/user/queryEnterpriseChannelUserList")
+    public R queryEnterpriseChannelUserList() {
+        
+        return R.ok(returnTripleResult(enterpriseChannelUserService.queryEnterpriseChannelUserList()));
+    }
+    
+    
     
     /**
      * 根据手机号查询当前加盟商下的企业渠道用户信息
@@ -175,7 +211,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @param renewalStatus
      * @return
      */
-    @GetMapping("/user/enterprise/addUserByScanNew")
+    @GetMapping("/admin/super/user/enterprise/addUserByScanNew")
     public R addUserByScanNew(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid,
             @RequestParam(value = "renewalStatus", required = true) Integer renewalStatus) {
         

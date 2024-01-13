@@ -23,7 +23,7 @@ public class EnterpriseUserExitCheckRequest {
     /**
      * 被邀请用户ID
      */
-    @NotNull(message = "用户id不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "用户id不能为空", groups = {UpdateGroup.class})
     private Long uid;
     
     /**

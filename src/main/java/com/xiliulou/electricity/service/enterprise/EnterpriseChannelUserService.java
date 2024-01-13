@@ -111,4 +111,10 @@ public interface EnterpriseChannelUserService {
     Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request);
     
     Triple<Boolean, String, Object> channelUserExitCheckAll(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> queryEnterpriseChannelUserList();
+    
+    Triple<Boolean, String, Object> channelUserExitAll(EnterpriseUserExitCheckRequest request);
+    
+    Triple<Boolean, String, Object> channelUserClose(EnterpriseUserExitCheckRequest request);
 }
