@@ -1037,7 +1037,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             log.info("enterprise channel switch user");
             // 切换站点
             // 判断两个加盟商是否一致
-            if (Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
+            if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
                 log.info("enterprise channel switch user station diff, oldEnterpriseId={}, newEnterpriseId={}, uid={}", channelUser.getEnterpriseId(), query.getEnterpriseId(), query.getUid());
                 return Triple.of(false, "300831", "切换站点的加盟商必须一致");
             }
