@@ -785,6 +785,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
+            log.error("query channel user data is empty, uid={}", uid);
+            return Triple.of(false, "300082", "未找到骑手信息");
+        }
+    
+        List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
+        if (ObjectUtils.isEmpty(channelUserList)) {
+            log.error("query channel user data user is empty, uid={}", uid);
             return Triple.of(false, "300082", "未找到骑手信息");
         }
         
@@ -793,6 +800,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             EnterpriseChannelUserExitVO vo = new EnterpriseChannelUserExitVO();
             Long uid1 = user.getUid();
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid1);
+            if (Objects.isNull(userInfo)) {
+                log.warn("query Enterprise Channel User! userInfo is null,uid={}", uid1);
+                continue;
+            }
             
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
