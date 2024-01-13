@@ -920,11 +920,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     private Triple<Boolean, String, Object> doNoEnterpriseUser(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, Long channelUserId, EnterpriseChannelUser channelUserEntity,
             EnterpriseChannelUser enterpriseChannelUser) {
+        boolean isMember = false;
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        EleDepositOrder depositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-        boolean isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+        if (Objects.nonNull(userBatteryDeposit)) {
+            EleDepositOrder depositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            isMember = Objects.equals(depositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+        }
+        
       
         // 判断用户是否为会员用户
         if (isMember && (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_REFUNDING))) {
