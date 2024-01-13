@@ -987,7 +987,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
             // 添加操作记录, 新记录和原站点的记录
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
-            BeanUtils.copyProperties(enterpriseChannelUser, history);
+            EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUserId);
+            BeanUtils.copyProperties(user, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
             
@@ -1014,7 +1015,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
             // 添加操作记录, 新记录
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
-            BeanUtils.copyProperties(enterpriseChannelUser, history);
+            EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
+            BeanUtils.copyProperties(user, history);
             history.setExitTime(System.currentTimeMillis());
             history.setType(EnterpriseChannelUserHistory.JOIN);
     
