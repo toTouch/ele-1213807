@@ -212,10 +212,9 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
      * @return
      */
     @GetMapping("/admin/super/user/enterprise/addUserByScanNew")
-    public R addUserByScanNew(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid,
-            @RequestParam(value = "renewalStatus", required = true) Integer renewalStatus) {
+    public R addUserByScanNew(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid) {
         
-        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).renewalStatus(renewalStatus).build();
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).build();
         
         return returnTripleResult(enterpriseChannelUserService.updateUserAfterQRScanNew(enterpriseChannelUserQuery));
     }

@@ -241,7 +241,6 @@
             t_enterprise_channel_user tecu
         left join t_user_info tui on tecu.uid = tui.uid
         <where>
-            
             <if test="phone != null ">
                 and tui.phone = #{phone}
             </if>

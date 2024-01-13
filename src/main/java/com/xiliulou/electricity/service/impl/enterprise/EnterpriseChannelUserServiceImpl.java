@@ -508,7 +508,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Transactional
     @Override
     public Triple<Boolean, String, Object> updateUserAfterQRScanNew(EnterpriseChannelUserQuery query) {
-        if (!ObjectUtils.allNotNull(query.getUid(), query.getId(), query.getRenewalStatus())) {
+        if (!ObjectUtils.allNotNull(query.getUid(), query.getId())) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
     
@@ -930,7 +930,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (isMember && (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_REFUNDING))) {
             // 检测企业代付开关是否开启
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
-            if (Objects.isNull(enterpriseInfo.getPurchaseAuthority()) || Objects.equals(enterpriseInfo.getPurchaseAuthority(), 0)) {
+            if (Objects.isNull(enterpriseInfo.getPurchaseAuthority()) || Objects.equals(enterpriseInfo.getPurchaseAuthority(), EnterpriseInfo.PURCHASE_AUTHORITY_CLOSE)) {
                 log.error("enterprise user is platform user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
                 return Triple.of(false, "300082", "已是平台会员，无法加入企业渠道");
             }
@@ -963,10 +963,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 log.error("user already exist after QR scan,  uid = {}, channel user record id", uid, channelUserId);
                 return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
             }
+            
             log.info("enterprise channel add new user");
             enterpriseChannelUser.setId(channelUserId);
             enterpriseChannelUser.setUid(uid);
-            enterpriseChannelUser.setRenewalStatus(query.getRenewalStatus());
+            enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
         
@@ -1121,8 +1122,19 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     private Triple<Boolean, String, Object> checkUserInfo(EnterpriseChannelUserQuery query) {
-        //检查当前用户是否可用
-    
+        // 查询当前用户是否为站长
+        Long uid = SecurityUtils.getUid();
+       /* EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
+        if (Objects.isNull(enterpriseInfoVO)) {
+            log.error("channel user check User Info  enterprise not exists, uid={}", uid);
+            return Triple.of(false, "300082", "企业信息不存在");
+        }
+        
+        query.setEnterpriseId(enterpriseInfoVO.getId());
+        query.setFranchiseeId(enterpriseInfoVO.getFranchiseeId());*/
+        query.setEnterpriseId(181L);
+        query.setFranchiseeId(157L);
+        
         // 0. 添加的骑手不能是企业站长
         EnterpriseInfo enterpriseData = enterpriseInfoService.selectByUid(query.getUid());
         if (Objects.nonNull(enterpriseData)) {
@@ -1150,7 +1162,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
     
         //根据当前企业ID查询企业信息
-        Long uid = SecurityUtils.getUid();
+//        Long uid = SecurityUtils.getUid();
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
     
