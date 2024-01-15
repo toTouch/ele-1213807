@@ -872,6 +872,23 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "300850", "当前状态无法操作");
         }
     
+        // 查询当前用户下的所有的骑手
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+        enterpriseChannelUser.setEnterpriseId(enterpriseInfoVO.getId());
+        enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
+        List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
+        if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
+            log.error("channel user exit all  user data user is mpty, uid={}", uid);
+            return Triple.of(true, null, null);
+        }
+    
+        List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
+        if (ObjectUtils.isEmpty(channelUserList)) {
+            log.error("channel user exit all  user data user is empty, uid={}", uid);
+            // 修改站长本身的状态为
+            return Triple.of(true, null, null);
+        }
+        
         // 检测用户能否退出
         Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
         if (!tripleCheck.getLeft()) {
