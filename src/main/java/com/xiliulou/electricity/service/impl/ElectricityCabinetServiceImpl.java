@@ -219,8 +219,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
     
-    
-    private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
+    /**
+     * 柜机编辑时，设置换电标准属性值
+     */
+    private static final String BATTERY_FULL_CONDITION = "exchangeCondition";
     
     //    @Value("${testFactory.tenantId}")
     //    private Integer testFactoryTenantId;
@@ -1002,7 +1004,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     .includeDistance()
                     .includeCoordinates()
                     .sortAscending();
-            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(), new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()), new Distance(electricityCabinetQuery.getDistance(), Metrics.KILOMETERS)), geoRadiusCommandArgs);
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(), new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()), new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
             if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
                 log.error("GEO results is null, query info = {}", electricityCabinetQuery);
                 return null;
@@ -1037,7 +1039,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 electricityCabinetVO.setLatitude(e.getContent().getPoint().getY());
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
-                electricityCabinetVO.setDistance(e.getDistance().getValue());
+                //将公里数转化为米，返回给前端
+                electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
     
                 return assignAttribute(electricityCabinetVO);
                 
