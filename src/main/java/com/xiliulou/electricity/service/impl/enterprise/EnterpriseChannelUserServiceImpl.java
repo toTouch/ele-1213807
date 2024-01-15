@@ -542,13 +542,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 企业用户
             Triple<Boolean, String, Object> result1 = doEnterpriseUser(query, channelUser, uid, channelUserEntity, enterpriseChannelUser);
             if (Boolean.FALSE.equals(result1.getLeft())) {
-                return result;
+                return result1;
             }
             
             // 非企业用户
             Triple<Boolean, String, Object> result2 = doNoEnterpriseUser(query, channelUser, uid, channelUserId, channelUserEntity, enterpriseChannelUser);
             if (Boolean.FALSE.equals(result2.getLeft())) {
-                return result;
+                return result2;
             }
         
             log.info("Add user success for QR scan, uid = {}, enterprise channel user id = {}", uid, channelUserId);
@@ -878,7 +878,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
-            log.error("channel user exit all  user data user is mpty, uid={}", uid);
+            log.error("channel user exit all  user data user is empty, uid={}", uid);
             return Triple.of(true, null, null);
         }
     
@@ -889,10 +889,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(true, null, null);
         }
         
-        // 检测用户能否退出
-        Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
-        if (!tripleCheck.getLeft()) {
-            return tripleCheck;
+        for (EnterpriseChannelUser channelUser : channelUserList) {
+            // 检测用户能否退出
+            Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(channelUser.getUid());
+            if (!tripleCheck.getLeft()) {
+                return tripleCheck;
+            }
         }
         
         return Triple.of(true, null, null);
@@ -1221,7 +1223,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         if (Objects.nonNull(channelUser)  && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && !Objects.equals(channelUser.getEnterpriseId(), query.getEnterpriseId())) {
-            log.info("enterprise channel switch user");
+            log.info("enterprise channel switch user, uid={}", query.getUid());
             // 切换站点
             // 判断两个加盟商是否一致
             if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
@@ -1275,6 +1277,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserList.add(channelUserHistory);
+            log.error("doEnterpriseUserList={}", JsonUtil.toJson(channelUserList));
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
         return Triple.of(true, null, null);
