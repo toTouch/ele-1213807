@@ -1327,17 +1327,16 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     }
     
     private Triple<Boolean, String, Object> checkUserInfo(EnterpriseChannelUserQuery query) {
-        // 查询当前用户是否为站长
-        Long uid = SecurityUtils.getUid();
-        EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
-        if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
-            log.error("channel user check User Info  enterprise not exists, uid={}", uid);
-            return Triple.of(false, "300082", "企业信息不存在");
+        if (Objects.nonNull(query.getId())) {
+            EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.queryById(query.getId());
+            if (Objects.isNull(channelUser)) {
+                return Triple.of(false, "300852", "二维码已失效，请刷新页面后操作");
+            }
+            query.setEnterpriseId(channelUser.getEnterpriseId());
+            query.setFranchiseeId(channelUser.getFranchiseeId());
+            log.error("EnterpriseChannelUserQuery={},uid={},channelUser={}", JsonUtil.toJson(query), query.getUid(), channelUser);
         }
         
-        query.setEnterpriseId(enterpriseInfoVO.getId());
-        query.setFranchiseeId(enterpriseInfoVO.getFranchiseeId());
-        log.error("EnterpriseChannelUserQuery={},uid={},enterpriseInfoVO={}", JsonUtil.toJson(query), uid, enterpriseInfoVO);
 //        query.setEnterpriseId(184L);
 //        query.setFranchiseeId(157L);
         
