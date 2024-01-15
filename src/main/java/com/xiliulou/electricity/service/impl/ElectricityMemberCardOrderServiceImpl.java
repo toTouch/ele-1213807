@@ -3969,11 +3969,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     }
                 }
                 
-                if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
-                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-                    Long tempTime = Math.abs(userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
-                }
+//                if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
+//                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+//                    Long tempTime = Math.abs(userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
+//                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
+//                }
             }
         }
         
