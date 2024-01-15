@@ -1277,7 +1277,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserList.add(channelUserHistory);
-            log.error("doEnterpriseUserList={}", JsonUtil.toJson(channelUserList));
+            log.error("doEnterpriseUserList={}, enterpriseChannelUser={}", JsonUtil.toJson(channelUserList), JsonUtil.toJson(enterpriseChannelUser));
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
         return Triple.of(true, null, null);
@@ -1336,6 +1336,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         query.setEnterpriseId(enterpriseInfoVO.getId());
         query.setFranchiseeId(enterpriseInfoVO.getFranchiseeId());
+        log.error("EnterpriseChannelUserQuery={}", JsonUtil.toJson(query));
 //        query.setEnterpriseId(184L);
 //        query.setFranchiseeId(157L);
         
