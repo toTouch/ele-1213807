@@ -7,6 +7,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -136,6 +137,16 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    
+    /**
+     *  柜机少电比例
+     */
+    private BigDecimal blowChargeRate;
+    
+    /**
+     *  柜机多电比例
+     */
+    private BigDecimal fullChargeRate;
 }
 
 

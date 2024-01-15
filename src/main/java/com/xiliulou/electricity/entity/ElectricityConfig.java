@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * 用户绑定列表(ElectricityConfig)实体类
  *
@@ -150,6 +152,16 @@ public class ElectricityConfig {
      * 冻结是否强制退资产 0--是 1--否
      */
     private Integer allowFreezeWithAssets;
+    
+    /**
+     *  柜机少电比例
+     */
+    private BigDecimal blowChargeRate;
+    
+    /**
+     *  柜机多电比例
+     */
+    private BigDecimal fullChargeRate;
 
 
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
