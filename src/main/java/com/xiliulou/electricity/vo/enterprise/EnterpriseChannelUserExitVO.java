@@ -12,7 +12,7 @@ public class EnterpriseChannelUserExitVO {
     /**
      * 用户名称
      */
-    private String username;
+    private String userName;
     
     /**
      * 用户电话

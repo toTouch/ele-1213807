@@ -93,5 +93,7 @@ public class EnterpriseChannelUser {
     
     public static final Integer RENEWAL_OPEN = 1;
     public static final Integer RENEWAL_CLOSE = 0;
+    
+    public static final Integer NO_RECYCLE = 1;
 
 }
