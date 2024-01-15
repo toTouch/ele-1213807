@@ -15,6 +15,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,14 +78,22 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     @PostMapping("/user/enterprise/addUserNew")
     public R addUserNew(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
+        Triple<Boolean, String, Object> triple = enterpriseChannelUserService.addUserNew(query);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
         
-        return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
+        return R.ok();
     }
     
     @PostMapping("/admin/super/user/enterprise/addUserNew")
     public R addUserNew1(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
-        
-        return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
+        Triple<Boolean, String, Object> triple = enterpriseChannelUserService.addUserNew(query);
+        if (!triple.getLeft()) {
+            return R.fail(triple.getMiddle(), (String) triple.getRight());
+        }
+    
+        return R.ok();
     }
     
     /**
