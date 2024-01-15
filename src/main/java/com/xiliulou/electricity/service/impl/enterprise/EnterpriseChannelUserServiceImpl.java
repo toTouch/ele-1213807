@@ -1034,6 +1034,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
     
         request.setRenewalStatus(1);
+        
         // 检测用户能否退出
         Triple<Boolean, String, Object> tripleCheck = channelUserExitCheckAll(request);
         if (!tripleCheck.getLeft()) {
@@ -1336,7 +1337,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         query.setEnterpriseId(enterpriseInfoVO.getId());
         query.setFranchiseeId(enterpriseInfoVO.getFranchiseeId());
-        log.error("EnterpriseChannelUserQuery={}", JsonUtil.toJson(query));
+        log.error("EnterpriseChannelUserQuery={},uid={},enterpriseInfoVO={}", JsonUtil.toJson(query), uid, enterpriseInfoVO);
 //        query.setEnterpriseId(184L);
 //        query.setFranchiseeId(157L);
         
