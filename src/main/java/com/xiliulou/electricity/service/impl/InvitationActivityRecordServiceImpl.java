@@ -259,8 +259,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 Integer totalInvitationCount = NumberConstant.ZERO;
             
                 if (CollectionUtils.isNotEmpty(v)) {
-                    totalShareCount = v.size();
-                    totalInvitationCount = (int)v.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+                    totalShareCount = (int)v.stream().map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
+                    totalInvitationCount = (int)v.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
                 }
             
                 lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
@@ -320,8 +320,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Integer totalShareCount = NumberConstant.ZERO;
         Integer totalInvitationCount = NumberConstant.ZERO;
         if (CollectionUtils.isNotEmpty(historyVOList)) {
-            totalShareCount = historyVOList.size();
-            totalInvitationCount = (int) historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            totalShareCount =  (int)historyVOList.stream().map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
+            totalInvitationCount = (int)historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
         }
     
         activityAnalysisVO.setTotalShareCount(totalShareCount);
