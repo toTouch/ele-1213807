@@ -574,6 +574,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_SAVE_BY_PHONE_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
+        
         EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
         try {
             Triple<Boolean, String, Object> result = checkUserInfo(query);
@@ -1018,14 +1019,33 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 return Triple.of(false, "300083", "已添加其他用户, 请重新扫码");
             }
             
-            log.info("enterprise channel add new user");
-            enterpriseChannelUser.setId(channelUserId);
-            enterpriseChannelUser.setUid(uid);
-            enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
-            enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
-            enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
-        
-            enterpriseChannelUserMapper.update(enterpriseChannelUser);
+            if (Objects.isNull(channelUserId)) {
+                log.info("enterprise channel phone add new user");
+    
+                // 手机添加
+                EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
+    
+                BeanUtil.copyProperties(query, enterpriseChannelUser);
+                enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+                enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
+                enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
+                enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
+                enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
+                enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+    
+                enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
+                channelUserId = enterpriseChannelUser.getId();
+            } else {
+                log.info("enterprise channel scan add new user");
+                // 扫码添加
+                enterpriseChannelUser.setId(channelUserId);
+                enterpriseChannelUser.setUid(uid);
+                enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
+                enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
+                enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
+    
+                enterpriseChannelUserMapper.update(enterpriseChannelUser);
+            }
         
             // 添加用户加盟商信息
             EnterpriseChannelUser channelUser1 = enterpriseChannelUserMapper.selectByUid(uid);
