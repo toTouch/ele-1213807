@@ -75,8 +75,14 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         
     }
     
-    @PostMapping("/admin/super/user/enterprise/addUserNew")
+    @PostMapping("/user/enterprise/addUserNew")
     public R addUserNew(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
+        
+        return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
+    }
+    
+    @PostMapping("/admin/super/user/enterprise/addUserNew")
+    public R addUserNew1(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
         
         return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
     }
