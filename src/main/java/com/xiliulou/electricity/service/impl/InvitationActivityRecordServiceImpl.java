@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -63,6 +64,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * (InvitationActivityRecord)表服务实现类
@@ -376,24 +378,43 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
     
-        List<InvitationActivityDetailVO> detailVOList = historyVOList.stream().map(item -> {
-            Long joinUid = item.getJoinUid();
-            UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
-        
-            InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(item.getJoinUid()).joinTime(item.getStartTime())
-                    .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount())
-                    .money(Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney()).status(item.getStatus()).build();
-        
-            Optional.ofNullable(joinUser).ifPresent(user -> {
-                invitationActivityDetailVO.setJoinName(user.getName());
-                invitationActivityDetailVO.setJoinPhone(user.getPhone());
-            });
-        
-            return invitationActivityDetailVO;
-        
-        }).collect(Collectors.toList());
+        List<InvitationActivityDetailVO> rspList = historyVOList.stream()
+                .filter(Objects::nonNull) // 防止出现null元素
+                .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid))
+                .entrySet().stream()
+                .flatMap(entry -> {
+                    Long joinUid = entry.getKey();
+                    List<InvitationActivityJoinHistoryVO> joinList = entry.getValue();
+                
+                    if (!joinList.isEmpty()) {
+                        InvitationActivityJoinHistoryVO firstHistoryVO = joinList.get(0);
+                    
+                        InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder()
+                                .joinUid(joinUid)
+                                .joinTime(firstHistoryVO.getStartTime())
+                                .activityId(firstHistoryVO.getActivityId())
+                                .activityName(firstHistoryVO.getActivityName())
+                                .payCount(ObjectUtils.defaultIfNull(firstHistoryVO.getPayCount(), NumberConstant.ZERO))
+                                .money(ObjectUtils.defaultIfNull(firstHistoryVO.getMoney(), BigDecimal.ZERO))
+                                .status(firstHistoryVO.getStatus())
+                                .build();
+                    
+                        UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+                        Optional.ofNullable(joinUser).ifPresent(user -> {
+                            invitationActivityDetailVO.setJoinName(user.getName());
+                            invitationActivityDetailVO.setJoinPhone(user.getPhone());
+                        });
+                    
+                        return Stream.of(invitationActivityDetailVO);
+                    } else {
+                        return Stream.empty();
+                    }
+                }).collect(Collectors.toList());
     
-        return Triple.of(true, null, detailVOList);
+        // 确保rspList不为null并为空集合时返回Collections.emptyList()
+        rspList = Objects.requireNonNullElseGet(rspList, Collections::emptyList);
+        
+        return Triple.of(true, null, rspList);
     }
     
     @Override
