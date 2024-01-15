@@ -78,24 +78,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     
     @PostMapping("/user/enterprise/addUserNew")
     public R addUserNew(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
-        Triple<Boolean, String, Object> triple = enterpriseChannelUserService.addUserNew(query);
-        if (!triple.getLeft()) {
-            log.error("UserEnterpriseChannelUser");
-//            return R.fail(triple.getMiddle(), (String) triple.getRight());
-            return R.fail("300851", "1111111");
-        }
-        
-        return R.fail("300852", "2222");
-    }
-    
-    @PostMapping("/admin/super/user/enterprise/addUserNew")
-    public R addUserNew1(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
-        Triple<Boolean, String, Object> triple = enterpriseChannelUserService.addUserNew(query);
-        if (!triple.getLeft()) {
-            return R.fail("300851", "1111111");
-        }
-    
-        return R.fail("300852", "2222");
+        return returnTripleResult(enterpriseChannelUserService.addUserNew(query));
     }
     
     /**

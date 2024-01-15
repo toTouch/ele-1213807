@@ -603,13 +603,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 企业用户
             Triple<Boolean, String, Object> result1 = doEnterpriseUserByPhone(query, channelUser);
             if (!result1.getLeft()) {
-                return result;
+                return result1;
             }
     
             // 非企业用户
             Triple<Boolean, String, Object> result2 = doNoEnterpriseUserByPhone(query, channelUser, uid, channelUserId, channelUserEntity, enterpriseChannelUser);
             if (!result2.getLeft()) {
-                return result;
+                return result2;
             }
         
             log.info("add new user by enterprise end, enterprise channel user = {}", enterpriseChannelUser.getId());
