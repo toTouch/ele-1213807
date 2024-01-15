@@ -90,7 +90,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     public R addUserNew1(@RequestBody @Validated(CreateGroup.class) EnterpriseChannelUserQuery query) {
         Triple<Boolean, String, Object> triple = enterpriseChannelUserService.addUserNew(query);
         if (!triple.getLeft()) {
-            return R.fail(triple.getMiddle(), (String) triple.getRight());
+            return R.fail("300851", "1111111");
         }
     
         return R.ok();
