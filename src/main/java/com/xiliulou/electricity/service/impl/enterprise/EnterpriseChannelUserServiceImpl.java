@@ -674,6 +674,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
+            enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
+            enterpriseChannelUser.setCloudBeanStatus(0);
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
     
