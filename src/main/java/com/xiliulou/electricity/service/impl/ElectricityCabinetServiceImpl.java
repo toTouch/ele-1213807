@@ -538,6 +538,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
+        // 柜机名称长度最大为30
+        if (electricityCabinetAddAndUpdate.getName().length() > 30) {
+            return R.fail("100377", "参数校验错误");
+        }
+    
         //操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
