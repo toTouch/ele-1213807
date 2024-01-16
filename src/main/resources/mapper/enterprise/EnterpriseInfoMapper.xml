@@ -49,6 +49,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="purchaseAuthority" column="purchase_authority" javaType="INTEGER"/>
         <collection property="enterprisePackage" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.enterprise.EnterprisePackage">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="packageId" column="package_id" jdbcType="INTEGER"/>

@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -287,6 +287,12 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Override
     public Integer deleteChannelMemberCardByUid(Long uid) {
         return this.userBatteryMemberCardPackageMapper.deleteChannelMemberCardByUid(uid);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid) {
+        return userBatteryMemberCardPackageMapper.listChannelByUid(uid);
     }
     
 }

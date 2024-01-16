@@ -52,4 +52,6 @@ public interface UserBatteryMemberCardPackageMapper extends BaseMapper<UserBatte
     Integer checkUserBatteryMemberCardPackageByUid(Long uid);
     
     Integer deleteChannelMemberCardByUid(@Param("uid") Long uid);
+    
+    List<UserBatteryMemberCardPackage> listChannelByUid(@Param("uid") Long uid);
 }
