@@ -1088,7 +1088,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             }
             
             // 云豆未回收的
-            if (Objects.equals(item.getRenewalStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
                 EnterpriseChannelUserExit exit = new EnterpriseChannelUserExit();
                 exit.setChannelUserId(item.getId());
                 exit.setEnterpriseId(item.getEnterpriseId());
