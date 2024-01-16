@@ -194,9 +194,6 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             updateAndInsert.setPictureInfo(null);
         }
         
-        updateAndInsert.setContent(userNotifyQuery.getContent());
-        updateAndInsert.setType(userNotifyQuery.getType());
-        
         if (Objects.isNull(userNotify)) {
             updateAndInsert.setCreateTime(System.currentTimeMillis());
             insert(updateAndInsert);
