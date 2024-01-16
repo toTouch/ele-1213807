@@ -826,6 +826,24 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     @Transactional
     public Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request) {
+        // 自主续费不能为空
+        if (Objects.isNull(request.getRenewalStatus())) {
+            log.error("channel User Exit renewal Status is null, uid={}", request.getUid());
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 自主续费不能为空
+        if (!(Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) || Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_OPEN))) {
+            log.error("channel User Exit renewal Status is error, uid={}, renewalStatus={}", request.getUid(), request.getRenewalStatus());
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 企业代付则直接返回成功
+        if (Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            return Triple.of(true, null, null);
+        }
+        
+        // 检测是否能退出
         Triple<Boolean, String, Object> triple = this.channelUserExitCheck(request);
         if (!triple.getLeft()) {
             log.error("channel User Exit Check fail, uid={}, msg={}", request.getUid(), triple.getRight());
@@ -836,6 +854,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.isNull(channelUser)) {
             log.error("channel User Exit Check  user not exists, uid={}", request.getUid());
             return Triple.of(false, "300082", "骑手不存在");
+        }
+        
+        if (!Objects.equals(channelUser.getRenewalStatus(), channelUser.getRenewalStatus())) {
+            log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(), request.getRenewalStatus());
+            return Triple.of(false, "300850", "当前状态无法操作");
         }
         
         // todo 修改能回收云豆的逻辑
@@ -1013,7 +1036,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.error("channel user exit  all  enterprise station not exists, uid={}", request.getUid());
-            return Triple.of(false, "300850", "当前状态不允许打开自主续费");
+            return Triple.of(false, "300850", "当前状态无法操作");
         }
         
         // 查询当前用户下的所有的骑手
@@ -1022,7 +1045,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
-            log.error("channel user exit all  user data user is mpty, uid={}", uid);
+            log.error("channel user exit all  user data user is null, uid={}", uid);
             // 修改站长本身的状态为
             Long id = enterpriseInfoVO.getId();
             EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
