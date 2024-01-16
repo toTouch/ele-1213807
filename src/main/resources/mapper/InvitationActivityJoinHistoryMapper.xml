@@ -481,7 +481,7 @@
     </select>
     
     <select id="selectListByInviterUidDistinctJoin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
-        select join_uid
+        select distinct join_uid
         from t_invitation_activity_join_history
         <where>
             uid = #{uid}

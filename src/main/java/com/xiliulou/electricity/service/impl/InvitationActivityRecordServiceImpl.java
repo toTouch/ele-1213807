@@ -432,13 +432,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
             }).collect(Collectors.toList());
             
-            // rspList根据joinTime倒叙排序
-            if (!CollectionUtils.isEmpty(rspList)) {
-                rspList.sort(Comparator.comparing(InvitationActivityDetailVO::getJoinTime).reversed());
-            } else {
+            if (CollectionUtils.isEmpty(rspList)) {
                 rspList = Collections.emptyList();
             }
-            
         }
        
         return Triple.of(true, null, rspList);
