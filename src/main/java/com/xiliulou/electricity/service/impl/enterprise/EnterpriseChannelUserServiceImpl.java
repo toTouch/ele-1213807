@@ -210,7 +210,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> generateChannelUser(EnterpriseChannelUserQuery query) {
         if (!ObjectUtils.allNotNull(query.getEnterpriseId())) {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            return Triple.of(false, "ELECTRICITY.0007", "请求数据有误，请检查后操作");
         }
         log.info("generate channel user start, enterprise channel info = {}", query.getEnterpriseId());
         
@@ -258,7 +258,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> updateUserAfterQRScan(EnterpriseChannelUserQuery query) {
         if (!ObjectUtils.allNotNull(query.getUid(), query.getId(), query.getRenewalStatus())) {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            return Triple.of(false, "ELECTRICITY.0007", "请求数据有误，请检查后操作");
         }
         
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
@@ -516,7 +516,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public Triple<Boolean, String, Object> updateUserAfterQRScanNew(EnterpriseChannelUserQuery query) {
         if (!ObjectUtils.allNotNull(query.getUid(), query.getId())) {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            return Triple.of(false, "ELECTRICITY.0007", "请求数据有误，请检查后操作");
         }
         
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ENTERPRISE_USER_UPDATE_AFTER_SCAN_LOCK_KEY + query.getUid(), "1", 3 * 1000L, false)) {
@@ -637,7 +637,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         log.info("do No Enterprise User start uid = {},msg={}", query.getUid());
         boolean isMember = false;
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryDeposit)) {
             EleDepositOrder depositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
@@ -655,6 +654,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             }
         }
         
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(userBatteryMemberCard) && Objects.equals(
                 userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
@@ -829,13 +829,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 自主续费不能为空
         if (Objects.isNull(request.getRenewalStatus())) {
             log.error("channel User Exit renewal Status is null, uid={}", request.getUid());
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            return Triple.of(false, "ELECTRICITY.0007", "请求数据有误，请检查后操作");
         }
         
         // 自主续费不能为空
         if (!(Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) || Objects.equals(request.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_OPEN))) {
             log.error("channel User Exit renewal Status is error, uid={}, renewalStatus={}", request.getUid(), request.getRenewalStatus());
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            return Triple.of(false, "ELECTRICITY.0007", "请求数据有误，请检查后操作");
         }
         
         // 企业代付则直接返回成功
@@ -1030,12 +1030,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         Long uid = SecurityUtils.getUid();
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
-            log.error("channel user exit  all  enterprise not exists, uid={}", request.getUid());
+            log.error("channel user exit all enterprise not exists, uid={}", request.getUid());
             return Triple.of(false, "300082", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel user exit  all  enterprise station not exists, uid={}", request.getUid());
+            log.error("channel user exit all enterprise station not exists, uid={}", request.getUid());
             return Triple.of(false, "300850", "当前状态无法操作");
         }
         
@@ -1045,7 +1045,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
-            log.error("channel user exit all  user data user is null, uid={}", uid);
+            log.error("channel user exit all user data user is null, uid={}", uid);
             // 修改站长本身的状态为
             Long id = enterpriseInfoVO.getId();
             EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -1058,7 +1058,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
         if (ObjectUtils.isEmpty(channelUserList)) {
-            log.error("channel user exit all  user data user is empty, uid={}", uid);
+            log.error("channel user exit all user data user is empty, uid={}", uid);
             // 修改站长本身的状态为
             Long id = enterpriseInfoVO.getId();
             EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -1074,7 +1074,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 检测用户能否退出
         Triple<Boolean, String, Object> tripleCheck = channelUserExitCheckAll(request);
         if (!tripleCheck.getLeft()) {
-            log.error("channel user exit all  check error uid={}, msg={}", request.getUid(), tripleCheck.getRight());
+            log.error("channel user exit all check error uid={}, msg={}", request.getUid(), tripleCheck.getRight());
             return tripleCheck;
         }
     
@@ -1147,7 +1147,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
         enterpriseInfoService.update(enterpriseInfo);
         
-        return null;
+        return Triple.of(true, null, null);
     }
     
     private Triple<Boolean, String, Object> doEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser) {
@@ -1210,7 +1210,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         //检查是否已经有用户被关联至当前企业
         if (Objects.isNull(channelUserEntity)) {
             log.error("query enterprise channel record failed after QR scan,  uid = {}, channel user record id", uid, channelUserId);
-            return Triple.of(false, "300082", "企业信息不存在, 添加失败");
+            return Triple.of(false, "300082", "企业信息不存在, 请检测后操作");
         }
         
         if (Objects.nonNull(channelUserEntity.getUid())) {
