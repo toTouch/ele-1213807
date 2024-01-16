@@ -39,7 +39,6 @@ import com.xiliulou.electricity.vo.activity.InvitationActivityLineDataVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityStaticsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -261,8 +260,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 Integer totalInvitationCount = NumberConstant.ZERO;
             
                 if (CollectionUtils.isNotEmpty(v)) {
-                    totalShareCount = (int)v.stream().map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
-                    totalInvitationCount = (int)v.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
+                    List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = v.stream().collect(
+                            Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                                    map -> new ArrayList<>(map.values())));
+                    
+                    if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
+                        totalShareCount = uniqueHistoryVOList.size();
+                        totalInvitationCount = (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+                    }
                 }
             
                 lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
@@ -584,10 +589,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
     
-                Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = firstHistoryList.stream()
-                        .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
-                if (MapUtils.isNotEmpty(joinUidGroupMap)) {
-                    firstTotalMemCount = joinUidGroupMap.size();
+                // 根据joinUid进行去重
+                List<InvitationActivityJoinHistoryVO> uniqueFirstHistoryVOList = firstHistoryList.stream().collect(
+                        Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                                map -> new ArrayList<>(map.values())));
+                if (CollectionUtils.isNotEmpty(uniqueFirstHistoryVOList)) {
+                    firstTotalMemCount = uniqueFirstHistoryVOList.size();
                 }
             }
             

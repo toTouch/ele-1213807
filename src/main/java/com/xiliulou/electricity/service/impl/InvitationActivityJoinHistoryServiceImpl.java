@@ -23,11 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -238,8 +240,15 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         BigDecimal firstTotalIncome = BigDecimal.ZERO;
         BigDecimal renewTotalIncome = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(historyVOList)) {
-            totalShareCount =  (int)historyVOList.stream().map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
-            totalInvitationCount = (int)historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
+            // 根据joinUid去重
+            List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = historyVOList.stream().collect(
+                    Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                            map -> new ArrayList<>(map.values())));
+            
+            if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
+                totalShareCount = uniqueHistoryVOList.size();
+                totalInvitationCount= (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            }
             
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
             Map<Boolean, BigDecimal> result = historyVOList.stream().collect(
