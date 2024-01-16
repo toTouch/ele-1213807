@@ -322,8 +322,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Integer totalShareCount = NumberConstant.ZERO;
         Integer totalInvitationCount = NumberConstant.ZERO;
         if (CollectionUtils.isNotEmpty(historyVOList)) {
-            totalShareCount =  (int)historyVOList.stream().map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
-            totalInvitationCount = (int)historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).map(InvitationActivityJoinHistoryVO::getJoinUid).distinct().count();
+            // 根据joinUid去重
+            List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = historyVOList.stream().collect(
+                    Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                            map -> new ArrayList<>(map.values())));
+            
+            if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
+                totalShareCount =  uniqueHistoryVOList.size();
+                totalInvitationCount =  (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            }
         }
     
         activityAnalysisVO.setTotalShareCount(totalShareCount);
@@ -591,8 +598,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
     
-                List<InvitationActivityJoinHistoryVO> uniqueRenewHistoryVOList = renewHistoryList.stream().collect(
-                        Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                List<InvitationActivityJoinHistoryVO> uniqueRenewHistoryVOList = renewHistoryList.stream()
+                        .filter(history -> Objects.nonNull(history.getPayCount()))
+                        .collect(Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                 map -> new ArrayList<>(map.values())));
                 if (CollectionUtils.isNotEmpty(uniqueRenewHistoryVOList)) {
                     renewTotalMemCount = uniqueRenewHistoryVOList.size();
