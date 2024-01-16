@@ -218,6 +218,21 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
         return returnTripleResult(enterpriseChannelUserService.updateUserAfterQRScanNew(enterpriseChannelUserQuery));
     }
     
+    /**
+     * 被邀请用户扫码后，将该用户添加至关联的企业中
+     *
+     * @param id
+     * @param uid
+     * @return
+     */
+    @GetMapping("/user/enterprise/addUserByScanNewCheck")
+    public R addUserByScanNewCheck(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = true) Long uid) {
+        
+        EnterpriseChannelUserQuery enterpriseChannelUserQuery = EnterpriseChannelUserQuery.builder().id(id).uid(uid).build();
+        
+        return returnTripleResult(enterpriseChannelUserService.addUserByScanNewCheck(enterpriseChannelUserQuery));
+    }
+    
     @GetMapping("/user/enterprise/checkChannelUser")
     public R checkChannelUser(@RequestParam(value = "id", required = true) Long id, @RequestParam(value = "uid", required = false) Long uid) {
         

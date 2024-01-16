@@ -89,6 +89,16 @@ public class EnterprisePackageOrderVO {
      */
     private Integer batteryRentStatus;
     
+    /**
+     * 自主续费退出中: 0-否，1-是
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatusExit;
+    
+    public static final Integer RENEWAL_STATUS_EXIT_YES = 1;
+    
+    public static final Integer RENEWAL_STATUS_EXIT_NO = 0;
+    
     //private BigDecimal canRecycleBeanAmount;
     
     //private BigDecimal recycledBeanAmount;

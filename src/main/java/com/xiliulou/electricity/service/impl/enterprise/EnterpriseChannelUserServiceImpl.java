@@ -51,6 +51,7 @@ import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserCheckVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserExitVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserScanCheckVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
@@ -58,8 +59,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.objenesis.Objenesis;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -1150,6 +1149,89 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, null, null);
     }
     
+    /**
+     * 检测
+     * @param query
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> addUserByScanNewCheck(EnterpriseChannelUserQuery query) {
+        EnterpriseChannelUserScanCheckVO vo = new EnterpriseChannelUserScanCheckVO();
+        if (!ObjectUtils.allNotNull(query.getUid(), query.getId())) {
+            return Triple.of(true, null, vo);
+        }
+    
+        EnterpriseChannelUser enterpriseChannelUser = new EnterpriseChannelUser();
+        try {
+            Triple<Boolean, String, Object> result = checkUserInfo(query);
+            vo.setEnterpriseId(query.getEnterpriseId());
+            vo.setEnterpriseName(query.getEnterpriseName());
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                return Triple.of(true, null, vo);
+            }
+        
+            //7. 骑手手机号不能重复添加
+            if (Objects.nonNull(query.getPhone())) {
+                EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectChannelUserByPhone(query.getPhone(), query.getUid());
+                if (Objects.nonNull(channelUser)) {
+                    return Triple.of(true, null, vo);
+                }
+            }
+        
+            // 查询用户当前企业
+            EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(query.getUid());
+            Long uid = query.getUid();
+            Long channelUserId = query.getId();
+            EnterpriseChannelUser channelUserEntity = enterpriseChannelUserMapper.queryById(channelUserId);
+            // 企业用户
+            doEnterpriseUserCheck(query, channelUser, uid, channelUserEntity, enterpriseChannelUser, vo);
+            return Triple.of(true, null, vo);
+    
+        } catch (Exception e) {
+            log.error("add new user after QR scan check error, uid = {}, ex = {}", query.getUid(), e);
+            throw new BizException("300068", "扫码添加用户失败");
+        
+        }
+    }
+    
+    private Triple<Boolean, String, Object> doEnterpriseUserCheck(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser,
+            EnterpriseChannelUserScanCheckVO vo) {
+        if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(),
+                query.getEnterpriseId())) {
+            vo.setOldEnterpriseId(channelUser.getEnterpriseId());
+            return Triple.of(false, "300830", "已是该渠道用户，无需重复添加");
+        }
+    
+        if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && !Objects.equals(channelUser.getEnterpriseId(),
+                query.getEnterpriseId())) {
+            vo.setOldEnterpriseId(channelUser.getEnterpriseId());
+            // 判断两个加盟商是否一致
+            if (!Objects.equals(channelUser.getFranchiseeId(), channelUserEntity.getFranchiseeId())) {
+                return Triple.of(false, "300831", "切换站点的加盟商必须一致");
+            }
+        
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                // 检测用户能否退出
+                Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
+                if (Objects.equals(tripleCheck.getMiddle(), "100211")) {
+                    vo.setStatus("4");
+                }
+                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100004")) {
+                    vo.setStatus("3");
+                }
+                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.100000")) {
+                    vo.setStatus("1");
+                }
+                if (Objects.equals(tripleCheck.getMiddle(), "ELECTRICITY.0045")) {
+                    vo.setStatus("2");
+                }
+            }
+        }
+        return Triple.of(true, null, null);
+    }
+    
     private Triple<Boolean, String, Object> doEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser) {
         log.info("do Enterprise User By Phone start uid = {},msg={}", query.getUid());
         if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(),
@@ -1435,6 +1517,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         //        Long uid = SecurityUtils.getUid();
         Integer tenantId = TenantContextHolder.getTenantId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
+        if (Objects.nonNull(enterpriseInfo)) {
+            query.setEnterpriseName(enterpriseInfo.getName());
+        }
         
         return Triple.of(true, "", enterpriseInfo);
     }

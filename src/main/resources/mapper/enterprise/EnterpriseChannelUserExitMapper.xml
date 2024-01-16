@@ -69,4 +69,33 @@
             id = #{id}
         </where>
     </update>
+    <select id="list" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit">
+        SELECT
+            id,
+            uid,
+            channel_user_id,
+            enterprise_id,
+            franchisee_id,
+            tenant_id,
+            type,
+            error_msg,
+            create_time,
+            update_time
+        FROM
+            t_enterprise_channel_user_exit
+        where
+            del_flag = 0
+          <if test="uidList != null and uidList.size() > 0">
+              and uid in
+              <foreach collection="uidList" close=")" open="(" separator="," item="uid">
+                  #{uid}
+              </foreach>
+          </if>
+          <if test="typeList != null and typeList.size() > 0">
+              and type in
+              <foreach collection="typeList" close=")" open="(" separator="," item="type">
+                  #{type}
+              </foreach>
+          </if>
+    </select>
 </mapper>

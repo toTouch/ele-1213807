@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.enterprise;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
+import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -18,4 +19,5 @@ public interface EnterpriseChannelUserExitMapper extends BaseMapper<EnterpriseCh
     
     void updateById(@Param("errorMsg") String errorMsg,@Param("type") Integer type,@Param("id") Long id, @Param("updateTime") Long updateTime);
     
+    List<EnterpriseChannelUserExit> list(EnterpriseChannelUserExitQueryModel queryModel);
 }
