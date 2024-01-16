@@ -243,8 +243,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         // 判断是否为Integer和fullChargeRate是否为正整数，并且二者和是否为100
-        if (blowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO || fullChargeRate < blowChargeRate || (blowChargeRate + fullChargeRate
-                != NumberConstant.ONE_HUNDRED)) {
+        if (blowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO || fullChargeRate < blowChargeRate) {
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
         
