@@ -83,4 +83,6 @@ public interface CloudBeanUseRecordService {
     
     BigDecimal getBatteryMembercardUsedCloudBean(UserInfo userInfo, EnterpriseInfo enterpriseInfo, EnterpriseRentRecord enterpriseRentRecord,
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords);
+    
+    void recycleCloudBeanExitTask();
 }

@@ -786,12 +786,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("channel User Exit Check! user stop member card review,uid={}", uid);
-                return Triple.of(false, "100211", "需您提前解除套餐冻结申请");
+                return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("channel User Exit Check! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "需您提前启用套餐冻结服务");
+                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -805,12 +805,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("channel User Exit Check! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "需您提前缴纳滞纳金");
+                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
             
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 log.warn("channel User Exit Check! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "需您提前退还租赁的电池");
+                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         }
         
@@ -1358,12 +1358,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("check User Enable Exit! user stop member card review,uid={}", uid);
-                return Triple.of(false, "100211", "需您提前解除套餐冻结申请");
+                return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
             }
             
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("check User Enable Exit! member card is disable userId={}", uid);
-                return Triple.of(false, "ELECTRICITY.100004", "需您提前启用套餐冻结服务");
+                return Triple.of(false, "ELECTRICITY.100004", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1377,12 +1377,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.100000", "需您提前缴纳滞纳金");
+                return Triple.of(false, "ELECTRICITY.100000", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
             }
             
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 log.warn("check User Enable Exit! user rent battery,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0045", "需您提前退还租赁的电池");
+                return Triple.of(false, "ELECTRICITY.0045", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
             }
         } else {
             log.warn("check User Enable Exit! userBatteryMemberCard is null,uid={}", uid);
