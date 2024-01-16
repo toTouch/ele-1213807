@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -157,7 +158,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
                 return R.fail("100369", "用户通知时间间隔不能为空");
             }
-    
+            
             if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && StringUtils.isNotBlank(userNotifyQuery.getContent())) {
                 if (userNotifyQuery.getContent().length() > 100) {
                     return R.fail("100377", "参数校验错误");
@@ -258,6 +259,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);
+        } else {
+            vo.setPictureInfoList(Lists.newArrayList());
         }
         
         return R.ok(vo);
