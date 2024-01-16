@@ -10,7 +10,6 @@ import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
-import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
@@ -48,9 +47,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Autowired
     private UserInfoService userInfoService;
     
-    @Resource
-    private InvitationActivityRecordService invitationActivityRecordService;
-
     /**
      * 通过ID查询单条数据从DB
      *
@@ -209,6 +205,12 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Slave
     @Override
     public List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query) {
+        return invitationActivityJoinHistoryMapper.selectListByInviterUid(query);
+    }
+    
+    @Slave
+    @Override
+    public List<InvitationActivityJoinHistoryVO> listByInviterUidDistinctJoin(InvitationActivityJoinHistoryQuery query) {
         return invitationActivityJoinHistoryMapper.selectListByInviterUid(query);
     }
     

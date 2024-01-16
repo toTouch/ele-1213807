@@ -91,5 +91,7 @@ public interface InvitationActivityJoinHistoryService {
     
     List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query);
     
+    List<InvitationActivityJoinHistoryVO> listByInviterUidDistinctJoin(InvitationActivityJoinHistoryQuery query);
+    
     InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityAnalysisRequest request);
 }

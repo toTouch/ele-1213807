@@ -404,16 +404,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             query.setStatus(status);
         }
     
-        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
+        List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidDistinctJoin(query);
         
         // 根据joinUid进行去重
         List<InvitationActivityDetailVO> rspList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(historyVOList)) {
-            List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = historyVOList.stream().collect(
-                    Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
-                            map -> new ArrayList<>(map.values())));
-    
-            rspList = uniqueHistoryVOList.stream().map(item ->{
+            rspList = historyVOList.stream().map(item ->{
                 Long joinUid = item.getJoinUid();
                 
                 InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder()

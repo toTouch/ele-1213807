@@ -479,5 +479,28 @@
             limit #{offset}, #{size}
         </if>
     </select>
+    
+    <select id="selectListByInviterUidDistinctJoin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select join_uid
+        from t_invitation_activity_join_history
+        <where>
+            uid = #{uid}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
 
 </mapper>
