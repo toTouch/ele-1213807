@@ -191,7 +191,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         } else {
             updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
             updateAndInsert.setContent(userNotifyQuery.getContent());
-            updateAndInsert.setPictureInfo(null);
+            updateAndInsert.setPictureInfo(StringUtils.EMPTY);
         }
         
         if (Objects.isNull(userNotify)) {
