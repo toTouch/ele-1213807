@@ -1250,30 +1250,37 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
                 log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
                         activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
+    
                 rewardAmount = invitationActivity.getOtherReward();
-                //保存参与记录
-                InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
-                activityJoinHistoryInsert.setUid(activityJoinHistory.getUid());
-                activityJoinHistoryInsert.setRecordId(activityJoinHistory.getRecordId());
-                activityJoinHistoryInsert.setJoinUid(activityJoinHistory.getJoinUid());
-                activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
-                activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
-                activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
-                activityJoinHistoryInsert.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
-                activityJoinHistoryInsert.setPayCount(payCount);
-                activityJoinHistoryInsert.setMoney(rewardAmount);
-                activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
-                activityJoinHistoryInsert.setPackageId(packageId);
-                activityJoinHistoryInsert.setPackageType(packageType);
-                activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
-                activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
-                invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
-            
+                
+                // //保存参与记录，判断非首次购买有没有历史记录，有-更新，没有-新增
+                InvitationActivityJoinHistory existHistory = invitationActivityJoinHistoryService.queryByJoinUidAndActivityId(activityJoinHistory.getJoinUid(), activityJoinHistory.getActivityId());
+                InvitationActivityJoinHistory insertOrUpdateHistory = new InvitationActivityJoinHistory();
+                insertOrUpdateHistory.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
+                insertOrUpdateHistory.setMoney(rewardAmount);
+                insertOrUpdateHistory.setPayCount(payCount);
+                insertOrUpdateHistory.setPackageId(packageId);
+                insertOrUpdateHistory.setPackageType(packageType);
+                if (Objects.nonNull(existHistory)) {
+                    insertOrUpdateHistory.setId(existHistory.getId());
+                    insertOrUpdateHistory.setUpdateTime(System.currentTimeMillis());
+                    invitationActivityJoinHistoryService.update(insertOrUpdateHistory);
+                } else{
+                    insertOrUpdateHistory.setUid(activityJoinHistory.getUid());
+                    insertOrUpdateHistory.setRecordId(activityJoinHistory.getRecordId());
+                    insertOrUpdateHistory.setJoinUid(activityJoinHistory.getJoinUid());
+                    insertOrUpdateHistory.setStartTime(activityJoinHistory.getStartTime());
+                    insertOrUpdateHistory.setExpiredTime(activityJoinHistory.getExpiredTime());
+                    insertOrUpdateHistory.setActivityId(activityJoinHistory.getActivityId());
+                    insertOrUpdateHistory.setTenantId(userInfo.getTenantId());
+                    insertOrUpdateHistory.setCreateTime(System.currentTimeMillis());
+                    insertOrUpdateHistory.setUpdateTime(System.currentTimeMillis());
+                    invitationActivityJoinHistoryService.insert(insertOrUpdateHistory);
+                }
+                
                 //给邀请人增加返现金额
                 this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
-            
             }
-    
             //处理返现
             if (!BigDecimal.ZERO.equals(rewardAmount)) {
                 userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);

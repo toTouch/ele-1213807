@@ -94,4 +94,9 @@ public interface InvitationActivityJoinHistoryService {
     List<InvitationActivityJoinHistoryVO> listByInviterUidDistinctJoin(InvitationActivityJoinHistoryQuery query);
     
     InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityAnalysisRequest request);
+    
+    /**
+     * 根据活动id和参与人uid查询对应的参与记录
+     */
+    InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId);
 }

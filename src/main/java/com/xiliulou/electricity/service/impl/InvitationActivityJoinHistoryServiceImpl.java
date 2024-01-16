@@ -279,4 +279,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     
         return invitationActivityAnalysisAdminVO;
     }
+    
+    /**
+     * 根据活动id和参与人uid查询对应的参与记录
+     */
+    @Slave
+    @Override
+    public InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId) {
+        return invitationActivityJoinHistoryMapper.selectByJoinUidAndActivityId(joinUid, activityId);
+    }
 }

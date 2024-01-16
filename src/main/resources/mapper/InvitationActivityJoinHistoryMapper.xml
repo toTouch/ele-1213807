@@ -502,5 +502,11 @@
             limit #{offset}, #{size}
         </if>
     </select>
+    
+    <select id="selectByJoinUidAndActivityId" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
+        select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        from t_invitation_activity_join_history
+        where join_uid = #{joinUid} and activity_id = #{activityId} and status = 1;
+    </select>
 
 </mapper>
