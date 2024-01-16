@@ -1257,6 +1257,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 insertOrUpdateHistory.setPayCount(payCount);
                 insertOrUpdateHistory.setPackageId(packageId);
                 insertOrUpdateHistory.setPackageType(packageType);
+                
                 if (Objects.nonNull(existHistory)) {
                     insertOrUpdateHistory.setId(existHistory.getId());
                     insertOrUpdateHistory.setUpdateTime(System.currentTimeMillis());
