@@ -63,7 +63,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -382,7 +382,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         List<InvitationActivityDetailVO> rspList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(historyVOList)) {
             List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = historyVOList.stream().collect(
-                    Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(InvitationActivityJoinHistoryVO::getJoinUid))), ArrayList::new));
+                    Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                            map -> new ArrayList<>(map.values())));
     
             rspList = uniqueHistoryVOList.stream().map(item ->{
                 Long joinUid = item.getJoinUid();
@@ -589,11 +590,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
                 renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-                
-                Map<Long, List<InvitationActivityJoinHistoryVO>> joinUidGroupMap = renewHistoryList.stream()
-                        .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid));
-                if (MapUtils.isNotEmpty(joinUidGroupMap)) {
-                    renewTotalMemCount = joinUidGroupMap.size();
+    
+                List<InvitationActivityJoinHistoryVO> uniqueRenewHistoryVOList = renewHistoryList.stream().collect(
+                        Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                                map -> new ArrayList<>(map.values())));
+                if (CollectionUtils.isNotEmpty(uniqueRenewHistoryVOList)) {
+                    renewTotalMemCount = uniqueRenewHistoryVOList.size();
                 }
             }
     
