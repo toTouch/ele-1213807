@@ -10,6 +10,7 @@
             franchisee_id,
             tenant_id,
             type,
+            error_msg,
             create_time,
             update_time
         </trim>
@@ -20,6 +21,7 @@
             #{franchiseeId},
             #{tenantId},
             #{type},
+            #{errorMsg},
             #{createTime},
             #{updateTime}
         </trim>
@@ -32,6 +34,7 @@
         franchisee_id,
         tenant_id,
         type,
+        error_msg,
         create_time,
         update_time)
         values
@@ -42,10 +45,28 @@
             #{item.franchiseeId},
             #{item.tenantId},
             #{item.type},
+            #{item.errorMsg},
             #{item.createTime},
             #{item.updateTime}
             )
         </foreach>
 
     </insert>
+    <update id="updateById">
+        update t_enterprise_channel_user_history
+        <set>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="errorMsg != null">
+                error_msg = #{errorMsg},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
 </mapper>

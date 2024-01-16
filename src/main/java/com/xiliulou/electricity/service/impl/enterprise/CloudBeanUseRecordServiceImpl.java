@@ -16,12 +16,15 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -44,6 +47,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.storage.config.StorageConfig;
@@ -154,6 +158,9 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Autowired
     private EnterpriseRentRecordService enterpriseRentRecordService;
+    
+    @Resource
+    private EnterpriseChannelUserExitMapper userExitMapper;
     
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -526,37 +533,49 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         int offset = 0;
         int size = 200;
     
-        long startTime = System.currentTimeMillis();
-    
         while (true) {
-            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectExpireList(offset, size, startTime);
+            List<UserBatteryMemberCardChannelExitVo> userBatteryMemberCardList = userBatteryMemberCardService.selectExpireExitList(offset, size);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }
         
-            userBatteryMemberCardList.forEach(item -> {
+            userBatteryMemberCardList.forEach(memberCardChannelExitVo -> {
+                UserBatteryMemberCard item = new UserBatteryMemberCard();
+                BeanUtils.copyProperties(memberCardChannelExitVo, item);
+                
+                String errorMsg = "";
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
                 if (Objects.isNull(userInfo)) {
+                    errorMsg = "user Info is null";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                    errorMsg = "user battery is not return";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     log.warn("RECYCLE TASK WARN! user's member card is stop,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user's member card is stop";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                     log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user stop member card review";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
                 if (Objects.isNull(batteryMemberCard)) {
                     log.warn("RECYCLE TASK WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), item.getMemberCardId());
+                    errorMsg = "RECYCLE TASK WARN! not found batteryMemberCard";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
@@ -564,6 +583,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                         .acquireUserBatteryServiceFee(userInfo, item, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                 if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                     log.warn("RECYCLE TASK WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    errorMsg = "RECYCLE TASK WARN! user exist battery service fee";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
@@ -575,20 +596,41 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
                     log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    errorMsg = "RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-            
+                
                 //回收套餐
                 Triple<Boolean, String, Object> recycleBatteryMembercard = enterpriseInfoService.recycleBatteryMembercard(userInfo, enterpriseInfo, item);
                 if (Boolean.FALSE.equals(recycleBatteryMembercard.getLeft())) {
+                    errorMsg = (String) recycleBatteryMembercard.getRight();
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
             
                 //回收押金
-                enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
-            
-                //解绑用户数据
-                enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
+                Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                if (!triple.getLeft()) {
+                    errorMsg = (String) triple.getRight();
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                }
+                try {
+                    //解绑用户数据
+                    enterpriseInfoService.unbindUserData(userInfo, enterpriseChannelUser);
+    
+                    // 修改历史退出为成功
+                    userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+    
+                    // 修改企业用户为自主续费为退出
+                    EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
+                    enterpriseChannelUserService.updateRenewStatus(query);
+                } catch (Exception e) {
+                    log.error("recycle cloud bean exit error msg={}", e.getMessage());
+                    errorMsg = "recycle cloud bean exit error msg";
+                    userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                }
+                
             });
         
             offset += size;

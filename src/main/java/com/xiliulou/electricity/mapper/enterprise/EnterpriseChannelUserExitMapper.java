@@ -15,4 +15,7 @@ public interface EnterpriseChannelUserExitMapper extends BaseMapper<EnterpriseCh
     int insertOne(EnterpriseChannelUserExit channelUserHistory);
     
     int batchInsert(@Param("list") List<EnterpriseChannelUserExit> list);
+    
+    void updateById(@Param("errorMsg") String errorMsg,@Param("type") Integer type,@Param("id") Long id, @Param("updateTime") Long updateTime);
+    
 }

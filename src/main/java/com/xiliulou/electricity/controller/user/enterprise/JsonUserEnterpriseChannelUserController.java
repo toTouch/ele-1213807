@@ -145,7 +145,7 @@ public class JsonUserEnterpriseChannelUserController extends BaseController {
     @GetMapping("/user/enterprise/user/queryEnterpriseChannelUserList")
     public R queryEnterpriseChannelUserList() {
         
-        return R.ok(returnTripleResult(enterpriseChannelUserService.queryEnterpriseChannelUserList()));
+        return returnTripleResult(enterpriseChannelUserService.queryEnterpriseChannelUserList());
     }
     
     
