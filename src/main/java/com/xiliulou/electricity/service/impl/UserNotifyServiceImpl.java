@@ -174,25 +174,34 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         UserNotify updateAndInsert = new UserNotify();
-        updateAndInsert.setTitle(userNotifyQuery.getTitle());
-        updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
-        updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
-        updateAndInsert.setStatus(userNotifyQuery.getStatus());
-        updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
-        updateAndInsert.setUpdateTime(System.currentTimeMillis());
         
-        if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE)) {
-            updateAndInsert.setType(UserNotifyConstant.TYPE_PICTURE);
-            List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
-            if (CollectionUtils.isNotEmpty(pictureInfoList)) {
-                updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
+        if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_ON)) {
+            updateAndInsert.setTitle(userNotifyQuery.getTitle());
+            updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
+            updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
+            updateAndInsert.setStatus(userNotifyQuery.getStatus());
+            updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
+            updateAndInsert.setUpdateTime(System.currentTimeMillis());
+            
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE)) {
+                updateAndInsert.setType(UserNotifyConstant.TYPE_PICTURE);
+                List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
+                if (CollectionUtils.isNotEmpty(pictureInfoList)) {
+                    updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
+                }
+                updateAndInsert.setContent(StringUtils.EMPTY);
+                updateAndInsert.setTitle(StringUtils.EMPTY);
+            } else {
+                updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
+                updateAndInsert.setContent(userNotifyQuery.getContent());
+                updateAndInsert.setPictureInfo(StringUtils.EMPTY);
             }
-            updateAndInsert.setContent(StringUtils.EMPTY);
-            updateAndInsert.setTitle(StringUtils.EMPTY);
-        } else {
-            updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
-            updateAndInsert.setContent(userNotifyQuery.getContent());
-            updateAndInsert.setPictureInfo(StringUtils.EMPTY);
+        }
+        
+        // 如果状态为关闭则只修改状态
+        if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_OFF)) {
+            updateAndInsert.setStatus(userNotifyQuery.getStatus());
+            updateAndInsert.setUpdateTime(System.currentTimeMillis());
         }
         
         if (Objects.isNull(userNotify)) {
