@@ -258,15 +258,23 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
                 Integer totalShareCount = NumberConstant.ZERO;
                 Integer totalInvitationCount = NumberConstant.ZERO;
-            
+    
                 if (CollectionUtils.isNotEmpty(v)) {
                     List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = v.stream().collect(
                             Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                     map -> new ArrayList<>(map.values())));
-                    
+        
                     if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
                         totalShareCount = uniqueHistoryVOList.size();
-                        totalInvitationCount = (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+                    }
+        
+                    List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = v.stream()
+                            .filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(Collectors.collectingAndThen(
+                                    Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                                    map -> new ArrayList<>(map.values())));
+        
+                    if (CollectionUtils.isNotEmpty(uniqueInvitationHistoryVOList)) {
+                        totalInvitationCount = uniqueInvitationHistoryVOList.size();
                     }
                 }
             
@@ -334,7 +342,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
                 totalShareCount =  uniqueHistoryVOList.size();
-                totalInvitationCount =  (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            }
+    
+            List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = historyVOList.stream()
+                    .filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(Collectors.collectingAndThen(
+                            Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                            map -> new ArrayList<>(map.values())));
+    
+            if (CollectionUtils.isNotEmpty(uniqueInvitationHistoryVOList)) {
+                totalInvitationCount = uniqueInvitationHistoryVOList.size();
             }
         }
     
@@ -593,6 +609,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 List<InvitationActivityJoinHistoryVO> uniqueFirstHistoryVOList = firstHistoryList.stream().collect(
                         Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                 map -> new ArrayList<>(map.values())));
+                
                 if (CollectionUtils.isNotEmpty(uniqueFirstHistoryVOList)) {
                     firstTotalMemCount = uniqueFirstHistoryVOList.size();
                 }
@@ -609,6 +626,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                         .filter(history -> Objects.nonNull(history.getPayCount()))
                         .collect(Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                 map -> new ArrayList<>(map.values())));
+                
                 if (CollectionUtils.isNotEmpty(uniqueRenewHistoryVOList)) {
                     renewTotalMemCount = uniqueRenewHistoryVOList.size();
                 }

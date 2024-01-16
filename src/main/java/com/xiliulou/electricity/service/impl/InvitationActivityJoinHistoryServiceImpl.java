@@ -247,7 +247,15 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             
             if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
                 totalShareCount = uniqueHistoryVOList.size();
-                totalInvitationCount= (int)uniqueHistoryVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).count();
+            }
+    
+            List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = historyVOList.stream()
+                    .filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(Collectors.collectingAndThen(
+                            Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                            map -> new ArrayList<>(map.values())));
+    
+            if (CollectionUtils.isNotEmpty(uniqueInvitationHistoryVOList)) {
+                totalInvitationCount = uniqueInvitationHistoryVOList.size();
             }
             
             // 根据 payCount是否等于1 进行分组，并将每组的 money 相加
