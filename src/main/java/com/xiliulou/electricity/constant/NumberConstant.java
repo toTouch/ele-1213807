@@ -16,6 +16,8 @@ public class NumberConstant {
     
     public static final Integer THREE = 3;
     public static final Integer SIX = 6;
+    
+    public static final Integer ONE_HUNDRED = 100;
 
     public static final Long ZERO_L = 0L;
     public static final Long ONE_L = 1L;
@@ -25,4 +27,6 @@ public class NumberConstant {
     public static final Double ONE_HUNDRED_D = 100D;
     
     public static final BigDecimal ZERO_BD = BigDecimal.valueOf(0);
+    
+    public static final BigDecimal ONE_HUNDRED_BD = BigDecimal.valueOf(100);
 }

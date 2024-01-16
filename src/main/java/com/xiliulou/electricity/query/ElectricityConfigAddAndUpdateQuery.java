@@ -141,12 +141,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      *  柜机少电比例
      */
-    private BigDecimal blowChargeRate;
+    private Integer blowChargeRate;
     
     /**
      *  柜机多电比例
      */
-    private BigDecimal fullChargeRate;
+    private Integer fullChargeRate;
 }
 
 
