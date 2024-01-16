@@ -481,8 +481,7 @@
     </select>
     
     <select id="selectListByInviterUidDistinctJoin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
-        select distinct a.join_uid from (
-        select join_uid, id from t_invitation_activity_join_history
+        select join_uid, any_value(id) as id from t_invitation_activity_join_history
         <where>
             uid = #{uid}
             <if test="tenantId != null">
@@ -498,7 +497,8 @@
                 and create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
         </where>
-        order by id desc) as a GROUP BY a.join_uid
+        group by join_uid
+        order by id desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>

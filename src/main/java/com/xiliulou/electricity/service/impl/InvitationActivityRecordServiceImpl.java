@@ -1249,7 +1249,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
                 rewardAmount = invitationActivity.getOtherReward();
                 
-                // 保存参与记录，判断非首次购买有没有历史记录，有-更新，没有-新增
+                // 保存参与记录，判断非首次购买有没有已参与状态的历史记录，有-更新，没有-新增
                 InvitationActivityJoinHistory existHistory = invitationActivityJoinHistoryService.queryByJoinUidAndActivityId(activityJoinHistory.getJoinUid(), activityJoinHistory.getActivityId());
                 InvitationActivityJoinHistory insertOrUpdateHistory = new InvitationActivityJoinHistory();
                 insertOrUpdateHistory.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
