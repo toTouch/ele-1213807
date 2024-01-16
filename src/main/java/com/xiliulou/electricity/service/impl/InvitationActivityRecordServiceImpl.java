@@ -63,8 +63,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * (InvitationActivityRecord)表服务实现类
@@ -377,43 +377,45 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
     
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
-    
-        List<InvitationActivityDetailVO> rspList = historyVOList.stream()
-                .filter(Objects::nonNull) // 防止出现null元素
-                .collect(Collectors.groupingBy(InvitationActivityJoinHistoryVO::getJoinUid))
-                .entrySet().stream()
-                .flatMap(entry -> {
-                    Long joinUid = entry.getKey();
-                    List<InvitationActivityJoinHistoryVO> joinList = entry.getValue();
-                
-                    if (!joinList.isEmpty()) {
-                        InvitationActivityJoinHistoryVO firstHistoryVO = joinList.get(0);
-                    
-                        InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder()
-                                .joinUid(joinUid)
-                                .joinTime(firstHistoryVO.getStartTime())
-                                .activityId(firstHistoryVO.getActivityId())
-                                .activityName(firstHistoryVO.getActivityName())
-                                .payCount(ObjectUtils.defaultIfNull(firstHistoryVO.getPayCount(), NumberConstant.ZERO))
-                                .money(ObjectUtils.defaultIfNull(firstHistoryVO.getMoney(), BigDecimal.ZERO))
-                                .status(firstHistoryVO.getStatus())
-                                .build();
-                    
-                        UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
-                        Optional.ofNullable(joinUser).ifPresent(user -> {
-                            invitationActivityDetailVO.setJoinName(user.getName());
-                            invitationActivityDetailVO.setJoinPhone(user.getPhone());
-                        });
-                    
-                        return Stream.of(invitationActivityDetailVO);
-                    } else {
-                        return Stream.empty();
-                    }
-                }).collect(Collectors.toList());
-    
-        // 确保rspList不为null并为空集合时返回Collections.emptyList()
-        rspList = Objects.requireNonNullElseGet(rspList, Collections::emptyList);
         
+        // 根据joinUid进行去重
+        List<InvitationActivityDetailVO> rspList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(historyVOList)) {
+            List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = historyVOList.stream().collect(
+                    Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(InvitationActivityJoinHistoryVO::getJoinUid))), ArrayList::new));
+    
+            rspList = uniqueHistoryVOList.stream().map(item ->{
+                Long joinUid = item.getJoinUid();
+                
+                InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder()
+                        .joinUid(joinUid)
+                        .joinTime(item.getStartTime())
+                        .activityId(item.getActivityId())
+                        .activityName(item.getActivityName())
+                        .payCount(ObjectUtils.defaultIfNull(item.getPayCount(), NumberConstant.ZERO))
+                        .money(ObjectUtils.defaultIfNull(item.getMoney(), BigDecimal.ZERO))
+                        .status(item.getStatus())
+                        .build();
+    
+                UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+                Optional.ofNullable(joinUser).ifPresent(user -> {
+                    invitationActivityDetailVO.setJoinName(user.getName());
+                    invitationActivityDetailVO.setJoinPhone(user.getPhone());
+                });
+                
+                return invitationActivityDetailVO;
+                
+            }).collect(Collectors.toList());
+            
+            // rspList根据joinTime倒叙排序
+            if (!CollectionUtils.isEmpty(rspList)) {
+                rspList.sort(Comparator.comparing(InvitationActivityDetailVO::getJoinTime).reversed());
+            } else {
+                rspList = Collections.emptyList();
+            }
+            
+        }
+       
         return Triple.of(true, null, rspList);
     }
     
