@@ -28,6 +28,7 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserHistoryMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
 import com.xiliulou.electricity.request.enterprise.EnterpriseUserExitCheckRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -885,6 +886,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserUpdate.setRenewalStatus(EnterpriseChannelUser.RENEWAL_OPEN);
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         update(enterpriseChannelUserUpdate);
+    
+        // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
+        List<Integer> typeList = new ArrayList<>();
+        typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
+        List<Long> uidList = new ArrayList<>();
+        uidList.add(request.getUid());
+        EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
+        List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
+        if (ObjectUtils.isNotEmpty(channelUserList)) {
+            // 修改用户退出成功
+            channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, uidList, System.currentTimeMillis());
+        }
         
         log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
         return Triple.of(true, null, null);

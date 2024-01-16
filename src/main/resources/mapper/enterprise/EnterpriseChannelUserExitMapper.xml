@@ -69,6 +69,27 @@
             id = #{id}
         </where>
     </update>
+    
+    <update id="batchUpdateById">
+        update t_enterprise_channel_user_history
+        <set>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="errorMsg != null">
+                error_msg = #{errorMsg},
+            </if>
+        </set>
+        <where>
+            id in
+            <foreach collection="uidList" separator="," open="(" close=")" item="uid">
+                #{uid}
+            </foreach>
+        </where>
+    </update>
     <select id="list" resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit">
         SELECT
             id,

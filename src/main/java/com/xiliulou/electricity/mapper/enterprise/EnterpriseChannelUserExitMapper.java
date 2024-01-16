@@ -20,4 +20,6 @@ public interface EnterpriseChannelUserExitMapper extends BaseMapper<EnterpriseCh
     void updateById(@Param("errorMsg") String errorMsg,@Param("type") Integer type,@Param("id") Long id, @Param("updateTime") Long updateTime);
     
     List<EnterpriseChannelUserExit> list(EnterpriseChannelUserExitQueryModel queryModel);
+    
+    void batchUpdateById(@Param("errorMsg") String errorMsg,@Param("type") Integer type,@Param("id") List<Long> uidList, @Param("updateTime") Long updateTime);
 }
