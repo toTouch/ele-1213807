@@ -650,7 +650,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             // 检测企业代付开关是否开启
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
             if (Objects.isNull(enterpriseInfo.getPurchaseAuthority()) || Objects.equals(enterpriseInfo.getPurchaseAuthority(), EnterpriseInfo.PURCHASE_AUTHORITY_CLOSE)) {
-                log.error("enterprise user is platform user not join, enterpriseId={}, uid={}", query.getEnterpriseId(), query.getUid());
+                log.error("enterprise user is platform user not join, enterpriseId={}, uid={}, enterpriseInfo={}", query.getEnterpriseId(), query.getUid(), enterpriseInfo);
                 return Triple.of(false, "300082", "已是平台会员，无法加入企业渠道");
             }
         }

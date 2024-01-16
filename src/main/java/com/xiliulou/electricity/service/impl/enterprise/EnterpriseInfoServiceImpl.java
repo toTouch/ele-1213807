@@ -896,10 +896,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                         // 修改用户套餐信息
                         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                         userBatteryMemberCardUpdate.setId(userBatteryMemberCard.getId());
+                        userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                         userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCardUpdate.getMemberCardExpireTime() - expireTimeSum);
                         userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCardUpdate.getRemainingNumber() - remainingNumber);
-                        
+                        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                     }
                     
                 }
