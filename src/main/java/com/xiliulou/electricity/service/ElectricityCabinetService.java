@@ -250,4 +250,6 @@ public interface ElectricityCabinetService {
     R showBatteryVAndCapacity(Integer electricityCabinetId);
     
     R homeOneV2();
+    
+    void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
 }
