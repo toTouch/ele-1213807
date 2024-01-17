@@ -28,7 +28,7 @@
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_enterprise_channel_user_history(  uid,
+        insert into t_enterprise_channel_user_exit(  uid,
         channel_user_id,
         enterprise_id,
         franchisee_id,
