@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper">
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_enterprise_channel_user_history
+        insert into t_enterprise_channel_user_exit
         <trim prefix="(" suffix=")" suffixOverrides=",">
             uid,
             channel_user_id,
@@ -53,7 +53,7 @@
 
     </insert>
     <update id="updateById">
-        update t_enterprise_channel_user_history
+        update t_enterprise_channel_user_exit
         <set>
             <if test="type != null">
                 type = #{type},
@@ -71,7 +71,7 @@
     </update>
     
     <update id="batchUpdateById">
-        update t_enterprise_channel_user_history
+        update t_enterprise_channel_user_exit
         <set>
             <if test="type != null">
                 type = #{type},
