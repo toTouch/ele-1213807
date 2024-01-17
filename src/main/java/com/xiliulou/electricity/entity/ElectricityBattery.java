@@ -161,12 +161,14 @@ public class ElectricityBattery {
     public static final Integer PHYSICS_STATUS_WARE_HOUSE = 0;
     public static final Integer PHYSICS_STATUS_NOT_WARE_HOUSE = 1;
     /**
-     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换 5:后台解绑
      */
     public static final Integer BUSINESS_STATUS_INPUT = 1;
     public static final Integer BUSINESS_STATUS_LEASE = 2;
     public static final Integer BUSINESS_STATUS_RETURN = 3;
     public static final Integer BUSINESS_STATUS_EXCEPTION = 4;
+    
+    public static final Integer BUSINESS_STATUS_ADMIN_UNBIND = 5;
 
 //    //在仓
 //    public static final Integer WARE_HOUSE_STATUS = 0;
