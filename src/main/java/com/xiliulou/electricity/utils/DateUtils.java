@@ -3,8 +3,6 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -12,7 +10,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,6 +52,24 @@ public class DateUtils {
     
     public static long getTimeAgoStartTime(int day) {
         return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    public static long getTimeAgoEndTime(int day) {
+        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    /**
+     * 获取本月第N天的开始时间戳
+     */
+    public static long getDayOfMonthStartTime(int dayOfMonth) {
+        return LocalDateTime.of(LocalDateTime.now().toLocalDate().withDayOfMonth(dayOfMonth), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
+    
+    /**
+     * 获取最近N天的开始时间戳(从当前时间往前推7天)
+     */
+    public static long getLastDayStartTime(Integer lastDay) {
+        return LocalDateTime.now().minusDays(lastDay).toEpochSecond(ZoneOffset.of("+8")) * 1000;
     }
     
     /**
@@ -154,5 +169,11 @@ public class DateUtils {
         
     }
     
+    /**
+     * 根据LocalDate获取当天的0点时间戳
+     */
+    public static long getDayStartTimeByLocalDate(LocalDate localDate) {
+        return localDate.atStartOfDay().toEpochSecond(ZoneOffset.of("+8")) * 1000;
+    }
     
 }

@@ -896,12 +896,13 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
     /**
      * 根据经纬度获取柜机列表
+     * @param status 柜机状态 0-全部 1-少电（默认） 2-多电 3-锁仓（只要有一个仓被锁就算锁仓） 4-离线
      *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
-    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id,
-                                                        @RequestParam(value = "name", required = false) String name) {
+    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "status") Integer status) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -926,6 +927,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)
+                .status(status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .eleIdList(eleIdList)
                 .build();
