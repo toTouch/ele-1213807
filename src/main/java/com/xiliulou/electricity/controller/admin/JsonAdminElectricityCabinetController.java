@@ -896,12 +896,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
     /**
      * 根据经纬度获取柜机列表
+     * @param status 0-全部、1-少电、2-多电、3-锁仓、4-离线
      *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id,
-                                                        @RequestParam(value = "name", required = false) String name) {
+                                                        @RequestParam(value = "name", required = false) String name,
+                                                        @RequestParam(value = "status") String status) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
