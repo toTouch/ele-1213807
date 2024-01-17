@@ -156,7 +156,7 @@ public class ElectricityConfig {
     /**
      *  柜机少电比例
      */
-    private BigDecimal blowChargeRate;
+    private BigDecimal lowChargeRate;
     
     /**
      *  柜机多电比例

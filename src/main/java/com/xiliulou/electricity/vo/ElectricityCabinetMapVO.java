@@ -56,4 +56,19 @@ public class ElectricityCabinetMapVO {
      * 柜机锁仓格口数
      */
     private Integer unusableBoxNum;
+    
+    /**
+     * 是否少电柜机
+     */
+    private Boolean isLowCharge;
+    
+    /**
+     * 是否多电柜机
+     */
+    private Boolean isFulCharge;
+    
+    /**
+     * 是否锁仓柜机：柜机中只要有一个仓被锁就算锁仓柜机
+     */
+    private Boolean isUnusable;
 }

@@ -21,7 +21,6 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -4710,26 +4709,86 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
-        List<ElectricityCabinetBO> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return R.ok(Collections.EMPTY_LIST);
         }
     
-        electricityCabinets.forEach(cabinet ->{
-            ElectricityCabinetMapVO cabinetMapVO = new ElectricityCabinetMapVO();
-            BeanUtils.copyProperties(cabinet, cabinetMapVO);
-            
+        // 获取系统配置
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        
+        List<ElectricityCabinetMapVO> assembleCabinetList = new ArrayList<>();
+        electricityCabinets.forEach(cabinet -> {
+            ElectricityCabinetMapVO electricityCabinetMapVO = new ElectricityCabinetMapVO();
+            BeanUtils.copyProperties(cabinet, electricityCabinetMapVO);
+        
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(cabinet.getId());
             if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
-                Integer batteryNum = (int)electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
-                cabinetMapVO.setBatteryNum(batteryNum);
-    
-                Integer unusableBoxNum =(int)electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
-                cabinetMapVO.setUnusableBoxNum(unusableBoxNum);
+                //柜机格口数量
+                int boxNum = electricityCabinetBoxes.size();
+                electricityCabinetMapVO.setBoxNum(boxNum);
+            
+                // 电池在仓数量统计
+                int batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
+                electricityCabinetMapVO.setBatteryNum(batteryNum);
+            
+                // 电池锁仓数量统计
+                int unusableBoxNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
+                electricityCabinetMapVO.setUnusableBoxNum(unusableBoxNum);
+            
+                //判断少/多电柜机
+                BigDecimal chargeRate = BigDecimal.valueOf(batteryNum).divideToIntegralValue(BigDecimal.valueOf(boxNum));
+                if (Objects.nonNull(electricityConfig)) {
+                    BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
+                    BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
+                
+                    if (chargeRate.compareTo(lowChargeRate) <= NumberConstant.ZERO) {
+                        electricityCabinetMapVO.setIsLowCharge(true);
+                        electricityCabinetMapVO.setIsFulCharge(false);
+                    } else if (chargeRate.compareTo(fullChargeRate) >= NumberConstant.ZERO) {
+                        electricityCabinetMapVO.setIsLowCharge(false);
+                        electricityCabinetMapVO.setIsFulCharge(true);
+                    } else {
+                        electricityCabinetMapVO.setIsLowCharge(null);
+                        electricityCabinetMapVO.setIsFulCharge(null);
+                    }
+                }
+            
+                // 是否锁仓柜机
+                if(unusableBoxNum > NumberConstant.ZERO) {
+                    electricityCabinetMapVO.setIsUnusable(true);
+                }
             }
+    
+            assembleCabinetList.add(electricityCabinetMapVO);
         });
+    
+        // 0-全部、1-少电、2-多电、3-锁仓、4-离线
+        List<ElectricityCabinetMapVO> rspList = new ArrayList<>();
+        switch (cabinetQuery.getStatus()) {
+            default:
+                // 默认少电
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), true)).collect(Collectors.toList());
+                break;
+            case 0:
+                rspList = assembleCabinetList;
+                break;
+            case 2:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), true)).collect(Collectors.toList());
+                break;
+            case 3:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsUnusable(), true)).collect(Collectors.toList());
+                break;
+            case 4:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
+        }
         
-        return R.ok(electricityCabinets);
+        if (CollectionUtils.isEmpty(rspList)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        return R.ok(rspList);
     }
     
     @Slave

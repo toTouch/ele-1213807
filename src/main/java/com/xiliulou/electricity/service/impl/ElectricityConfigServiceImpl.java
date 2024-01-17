@@ -151,15 +151,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
     
         // 处理柜机 少电比例和多电比例参数
-        Integer blowChargeRate = electricityConfigAddAndUpdateQuery.getBlowChargeRate();
+        Integer lowChargeRate = electricityConfigAddAndUpdateQuery.getLowChargeRate();
         Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
     
-        if (Objects.isNull(blowChargeRate) || Objects.isNull(fullChargeRate) || blowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
-                || fullChargeRate < blowChargeRate) {
+        if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
+                || fullChargeRate < lowChargeRate) {
             return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
         }
     
-        BigDecimal blowChargeRateBd = BigDecimal.valueOf(blowChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
+        BigDecimal lowChargeRateBd = BigDecimal.valueOf(lowChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
         BigDecimal fullChargeRateBd = BigDecimal.valueOf(fullChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
     
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
@@ -190,7 +190,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-            electricityConfig.setBlowChargeRate(blowChargeRateBd);
+            electricityConfig.setLowChargeRate(lowChargeRateBd);
             electricityConfig.setFullChargeRate(fullChargeRateBd);
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -228,7 +228,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-        electricityConfig.setBlowChargeRate(blowChargeRateBd);
+        electricityConfig.setLowChargeRate(lowChargeRateBd);
         electricityConfig.setFullChargeRate(fullChargeRateBd);
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {

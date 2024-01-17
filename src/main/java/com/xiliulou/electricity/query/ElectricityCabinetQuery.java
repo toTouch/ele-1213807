@@ -118,4 +118,9 @@ public class ElectricityCabinetQuery {
      */
     private Integer orderByTodayActivity;
     
+    /**
+     * 柜机地图-柜机状态 0-全部、1-少电、2-多电、3-锁仓、4-离线
+     */
+    private Integer status;
+    
 }
