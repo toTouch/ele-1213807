@@ -164,7 +164,6 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -4774,9 +4773,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             
                 // 是否锁仓柜机
-                if(unusableBoxNum > NumberConstant.ZERO) {
-                    electricityCabinetMapVO.setIsUnusable(true);
-                }
+                electricityCabinetMapVO.setIsUnusable(unusableBoxNum > NumberConstant.ZERO);
             }
     
             assembleCabinetList.add(electricityCabinetMapVO);
