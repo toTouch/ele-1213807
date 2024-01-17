@@ -151,12 +151,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
     
         // 处理柜机 少电比例和多电比例参数
-        Triple<Boolean, String, Object> verifyChargeRateResult = verifyChargeRate(electricityConfigAddAndUpdateQuery);
-        if (!verifyChargeRateResult.getLeft()) {
-            return R.fail(verifyChargeRateResult.getMiddle(), (String) verifyChargeRateResult.getRight());
+        Integer blowChargeRate = electricityConfigAddAndUpdateQuery.getBlowChargeRate();
+        Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
+    
+        if (Objects.isNull(blowChargeRate) || Objects.isNull(fullChargeRate) || blowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
+                || fullChargeRate < blowChargeRate) {
+            return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
         }
     
-        List<BigDecimal> chargeRateList = (List<BigDecimal>) verifyChargeRateResult.getRight();
+        BigDecimal blowChargeRateBd = BigDecimal.valueOf(blowChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
+        BigDecimal fullChargeRateBd = BigDecimal.valueOf(fullChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
     
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
@@ -186,8 +190,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-            electricityConfig.setBlowChargeRate(chargeRateList.get(NumberConstant.ZERO));
-            electricityConfig.setFullChargeRate(chargeRateList.get(NumberConstant.ONE));
+            electricityConfig.setBlowChargeRate(blowChargeRateBd);
+            electricityConfig.setFullChargeRate(fullChargeRateBd);
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -224,8 +228,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-        electricityConfig.setBlowChargeRate(chargeRateList.get(NumberConstant.ZERO));
-        electricityConfig.setFullChargeRate(chargeRateList.get(NumberConstant.ONE));
+        electricityConfig.setBlowChargeRate(blowChargeRateBd);
+        electricityConfig.setFullChargeRate(fullChargeRateBd);
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
@@ -234,27 +238,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return R.ok();
     }
     
-    private Triple<Boolean, String, Object> verifyChargeRate(ElectricityConfigAddAndUpdateQuery query) {
-        Integer blowChargeRate = query.getBlowChargeRate();
-        Integer fullChargeRate = query.getFullChargeRate();
-        
-        if (Objects.isNull(blowChargeRate) || Objects.isNull(fullChargeRate)) {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-        }
-        
-        // 判断是否为Integer和fullChargeRate是否为正整数，并且二者和是否为100
-        if (blowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO || fullChargeRate < blowChargeRate) {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-        }
-        
-        BigDecimal blowChargeRateBigDecimal = BigDecimal.valueOf(blowChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
-        BigDecimal fullChargeRateBigDecimal = BigDecimal.valueOf(fullChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
-        
-        List<BigDecimal> chargeRateBigDecimalList = List.of(blowChargeRateBigDecimal, fullChargeRateBigDecimal);
-        
-        return Triple.of(true, "", chargeRateBigDecimalList);
-    }
-
     private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
         //旧加盟商校验
         if (Objects.isNull(oldFranchisee)) {
