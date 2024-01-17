@@ -1107,7 +1107,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 exit.setType(EnterpriseChannelUserExit.TYPE_INIT);
                 exit.setFranchiseeId(item.getFranchiseeId());
                 exit.setCreateTime(System.currentTimeMillis());
-                exit.setUid(System.currentTimeMillis());
+                exit.setUid(item.getUid());
                 addList.add(exit);
             }
         }
