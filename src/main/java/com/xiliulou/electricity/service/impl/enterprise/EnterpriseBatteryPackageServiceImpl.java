@@ -132,6 +132,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -2266,16 +2267,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             typeList.add(EnterpriseChannelUserExit.TYPE_FAIL);
             EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
             List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
+            Map<Long, EnterpriseChannelUserExit> exitMap = new HashMap<>();
             if (ObjectUtils.isNotEmpty(channelUserList)) {
-                Map<Long, EnterpriseChannelUserExit> exitMap = channelUserList.stream()
+                exitMap = channelUserList.stream()
                         .collect(Collectors.groupingBy(EnterpriseChannelUserExit::getUid, Collectors.collectingAndThen(Collectors.toList(), e -> e.get(0))));
-                enterprisePackageOrderVOList.forEach(item -> {
-                    if (ObjectUtils.isNotEmpty(exitMap.get(item.getUid()))) {
-                        item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_YES);
-                    } else {
-                        item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_NO);
-                    }
-                });
+            }
+            
+            for (EnterprisePackageOrderVO item : enterprisePackageOrderVOList) {
+                if (ObjectUtils.isNotEmpty(exitMap.get(item.getUid()))) {
+                    item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_YES);
+                } else {
+                    item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_NO);
+                }
             }
         }
         return Triple.of(true, null, enterprisePackageOrderVOList);

@@ -1046,7 +1046,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 设置企业信息
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.warn("ELE DEPOSIT WARN! channel user is disable! uid={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! battery free deposit refund channel user is disable! uid={}", userInfo.getUid());
             return Triple.of(false,"300833", "企业渠道用户，暂不支持退押操作");
         }
 
@@ -1803,7 +1803,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 设置企业信息
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.warn("ELE DEPOSIT WARN! channel user is disable! uid={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! battery offline refund channel user is disable! uid={}", user.getUid());
             return R.fail("300833", "企业渠道用户，暂不支持退押操作");
         }
 
