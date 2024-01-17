@@ -866,7 +866,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		
 		//查询该租户是否有邀请活动，
 		Integer shareActivityCount = shareActivityMapper.existShareActivity(TenantContextHolder.getTenantId());
-		if (Objects.nonNull(shareMoeneyActivityCount)) {
+		if (Objects.nonNull(shareActivityCount)) {
 			shareActivityVO.setExistShareActivity(Boolean.TRUE);
 		}else {
 			shareActivityVO.setExistShareActivity(Boolean.FALSE);
