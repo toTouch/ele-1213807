@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -163,6 +164,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -4715,8 +4717,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     
         List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinet::getId).collect(Collectors.toList());
-        // 批量查询所有柜机的格挡
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.listByElectricityCabinetIdS(cabinetIds, TenantContextHolder.getTenantId());
+        
+        //分批次查询柜机格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
+        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, 300);
+        partitions.forEach(item ->{
+            List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
+            electricityCabinetBoxList.addAll(boxes);
+        });
     
         Map<Integer, List<ElectricityCabinetBox>> boxesByIdMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
