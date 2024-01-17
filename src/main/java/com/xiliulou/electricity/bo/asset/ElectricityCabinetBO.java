@@ -221,6 +221,11 @@ public class ElectricityCabinetBO {
      */
     private Map<String,Integer> exchangebleMapes;
     
+    /**
+     * 柜机仓门数量
+     */
+    private Integer boxNum;
+    
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

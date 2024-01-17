@@ -59,7 +59,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 	
 	Integer updateEleById(ElectricityCabinet electricityCabinet);
 
-    List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
+    List<ElectricityCabinetBO> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
     List<ElectricityCabinetVO> queryName(@Param("tenantId") Integer tenantId, @Param("id") Integer id);
     
     List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);

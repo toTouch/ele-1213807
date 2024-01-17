@@ -41,4 +41,19 @@ public class ElectricityCabinetMapVO {
      * 柜机在线状态：0：在线，1：离线
      */
     private Integer onlineStatus;
+    
+    /**
+     * 柜机格口数量
+     */
+    private Integer boxNum;
+    
+    /**
+     * 柜机仓内电池数量
+     */
+    private Integer batteryNum;
+    
+    /**
+     * 柜机锁仓格口数
+     */
+    private Integer unusableBoxNum;
 }

@@ -21,6 +21,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -138,6 +139,7 @@ import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
@@ -4708,10 +4710,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
-        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        List<ElectricityCabinetBO> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return R.ok(Collections.EMPTY_LIST);
         }
+    
+        electricityCabinets.forEach(cabinet ->{
+            ElectricityCabinetMapVO cabinetMapVO = new ElectricityCabinetMapVO();
+            BeanUtils.copyProperties(cabinet, cabinetMapVO);
+            
+            List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(cabinet.getId());
+            if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+                Integer batteryNum = (int)electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
+                cabinetMapVO.setBatteryNum(batteryNum);
+    
+                Integer unusableBoxNum =(int)electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
+                cabinetMapVO.setUnusableBoxNum(unusableBoxNum);
+            }
+        });
         
         return R.ok(electricityCabinets);
     }
