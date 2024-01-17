@@ -253,8 +253,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time)
-        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{payCount}, #{money}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time, package_Id, package_type)
+        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{payCount}, #{money}, #{tenantId}, #{createTime}, #{updateTime}, #{packageId}, #{packageType})
     </insert>
 
     <!--通过主键修改数据-->
@@ -296,6 +296,12 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="packageId != null">
+                package_Id = #{packageId},
+            </if>
+            <if test="packageType != null">
+                package_type = #{packageType},
             </if>
         </set>
         where id = #{id}
@@ -395,6 +401,113 @@
         </where>
         order by iajh.id desc
         limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectListByInviterUidOfAdmin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        tia.name as activityName,
+        iajh.status,
+        iajh.pay_count,
+        iajh.money,
+        iajh.create_time,
+        iajh.join_uid joinUid
+        from t_invitation_activity_join_history iajh
+        left join t_invitation_activity tia on tia.id = iajh.activity_id
+        <where>
+            iajh.uid = #{uid}
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and iajh.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and iajh.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+            <if test="activityId != null">
+                and iajh.activity_id = #{activityId}
+            </if>
+        </where>
+        order by iajh.id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectListByInviterUid" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        tia.name as activityName,
+        iajh.status,
+        iajh.pay_count,
+        iajh.money,
+        iajh.create_time,
+        iajh.join_uid joinUid,
+        iajh.package_id,
+        iajh.package_type
+        from t_invitation_activity_join_history iajh
+        left join t_invitation_activity tia on tia.id = iajh.activity_id
+        <where>
+            iajh.uid = #{uid}
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and iajh.create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and iajh.create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+        order by iajh.id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectListByInviterUidDistinctJoin" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select join_uid, any_value(id) as id from t_invitation_activity_join_history
+        <where>
+            uid = #{uid}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null ">
+                and create_time <![CDATA[ >=  ]]> #{beginTime}
+            </if>
+            <if test="endTime != null ">
+                and create_time <![CDATA[ <=  ]]> #{endTime}
+            </if>
+        </where>
+        group by join_uid
+        order by id desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectByJoinUidAndActivityId" resultType="com.xiliulou.electricity.entity.InvitationActivityJoinHistory">
+        select id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        from t_invitation_activity_join_history
+        where join_uid = #{joinUid} and activity_id = #{activityId} and status = 1;
     </select>
 
 </mapper>
