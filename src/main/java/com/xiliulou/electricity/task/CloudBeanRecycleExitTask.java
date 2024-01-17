@@ -26,7 +26,7 @@ public class CloudBeanRecycleExitTask extends IJobHandler {
         try {
             cloudBeanUseRecordService.recycleCloudBeanExitTask();
         } catch (Exception e) {
-            log.error("xxl-job回收云豆处理失败", e);
+            log.error("xxl-job cloud bean recycle exit task", e);
         }
         return IJobHandler.SUCCESS;
     }

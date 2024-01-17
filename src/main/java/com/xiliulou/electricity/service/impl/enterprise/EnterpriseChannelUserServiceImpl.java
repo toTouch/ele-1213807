@@ -635,6 +635,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     private Triple<Boolean, String, Object> doNoEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, Long channelUserId,
             EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser) {
         log.info("do No Enterprise User start uid = {},msg={}", query.getUid());
+        
         boolean isMember = false;
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -856,7 +857,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "300082", "骑手不存在");
         }
         
-        if (!Objects.equals(channelUser.getRenewalStatus(), channelUser.getRenewalStatus())) {
+        // 检测骑手的续费状态是否为关闭
+        if (!Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.error("channel User Exit renewal Status diff, uid={}, userRenewalStatus={}, renewalStatus={}", request.getUid(), channelUser.getRenewalStatus(), request.getRenewalStatus());
             return Triple.of(false, "300850", "当前状态无法操作");
         }
@@ -900,6 +902,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
+        
         return Triple.of(true, null, null);
     }
     
@@ -928,14 +931,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(true, null, null);
         }
         
-        List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
-        if (ObjectUtils.isEmpty(channelUserList)) {
-            log.error("channel user exit all  user data user is empty, uid={}", uid);
-            // 修改站长本身的状态为
-            return Triple.of(true, null, null);
-        }
-        
-        for (EnterpriseChannelUser channelUser : channelUserList) {
+        for (EnterpriseChannelUser channelUser : enterpriseChannelUserList) {
             // 检测用户能否退出
             Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(channelUser.getUid());
             if (!tripleCheck.getLeft()) {
@@ -1058,19 +1054,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
             log.error("channel user exit all user data user is null, uid={}", uid);
-            // 修改站长本身的状态为
-            Long id = enterpriseInfoVO.getId();
-            EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
-            enterpriseInfo.setId(id);
-            enterpriseInfo.setRenewalStatus(EnterpriseChannelUser.RENEWAL_OPEN);
-            enterpriseInfo.setUpdateTime(System.currentTimeMillis());
-            enterpriseInfoService.update(enterpriseInfo);
-            return Triple.of(true, null, null);
-        }
-        
-        List<EnterpriseChannelUser> channelUserList = enterpriseChannelUserList.stream().filter(item -> Objects.nonNull(item.getUid())).collect(Collectors.toList());
-        if (ObjectUtils.isEmpty(channelUserList)) {
-            log.error("channel user exit all user data user is empty, uid={}", uid);
             // 修改站长本身的状态为
             Long id = enterpriseInfoVO.getId();
             EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -1246,6 +1229,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     private Triple<Boolean, String, Object> doEnterpriseUserByPhone(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser) {
         log.info("do Enterprise User By Phone start uid = {},msg={}", query.getUid());
+        
         if (Objects.nonNull(channelUser) && Objects.equals(channelUser.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE) && Objects.equals(channelUser.getEnterpriseId(),
                 query.getEnterpriseId())) {
             log.info("enterprise channel user by phone repeat, enterpriseId={}, uid={}", channelUser.getEnterpriseId(), query.getUid());
@@ -1259,12 +1243,14 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             return Triple.of(false, "300832", "切换渠道卡片，进行面对面添加");
         }
         log.info("do Enterprise User By Phone end uid = {},msg={}", query.getUid());
+        
         return Triple.of(true, null, null);
     }
     
     private Triple<Boolean, String, Object> doNoEnterpriseUser(EnterpriseChannelUserQuery query, EnterpriseChannelUser channelUser, Long uid, Long channelUserId,
             EnterpriseChannelUser channelUserEntity, EnterpriseChannelUser enterpriseChannelUser) {
         log.info("do No Enterprise User start uid = {},msg={}", query.getUid());
+        
         boolean isMember = false;
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -1301,6 +1287,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 }
             }
         }
+        
+        
         //检查是否已经有用户被关联至当前企业
         if (Objects.isNull(channelUserEntity)) {
             log.error("query enterprise channel record failed after QR scan,  uid = {}, channel user record id", uid, channelUserId);
@@ -1398,6 +1386,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 // 检测用户能否退出
                 Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
                 if (!tripleCheck.getLeft()) {
+                    log.error("enterprise channel switch user check error, uid={},msg={}", userInfo.getUid(), tripleCheck.getRight());
                     return tripleCheck;
                 }
                 
@@ -1405,6 +1394,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     // 回收云豆
                     Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
                     if (!triple.getLeft()) {
+                        log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
                         return triple;
                     }
                 }
@@ -1439,7 +1429,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserHistory.setJoinTime(System.currentTimeMillis());
             channelUserHistory.setType(EnterpriseChannelUserHistory.JOIN);
             channelUserList.add(channelUserHistory);
-            log.error("doEnterpriseUserList={}, enterpriseChannelUser={}", JsonUtil.toJson(channelUserList), JsonUtil.toJson(enterpriseChannelUser));
             channelUserHistoryMapper.batchInsert(channelUserList);
         }
         return Triple.of(true, null, null);
@@ -1489,15 +1478,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (Objects.nonNull(query.getId())) {
             EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.queryById(query.getId());
             if (Objects.isNull(channelUser)) {
+                log.warn("add user to enterprise failed. current user is enterprise director. uid = {}, enterprise director uid ", query.getUid(), SecurityUtils.getUid());
                 return Triple.of(false, "300852", "二维码已失效，请刷新页面后操作");
             }
             query.setEnterpriseId(channelUser.getEnterpriseId());
             query.setFranchiseeId(channelUser.getFranchiseeId());
             log.error("EnterpriseChannelUserQuery={},uid={},channelUser={}", JsonUtil.toJson(query), query.getUid(), channelUser);
         }
-        
-        //        query.setEnterpriseId(184L);
-        //        query.setFranchiseeId(157L);
         
         // 0. 添加的骑手不能是企业站长
         EnterpriseInfo enterpriseData = enterpriseInfoService.selectByUid(query.getUid());
