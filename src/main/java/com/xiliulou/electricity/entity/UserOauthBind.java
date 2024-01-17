@@ -68,5 +68,11 @@ public class UserOauthBind {
 	public static final Integer SOURCE_WX = 1;
 	//小程序
 	public static final Integer SOURCE_WX_PRO = 2;
+	
+	// 微信不可解绑
+	public static final Integer STATUS_UN_BIND_VX = 0;
+	
+	// 微信可解绑
+	public static final Integer STATUS_BIND_VX = 1;
 
 }

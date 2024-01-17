@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * (UserBatteryMemberCardPackage)表服务实现类
@@ -140,7 +142,8 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || !(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
+        if (Objects.isNull(userBatteryMemberCard) || !(Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
+                userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
             log.warn("BATTERY MEMBER TRANSFORM WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
@@ -156,12 +159,17 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             return Triple.of(true, null, null);
         }
         
+        boolean isOrderRemainingNumberZero = false;
+        if ((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getOrderRemainingNumber() <= 0)) {
+            isOrderRemainingNumberZero = true;
+        }
+        
         UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(userBatteryMemberCard.getUid());
         if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
             return Triple.of(true, null, null);
         }
         
-        updateUserBatteryMembercardInfo(userBatteryMemberCard, userBatteryMemberCardPackageLatest);
+        updateUserBatteryMembercardInfo(userBatteryMemberCard, userBatteryMemberCardPackageLatest, isOrderRemainingNumberZero);
         
         return Triple.of(true, null, null);
     }
@@ -181,7 +189,8 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             }
             
             userBatteryMemberCardList.parallelStream().forEach(item -> {
-                if (!(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
+                if (!(Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(item.getMemberCardStatus(),
+                        UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))) {
                     return;
                 }
                 
@@ -195,12 +204,18 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
                 
+                // 如果是限次套餐次数用完提升下一个套餐 则设置为true
+                boolean isOrderRemainingNumberZero = false;
+                if ((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber() <= 0)) {
+                    isOrderRemainingNumberZero = true;
+                }
+                
                 UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = this.selectNearestByUid(item.getUid());
                 if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
                     return;
                 }
                 
-                updateUserBatteryMembercardInfo(item, userBatteryMemberCardPackageLatest);
+                updateUserBatteryMembercardInfo(item, userBatteryMemberCardPackageLatest, isOrderRemainingNumberZero);
                 
             });
             
@@ -208,15 +223,24 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
     }
     
-    private void updateUserBatteryMembercardInfo(UserBatteryMemberCard userBatteryMemberCard, UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest) {
+    private void updateUserBatteryMembercardInfo(UserBatteryMemberCard userBatteryMemberCard, UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest,
+            boolean isOrderRemainingNumberZero) {
         //更新当前用户绑定的套餐数据
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setOrderId(userBatteryMemberCardPackageLatest.getOrderId());
         userBatteryMemberCardUpdate.setMemberCardId(userBatteryMemberCardPackageLatest.getMemberCardId());
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
-        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
         userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCardPackageLatest.getRemainingNumber());
+        
+        // 如果限制次数用完到期 更改总套餐过期时间
+        if (isOrderRemainingNumberZero) {
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(
+                    userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+        } else {
+            userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + userBatteryMemberCardPackageLatest.getMemberCardExpireTime());
+        }
         
         //获取原套餐的套餐剩余次数
         Long orderRemainingNumber = userBatteryMemberCard.getOrderRemainingNumber();
@@ -259,4 +283,5 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         //更新用户电池型号
         userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
+    
 }

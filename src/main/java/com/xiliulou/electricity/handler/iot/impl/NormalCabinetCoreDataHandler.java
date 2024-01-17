@@ -61,6 +61,7 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
                         activeElectricalEnergy(eleCabinetCoreDataVO.getActiveElectricalEnergy()).
                         waterPumpOpen(eleCabinetCoreDataVO.isWaterPumpOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
                         waterLevelWarning(eleCabinetCoreDataVO.isWaterLevelWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                        heatOpen(eleCabinetCoreDataVO.isHeatOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
                         temp(eleCabinetCoreDataVO.getTemp()).
                         humidity(eleCabinetCoreDataVO.getHumidity()).
                         waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
@@ -116,6 +117,10 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
          * 核心板版本号
          */
         private String coreVersion;
+        /**
+         * 整柜加热
+         */
+        private boolean isHeatOpen;
     }
 
 }

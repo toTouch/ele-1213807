@@ -90,6 +90,10 @@
         values (#{uid}, #{name}, #{phone}, #{status}, #{type}, #{carId}, #{carSn}, #{carModel}, #{carModelId}, #{createTime}, #{updateTime}, #{tenantId})
     </insert>
     
+    <update id="updatePhoneByUid">
+        update t_car_lock_ctrl_history set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_car_lock_ctrl_history

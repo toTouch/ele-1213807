@@ -289,6 +289,19 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     /**
+     * 更新用户手机号
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    @Override
+    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
+        return enterpriseInfoMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    /**
      * 通过主键删除数据
      *
      * @param id 主键

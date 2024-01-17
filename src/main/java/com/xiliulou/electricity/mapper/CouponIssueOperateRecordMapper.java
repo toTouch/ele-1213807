@@ -25,5 +25,13 @@ public interface CouponIssueOperateRecordMapper extends BaseMapper<CouponIssueOp
     Integer queryCount(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
     List<CouponIssueOperateRecordVO> queryRecordList(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
     Integer queryRecordCount(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
-
+    
+    /**
+     * 根据更换手机号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param newPhone 新号码
+     * @return 影响行数
+     */
+    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 }

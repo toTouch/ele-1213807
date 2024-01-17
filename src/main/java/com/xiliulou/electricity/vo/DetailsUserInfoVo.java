@@ -102,4 +102,9 @@ public class DetailsUserInfoVo {
      * 租车滞纳金金额（总支付成功）
      */
     private BigDecimal carRentalPackageOrderSlippageAmountTotal;
+    
+    /**
+     * 是否可解绑微信 0：不可解绑 1：可解绑
+     */
+    private Integer bindWX;
 }
