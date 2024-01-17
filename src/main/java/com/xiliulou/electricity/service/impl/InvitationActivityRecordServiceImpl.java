@@ -423,6 +423,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                         .build();
     
                 UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
+                if (Objects.isNull(joinUser)) {
+                    joinUser = userInfoService.queryByUidFromDb(joinUid);
+                }
+    
                 Optional.ofNullable(joinUser).ifPresent(user -> {
                     invitationActivityDetailVO.setJoinName(user.getName());
                     invitationActivityDetailVO.setJoinPhone(user.getPhone());
@@ -543,6 +547,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                         .payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount()).status(item.getStatus()).build();
             
                 UserInfo joinUser = userInfoService.queryByUidFromCache(item.getJoinUid());
+                if (Objects.isNull(joinUser)) {
+                    joinUser = userInfoService.queryByUidFromDb(item.getJoinUid());
+                }
+                
                 Optional.ofNullable(joinUser).ifPresent(u -> {
                     vo.setJoinPhone(u.getPhone());
                     vo.setJoinName(u.getName());
