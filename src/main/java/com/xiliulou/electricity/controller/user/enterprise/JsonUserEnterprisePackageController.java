@@ -69,6 +69,24 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
+     * 根据电池型号查询可购买套餐信息
+     *
+     * @param enterpriseId
+     * @param uid
+     * @param batteryV
+     * @return
+     */
+    @GetMapping("/admin/super/user/enterprise/queryPackagesByBatteryV")
+    public R queryPackagesByBatteryV1(@RequestParam(value = "enterpriseId", required = true) Long enterpriseId, @RequestParam(value = "uid", required = true) Long uid,
+            @RequestParam(value = "batteryV", required = false) String batteryV) {
+        
+        EnterpriseMemberCardQuery query = EnterpriseMemberCardQuery.builder().enterpriseId(enterpriseId).uid(uid).batteryV(batteryV).tenantId(TenantContextHolder.getTenantId())
+                .build();
+        
+        return returnTripleResult(enterpriseBatteryPackageService.queryPackagesByBatteryV(query));
+    }
+    
+    /**
      * 根据电池型号查询保险信息
      *
      * @param franchiseeId
