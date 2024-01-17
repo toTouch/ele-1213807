@@ -1092,7 +1092,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
         List<Long> channelUserIds = new ArrayList<>();
         List<EnterpriseChannelUserExit> addList = new ArrayList<>();
-        boolean flag = false;
         for (EnterpriseChannelUser item : enterpriseChannelUserList) {
             // cloudBeanStatus=（云豆状态（0-初始态, 1-未回收, 2-已回收）） 初始态，已回收的
             if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT) || Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {

@@ -66,6 +66,11 @@ public class EnterpriseChannelUserExit {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 错误信息
+     */
+    private String errorMsg;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
