@@ -4714,6 +4714,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(Collections.EMPTY_LIST);
         }
     
+        List<Integer> cabinetIds = electricityCabinets.stream().map(ElectricityCabinet::getId).collect(Collectors.toList());
+        // 批量查询所有柜机的格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.listByElectricityCabinetIdS(cabinetIds, TenantContextHolder.getTenantId());
+    
+        Map<Integer, List<ElectricityCabinetBox>> boxesByIdMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox box : electricityCabinetBoxList) {
+                boxesByIdMap.computeIfAbsent(box.getElectricityCabinetId(), k -> new ArrayList<>()).add(box);
+            }
+        }
+    
         // 获取系统配置
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         
@@ -4722,7 +4733,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityCabinetMapVO electricityCabinetMapVO = new ElectricityCabinetMapVO();
             BeanUtils.copyProperties(cabinet, electricityCabinetMapVO);
         
-            List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(cabinet.getId());
+            List<ElectricityCabinetBox> electricityCabinetBoxes = boxesByIdMap.getOrDefault(cabinet.getId(), Collections.emptyList());
             if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
                 //柜机格口数量
                 int boxNum = electricityCabinetBoxes.size();

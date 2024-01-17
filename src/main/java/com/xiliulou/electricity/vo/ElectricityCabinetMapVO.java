@@ -15,7 +15,7 @@ public class ElectricityCabinetMapVO {
     /**
      * 柜机ID
      */
-    private Long id;
+    private Integer id;
     
     /**
      * 柜机名称
@@ -30,12 +30,12 @@ public class ElectricityCabinetMapVO {
     /**
      * 柜机经度
      */
-    private BigDecimal longitude;
+    private Double longitude;
     
     /**
      * 柜机维度
      */
-    private BigDecimal latitude;
+    private Double latitude;
     
     /**
      * 柜机在线状态：0：在线，1：离线
