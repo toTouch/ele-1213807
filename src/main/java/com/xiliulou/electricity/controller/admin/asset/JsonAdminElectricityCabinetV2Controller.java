@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
@@ -170,6 +171,21 @@ public class JsonAdminElectricityCabinetV2Controller extends BasicController {
                 .size(size).offset(offset).build();
     
         return R.ok(electricityCabinetV2Service.listEnableAllocateCabinet(enableAllocateRequest));
+    }
+    
+    @PostMapping("/admin/electricityCabinet/reloadEleCabinetGeo")
+    public R reloadEleCabinetGeo() {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+        return R.ok(electricityCabinetV2Service.reloadEleCabinetGeo());
     }
     
 }
