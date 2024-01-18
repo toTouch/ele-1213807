@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
@@ -10,16 +9,13 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -36,11 +32,6 @@ public class EleHardwareFailureWarnMsgController {
     @Resource
     private EleHardwareFailureWarnMsgService failureWarnMsgService;
     
-    @Value("${export.size}")
-    private Long exportSize;
-    
-    @Value("${export.days}")
-    private Integer days;
     
     
     /**
@@ -292,37 +283,6 @@ public class EleHardwareFailureWarnMsgController {
     }
     
     
-    /**
-     * 故障告警数据导出
-     */
-    @GetMapping(value = "/admin/failure/warn/exportExcel")
-    public void exportExcel(HttpServletResponse response, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
-            @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
-            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            throw new CustomBusinessException("未查询到用户");
-        }
-        
-        if (ObjectUtils.isEmpty(exportSize)) {
-            log.error("fail warn msg not find export size");
-        }
-    
-        if (ObjectUtils.isEmpty(days)) {
-            log.error("fail warn msg not find days");
-        }
-    
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Integer tenantVisible = FailureAlarm.visible;
-    
-        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(EleHardwareFailureWarnMsg.WARN).sn(sn).tenantId(tenantId).days(days)
-                .deviceType(deviceType).grade(grade).signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).tenantVisible(tenantVisible)
-                .status(FailureAlarm.enable).size(exportSize).offset(0L).build();
-        failureWarnMsgService.exportExcel(request, response);
-    }
-    
     @GetMapping("/admin/super/failure/warn/proportion")
     public R proportion(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime
             , @RequestParam(value = "type") Integer type) {
@@ -342,24 +302,5 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         return R.ok(triple.getRight());
-    }
-    
-    /**
-     * @param
-     * @description 故障告警记录数量统计
-     * @date 2023/12/15 18:17:54
-     * @author maxiaodong
-     */
-    @GetMapping("/admin/super/failure/warn/test")
-    public R test() {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!SecurityUtils.isAdmin()) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        return failureWarnMsgService.test();
     }
 }

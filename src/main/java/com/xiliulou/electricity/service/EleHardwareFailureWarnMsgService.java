@@ -20,10 +20,6 @@ public interface EleHardwareFailureWarnMsgService {
     
     Triple<Boolean, String, Object> calculateFrequency(EleHardwareFailureWarnMsgPageRequest request);
     
-    void exportExcel(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response);
-    
-    R test();
-    
     R superExportPage(EleHardwareFailureWarnMsgPageRequest request);
     
     Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request);
