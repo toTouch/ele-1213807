@@ -60,7 +60,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         dataMap.put("sessionId", receiverMessage.getSessionId());
         dataMap.put("msgType", CommonConstant.MSG_TYPE);
         dataMap.put("devId", hardwareFailureWarnMsg.getDevId());
-        dataMap.put("txnNo", hardwareFailureWarnMsg.getTxnNo());
+        dataMap.put("t", hardwareFailureWarnMsg.getT());
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(receiverMessage.getSessionId()).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_ACK).build();
