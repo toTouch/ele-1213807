@@ -229,7 +229,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
         if (Objects.isNull(result) || StrUtil.isEmpty(result.getOpenid()) || StrUtil.isEmpty(result.getSession_key())) {
-            log.error("check open id failed, wxResult has error! uid = {}, tenantId = {}", bodyStr, uid, tenantId);
+            log.error("check open id failed, wxResult has error! uid = {}, tenantId = {}", uid, tenantId);
             //throw new AuthenticationServiceException("微信返回异常！");
             return Boolean.FALSE;
         }
