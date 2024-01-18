@@ -1037,25 +1037,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             BeanUtils.copyProperties(item, vo);
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-            vo.setLimitCount(batteryMemberCard.getLimitCount());
-            vo.setRentType(batteryMemberCard.getRentType());
-            vo.setRentUnit(batteryMemberCard.getRentUnit());
-            vo.setValidDays(batteryMemberCard.getValidDays());
-            vo.setUseCount(batteryMemberCard.getUseCount());
-            if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
-                    + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
-                vo.setIsRefund(BatteryMemberCard.YES);
-            } else {
-                vo.setIsRefund(BatteryMemberCard.NO);
-            }
-            vo.setRefundLimit(batteryMemberCard.getRefundLimit());
-            vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
-            
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
-            if (Objects.nonNull(batteryMembercardRefundOrder)) {
-                vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
-                vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
-            }
+            Optional.ofNullable(batteryMemberCard).ifPresent(memCard ->{
+                vo.setLimitCount(batteryMemberCard.getLimitCount());
+                vo.setRentType(batteryMemberCard.getRentType());
+                vo.setRentUnit(batteryMemberCard.getRentUnit());
+                vo.setValidDays(batteryMemberCard.getValidDays());
+                vo.setUseCount(batteryMemberCard.getUseCount());
+                if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
+                        + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
+                    vo.setIsRefund(BatteryMemberCard.YES);
+                } else {
+                    vo.setIsRefund(BatteryMemberCard.NO);
+                }
+                vo.setRefundLimit(batteryMemberCard.getRefundLimit());
+                vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
+    
+                BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
+                if (Objects.nonNull(batteryMembercardRefundOrder)) {
+                    vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
+                    vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
+                }
+            });
             
             return vo;
         }).collect(Collectors.toList());
