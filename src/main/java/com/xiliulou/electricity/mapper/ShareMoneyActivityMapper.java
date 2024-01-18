@@ -37,4 +37,6 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
     ShareMoneyActivity selectActivityByTenantIdAndStatus(@Param("tenantId") Long tenantId, @Param("status") Integer status);
 
     Integer updateActivity(ShareMoneyActivity shareMoneyActivity);
+    
+    Integer existShareMoneyActivity(@Param("tenantId") Integer tenantId);
 }

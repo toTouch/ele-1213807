@@ -602,6 +602,11 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
         return R.ok();
     }
-
+    
+    @Override
+    public Integer existShareMoneyActivity(Integer tenantId) {
+        return shareMoneyActivityMapper.existShareMoneyActivity(tenantId);
+    }
+    
 }
 

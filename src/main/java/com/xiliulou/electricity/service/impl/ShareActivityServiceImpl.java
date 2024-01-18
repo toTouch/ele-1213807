@@ -30,6 +30,7 @@ import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
+import com.xiliulou.electricity.vo.activity.ShareMoneyAndShareActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -111,6 +112,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	BatteryMemberCardService batteryMemberCardService;
 	@Autowired
 	private CarRentalPackageService carRentalPackageService;
+	
+	@Autowired
+	private ShareMoneyActivityService shareMoneyActivityService;
 
 
 	/**
@@ -848,6 +852,27 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		return activityPackageVOList;
 	}
-
+	
+	@Override
+	public R checkExistActivity() {
+		ShareMoneyAndShareActivityVO shareActivityVO = new ShareMoneyAndShareActivityVO();
+		//查询该租户是否有邀请活动，
+		Integer shareMoeneyActivityCount = shareMoneyActivityService.existShareMoneyActivity(TenantContextHolder.getTenantId());
+		if (Objects.nonNull(shareMoeneyActivityCount)) {
+			shareActivityVO.setExistShareMoneyActivity(Boolean.TRUE);
+		}else {
+			shareActivityVO.setExistShareMoneyActivity(Boolean.FALSE);
+		}
+		
+		//查询该租户是否有邀请活动，
+		Integer shareActivityCount = shareActivityMapper.existShareActivity(TenantContextHolder.getTenantId());
+		if (Objects.nonNull(shareActivityCount)) {
+			shareActivityVO.setExistShareActivity(Boolean.TRUE);
+		}else {
+			shareActivityVO.setExistShareActivity(Boolean.FALSE);
+		}
+		
+		return R.ok(shareActivityVO);
+	}
 }
 

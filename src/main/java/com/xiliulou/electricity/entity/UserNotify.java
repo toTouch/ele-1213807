@@ -46,6 +46,13 @@ public class UserNotify {
      */
     private String content;
     
+    /**
+     * 0：文字 1：图片
+     */
+    private Integer type;
+    
+    private String pictureInfo;
+    
     private Long createTime;
     
     private Long updateTime;

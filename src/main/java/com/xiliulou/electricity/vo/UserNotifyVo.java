@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author zgw
  * @date 2023/2/21 15:02
@@ -34,6 +36,13 @@ public class UserNotifyVo {
      * 内容
      */
     private String content;
+    
+    /**
+     * 0：文字 1：图片
+     */
+    private Integer type;
+    
+    private List<NotifyPictureInfoVO> pictureInfoList;
     
     private Long updateTime;
 }
