@@ -73,4 +73,6 @@ public interface CommonConstant {
     
     String STR_COMMA = ",";
     
+    Integer MSG_TYPE = 411;
+    
 }

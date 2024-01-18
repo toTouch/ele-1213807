@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
@@ -43,32 +44,6 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     @Resource
     TenantService tenantService;
     
-    public static void main(String[] args) {
-        HardwareFailureWarnMsg msg = new HardwareFailureWarnMsg();
-        msg.setMsgType(410);
-        msg.setDevId("76");
-        msg.setT(System.currentTimeMillis());
-        msg.setTxnNo("123456789");
-    
-        List<HardwareAlarmMsg> alarmList = new ArrayList<>();
-        HardwareAlarmMsg alarmMsg = new HardwareAlarmMsg();
-        alarmMsg.setId("111");
-        alarmMsg.setAlarmTime(System.currentTimeMillis());
-        alarmMsg.setAlarmDesc("00");
-        alarmMsg.setAlarmFlag(1);
-        alarmMsg.setAlarmId("123");
-        alarmMsg.setBoxId(9);
-        alarmMsg.setType(0);
-        alarmMsg.setOccurNum(1);
-        
-        alarmList.add(alarmMsg);
-    
-        msg.setAlarmList(alarmList);
-    
-        final String s = JsonUtil.toJson(msg);
-        System.out.printf(s);
-    }
-    
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         HardwareFailureWarnMsg hardwareFailureWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFailureWarnMsg.class);
@@ -83,10 +58,9 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("sessionId", receiverMessage.getSessionId());
-        dataMap.put("msgType", hardwareFailureWarnMsg.getMsgType());
+        dataMap.put("msgType", CommonConstant.MSG_TYPE);
         dataMap.put("devId", hardwareFailureWarnMsg.getDevId());
         dataMap.put("txnNo", hardwareFailureWarnMsg.getTxnNo());
-        dataMap.put("result", 1);
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(receiverMessage.getSessionId()).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_ACK).build();
