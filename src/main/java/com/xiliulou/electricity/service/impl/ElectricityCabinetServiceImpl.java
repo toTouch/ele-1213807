@@ -4761,8 +4761,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     Integer lowChargeRate = electricityConfig.getLowChargeRate().intValue();
                     Integer fullChargeRate = electricityConfig.getFullChargeRate().intValue();
     
-                    electricityCabinetMapVO.setIsLowCharge(chargeRate <= lowChargeRate);
-                    electricityCabinetMapVO.setIsFulCharge(chargeRate >= fullChargeRate);
+                    if (chargeRate <= lowChargeRate) {
+                        electricityCabinetMapVO.setIsLowCharge(NumberConstant.ONE);
+                    } else if (chargeRate >= fullChargeRate) {
+                        electricityCabinetMapVO.setIsFulCharge(NumberConstant.ONE);
+                    } else {
+                        electricityCabinetMapVO.setIsLowCharge(NumberConstant.ZERO);
+                        electricityCabinetMapVO.setIsFulCharge(NumberConstant.ZERO);
+                    }
                 }
             
                 // 是否锁仓柜机
@@ -4777,13 +4783,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         switch (cabinetQuery.getStatus()) {
             default:
                 // 默认少电
-                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), true)).collect(Collectors.toList());
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).collect(Collectors.toList());
                 break;
             case 0:
                 rspList = assembleCabinetList;
                 break;
             case 2:
-                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), true)).collect(Collectors.toList());
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).collect(Collectors.toList());
                 break;
             case 3:
                 rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsUnusable(), true)).collect(Collectors.toList());

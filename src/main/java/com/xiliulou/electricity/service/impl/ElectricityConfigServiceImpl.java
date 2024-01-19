@@ -154,7 +154,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         Integer fullChargeRate = electricityConfigAddAndUpdateQuery.getFullChargeRate();
     
         if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
-                || fullChargeRate < lowChargeRate) {
+                || fullChargeRate <= lowChargeRate) {
             return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
         }
     

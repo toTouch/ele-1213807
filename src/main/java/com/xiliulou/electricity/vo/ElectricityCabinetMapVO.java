@@ -58,14 +58,14 @@ public class ElectricityCabinetMapVO {
     private Integer unusableBoxNum;
     
     /**
-     * 是否少电柜机
+     * 是否少电柜机:1：少电 0：正常
      */
-    private Boolean isLowCharge;
+    private Integer isLowCharge;
     
     /**
-     * 是否多电柜机
+     * 是否多电柜机:1:多电 0：正常
      */
-    private Boolean isFulCharge;
+    private Integer isFulCharge;
     
     /**
      * 是否锁仓柜机：柜机中只要有一个仓被锁就算锁仓柜机
