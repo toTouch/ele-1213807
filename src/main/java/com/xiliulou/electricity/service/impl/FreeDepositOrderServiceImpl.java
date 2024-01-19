@@ -2272,6 +2272,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100275", "电池套餐不可用");
         }
     
+        if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),batteryMemberCard.getFranchiseeId())){
+            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
+            return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
+        }
+    
         //判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
         if(userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())){
             log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberCardId());
