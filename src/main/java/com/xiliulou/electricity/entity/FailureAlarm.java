@@ -84,8 +84,8 @@ public class FailureAlarm {
 	public static final Integer visible = 1;
 	public static final Integer invisible = 0;
 	
-	public static final Integer enable = 1;
-	public static final Integer disable = 0;
+	public static final Integer enable = 0;
+	public static final Integer disable = 1;
 
 }
 
