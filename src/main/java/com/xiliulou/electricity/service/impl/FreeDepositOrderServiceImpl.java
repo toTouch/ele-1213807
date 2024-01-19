@@ -96,7 +96,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
@@ -1683,8 +1682,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             //绑定加盟商、更新押金状态
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
-            userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-            userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
+    
+            if (Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+                userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+            }
+            if (Objects.isNull(userInfo.getStoreId()) || Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+                userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
+            }
+            
             userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
