@@ -361,6 +361,12 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+    
+        // 套餐名称长度最大为14
+        if (optModel.getName().length() > 14) {
+            throw new BizException("100377", "参数校验错误");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
