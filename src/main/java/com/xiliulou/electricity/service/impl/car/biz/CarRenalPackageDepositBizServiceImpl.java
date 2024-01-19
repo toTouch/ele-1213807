@@ -565,11 +565,16 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             userInfoUpdate.setUid(uid);
     
             UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
-            if (Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            Long boundFranchiseeId = userInfo.getFranchiseeId();
+            if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
                 userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
             }
+            
+            Long boundStoreId = userInfo.getStoreId();
+            if (Objects.isNull(boundStoreId) || Objects.equals(boundStoreId, NumberConstant.ZERO_L) || Objects.equals(boundFranchiseeId, Long.valueOf(franchiseeId))) {
+                userInfoUpdate.setStoreId(Long.valueOf(storeId));
+            }
     
-            userInfoUpdate.setStoreId(Long.valueOf(storeId));
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);

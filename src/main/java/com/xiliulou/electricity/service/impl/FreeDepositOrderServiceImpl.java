@@ -1683,10 +1683,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
     
-            if (Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            Long boundFranchiseeId = userInfo.getFranchiseeId();
+            if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
                 userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             }
-            if (Objects.isNull(userInfo.getStoreId()) || Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+    
+            Long boundStoreId = userInfo.getStoreId();
+            if (Objects.isNull(boundStoreId) || Objects.equals(boundStoreId, NumberConstant.ZERO_L)) {
                 userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
             }
             
