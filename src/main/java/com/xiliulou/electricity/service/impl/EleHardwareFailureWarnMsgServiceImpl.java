@@ -127,6 +127,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         signalName = signalName + CommonConstant.STR_COMMA + failureAlarm.getEventDesc();
                     }
                     item.setFailureAlarmName(signalName);
+                    item.setDeviceType(failureAlarm.getDeviceType());
+                    item.setGrade(failureAlarm.getGrade());
                 });
             }
             resultList.add(vo);
