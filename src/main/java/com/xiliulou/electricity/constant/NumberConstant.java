@@ -21,6 +21,9 @@ public class NumberConstant {
     
     public static final Integer SIX = 6;
     
+    
+    public static final Integer THREE_HUNDRED = 300;
+    
     public static final Long ZERO_L = 0L;
     
     public static final Long ONE_L = 1L;

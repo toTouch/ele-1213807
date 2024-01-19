@@ -180,6 +180,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -4719,7 +4720,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //分批次查询柜机格挡
         List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
-        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, 300);
+        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.THREE_HUNDRED);
         partitions.forEach(item ->{
             List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
             electricityCabinetBoxList.addAll(boxes);
@@ -4755,21 +4756,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetMapVO.setUnusableBoxNum(unusableBoxNum);
             
                 //判断少/多电柜机
-                BigDecimal chargeRate = BigDecimal.valueOf(batteryNum).divideToIntegralValue(BigDecimal.valueOf(boxNum));
+                int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN).intValue();
                 if (Objects.nonNull(electricityConfig)) {
-                    BigDecimal lowChargeRate = electricityConfig.getLowChargeRate();
-                    BigDecimal fullChargeRate = electricityConfig.getFullChargeRate();
-                
-                    if (chargeRate.compareTo(lowChargeRate) <= NumberConstant.ZERO) {
-                        electricityCabinetMapVO.setIsLowCharge(true);
-                        electricityCabinetMapVO.setIsFulCharge(false);
-                    } else if (chargeRate.compareTo(fullChargeRate) >= NumberConstant.ZERO) {
-                        electricityCabinetMapVO.setIsLowCharge(false);
-                        electricityCabinetMapVO.setIsFulCharge(true);
-                    } else {
-                        electricityCabinetMapVO.setIsLowCharge(null);
-                        electricityCabinetMapVO.setIsFulCharge(null);
-                    }
+                    Integer lowChargeRate = electricityConfig.getLowChargeRate().intValue();
+                    Integer fullChargeRate = electricityConfig.getFullChargeRate().intValue();
+    
+                    electricityCabinetMapVO.setIsLowCharge(chargeRate <= lowChargeRate);
+                    electricityCabinetMapVO.setIsFulCharge(chargeRate >= fullChargeRate);
                 }
             
                 // 是否锁仓柜机

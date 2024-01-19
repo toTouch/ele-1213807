@@ -28,7 +28,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 
@@ -159,9 +158,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
         }
     
-        BigDecimal lowChargeRateBd = BigDecimal.valueOf(lowChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
-        BigDecimal fullChargeRateBd = BigDecimal.valueOf(fullChargeRate).divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.HALF_UP);
-    
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
@@ -190,8 +186,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
             electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-            electricityConfig.setLowChargeRate(lowChargeRateBd);
-            electricityConfig.setFullChargeRate(fullChargeRateBd);
+            electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+            electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -228,8 +224,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
         electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
-        electricityConfig.setLowChargeRate(lowChargeRateBd);
-        electricityConfig.setFullChargeRate(fullChargeRateBd);
+        electricityConfig.setLowChargeRate(BigDecimal.valueOf(lowChargeRate));
+        electricityConfig.setFullChargeRate(BigDecimal.valueOf(fullChargeRate));
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
