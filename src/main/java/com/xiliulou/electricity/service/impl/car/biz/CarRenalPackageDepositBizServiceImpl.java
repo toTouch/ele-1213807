@@ -22,7 +22,6 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -43,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -565,8 +563,18 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             // 4. 更新用户表押金状态
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
-            userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
-            userInfoUpdate.setStoreId(Long.valueOf(storeId));
+    
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            Long boundFranchiseeId = userInfo.getFranchiseeId();
+            if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
+                userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
+            }
+            
+            Long boundStoreId = userInfo.getStoreId();
+            if (Objects.isNull(boundStoreId) || Objects.equals(boundStoreId, NumberConstant.ZERO_L) || Objects.equals(boundFranchiseeId, Long.valueOf(franchiseeId))) {
+                userInfoUpdate.setStoreId(Long.valueOf(storeId));
+            }
+    
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
                 userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
