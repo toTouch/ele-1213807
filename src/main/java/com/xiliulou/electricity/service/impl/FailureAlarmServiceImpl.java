@@ -341,6 +341,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         return this.failureAlarmMapper.selectList(queryModel);
     }
     
+    @Slave
     @Override
     public void exportExcel(FailureAlarmPageRequest failureAlarmPageRequest, HttpServletResponse response) {
         Long userId = SecurityUtils.getUid();
@@ -416,6 +417,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         
         String fileName = "故障告警设置报表.xlsx";
         try {
+            log.info("failure export data={}", voList);
             ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
