@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleTurnoverStatisticMapper">
+    
+    <select id="selectListEleTurnoverStatistic" resultType="com.xiliulou.electricity.entity.EleTurnoverStatistic">
+        select sum(turnover_amount) as turnover_amount,
+        sum(wechat_merchant_income) as wechat_merchant_income,
+        sum(rent_amount_online) as rent_amount_online,
+        sum(rent_amount_total) as rent_amount_total,
+        sum(rent_amount_offline) as rent_amount_offline,
+        sum(deposit_amount) as deposit_amount,
+        sum(overdue_amount_total) as overdue_amount_total,
+        sum(overdue_amount_online) as overdue_amount_online,
+        sum(overdue_amount_offline) as overdue_amount_offline,
+        sum(refund_rent_amount) as refund_rent_amount,
+        sum(refund_deposit_amount) as refund_deposit_amount
+        from t_ele_turnover_statistic
+    
+        where tenant_id =#{tenantId} and statistic_date >=#{beginTime} and statistic_date &lt;= #{endTime}
+        <if test="franchiseeIds != null">
+            and  franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null">
+            and  store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        group by statistic_date
+        limit #{offset}, #{size}
+    </select>
+    
+
+</mapper>
