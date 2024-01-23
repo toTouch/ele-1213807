@@ -36,7 +36,7 @@ public class JsonAdminTurnoverStatisticController {
     @Autowired
     private UserDataScopeService userDataScopeService;
     
-    @GetMapping(value = "/admin/finance/turnover/list")
+    @GetMapping(value = "/admin/earning/turnover/list")
     public R queryTurnoverStatisticList(@RequestParam("size") Long size,
             @RequestParam("offset") Long offset,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
