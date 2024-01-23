@@ -373,10 +373,13 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
                     protectMeasureMap.putAll(map);
                 }
             });
-            
+            Integer i = 1;
             for (FailureAlarmVO item : failureAlarmVOList) {
                 FailureAlarmExcelVo vo = new FailureAlarmExcelVo();
                 BeanUtils.copyProperties(item, vo);
+                // 序列号
+                vo.setSerialNumber(i++);
+                
                 FailureAlarmTypeEnum typeEnum = BasicEnum.getEnum(item.getType(), FailureAlarmTypeEnum.class);
                 if (ObjectUtils.isNotEmpty(typeEnum)) {
                     vo.setType(typeEnum.getDesc());

@@ -18,6 +18,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class FailureAlarmExcelVo {
+    /**
+     * 错误码
+     */
+    @ExcelProperty("序号")
+    private Integer serialNumber;
     
     /**
      * 错误码
@@ -34,7 +39,7 @@ public class FailureAlarmExcelVo {
     /**
      * 分类(1-故障， 2-告警)
      */
-    @ExcelProperty("分类")
+    @ExcelProperty("类型")
     private String type;
     
     /**
