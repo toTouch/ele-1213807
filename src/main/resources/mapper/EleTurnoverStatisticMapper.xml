@@ -70,7 +70,7 @@
                 #{id}
             </foreach>
         </if>
-        ) a
+        group by statistic_date) a
     </select>
 
 </mapper>
