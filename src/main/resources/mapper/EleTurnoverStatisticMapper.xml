@@ -36,6 +36,7 @@
             </foreach>
         </if>
         group by statistic_date
+        order by statistic_date desc
         limit #{offset}, #{size}
     </select>
     
