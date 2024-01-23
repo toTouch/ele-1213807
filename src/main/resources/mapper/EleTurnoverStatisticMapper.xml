@@ -3,7 +3,14 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleTurnoverStatisticMapper">
     
     <select id="selectListEleTurnoverStatistic" resultType="com.xiliulou.electricity.entity.EleTurnoverStatistic">
-        select sum(turnover_amount) as turnover_amount,
+        select id,
+        statistic_date,
+        store_id,
+        tenant_id,
+        franchisee_id,
+        create_time,
+        update_time,
+        sum(turnover_amount) as turnover_amount,
         sum(wechat_merchant_income) as wechat_merchant_income,
         sum(rent_amount_online) as rent_amount_online,
         sum(rent_amount_total) as rent_amount_total,
@@ -21,14 +28,14 @@
             and statistic_date >=#{beginTime} and statistic_date &lt;= #{endTime}
         </if>
         <if test="franchiseeIds != null">
-            and  franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="storeIds != null">
-            and  store_id in
-            <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+            and store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>

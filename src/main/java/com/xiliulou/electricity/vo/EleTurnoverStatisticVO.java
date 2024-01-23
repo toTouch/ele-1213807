@@ -75,17 +75,6 @@ public class EleTurnoverStatisticVO {
     private BigDecimal insuranceAmount;
     
     /**
-     * 当日增值服务-线上
-     */
-    private BigDecimal insuranceAmountOnline;
-    
-    /**
-     * 当日增值服务-线下
-     */
-    private BigDecimal insuranceAmountOffline;
-    
-    
-    /**
      * 当日缴纳滞纳金总和
      */
     private BigDecimal overdueAmountTotal;
