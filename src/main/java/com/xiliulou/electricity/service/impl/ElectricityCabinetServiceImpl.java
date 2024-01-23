@@ -165,6 +165,7 @@ import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -4785,10 +4786,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
         // 设置统计值
         Integer totalCount = assembleCabinetList.size();
-        Integer lowChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
-        Integer fullChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
-        Integer unusableCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsUnusable(), NumberConstant.ONE)).count();
-        Integer offLineCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
+        Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        Integer fullChargeCount = (int)assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        Integer unusableCount = (int)assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
+        Integer offLineCount = (int)assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
     
         // 0-全部、1-少电、2-多电、3-锁仓、4-离线
         List<ElectricityCabinetListMapVO> rspList = new ArrayList<>();
@@ -4804,7 +4805,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).collect(Collectors.toList());
                 break;
             case 3:
-                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsUnusable(), true)).collect(Collectors.toList());
+                rspList = assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).collect(Collectors.toList());
                 break;
             case 4:
                 rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).collect(Collectors.toList());
