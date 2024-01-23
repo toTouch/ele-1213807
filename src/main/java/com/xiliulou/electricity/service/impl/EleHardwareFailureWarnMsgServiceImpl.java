@@ -118,7 +118,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 log.info("cell is zero={}", vo);
                 vo.setCellNo(null);
             }
-            
+            log.info("cell res={}", Objects.equals(vo.getCellNo(), NumberConstant.ZERO));
             if (ObjectUtils.isEmpty(item.getFailureAlarmName())) {
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(i -> {
