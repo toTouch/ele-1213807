@@ -232,7 +232,15 @@ public class FailureAlarmController {
      * @return
      */
     @GetMapping("/admin/failure/alarm/getDictList")
-    public R getDictList() {
+    public R getDictList(@RequestParam("name") String name, @RequestParam("size") long size, @RequestParam("offset") long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+    
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -243,7 +251,7 @@ public class FailureAlarmController {
             tenantVisible = FailureAlarm.visible;
         }
     
-        List<FailureAlarm> list = failureAlarmService.listByParams(null, null, tenantVisible, FailureAlarm.enable);
+        List<FailureAlarm> list = failureAlarmService.listByParams(null, null, tenantVisible, FailureAlarm.enable, name, size, offset);
         return R.ok(list);
     }
     

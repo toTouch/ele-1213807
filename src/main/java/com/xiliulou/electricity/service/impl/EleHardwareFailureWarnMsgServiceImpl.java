@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -28,7 +27,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
@@ -42,12 +40,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -121,6 +115,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             BeanUtils.copyProperties(item, vo);
             
             if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
+                log.info("cell is zero={}", vo);
                 vo.setCellNo(null);
             }
             
@@ -167,7 +162,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(queryModel.getDeviceType(), queryModel.getGrade(), request.getTenantVisible(),
-                    request.getStatus());
+                    request.getStatus(), null, null, null);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
                 log.error("failure warn query alarm is empty");
                 return Triple.of(true, null, Collections.emptyList());

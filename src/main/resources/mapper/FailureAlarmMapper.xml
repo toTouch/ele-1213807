@@ -129,8 +129,14 @@
             <if test="type != null">
                 and t.type = #{type}
             </if>
-           
+    
+            <if test="signalName != null and signalName != ''">
+                and t.signal_name like concat('%',concat(#{signalName}, '%'))
+            </if>
         </where>
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
     
     <update id="update" parameterType="com.xiliulou.electricity.entity.FailureAlarm">

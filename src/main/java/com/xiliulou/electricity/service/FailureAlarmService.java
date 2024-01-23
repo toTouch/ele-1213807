@@ -37,7 +37,7 @@ public interface FailureAlarmService {
     
     void deleteCache(FailureAlarm failureAlarm);
     
-    List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status);
+    List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status, String name, Long size, Long offset);
     
     @Slave
     FailureAlarm queryFromCacheBySignalId(String signalId);
