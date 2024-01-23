@@ -4783,6 +4783,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             assembleCabinetList.add(electricityCabinetListMapVO);
         });
     
+        // 设置统计值
+        Integer totalCount = assembleCabinetList.size();
+        Integer lowChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        Integer fullChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        Integer unusableCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsUnusable(), NumberConstant.ONE)).count();
+        Integer offLineCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
+    
         // 0-全部、1-少电、2-多电、3-锁仓、4-离线
         List<ElectricityCabinetListMapVO> rspList = new ArrayList<>();
         switch (cabinetQuery.getStatus()) {
@@ -4807,17 +4814,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
+    
+        ElectricityCabinetMapVO rsp = ElectricityCabinetMapVO.builder().totalCount(totalCount).lowChargeCount(lowChargeCount)
+                .fullChargeCount(fullChargeCount).unusableCount(unusableCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
         
-        // 设置统计值
-        Integer totalCount = assembleCabinetList.size();
-        Integer lowChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
-        Integer fullChargeCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
-        Integer unusableCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getIsUnusable(), NumberConstant.ONE)).count();
-        Integer offLineCount = (int)assembleCabinetList.stream().map(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
-    
-        ElectricityCabinetMapVO rsp = ElectricityCabinetMapVO.builder().electricityCabinetListMapVOList(rspList).totalCount(totalCount).lowChargeCount(lowChargeCount)
-                .fullChargeCount(fullChargeCount).unusableCount(unusableCount).offLineCount(offLineCount).build();
-    
         return R.ok(rsp);
     }
     
