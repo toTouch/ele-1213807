@@ -78,14 +78,4 @@ public class EleTurnoverStatisticVO {
      * 当日退款实缴押金
      */
     private BigDecimal refundDepositAmount;
-    
-    /**
-     * 创建时间
-     */
-    private Long createTime;
-    
-    /**
-     * 修改时间
-     */
-    private Long updateTime;
 }
