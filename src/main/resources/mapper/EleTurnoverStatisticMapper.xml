@@ -11,6 +11,7 @@
         sum(rent_amount_total) as rent_amount_total,
         sum(rent_amount_offline) as rent_amount_offline,
         sum(deposit_amount) as deposit_amount,
+        sum(insurance_amount) as insurance_amount,
         sum(overdue_amount_total) as overdue_amount_total,
         sum(overdue_amount_online) as overdue_amount_online,
         sum(overdue_amount_offline) as overdue_amount_offline,
