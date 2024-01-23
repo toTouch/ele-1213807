@@ -16,7 +16,10 @@
         sum(refund_deposit_amount) as refund_deposit_amount
         from t_ele_turnover_statistic
     
-        where tenant_id =#{tenantId} and statistic_date >=#{beginTime} and statistic_date &lt;= #{endTime}
+        where tenant_id =#{tenantId}
+        <if test="beginTime != null and endTime != null">
+            and statistic_date >=#{beginTime} and statistic_date &lt;= #{endTime}
+        </if>
         <if test="franchiseeIds != null">
             and  franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
