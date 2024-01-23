@@ -5,9 +5,6 @@
     <select id="selectListEleTurnoverStatistic" resultType="com.xiliulou.electricity.entity.EleTurnoverStatistic">
         select
         statistic_date,
-        any_value(store_id),
-        any_value(tenant_id),
-        any_value(franchisee_id),
         sum(turnover_amount) as turnover_amount,
         sum(wechat_merchant_income) as wechat_merchant_income,
         sum(rent_amount_online) as rent_amount_online,

@@ -20,21 +20,6 @@ public class EleTurnoverStatisticVO {
     private Long statisticDate;
     
     /**
-     * 租户id
-     */
-    private Integer tenantId;
-    
-    /**
-     * 加盟商id
-     */
-    private Long franchiseeId;
-    
-    /**
-     * 门店id
-     */
-    private Long storeId;
-    
-    /**
      * 当日营业额
      */
     private BigDecimal turnoverAmount;
