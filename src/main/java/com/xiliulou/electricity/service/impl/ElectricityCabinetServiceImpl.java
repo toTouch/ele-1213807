@@ -4720,7 +4720,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //分批次查询柜机格挡
         List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
-        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.THREE_HUNDRED);
+        List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.TWO_HUNDRED);
         partitions.forEach(item ->{
             List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
             electricityCabinetBoxList.addAll(boxes);
@@ -4758,8 +4758,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //判断少/多电柜机
                 int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN).intValue();
                 if (Objects.nonNull(electricityConfig)) {
-                    Integer lowChargeRate = electricityConfig.getLowChargeRate().intValue();
-                    Integer fullChargeRate = electricityConfig.getFullChargeRate().intValue();
+                    BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
+                    BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
+    
+                    //默认低电比例25% 多电比例75%
+                    Integer lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
+                    Integer fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
     
                     if (chargeRate <= lowChargeRate) {
                         electricityCabinetMapVO.setIsLowCharge(NumberConstant.ONE);

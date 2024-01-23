@@ -21,8 +21,11 @@ public class NumberConstant {
     
     public static final Integer SIX = 6;
     
+    public static final Integer TWENTY_FIVE = 25;
     
-    public static final Integer THREE_HUNDRED = 300;
+    public static final Integer SEVENTY_FIVE = 75;
+    
+    public static final Integer TWO_HUNDRED = 200;
     
     public static final Long ZERO_L = 0L;
     
