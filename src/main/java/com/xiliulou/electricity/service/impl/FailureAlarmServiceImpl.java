@@ -105,6 +105,12 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         if (ObjectUtils.isNotEmpty(noExistsList)) {
             return Triple.of(false, "300821", "保护措施不存在");
         }
+        
+        // 限制当类型未故障时候运营商只能选择不可见
+        if (Objects.equals(failureAlarmSaveRequest.getType(), FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode())
+                && Objects.equals(failureAlarmSaveRequest.getTenantVisible(), FailureAlarmTenantVisibleEnum.FAILURE_ALARM_TENANT_VISIBLE_YES.getCode())) {
+            return Triple.of(false, "300830", "故障类型运营商不可见，请修改后操作");
+        }
     
         // 故障告警设置保存
         FailureAlarm failureAlarm = new FailureAlarm();
@@ -219,6 +225,12 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
         List<Integer> noExistsList = checkProtectMeasureExists(failureAlarmSaveRequest.getProtectMeasureList());
         if (ObjectUtils.isNotEmpty(noExistsList)) {
             return Triple.of(false, "300821", "保护措施不存在");
+        }
+    
+        // 限制当类型未故障时候运营商只能选择不可见
+        if (Objects.equals(failureAlarmSaveRequest.getType(), FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode())
+                && Objects.equals(failureAlarmSaveRequest.getTenantVisible(), FailureAlarmTenantVisibleEnum.FAILURE_ALARM_TENANT_VISIBLE_YES.getCode())) {
+            return Triple.of(false, "300830", "故障类型运营商不可见，请修改后操作");
         }
         
         // 故障告警设置保存
