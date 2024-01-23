@@ -115,22 +115,24 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             BeanUtils.copyProperties(item, vo);
             
             if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
-                log.info("cell is zero={}", vo);
                 vo.setCellNo(null);
             }
-            log.info("cell res={}", Objects.equals(vo.getCellNo(), NumberConstant.ZERO));
-            if (ObjectUtils.isEmpty(item.getFailureAlarmName())) {
-                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
+            
+            // 上报的记录没有
+            if (ObjectUtils.isEmpty(vo.getDeviceType())) {
+                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(i -> {
                     String signalName = failureAlarm.getSignalName();
                     if (StringUtils.isNotEmpty(failureAlarm.getEventDesc())) {
                         signalName = signalName + CommonConstant.STR_COMMA + failureAlarm.getEventDesc();
                     }
-                    item.setFailureAlarmName(signalName);
-                    item.setDeviceType(failureAlarm.getDeviceType());
-                    item.setGrade(failureAlarm.getGrade());
+                    vo.setFailureAlarmName(signalName);
+                    vo.setGrade(failureAlarm.getGrade());
+                    vo.setDeviceType(failureAlarm.getDeviceType());
+            
                 });
             }
+           
             resultList.add(vo);
         });
         
