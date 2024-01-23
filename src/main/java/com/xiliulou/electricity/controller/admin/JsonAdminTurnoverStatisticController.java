@@ -122,6 +122,6 @@ public class JsonAdminTurnoverStatisticController {
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         queryModel.setBeginTime(beginTime);
         queryModel.setEndTime(endTime);
-        return R.ok(turnoverStatisticService.listTurnoverStatistic(queryModel));
+        return R.ok(turnoverStatisticService.countTurnoverStatistic(queryModel));
     }
 }
