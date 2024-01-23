@@ -134,7 +134,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             resultList.add(vo);
         });
         
-        return R.ok(list);
+        return R.ok(resultList);
     }
     
     private Triple<Boolean, String, Object> checkAndInitQuery(EleHardwareFailureWarnMsgPageRequest request, FailureWarnMsgPageQueryModel queryModel, int daySize) {
