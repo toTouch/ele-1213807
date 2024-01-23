@@ -15,11 +15,6 @@ import java.math.BigDecimal;
 @Data
 public class EleTurnoverStatisticVO {
     /**
-     * 主键
-     */
-    private Long id;
-    
-    /**
      * 统计日期
      */
     private Long statisticDate;

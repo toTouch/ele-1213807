@@ -3,13 +3,11 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleTurnoverStatisticMapper">
     
     <select id="selectListEleTurnoverStatistic" resultType="com.xiliulou.electricity.entity.EleTurnoverStatistic">
-        select id,
+        select
         statistic_date,
-        store_id,
-        tenant_id,
-        franchisee_id,
-        create_time,
-        update_time,
+        any_value(store_id),
+        any_value(tenant_id),
+        any_value(franchisee_id),
         sum(turnover_amount) as turnover_amount,
         sum(wechat_merchant_income) as wechat_merchant_income,
         sum(rent_amount_online) as rent_amount_online,
