@@ -16,4 +16,6 @@ import java.util.List;
 @Repository
 public interface EleTurnoverStatisticMapper {
    List<EleTurnoverStatistic> selectListEleTurnoverStatistic(TurnoverStatisticQueryModel queryModel);
+   
+   Integer countTurnoverStatistic(TurnoverStatisticQueryModel queryModel);
 }

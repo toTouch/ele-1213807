@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
@@ -11,11 +12,11 @@ import java.math.BigDecimal;
  * @Author : zhangyongbo
  * @since: 2024-01-23
  */
+@Data
 public class EleTurnoverStatisticVO {
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     
     /**

@@ -45,4 +45,9 @@ public class TurnoverStatisticServiceImpl implements TurnoverStatisticService {
         }
         return result;
     }
+    
+    @Override
+    public Integer countTurnoverStatistic(TurnoverStatisticQueryModel queryModel) {
+      return   eleTurnoverStatisticMapper.countTurnoverStatistic(queryModel);
+    }
 }

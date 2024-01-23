@@ -85,5 +85,43 @@ public class JsonAdminTurnoverStatisticController {
         queryModel.setEndTime(endTime);
         return R.ok(turnoverStatisticService.listTurnoverStatistic(queryModel));
     }
+    
+    @GetMapping(value = "/admin/earning/turnover/count")
+    public R queryTurnoverStatisticListCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        TurnoverStatisticQueryModel queryModel = new TurnoverStatisticQueryModel();
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections4.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                queryModel.setStoreIds(storeIds);
+            }
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }else{
+                queryModel.setFranchiseeIds(franchiseeIds);
+            }
+        }
 
+        queryModel.setTenantId(TenantContextHolder.getTenantId());
+        queryModel.setBeginTime(beginTime);
+        queryModel.setEndTime(endTime);
+        return R.ok(turnoverStatisticService.listTurnoverStatistic(queryModel));
+    }
 }
