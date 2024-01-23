@@ -161,8 +161,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isNotEmpty(queryModel.getDeviceType()) || ObjectUtils.isNotEmpty(queryModel.getGrade()) || ObjectUtils.isNotEmpty(request.getTenantVisible())
                 || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在
-            List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(queryModel.getDeviceType(), queryModel.getGrade(), request.getTenantVisible(),
-                    request.getStatus(), null, null, null);
+            FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().deviceType(queryModel.getDeviceType()).grade(queryModel.getGrade()).tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
+            List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
                 log.error("failure warn query alarm is empty");
                 return Triple.of(true, null, Collections.emptyList());

@@ -4,7 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.FailureAlarm;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmSaveRequest;
@@ -232,7 +232,7 @@ public class FailureAlarmController {
      * @return
      */
     @GetMapping("/admin/failure/alarm/getDictList")
-    public R getDictList(@RequestParam("name") String name, @RequestParam("size") long size, @RequestParam("offset") long offset) {
+    public R getDictList(@RequestParam("name") String name, @RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("type") Integer type) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -250,8 +250,9 @@ public class FailureAlarmController {
         if (!SecurityUtils.isAdmin()) {
             tenantVisible = FailureAlarm.visible;
         }
-    
-        List<FailureAlarm> list = failureAlarmService.listByParams(null, null, tenantVisible, FailureAlarm.enable, name, size, offset);
+        FailureAlarmQueryModel queryModel = FailureAlarmQueryModel.builder().tenantVisible(tenantVisible).status(FailureAlarm.enable).signalName(name).type(type)
+                .offset(offset).size(size).build();
+        List<FailureAlarm> list = failureAlarmService.listByParams(queryModel);
         return R.ok(list);
     }
     

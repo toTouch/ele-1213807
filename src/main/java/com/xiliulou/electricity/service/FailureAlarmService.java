@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmSaveRequest;
@@ -37,7 +38,7 @@ public interface FailureAlarmService {
     
     void deleteCache(FailureAlarm failureAlarm);
     
-    List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status, String name, Long size, Long offset);
+    List<FailureAlarm> listByParams(FailureAlarmQueryModel failureAlarmQueryModel);
     
     @Slave
     FailureAlarm queryFromCacheBySignalId(String signalId);

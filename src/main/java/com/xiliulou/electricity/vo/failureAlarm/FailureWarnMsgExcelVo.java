@@ -73,6 +73,12 @@ public class FailureWarnMsgExcelVo {
     private String recoverTimeExport;
     
     /**
+     * 租户名称
+     */
+    @ExcelProperty("租户名称")
+    private String tenantName;
+    
+    /**
      * 信号量
      */
     private String signalId;

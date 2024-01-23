@@ -442,10 +442,8 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
     
     @Slave
     @Override
-    public List<FailureAlarm> listByParams(Integer deviceType, Integer grade, Integer tenantVisible, Integer status, String name, Long size, Long offset) {
-        FailureAlarmQueryModel queryModel = FailureAlarmQueryModel.builder().deviceType(deviceType).grade(grade).tenantVisible(tenantVisible).status(status).signalName(name)
-                .offset(offset).size(size).build();
-        return failureAlarmMapper.selectList(queryModel);
+    public List<FailureAlarm> listByParams(FailureAlarmQueryModel failureAlarmQueryModel) {
+        return failureAlarmMapper.selectList(failureAlarmQueryModel);
     }
     
     @Slave
