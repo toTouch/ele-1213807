@@ -5,6 +5,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
@@ -118,6 +119,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         list.forEach(item -> {
             EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
             BeanUtils.copyProperties(item, vo);
+            
+            if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
+                vo.setCellNo(null);
+            }
             
             if (ObjectUtils.isEmpty(item.getFailureAlarmName())) {
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
@@ -390,6 +395,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 FailureWarnMsgStatusEnum statusEnum = BasicEnum.getEnum(vo.getAlarmFlag(), FailureWarnMsgStatusEnum.class);
                 if (ObjectUtils.isNotEmpty(statusEnum)) {
                     vo.setAlarmFlagExport(statusEnum.getDesc());
+                }
+    
+                if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
+                    vo.setCellNo(null);
                 }
                 
             }
