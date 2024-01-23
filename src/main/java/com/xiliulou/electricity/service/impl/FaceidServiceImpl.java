@@ -375,7 +375,7 @@ public class FaceidServiceImpl implements FaceidService {
                 EleUserAuth userAuthBack = new EleUserAuth();
                 userAuthBack.setUid(userInfo.getUid());
                 userAuthBack.setEntryId(EleAuthEntry.ID_CARD_BACK_PHOTO);
-                userAuthBack.setValue(ocrFrontPath);
+                userAuthBack.setValue(ocrBackPath);
                 userAuthBack.setCreateTime(System.currentTimeMillis());
                 userAuthBack.setUpdateTime(System.currentTimeMillis());
                 userAuthBack.setTenantId(userInfo.getTenantId());
