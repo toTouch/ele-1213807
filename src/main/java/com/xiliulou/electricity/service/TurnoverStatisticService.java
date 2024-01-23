@@ -13,5 +13,5 @@ import java.util.List;
  * @since: 2024-01-22
  */
 public interface TurnoverStatisticService {
-    List<EleTurnoverStatistic>  listTurnoverStatistic(TurnoverStatisticQueryModel queryModel);
+    List<EleTurnoverStatisticVO>  listTurnoverStatistic(TurnoverStatisticQueryModel queryModel);
 }
