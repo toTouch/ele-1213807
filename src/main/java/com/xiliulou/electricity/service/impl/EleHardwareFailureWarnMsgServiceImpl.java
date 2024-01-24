@@ -123,16 +123,16 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(i -> {
                     String signalName = failureAlarm.getSignalName();
-                    if (StringUtils.isNotEmpty(failureAlarm.getEventDesc())) {
-                        signalName = signalName + CommonConstant.STR_COMMA + failureAlarm.getEventDesc();
+                    if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
+                        signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
                     }
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(failureAlarm.getGrade());
                     vo.setDeviceType(failureAlarm.getDeviceType());
-            
+                    
                 });
             }
-           
+            
             resultList.add(vo);
         });
         
@@ -163,7 +163,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isNotEmpty(queryModel.getDeviceType()) || ObjectUtils.isNotEmpty(queryModel.getGrade()) || ObjectUtils.isNotEmpty(request.getTenantVisible())
                 || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在
-            FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().deviceType(queryModel.getDeviceType()).grade(queryModel.getGrade()).tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
+            FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().deviceType(queryModel.getDeviceType()).grade(queryModel.getGrade())
+                    .tenantVisible(request.getTenantVisible()).status(request.getStatus()).build();
             List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
             if (ObjectUtils.isEmpty(failureAlarmList)) {
                 log.error("failure warn query alarm is empty");
@@ -222,6 +223,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             return Triple.of(false, "300825", "查询天数不能大于30天");
         }
         
+        if (usageDays > 1) {
+            usageDays = usageDays - 1;
+        }
+        
         FailureWarnFrequencyVo vo = new FailureWarnFrequencyVo();
         // 使用天数
         vo.setUsageDays(usageDays);
@@ -273,21 +278,26 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             }
         }
         
-        // 计算故障率: 故障次数/使用天数
-        BigDecimal failureCountBig = new BigDecimal(String.valueOf(failureNum));
-        BigDecimal usageDaysBig = new BigDecimal(String.valueOf(usageDays));
-        BigDecimal failureRate = failureCountBig.divide(usageDaysBig, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
-        
-        // 计算告警率：告警次数除/使用天数
-        BigDecimal warnCountBig = new BigDecimal(String.valueOf(warnNum));
-        BigDecimal warnRate = warnCountBig.divide(usageDaysBig, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
-        
+        BigDecimal failureCycleRate = BigDecimal.ZERO;
+        // 环比增长速度=（本期数－上期数）÷上期数×100%，上一期为0，则环比为0
+        if (!Objects.equals(failureNum, NumberConstant.ZERO)) {
+            int i = vo.getFailureCount() - failureNum;
+            BigDecimal bigDecimal = new BigDecimal(i);
+            BigDecimal failureCountBig = new BigDecimal(String.valueOf(failureNum));
+            failureCycleRate = bigDecimal.divide(failureCountBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+        }
         // 故障环比
-        BigDecimal failureCycleRate = failureRate.subtract(vo.getFailureRate());
         vo.setFailureCycleRate(failureCycleRate);
-        
+    
+        BigDecimal warnCycleRate = BigDecimal.ZERO;
+        // 环比增长速度=（本期数－上期数）÷上期数×100%，上一期为0，则环比为0
+        if (!Objects.equals(warnNum, NumberConstant.ZERO)) {
+            int i = vo.getWarnCount() - warnNum;
+            BigDecimal bigDecimal = new BigDecimal(i);
+            BigDecimal failureCountBig = new BigDecimal(String.valueOf(warnNum));
+            warnCycleRate = bigDecimal.divide(failureCountBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+        }
         // 告警环比
-        BigDecimal warnCycleRate = warnRate.subtract(vo.getWarnRate());
         vo.setWarnCycleRate(warnCycleRate);
     }
     
@@ -325,12 +335,13 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 计算故障率: 故障次数/使用天数
         BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
         BigDecimal usageDaysBig = new BigDecimal(String.valueOf(usageDays));
-        BigDecimal failureRate = failureCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal failureRate = failureCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(1, RoundingMode.HALF_UP);
         vo.setFailureRate(failureRate);
         
         // 计算告警率：告警次数除/使用天数
         BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
-        BigDecimal warnRate = warnCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);;
+        BigDecimal warnRate = warnCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(1, RoundingMode.HALF_UP);
+        
         vo.setWarnRate(warnRate);
     }
     
@@ -359,8 +370,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                     Optional.ofNullable(failureAlarm).ifPresent(i -> {
                         String signalName = failureAlarm.getSignalName();
-                        if (StringUtils.isNotEmpty(failureAlarm.getEventDesc())) {
-                            signalName = signalName + CommonConstant.STR_COMMA + failureAlarm.getEventDesc();
+                        if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
+                            signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
                         }
                         vo.setFailureAlarmName(signalName);
                         vo.setGrade(String.valueOf(failureAlarm.getGrade()));
@@ -393,7 +404,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 if (ObjectUtils.isNotEmpty(statusEnum)) {
                     vo.setAlarmFlagExport(statusEnum.getDesc());
                 }
-    
+                
                 if (Objects.equals(vo.getCellNo(), NumberConstant.ZERO)) {
                     vo.setCellNo(null);
                 }
@@ -437,7 +448,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private List<FailureWarnProportionVo> failureProportion(Map<String, Integer> failureMap) {
-        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).status(FailureAlarm.enable).build();
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).status(FailureAlarm.enable)
+                .build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {
@@ -477,7 +489,8 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     private List<FailureWarnProportionVo> warnProportion(Map<String, Integer> failureMap) {
-        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).status(FailureAlarm.enable).build();
+        FailureAlarmQueryModel alarmQueryModel = FailureAlarmQueryModel.builder().type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()).status(FailureAlarm.enable)
+                .build();
         List<FailureAlarm> failureAlarmList = failureAlarmMapper.selectList(alarmQueryModel);
         Map<Integer, List<FailureAlarm>> gradeMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(failureAlarmList)) {

@@ -83,4 +83,6 @@ public class FailureWarnMsgExcelVo {
      */
     private String signalId;
     
+    private String alarmDesc;
+    
 }
