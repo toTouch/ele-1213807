@@ -14,7 +14,7 @@ import java.util.List;
  * @date 2023/12/28 16:16
  * @desc
  */
-public interface EleHardwareFailureCabinetMsgMapper extends BaseMapper<EleHardwareFailureCabinetMsg> {
+public interface EleHardwareFailureCabinetMsgMapper {
     
     int batchInsert(@Param("list") List<EleHardwareFailureCabinetMsg> failureCabinetMsgList);
     

@@ -16,7 +16,7 @@ import java.util.List;
  * @since 2023-12-26 09:07:48
  */
 
-public interface EleHardwareFailureWarnMsgMapper extends BaseMapper<EleHardwareFailureWarnMsg> {
+public interface EleHardwareFailureWarnMsgMapper {
     List<EleHardwareFailureWarnMsgVo> selectList(FailureWarnMsgTaskQueryModel queryModel);
     
     List<EleHardwareFailureWarnMsg> selectListByPage(FailureWarnMsgPageQueryModel queryModel);

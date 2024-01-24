@@ -13,7 +13,7 @@ import java.util.List;
  * @author maxiaodong
  * @since 2023-12-15 18:05:41
  */
-public interface FailureAlarmMapper extends BaseMapper<FailureAlarm>{
+public interface FailureAlarmMapper{
     
     int insertOne(FailureAlarm failureAlarm);
     
