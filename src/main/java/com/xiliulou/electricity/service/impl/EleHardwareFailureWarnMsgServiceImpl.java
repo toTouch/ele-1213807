@@ -265,12 +265,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     .collect(Collectors.toMap(EleHardwareFailureWarnMsgVo::getType, EleHardwareFailureWarnMsgVo::getFailureWarnNum));
             // 故障次数
             if (ObjectUtils.isNotEmpty(failureNumMap.get(EleHardwareFailureWarnMsg.FAILURE))) {
-                failureNum = failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode());
+                failureNum = failureNumMap.get(EleHardwareFailureWarnMsg.FAILURE);
             }
             
             // 告警次数
             if (ObjectUtils.isNotEmpty(failureNumMap.get(EleHardwareFailureWarnMsg.WARN))) {
-                warnNum = failureNumMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode());
+                warnNum = failureNumMap.get(EleHardwareFailureWarnMsg.WARN);
             }
         }
         

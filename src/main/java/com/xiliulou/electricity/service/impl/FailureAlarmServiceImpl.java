@@ -373,6 +373,7 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
                     protectMeasureMap.putAll(map);
                 }
             });
+            
             Integer i = 1;
             for (FailureAlarmVO item : failureAlarmVOList) {
                 FailureAlarmExcelVo vo = new FailureAlarmExcelVo();
@@ -385,22 +386,22 @@ public class FailureAlarmServiceImpl implements FailureAlarmService {
                     vo.setType(typeEnum.getDesc());
                 }
     
-                FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(item.getType(), FailureAlarmGradeEnum.class);
+                FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(item.getGrade(), FailureAlarmGradeEnum.class);
                 if (ObjectUtils.isNotEmpty(gradeEnum)) {
                     vo.setGrade(gradeEnum.getDesc());
                 }
     
-                FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(item.getType(), FailureAlarmDeviceTypeEnum.class);
+                FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(item.getDeviceType(), FailureAlarmDeviceTypeEnum.class);
                 if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
                     vo.setDeviceType(deviceTypeEnum.getDesc());
                 }
     
-                FailureAlarmStatusEnum statusEnum = BasicEnum.getEnum(item.getType(), FailureAlarmStatusEnum.class);
+                FailureAlarmStatusEnum statusEnum = BasicEnum.getEnum(item.getStatus(), FailureAlarmStatusEnum.class);
                 if (ObjectUtils.isNotEmpty(statusEnum)) {
                     vo.setStatus(statusEnum.getDesc());
                 }
     
-                FailureAlarmTenantVisibleEnum tenantVisibleEnum = BasicEnum.getEnum(item.getType(), FailureAlarmTenantVisibleEnum.class);
+                FailureAlarmTenantVisibleEnum tenantVisibleEnum = BasicEnum.getEnum(item.getTenantVisible(), FailureAlarmTenantVisibleEnum.class);
                 if (ObjectUtils.isNotEmpty(tenantVisibleEnum)) {
                     vo.setTenantVisible(tenantVisibleEnum.getDesc());
                 }
