@@ -325,12 +325,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 计算故障率: 故障次数/使用天数
         BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
         BigDecimal usageDaysBig = new BigDecimal(String.valueOf(usageDays));
-        BigDecimal failureRate = failureCountBig.divide(usageDaysBig, 1, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+        BigDecimal failureRate = failureCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
         vo.setFailureRate(failureRate);
         
         // 计算告警率：告警次数除/使用天数
         BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
-        BigDecimal warnRate = warnCountBig.divide(usageDaysBig, 1, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+        BigDecimal warnRate = warnCountBig.divide(usageDaysBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);;
         vo.setWarnRate(warnRate);
     }
     
