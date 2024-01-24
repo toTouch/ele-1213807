@@ -223,10 +223,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             return Triple.of(false, "300825", "查询天数不能大于30天");
         }
         
-        if (usageDays > 1) {
-            usageDays = usageDays - 1;
-        }
-        
         FailureWarnFrequencyVo vo = new FailureWarnFrequencyVo();
         // 使用天数
         vo.setUsageDays(usageDays);
@@ -286,6 +282,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             BigDecimal failureCountBig = new BigDecimal(String.valueOf(failureNum));
             failureCycleRate = bigDecimal.divide(failureCountBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
         }
+        
         // 故障环比
         vo.setFailureCycleRate(failureCycleRate);
     
@@ -297,6 +294,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             BigDecimal failureCountBig = new BigDecimal(String.valueOf(warnNum));
             warnCycleRate = bigDecimal.divide(failureCountBig, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
         }
+        
         // 告警环比
         vo.setWarnCycleRate(warnCycleRate);
     }
