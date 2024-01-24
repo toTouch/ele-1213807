@@ -128,7 +128,7 @@
         WHERE
         alarm_time between  #{startTime} and #{endTime}
         <if test="limitFailureAlarmStatus != null">
-            AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 1  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
+            AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 0  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
         </if>
         GROUP BY
         type
