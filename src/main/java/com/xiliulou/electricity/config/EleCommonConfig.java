@@ -35,6 +35,11 @@ public class EleCommonConfig {
     private Integer powerChangeDiff;
 
     private Integer testFactoryTenantId;
+    
+    /**
+     * 启用GEO获取位置信息开关
+     */
+    private boolean enableGeo;
 
     /**
      * 开启电量上报检测

@@ -244,5 +244,17 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.ok(carRentalPackageService.count(qryModel));
         }
     }
+    
+    
+    @GetMapping(value = "/admin/shareActivity/checkExistActivity")
+    public R checkExistActivity(){
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return shareActivityService.checkExistActivity();
+    }
 
 }

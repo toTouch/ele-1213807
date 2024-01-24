@@ -75,7 +75,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	}
 
 	/**
-	 * TODO 优化
+	 *
 	 * @return
 	 */
 	@GetMapping(value = "/outer/electricityCabinet/showInfoByDistanceV2")

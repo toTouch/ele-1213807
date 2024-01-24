@@ -16,6 +16,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -252,4 +253,6 @@ public interface ElectricityCabinetService {
     R homeOneV2();
     
     List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
+    
+    void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
 }

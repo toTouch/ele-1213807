@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -67,6 +68,17 @@ public class InvitationActivityJoinHistory {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 套餐类型 (1 - 换电， 2 - 租车, 3 - 车电一体)
+     * @see PackageTypeEnum
+     */
+    private Integer packageType;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

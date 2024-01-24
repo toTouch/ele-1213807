@@ -1,22 +1,31 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.UserNotifyConstant;
 import com.xiliulou.electricity.entity.UserNotify;
 import com.xiliulou.electricity.mapper.UserNotifyMapper;
+import com.xiliulou.electricity.query.NotifyPictureInfo;
 import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.NotifyPictureInfoVO;
 import com.xiliulou.electricity.vo.UserNotifyVo;
+import com.xiliulou.storage.config.StorageConfig;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +46,9 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     
     @Resource
     RedisService redisService;
+    
+    @Autowired
+    StorageConfig storageConfig;
     
     /**
      * 通过ID查询单条数据从DB
@@ -128,18 +140,29 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         if (!redisService.setNx(CacheConstant.USER_NOTIFY_SAVE_CACHE_UID + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return R.fail(false, "ELECTRICITY.0001", "操作频繁！");
         }
-    
+        
         if (Objects.isNull(userNotifyQuery.getStatus())) {
             userNotifyQuery.setStatus(UserNotify.STATUS_OFF);
         }
-    
+        
         if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_ON)) {
-            if (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(userNotifyQuery.getContent())) {
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(
+                    userNotifyQuery.getContent()))) {
                 return R.fail("100368", "用户通知标题和内容不能为空");
             }
-        
+            
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE) && CollectionUtils.isEmpty(userNotifyQuery.getPictureInfoList())) {
+                return R.fail("100376", "请上传通知图片");
+            }
+            
             if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
                 return R.fail("100369", "用户通知时间间隔不能为空");
+            }
+            
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && StringUtils.isNotBlank(userNotifyQuery.getContent())) {
+                if (userNotifyQuery.getContent().length() > 100) {
+                    return R.fail("100377", "参数校验错误");
+                }
             }
         }
         
@@ -151,13 +174,35 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         }
         
         UserNotify updateAndInsert = new UserNotify();
-        updateAndInsert.setContent(userNotifyQuery.getContent());
-        updateAndInsert.setTitle(userNotifyQuery.getTitle());
-        updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
-        updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
-        updateAndInsert.setStatus(userNotifyQuery.getStatus());
-        updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
-        updateAndInsert.setUpdateTime(System.currentTimeMillis());
+        
+        if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_ON)) {
+            updateAndInsert.setTitle(userNotifyQuery.getTitle());
+            updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
+            updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
+            updateAndInsert.setStatus(userNotifyQuery.getStatus());
+            updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
+            updateAndInsert.setUpdateTime(System.currentTimeMillis());
+            
+            if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_PICTURE)) {
+                updateAndInsert.setType(UserNotifyConstant.TYPE_PICTURE);
+                List<NotifyPictureInfo> pictureInfoList = userNotifyQuery.getPictureInfoList();
+                if (CollectionUtils.isNotEmpty(pictureInfoList)) {
+                    updateAndInsert.setPictureInfo(JsonUtil.toJson(pictureInfoList));
+                }
+                updateAndInsert.setContent(StringUtils.EMPTY);
+                updateAndInsert.setTitle(StringUtils.EMPTY);
+            } else {
+                updateAndInsert.setType(UserNotifyConstant.TYPE_CONTENT);
+                updateAndInsert.setContent(userNotifyQuery.getContent());
+                updateAndInsert.setPictureInfo(StringUtils.EMPTY);
+            }
+        }
+        
+        // 如果状态为关闭则只修改状态
+        if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_OFF)) {
+            updateAndInsert.setStatus(userNotifyQuery.getStatus());
+            updateAndInsert.setUpdateTime(System.currentTimeMillis());
+        }
         
         if (Objects.isNull(userNotify)) {
             updateAndInsert.setCreateTime(System.currentTimeMillis());
@@ -171,7 +216,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     }
     
     @Override
-    public R queryOne() {
+    public R queryOne(Integer newVersion) {
         UserNotify userNotify = this.queryByTenantId();
         if (Objects.isNull(userNotify)) {
             return R.ok();
@@ -179,6 +224,54 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         
         UserNotifyVo vo = new UserNotifyVo();
         BeanUtils.copyProperties(userNotify, vo);
+        String pictureInfo = userNotify.getPictureInfo();
+        if (StringUtils.isNotBlank(pictureInfo)) {
+            List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
+            List<NotifyPictureInfoVO> pictureInfoVOList = new ArrayList<>();
+            for (NotifyPictureInfo info : pictureInfoList) {
+                NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
+                infoVo.setActivityType(info.getActivityType());
+                infoVo.setPictureUrl(info.getPictureUrl());
+                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                pictureInfoVOList.add(infoVo);
+            }
+            vo.setPictureInfoList(pictureInfoVOList);
+        }
+        
+        if (!Objects.equals(newVersion, UserNotifyConstant.NEW_VERSION) && Objects.equals(userNotify.getType(), UserNotifyConstant.TYPE_PICTURE) && Objects.equals(
+                userNotify.getStatus(), UserNotifyConstant.STATUS_ON)) {
+            // 通知状态 0--关闭 1--开启
+            vo.setStatus(UserNotifyConstant.STATUS_OFF);
+        }
+        
+        return R.ok(vo);
+    }
+    
+    @Override
+    public R queryOneForAdmin() {
+        UserNotify userNotify = this.queryByTenantId();
+        if (Objects.isNull(userNotify)) {
+            return R.ok();
+        }
+        
+        UserNotifyVo vo = new UserNotifyVo();
+        BeanUtils.copyProperties(userNotify, vo);
+        String pictureInfo = userNotify.getPictureInfo();
+        if (StringUtils.isNotBlank(pictureInfo)) {
+            List<NotifyPictureInfo> pictureInfoList = JsonUtil.fromJsonArray(pictureInfo, NotifyPictureInfo.class);
+            List<NotifyPictureInfoVO> pictureInfoVOList = new ArrayList<>();
+            for (NotifyPictureInfo info : pictureInfoList) {
+                NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
+                infoVo.setActivityType(info.getActivityType());
+                infoVo.setPictureUrl(info.getPictureUrl());
+                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                pictureInfoVOList.add(infoVo);
+            }
+            vo.setPictureInfoList(pictureInfoVOList);
+        } else {
+            vo.setPictureInfoList(Lists.newArrayList());
+        }
+        
         return R.ok(vo);
     }
 }

@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
+import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
 
 import java.util.List;
 
@@ -84,4 +86,17 @@ public interface InvitationActivityJoinHistoryService {
     Integer existsByJoinUidAndActivityId(Long joinUid, Long activityId);
     
     List<InvitationActivityJoinHistory> listByJoinUid(Long uid);
+    
+    List<InvitationActivityJoinHistoryVO> listByInviterUidOfAdmin(InvitationActivityJoinHistoryQuery query);
+    
+    List<InvitationActivityJoinHistoryVO> listByInviterUid(InvitationActivityJoinHistoryQuery query);
+    
+    List<InvitationActivityJoinHistoryVO> listByInviterUidDistinctJoin(InvitationActivityJoinHistoryQuery query);
+    
+    InvitationActivityAnalysisAdminVO queryInvitationAdminAnalysis(InvitationActivityAnalysisRequest request);
+    
+    /**
+     * 根据活动id和参与人uid查询对应的参与记录
+     */
+    InvitationActivityJoinHistory queryByJoinUidAndActivityId(Long joinUid, Long activityId);
 }
