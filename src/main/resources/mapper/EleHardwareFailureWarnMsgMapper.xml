@@ -138,9 +138,10 @@
             signal_id,
             count(1) as 'count'
         FROM
-            t_ele_hardware_failure_warn_msg
+            t_ele_hardware_failure_warn_msg t
         WHERE
           alarm_time between  #{alarmStartTime} and #{alarmEndTime}
+          AND EXISTS ( SELECT 1 FROM t_failure_alarm a WHERE a.`status` = 0  AND a.del_flag = 0 AND a.signal_id = t.signal_id )
           and type = #{type}
         GROUP BY signal_id
     </select>

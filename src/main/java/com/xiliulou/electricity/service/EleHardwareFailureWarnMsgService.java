@@ -23,4 +23,6 @@ public interface EleHardwareFailureWarnMsgService {
     R superExportPage(EleHardwareFailureWarnMsgPageRequest request);
     
     Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request);
+    
+    void proportionExport(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response);
 }

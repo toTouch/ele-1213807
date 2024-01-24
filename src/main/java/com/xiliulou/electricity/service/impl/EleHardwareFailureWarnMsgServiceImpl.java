@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
+import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -40,8 +42,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -443,6 +449,69 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
         
         return Triple.of(true, null, result);
+    }
+    
+    @Slave
+    @Override
+    public void proportionExport(EleHardwareFailureWarnMsgPageRequest request, HttpServletResponse response) {
+        // 检测参数
+        Triple<Boolean, String, Object> triple = checkParams(request);
+        if (!triple.getLeft()) {
+            throw new CustomBusinessException((String) triple.getRight());
+        }
+    
+        FailureWarnMsgPageQueryModel queryModel = FailureWarnMsgPageQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
+                  .type(request.getType()).build();
+        
+        List<FailureWarnProportionExportVo> exportVoList = new ArrayList<>();
+        
+        // 统计每个信号量故障或者告警的数量
+        List<FailureWarnProportionVo> list = failureWarnMsgMapper.selectListProportion(queryModel);
+        
+        if (ObjectUtils.isNotEmpty(list)) {
+            int i = 1;
+            
+            for (FailureWarnProportionVo item : list) {
+                FailureWarnProportionExportVo vo = new FailureWarnProportionExportVo();
+                vo.setSignalId(item.getSignalId());
+                vo.setNum(item.getCount());
+                vo.setSerialNumber(i++);
+                
+                // 查询故障告警设置
+                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(item.getSignalId());
+                Optional.ofNullable(failureAlarm).ifPresent(failureAlarm1 -> {
+                    // 设备分类
+                    FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(failureAlarm1.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
+                    if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
+                        vo.setDeviceType(deviceTypeEnum.getDesc());
+                    }
+                    
+                    // 等级
+                    FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(failureAlarm1.getGrade()), FailureAlarmGradeEnum.class);
+                    if (ObjectUtils.isNotEmpty(gradeEnum)) {
+                        vo.setGrade(gradeEnum.getDesc());
+                    }
+                    
+                    // 标准名
+                    vo.setSignalName(failureAlarm1.getSignalName());
+                });
+                
+                exportVoList.add(vo);
+            }
+        }
+    
+        String fileName = "故障告警占比导出.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, FailureWarnProportionExportVo.class).sheet("sheet").doWrite(exportVoList);
+            return;
+        } catch (IOException e) {
+            log.error("failure warn proportion export Export error", e);
+        }
     }
     
     private List<FailureWarnProportionVo> failureProportion(Map<String, Integer> failureMap) {

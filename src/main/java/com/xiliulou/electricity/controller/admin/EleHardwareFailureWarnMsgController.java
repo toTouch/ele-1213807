@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.FailureAlarm;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -302,5 +304,21 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         return R.ok(triple.getRight());
+    }
+    
+    @GetMapping("/admin/super/failure/warn/proportion/export")
+    public void proportionExport(@RequestParam(value = "startTime", required = true) Long startTime, @RequestParam(value = "endTime", required = true) Long endTime
+            , @RequestParam(value = "type") Integer type, HttpServletResponse response) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+        
+        if (!SecurityUtils.isAdmin()) {
+            throw new CustomBusinessException("用户权限不足");
+        }
+        
+        EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().alarmStartTime(startTime).alarmEndTime(endTime).type(type).build();
+        failureWarnMsgService.proportionExport(request, response);
     }
 }
