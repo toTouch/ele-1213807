@@ -4744,18 +4744,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             BeanUtils.copyProperties(cabinet, electricityCabinetListMapVO);
         
             List<ElectricityCabinetBox> electricityCabinetBoxes = boxesByIdMap.getOrDefault(cabinet.getId(), Collections.emptyList());
+            int boxNum = NumberConstant.ZERO;
+            int batteryNum = NumberConstant.ZERO;
+            int unusableBoxNum = NumberConstant.ZERO;
             if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
                 //柜机格口数量
-                int boxNum = electricityCabinetBoxes.size();
-                electricityCabinetListMapVO.setBoxNum(boxNum);
+                boxNum = electricityCabinetBoxes.size();
             
                 // 电池在仓数量统计
-                int batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
-                electricityCabinetListMapVO.setBatteryNum(batteryNum);
+                batteryNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)).count();
             
                 // 电池锁仓数量统计
-                int unusableBoxNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
-                electricityCabinetListMapVO.setUnusableBoxNum(unusableBoxNum);
+                unusableBoxNum = (int) electricityCabinetBoxes.stream().filter(box -> Objects.equals(box.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
             
                 //判断少/多电柜机
                 int chargeRate = BigDecimal.valueOf(batteryNum).multiply(NumberConstant.ONE_HUNDRED_BD).divide(BigDecimal.valueOf(boxNum), NumberConstant.ZERO, RoundingMode.DOWN).intValue();
@@ -4764,8 +4764,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     BigDecimal fullChargeRateBd = electricityConfig.getFullChargeRate();
     
                     //默认低电比例25% 多电比例75%
-                    Integer lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
-                    Integer fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
+                    int lowChargeRate = Objects.isNull(lowChargeRateBd) ? NumberConstant.TWENTY_FIVE : lowChargeRateBd.intValue();
+                    int fullChargeRate = Objects.isNull(fullChargeRateBd) ? NumberConstant.SEVENTY_FIVE : fullChargeRateBd.intValue();
     
                     if (chargeRate <= lowChargeRate) {
                         electricityCabinetListMapVO.setIsLowCharge(NumberConstant.ONE);
@@ -4780,6 +4780,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 // 是否锁仓柜机
                 electricityCabinetListMapVO.setIsUnusable(unusableBoxNum > NumberConstant.ZERO);
             }
+    
+            electricityCabinetListMapVO.setBoxNum(boxNum);
+            electricityCabinetListMapVO.setBatteryNum(batteryNum);
+            electricityCabinetListMapVO.setUnusableBoxNum(unusableBoxNum);
     
             assembleCabinetList.add(electricityCabinetListMapVO);
         });
