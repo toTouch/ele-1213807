@@ -620,11 +620,11 @@ public class JsonAdminUserInfoController extends BaseController {
     @GetMapping(value = "/admin/userInfo/searchForCoupon")
     public R userInfoSearchForCoupon(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone) {
-        if (size < 0 || size > 50) {
-            size = 10L;
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 50L;
         }
     
-        if (offset < 0) {
+        if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
     
