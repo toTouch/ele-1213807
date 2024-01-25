@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -466,9 +467,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         List<FailureWarnProportionExportVo> exportVoList = new ArrayList<>();
         
         // 统计每个信号量故障或者告警的数量
-        List<FailureWarnProportionVo> list = failureWarnMsgMapper.selectListProportion(queryModel);
-        
-        if (ObjectUtils.isNotEmpty(list)) {
+        List<FailureWarnProportionVo> failureWarnProportionVos = failureWarnMsgMapper.selectListProportion(queryModel);
+        if (ObjectUtils.isNotEmpty(failureWarnProportionVos)) {
+            List<FailureWarnProportionVo> list = failureWarnProportionVos.stream().sorted(Comparator.comparing(FailureWarnProportionVo::getCount, Comparator.reverseOrder())).collect(Collectors.toList());
             int i = 1;
             
             for (FailureWarnProportionVo item : list) {
