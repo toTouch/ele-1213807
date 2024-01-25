@@ -126,19 +126,17 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             }
             
             // 上报的记录没有
-            if (ObjectUtils.isEmpty(vo.getDeviceType())) {
-                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-                Optional.ofNullable(failureAlarm).ifPresent(i -> {
-                    String signalName = failureAlarm.getSignalName();
-                    if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
-                        signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
-                    }
-                    vo.setFailureAlarmName(signalName);
-                    vo.setGrade(failureAlarm.getGrade());
-                    vo.setDeviceType(failureAlarm.getDeviceType());
-                    
-                });
-            }
+            FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
+            Optional.ofNullable(failureAlarm).ifPresent(i -> {
+                String signalName = failureAlarm.getSignalName();
+                if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
+                    signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
+                }
+                vo.setFailureAlarmName(signalName);
+                vo.setGrade(failureAlarm.getGrade());
+                vo.setDeviceType(failureAlarm.getDeviceType());
+                
+            });
             
             resultList.add(vo);
         });
@@ -371,19 +369,17 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isNotEmpty(list)) {
             for (FailureWarnMsgExcelVo vo : list) {
                 // 上报的记录没有
-                if (ObjectUtils.isEmpty(vo.getDeviceType())) {
-                    FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-                    Optional.ofNullable(failureAlarm).ifPresent(i -> {
-                        String signalName = failureAlarm.getSignalName();
-                        if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
-                            signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
-                        }
-                        vo.setFailureAlarmName(signalName);
-                        vo.setGrade(String.valueOf(failureAlarm.getGrade()));
-                        vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
-                        
-                    });
-                }
+                FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
+                Optional.ofNullable(failureAlarm).ifPresent(i -> {
+                    String signalName = failureAlarm.getSignalName();
+                    if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
+                        signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
+                    }
+                    vo.setFailureAlarmName(signalName);
+                    vo.setGrade(String.valueOf(failureAlarm.getGrade()));
+                    vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
+                    
+                });
                 
                 FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
                 if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
