@@ -78,4 +78,9 @@ public class EleHardwareFailureWarnMsgPageRequest {
      * 导出查询添加限制
      */
     private Integer days;
+    
+    /**
+     * 不限制故障告警设置
+     */
+    private Integer noLimitSignalId;
 }

@@ -148,7 +148,7 @@ public class EleHardwareFailureWarnMsgController {
             @RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "type", required = true) Integer type,
             @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
-            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag) {
+            @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "noLimitSignalId", required = false) Integer noLimitSignalId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -167,7 +167,12 @@ public class EleHardwareFailureWarnMsgController {
         }
         
         EleHardwareFailureWarnMsgPageRequest request = EleHardwareFailureWarnMsgPageRequest.builder().type(type).sn(sn).tenantId(tenantId).deviceType(deviceType).grade(grade)
-                .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).status(FailureAlarm.enable).size(size).offset(offset).build();
+                .signalId(signalId).alarmStartTime(alarmStartTime).alarmEndTime(alarmEndTime).alarmFlag(alarmFlag).size(size).offset(offset).build();
+        
+        // 故障告警统计分析运营商总览主动跳转到故障告警记录页面第一次的时候不添加状态的限制
+        if (Objects.isNull(noLimitSignalId)) {
+            request.setStatus(FailureAlarm.enable);
+        }
         
         return failureWarnMsgService.listByPage(request);
     }
