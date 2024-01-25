@@ -4,7 +4,7 @@
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(source, coupon_id, name, discount_type, status, uid, phone, deadline, create_time, update_time, tenant_id) values
         <foreach collection="userCouponList" index="index" separator="," item="item">
-            #{item.source}, #{item.couponId}, #{item.name}, #{item.discountType}, #{item.status}, #{item.uid}, #{item.phone}, #{item.deadline}, #{item.createTime}, #{item.updateTime}, #{item.tenantId}
+            (#{item.source}, #{item.couponId}, #{item.name}, #{item.discountType}, #{item.status}, #{item.uid}, #{item.phone}, #{item.deadline}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
         </foreach>
     </insert>
     
