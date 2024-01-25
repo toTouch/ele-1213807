@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.advice;
 
+import com.xiliulou.core.exception.GlobalExceptionHandlerResolver;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.exception.BizException;
@@ -18,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  **/
 @Slf4j
 @RestControllerAdvice
-public class SaaSGlobalExceptionAdvice {
+public class SaaSGlobalExceptionAdvice extends GlobalExceptionHandlerResolver {
 
     @Resource
     private FeishuService feishuService;
