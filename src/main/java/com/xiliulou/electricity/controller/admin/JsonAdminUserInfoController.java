@@ -618,7 +618,8 @@ public class JsonAdminUserInfoController extends BaseController {
      * 发放优惠券的下拉列表
      */
     @GetMapping(value = "/admin/userInfo/searchForCoupon")
-    public R userInfoSearchForCoupon(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name) {
+    public R userInfoSearchForCoupon(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -647,7 +648,11 @@ public class JsonAdminUserInfoController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        return userInfoService.userInfoSearch(size, offset, name);
+    
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().size(size).offset(offset).name(name).phone(phone).franchiseeIds(franchiseeIds).storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+    
+        return R.ok(userInfoService.userInfoSearchForCoupon(userInfoQuery));
     }
 
     @GetMapping("/admin/userInfo/exportCarRentalExcel")
