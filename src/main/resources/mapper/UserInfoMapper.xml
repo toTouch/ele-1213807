@@ -892,7 +892,7 @@
             </if>
         </where>
         order by id
-        limit #{offset}, #{size}
+        limit #{query.offset}, #{query.size}
     </select>
     
     <sql id="QUERY_USER_INFO_DATA">
