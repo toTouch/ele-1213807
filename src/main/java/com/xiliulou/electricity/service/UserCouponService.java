@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.UserCouponQuery;
+import com.xiliulou.electricity.request.CouponBatchReleaseRequest;
 
 import java.util.List;
 
@@ -94,4 +95,6 @@ public interface UserCouponService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    R adminBatchReleaseCoupon(CouponBatchReleaseRequest request);
 }

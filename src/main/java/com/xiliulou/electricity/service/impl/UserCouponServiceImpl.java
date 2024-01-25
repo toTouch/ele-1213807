@@ -18,9 +18,11 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
+import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
+import com.xiliulou.electricity.request.CouponBatchReleaseRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -53,7 +56,7 @@ import java.util.Objects;
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
 
-    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 4, "send_coupon_to_user_thread");
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 5, "send_coupon_to_user_thread");
 
     @Resource
     private UserCouponMapper userCouponMapper;
@@ -213,6 +216,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         return R.ok();
     }
 
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R adminBatchRelease(Integer id, Long[] uids) {
@@ -288,6 +292,99 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
 
         return R.ok();
+    }
+    
+    @Override
+    public R adminBatchReleaseCoupon(CouponBatchReleaseRequest request) {
+        //用户区分
+        TokenUser operateUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(operateUser)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        boolean result =  redisService.setNx(CacheConstant.CACHE_BATCH_SEND_COUPON_TO_USER_PURCHASE_KEY + operateUser.getUid(), "1", 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+    
+        try {
+            //租户
+            Integer tenantId = TenantContextHolder.getTenantId();
+        
+            Integer id = request.getId();
+            Coupon coupon = couponService.queryByIdFromCache(id);
+            if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
+                log.error("Coupon  ERROR! not found coupon ! couponId={} ", id);
+                return R.fail("ELECTRICITY.0085", "未找到优惠券");
+            }
+        
+            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                    .name(coupon.getName())
+                    .source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
+                    .couponId(coupon.getId())
+                    .discountType(coupon.getDiscountType())
+                    .status(UserCoupon.STATUS_UNUSED)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenantId);
+        
+            //优惠券过期时间
+            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+            couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+        
+            //发放操作记录
+            CouponIssueOperateRecord.CouponIssueOperateRecordBuilder couponIssueOperateRecord = CouponIssueOperateRecord.builder()
+                    .couponId(coupon.getId())
+                    .operateName(operateUser.getUsername())
+                    .tenantId(tenantId)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis());
+        
+            //批量插入
+            List<UserCoupon> userCouponList = new ArrayList<>();
+            List<CouponIssueOperateRecord> recordCouponList = new ArrayList<>();
+            List<Long> uids = request.getUids();
+            for (Long uid : uids) {
+                //查询用户手机号
+                User user = userService.queryByUidFromCache(uid);
+                if (Objects.isNull(user)) {
+                    log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                    return R.fail("ELECTRICITY.0019", "未找到用户");
+                }
+            
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfo)) {
+                    log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                    return R.fail("ELECTRICITY.0019", "未找到用户");
+                }
+                
+                couponBuild.uid(uid);
+                couponBuild.phone(user.getPhone());
+                UserCoupon userCoupon = couponBuild.build();
+                userCouponList.add(userCoupon);
+            
+                couponIssueOperateRecord.uid(user.getUid());
+                couponIssueOperateRecord.name(userInfo.getName());
+                couponIssueOperateRecord.phone(user.getPhone());
+                CouponIssueOperateRecord couponIssueOperateRecordBuild = couponIssueOperateRecord.build();
+                recordCouponList.add(couponIssueOperateRecordBuild);
+            }
+    
+            Integer count = userCouponMapper.batchInsert(userCouponList);
+    
+            //异步记录
+            if (!Objects.equals(count, NumberConstant.ZERO)) {
+                executorService.execute(() -> {
+                    couponIssueOperateRecordService.batchInsert(recordCouponList);
+                });
+            }
+            
+            return R.ok();
+            
+        } finally {
+            redisService.delete(CacheConstant.CACHE_BATCH_SEND_COUPON_TO_USER_PURCHASE_KEY + operateUser.getUid());
+        }
     }
 
     @Override
@@ -692,7 +789,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userCouponMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
-
+    
     @Override
     public Integer updateUserCouponStatus(UserCoupon userCoupon) {
         return userCouponMapper.updateUserCouponStatus(userCoupon);

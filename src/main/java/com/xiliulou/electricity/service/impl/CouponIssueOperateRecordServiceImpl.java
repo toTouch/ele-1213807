@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 优惠券规则表(t_coupon_issue_operate_record)表服务接口
@@ -65,5 +66,10 @@ public class CouponIssueOperateRecordServiceImpl implements CouponIssueOperateRe
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone) {
         return couponIssueOperateRecordMapper.updatePhoneByUid(tenantId,uid,newPhone);
+    }
+    
+    @Override
+    public Integer batchInsert(List<CouponIssueOperateRecord> recordCouponList) {
+        return couponIssueOperateRecordMapper.batchInsert(recordCouponList);
     }
 }
