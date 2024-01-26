@@ -103,7 +103,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         }
         
         if (num > NumberConstant.NOTE_MAX_NUM) {
-            return Triple.of(false, "300831", String.format("短信充值数量不能大于%s", NumberConstant.NOTE_MAX_NUM));
+            return Triple.of(false, "300831", "短信充值数量已超过最大限额，请下次再进行充值操作");
         }
         
         if (ObjectUtils.isEmpty(tenantNote)) {

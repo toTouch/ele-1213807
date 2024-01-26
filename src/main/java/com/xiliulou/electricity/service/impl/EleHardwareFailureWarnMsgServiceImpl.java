@@ -130,14 +130,24 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setCabinetVersion(electricityCabinet1.getVersion());
                 vo.setSn(electricityCabinet1.getSn());
             });
+            
+            Map<String, Map<String, String>> map = new HashMap<>();
     
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
             Optional.ofNullable(failureAlarm).ifPresent(i -> {
                 String signalName = failureAlarm.getSignalName();
-                if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
-                    signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
+                
+                Map<String, String> descMap = map.get(failureAlarm.getSignalId());
+                if (ObjectUtils.isEmpty(descMap)) {
+                    descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
+                    map.put(failureAlarm.getSignalId(), descMap);
                 }
+    
+                if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
+                    signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
+                }
+                
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
@@ -374,6 +384,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
         
         if (ObjectUtils.isNotEmpty(list)) {
+            Map<String, Map<String, String>> map = new HashMap<>();
             for (FailureWarnMsgExcelVo vo : list) {
                 // 查询柜机sn
                 ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
@@ -385,9 +396,17 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(i -> {
                     String signalName = failureAlarm.getSignalName();
-                    if (StringUtils.isNotEmpty(vo.getAlarmDesc())) {
-                        signalName = signalName + CommonConstant.STR_COMMA + vo.getAlarmDesc();
+                    
+                    Map<String, String> descMap = map.get(failureAlarm.getSignalId());
+                    if (ObjectUtils.isEmpty(descMap)) {
+                        descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
+                        map.put(failureAlarm.getSignalId(), descMap);
                     }
+                    
+                    if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
+                        signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
+                    }
+                    
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(String.valueOf(failureAlarm.getGrade()));
                     vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
@@ -427,6 +446,23 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
         
         return R.ok(list);
+    }
+    
+    private Map<String, String> getDescMap(FailureAlarm failureAlarm, String alarmDesc) {
+        Map<String, String> resMap = new HashMap<>();
+        if (StringUtils.isNotEmpty(alarmDesc) && StringUtils.isNotEmpty(failureAlarm.getSignalDesc())) {
+            String[] split = failureAlarm.getSignalDesc().split(StringConstant.CHANGE_ROW);
+            if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
+                for (String desc : split) {
+                    String[] dArr = desc.split(":");
+                    if (ObjectUtils.isNotEmpty(dArr) && dArr.length == 2) {
+                        resMap.put(dArr[0], dArr[1]);
+                    }
+                }
+            }
+        }
+        
+        return resMap;
     }
     
     @Slave
