@@ -79,6 +79,11 @@ public class FailureWarnMsgExcelVo {
     private String tenantName;
     
     /**
+     * 柜机id
+     */
+    private Integer cabinetId;
+    
+    /**
      * 信号量
      */
     private String signalId;

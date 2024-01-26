@@ -25,7 +25,7 @@
             </if>
         
             <if test="sn != null and sn != ''">
-                and sn = #{sn}
+                and EXISTS (select 1 from t_electricity_cabinet a where a.id = cabinet_id and a.sn like concat('%', concat(#{sn}, '%')))
             </if>
         
             <if test="tenantId != null">

@@ -128,6 +128,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
             Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
                 vo.setCabinetVersion(electricityCabinet1.getVersion());
+                vo.setSn(electricityCabinet1.getSn());
             });
     
             // 上报的记录没有
@@ -184,6 +185,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             List<String> signalIdList = failureAlarmList.stream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
             queryModel.setSignalIdList(signalIdList);
         }
+        
         
         return Triple.of(true, null, null);
     }
@@ -373,6 +375,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         if (ObjectUtils.isNotEmpty(list)) {
             for (FailureWarnMsgExcelVo vo : list) {
+                // 查询柜机sn
+                ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
+                Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
+                    vo.setSn(electricityCabinet1.getSn());
+                });
+                
                 // 上报的记录没有
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
                 Optional.ofNullable(failureAlarm).ifPresent(i -> {

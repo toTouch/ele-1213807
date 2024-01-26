@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.TenantNote;
 import com.xiliulou.electricity.entity.TenantNoteRecharge;
@@ -95,6 +96,15 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         addNote.setNoteNum(rechargeRequest.getRechargeNum());
         addNote.setRechargeTime(System.currentTimeMillis());
         addNote.setUpdateTime(System.currentTimeMillis());
+        
+        Integer num = rechargeRequest.getRechargeNum();
+        if (ObjectUtils.isNotEmpty(tenantNote) && ObjectUtils.isNotEmpty(tenantNote.getNoteNum())) {
+            num = tenantNote.getNoteNum();
+        }
+        
+        if (num > NumberConstant.NOTE_MAX_NUM) {
+            return Triple.of(false, "300831", String.format("短信充值数量不能大于%s", NumberConstant.NOTE_MAX_NUM));
+        }
         
         if (ObjectUtils.isEmpty(tenantNote)) {
             addNote.setCreateTime(System.currentTimeMillis());
