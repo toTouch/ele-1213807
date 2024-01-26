@@ -137,4 +137,9 @@ public class EleHardwareFailureWarnMsgPageVo {
      * 柜机名称
      */
     private String cabinetName;
+    
+    /**
+     * 柜机版本
+     */
+    private String cabinetVersion;
 }

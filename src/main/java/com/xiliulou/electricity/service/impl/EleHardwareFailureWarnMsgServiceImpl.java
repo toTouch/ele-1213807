@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
@@ -81,8 +82,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     @Resource
     private ElectricityCabinetService cabinetService;
     
-    @Resource
-    private TenantService tenantService;
     
     @Slave
     @Override
@@ -125,6 +124,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setCellNo(null);
             }
             
+            // 查询柜机版本
+            ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
+            Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
+                vo.setCabinetVersion(electricityCabinet1.getVersion());
+            });
+    
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
             Optional.ofNullable(failureAlarm).ifPresent(i -> {
