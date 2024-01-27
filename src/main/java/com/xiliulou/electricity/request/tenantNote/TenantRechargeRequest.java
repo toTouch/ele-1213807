@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.request.tenantNote;
 
-import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.constant.NumberConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +30,6 @@ public class TenantRechargeRequest {
      * 充值次数
      */
     @NotNull(message = "次数不能为空")
-    @Range(min = 1, message = "次数必须大于零")
+    @Range(min = 1, max = NumberConstant.NOTE_MAX_NUM, message = "次数必须大于零")
     private Integer rechargeNum;
 }

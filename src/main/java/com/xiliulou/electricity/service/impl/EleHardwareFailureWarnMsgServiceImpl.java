@@ -114,8 +114,14 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isEmpty(list)) {
             return R.ok(Collections.emptyList());
         }
+    
+        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
+        if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
+            type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
+        }
         
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
+        Integer finalType = type;
         list.forEach(item -> {
             EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
             BeanUtils.copyProperties(item, vo);
@@ -135,24 +141,23 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-            Optional.ofNullable(failureAlarm).ifPresent(i -> {
+            
+            if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
-                
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                 if (ObjectUtils.isEmpty(descMap)) {
-                    descMap = getDescMap(failureAlarm, failureAlarm.getEventDesc());
+                    descMap = getDescMap(failureAlarm.getEventDesc());
                     map.put(failureAlarm.getSignalId(), descMap);
                 }
     
                 if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                     signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                 }
-                
+    
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
-                
-            });
+            }
             
             resultList.add(vo);
         });
@@ -382,6 +387,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (triple.getLeft() && Objects.isNull(triple.getRight())) {
             list = failureWarnMsgMapper.selectListExport(queryModel);
         }
+    
+        Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
+        if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
+            type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
+        }
         
         if (ObjectUtils.isNotEmpty(list)) {
             Map<String, Map<String, String>> map = new HashMap<>();
@@ -392,37 +402,33 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setSn(electricityCabinet1.getSn());
                 });
                 
-                // 上报的记录没有
                 FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-                Optional.ofNullable(failureAlarm).ifPresent(i -> {
+                
+                if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), type)) {
                     String signalName = failureAlarm.getSignalName();
-                    
+    
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                     if (ObjectUtils.isEmpty(descMap)) {
-                        log.info("signalId:{},descMap:{}",failureAlarm.getSignalId(), descMap);
-                        descMap = getDescMap(failureAlarm, failureAlarm.getEventDesc());
+                        descMap = getDescMap(failureAlarm.getEventDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
-                    log.info("descMap:{}, signalId:{}, desc:{},res:{}", descMap, failureAlarm.getSignalId(),vo.getAlarmDesc(), descMap.get(vo.getAlarmDesc()));
-                    
+    
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                     }
-                    
+    
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(String.valueOf(failureAlarm.getGrade()));
                     vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
-                    
-                });
-                
-                FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
-                if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
-                    vo.setDeviceType(deviceTypeEnum.getDesc());
-                }
-                
-                FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getGrade()), FailureAlarmGradeEnum.class);
-                if (ObjectUtils.isNotEmpty(gradeEnum)) {
-                    vo.setGrade(gradeEnum.getDesc());
+                    FailureAlarmDeviceTypeEnum deviceTypeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getDeviceType()), FailureAlarmDeviceTypeEnum.class);
+                    if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
+                        vo.setDeviceType(deviceTypeEnum.getDesc());
+                    }
+    
+                    FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getGrade()), FailureAlarmGradeEnum.class);
+                    if (ObjectUtils.isNotEmpty(gradeEnum)) {
+                        vo.setGrade(gradeEnum.getDesc());
+                    }
                 }
                 
                 if (ObjectUtils.isNotEmpty(vo.getAlarmTime())) {
@@ -450,19 +456,16 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return R.ok(list);
     }
     
-    private Map<String, String> getDescMap(FailureAlarm failureAlarm, String eventDesc) {
+    private Map<String, String> getDescMap(String eventDesc) {
         Map<String, String> resMap = new HashMap<>();
-        log.info("signalId:{},alarmDesc:{},signalDesc:{}",failureAlarm.getSignalId(), eventDesc, failureAlarm.getSignalDesc());
         if (StringUtils.isNotEmpty(eventDesc)) {
             eventDesc = eventDesc.replace("：", ":");
             String[] split = eventDesc.split(StringConstant.CHANGE_ROW);
             if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
-                log.info("split:[]", split);
                 for (String desc : split) {
                     String[] dArr = desc.split(":");
-                    log.info("dArr:[]", dArr);
                     if (ObjectUtils.isNotEmpty(dArr) && dArr.length == 2) {
-                        resMap.put(dArr[0], dArr[1]);
+                        resMap.put(dArr[0], desc);
                     }
                 }
             }
