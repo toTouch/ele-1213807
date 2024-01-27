@@ -141,7 +141,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-            log.info("finalType={}, type", finalType, failureAlarm.getType());
+            log.info("signalId:{},finalType={}, type:{}",vo.getSignalId(), finalType, failureAlarm.getType());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
