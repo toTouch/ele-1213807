@@ -399,6 +399,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                     if (ObjectUtils.isEmpty(descMap)) {
+                        log.info("signalId:{},descMap:{}",failureAlarm.getSignalId(), descMap);
                         descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
