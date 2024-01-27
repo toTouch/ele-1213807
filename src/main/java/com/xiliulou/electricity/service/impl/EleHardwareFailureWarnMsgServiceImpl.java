@@ -157,6 +157,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
+            } else {
+                vo.setFailureAlarmName("");
+                vo.setGrade(null);
+                vo.setDeviceType(null);
             }
             
             resultList.add(vo);
@@ -431,6 +435,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     if (ObjectUtils.isNotEmpty(gradeEnum)) {
                         vo.setGrade(gradeEnum.getDesc());
                     }
+                } else {
+                    vo.setFailureAlarmName("");
+                    vo.setGrade("");
+                    vo.setDeviceType("");
                 }
                 
                 if (ObjectUtils.isNotEmpty(vo.getAlarmTime())) {
