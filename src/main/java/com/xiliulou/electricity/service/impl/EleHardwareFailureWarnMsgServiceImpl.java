@@ -140,7 +140,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                 if (ObjectUtils.isEmpty(descMap)) {
-                    descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
+                    descMap = getDescMap(failureAlarm, failureAlarm.getEventDesc());
                     map.put(failureAlarm.getSignalId(), descMap);
                 }
     
@@ -400,7 +400,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                     if (ObjectUtils.isEmpty(descMap)) {
                         log.info("signalId:{},descMap:{}",failureAlarm.getSignalId(), descMap);
-                        descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
+                        descMap = getDescMap(failureAlarm, failureAlarm.getEventDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
                     log.info("descMap:{}", descMap);
@@ -450,11 +450,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return R.ok(list);
     }
     
-    private Map<String, String> getDescMap(FailureAlarm failureAlarm, String alarmDesc) {
+    private Map<String, String> getDescMap(FailureAlarm failureAlarm, String eventDesc) {
         Map<String, String> resMap = new HashMap<>();
-        log.info("signalId:{},alarmDesc:{},signalDesc:{}",failureAlarm.getSignalId(), alarmDesc, failureAlarm.getSignalDesc());
-        if (StringUtils.isNotEmpty(alarmDesc) && StringUtils.isNotEmpty(failureAlarm.getSignalDesc())) {
-            String[] split = failureAlarm.getSignalDesc().split(StringConstant.CHANGE_ROW);
+        log.info("signalId:{},alarmDesc:{},signalDesc:{}",failureAlarm.getSignalId(), eventDesc, failureAlarm.getSignalDesc());
+        if (StringUtils.isNotEmpty(eventDesc)) {
+            String[] split = eventDesc.split(StringConstant.CHANGE_ROW);
             if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
                 log.info("split:[]", split);
                 for (String desc : split) {

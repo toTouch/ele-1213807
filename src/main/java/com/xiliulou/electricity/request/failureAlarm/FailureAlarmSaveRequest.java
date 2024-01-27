@@ -76,7 +76,7 @@ public class FailureAlarmSaveRequest {
     /**
      * 事件描述
      */
-    @Size(max = 100, message = "事件描述字数超出最大限制100字")
+    @Size(max = 500, message = "事件描述字数超出最大限制100字")
     private String eventDesc;
    
     /**
