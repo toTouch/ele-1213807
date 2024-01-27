@@ -38,7 +38,7 @@ public class TenantNoteRechargeVo {
     /**
      * 短信充值次数
      */
-    private Integer rechargeNum;
+    private Long rechargeNum;
     
     /**
      * 充值时间
