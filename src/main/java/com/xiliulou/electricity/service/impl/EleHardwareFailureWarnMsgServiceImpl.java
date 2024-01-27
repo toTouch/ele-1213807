@@ -402,6 +402,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         descMap = getDescMap(failureAlarm, vo.getAlarmDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
+                    log.info("descMap:{}", descMap);
                     
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
@@ -450,11 +451,14 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     private Map<String, String> getDescMap(FailureAlarm failureAlarm, String alarmDesc) {
         Map<String, String> resMap = new HashMap<>();
+        log.info("signalId:{},alarmDesc:{},signalDesc:{}",failureAlarm.getSignalId(), alarmDesc, failureAlarm.getSignalDesc());
         if (StringUtils.isNotEmpty(alarmDesc) && StringUtils.isNotEmpty(failureAlarm.getSignalDesc())) {
             String[] split = failureAlarm.getSignalDesc().split(StringConstant.CHANGE_ROW);
             if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
+                log.info("split:[]", split);
                 for (String desc : split) {
                     String[] dArr = desc.split(":");
+                    log.info("dArr:[]", dArr);
                     if (ObjectUtils.isNotEmpty(dArr) && dArr.length == 2) {
                         resMap.put(dArr[0], dArr[1]);
                     }
