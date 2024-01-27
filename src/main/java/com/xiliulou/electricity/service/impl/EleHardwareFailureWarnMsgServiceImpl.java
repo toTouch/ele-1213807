@@ -403,7 +403,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         descMap = getDescMap(failureAlarm, failureAlarm.getEventDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
-                    log.info("descMap:{}", descMap);
+                    log.info("descMap:{}, signalId:{}, desc:{},res:{}", descMap, failureAlarm.getSignalId(),vo.getAlarmDesc(), descMap.get(vo.getAlarmDesc()));
                     
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
