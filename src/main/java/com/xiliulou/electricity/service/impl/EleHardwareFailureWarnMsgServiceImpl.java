@@ -454,6 +454,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         Map<String, String> resMap = new HashMap<>();
         log.info("signalId:{},alarmDesc:{},signalDesc:{}",failureAlarm.getSignalId(), eventDesc, failureAlarm.getSignalDesc());
         if (StringUtils.isNotEmpty(eventDesc)) {
+            eventDesc = eventDesc.replace("：", ":");
             String[] split = eventDesc.split(StringConstant.CHANGE_ROW);
             if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
                 log.info("split:[]", split);
