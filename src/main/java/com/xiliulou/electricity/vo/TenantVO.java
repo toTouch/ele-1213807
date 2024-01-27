@@ -53,6 +53,6 @@ public class TenantVO {
     /**
      * 短信次数
      */
-    private Integer noteNum;
+    private Long noteNum;
 
 }

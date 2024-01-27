@@ -119,7 +119,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
-        
+        log.info("failureType={}", type);
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
         list.forEach(item -> {
@@ -141,7 +141,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-            
+            log.info("finalType={}, type", finalType, failureAlarm.getType());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
@@ -393,6 +393,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
         
+        
         if (ObjectUtils.isNotEmpty(list)) {
             Map<String, Map<String, String>> map = new HashMap<>();
             for (FailureWarnMsgExcelVo vo : list) {
@@ -412,10 +413,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         descMap = getDescMap(failureAlarm.getEventDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
-    
+                    log.info("descMap:{},signalId:{}, desc:{}, res:{}", descMap, failureAlarm.getSignalId(), vo.getAlarmDesc(), descMap.get(vo.getAlarmDesc()));
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                     }
+                    
     
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(String.valueOf(failureAlarm.getGrade()));
@@ -474,6 +476,23 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return resMap;
     }
     
+    public static void main(String[] args) {
+        String eventDesc = "00: 短路保护\n" + "01: 单芯欠压保护\n" + "02：单芯过压保护\n" + "03：放电过流保护\n" + "04：充电过流保护\n" + "05：低温保护\n" + "06：过温保护\n" + "07：状态异常保护\n"
+                + "08:  MOS异常\n" + "09: 总电压过压保护\n" + "10: 总电压欠压保护\n" + "11: 单芯间压差过大\n" + "12：超高温保护\n" + "000: 无";
+        Map<String, String> resMap = new HashMap<>();
+        eventDesc = eventDesc.replace("：", ":");
+        String[] split = eventDesc.split(StringConstant.CHANGE_ROW);
+        if (ObjectUtils.isNotEmpty(split) && split.length > 0) {
+            for (String desc : split) {
+                String[] dArr = desc.split(":");
+                if (ObjectUtils.isNotEmpty(dArr) && dArr.length == 2) {
+                    resMap.put(dArr[0], desc);
+                }
+            }
+        }
+        
+        log.info("s:{}", resMap);
+    }
     @Slave
     @Override
     public Triple<Boolean, String, Object> proportion(EleHardwareFailureWarnMsgPageRequest request) {

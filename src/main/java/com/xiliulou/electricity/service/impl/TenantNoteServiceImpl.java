@@ -97,7 +97,7 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         addNote.setRechargeTime(System.currentTimeMillis());
         addNote.setUpdateTime(System.currentTimeMillis());
         
-        Integer num = rechargeRequest.getRechargeNum();
+        Long num = rechargeRequest.getRechargeNum();
         if (ObjectUtils.isNotEmpty(tenantNote) && ObjectUtils.isNotEmpty(tenantNote.getNoteNum())) {
             num = tenantNote.getNoteNum();
         }

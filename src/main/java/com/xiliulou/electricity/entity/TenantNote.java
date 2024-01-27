@@ -26,7 +26,7 @@ public class TenantNote {
     /**
      * 短信次数
      */
-    private Integer noteNum;
+    private Long noteNum;
     /**
      * 充值时间
      */
