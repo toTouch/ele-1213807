@@ -30,6 +30,6 @@ public class TenantRechargeRequest {
      * 充值次数
      */
     @NotNull(message = "次数不能为空")
-    @Range(min = 1, max = NumberConstant.NOTE_MAX_NUM, message = "次数必须大于零")
+    @Range(min = 1, max = 2147483647, message = "次数必须大于零")
     private Integer rechargeNum;
 }
