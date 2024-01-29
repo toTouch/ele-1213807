@@ -75,7 +75,8 @@
             recover_time,
             report_time,
             alarm_time,
-            create_time
+            create_time,
+            battery_sn
         FROM
         t_ele_hardware_failure_warn_msg
         <include refid="filter"/>
@@ -112,7 +113,8 @@
         recover_time,
         report_time,
         alarm_time,
-        create_time
+        create_time,
+        battery_sn
         FROM
         t_ele_hardware_failure_warn_msg
         <include refid="filter"/>

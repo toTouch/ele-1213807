@@ -90,4 +90,9 @@ public class FailureWarnMsgExcelVo {
     
     private String alarmDesc;
     
+    /**
+     * 电池sn
+     */
+    private String batterySn;
+    
 }

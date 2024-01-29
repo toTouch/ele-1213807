@@ -142,4 +142,9 @@ public class EleHardwareFailureWarnMsgPageVo {
      * 柜机版本
      */
     private String cabinetVersion;
+    
+    /**
+     * 电池sn
+     */
+    private String batterySn;
 }

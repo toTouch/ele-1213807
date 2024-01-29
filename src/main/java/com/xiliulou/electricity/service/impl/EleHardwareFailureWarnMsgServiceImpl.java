@@ -119,7 +119,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
-        log.info("failureType={}", type);
+        
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
         list.forEach(item -> {
@@ -141,7 +141,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
-            log.info("signalId:{},finalType={}, type:{}",vo.getSignalId(), finalType, failureAlarm.getType());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
                 Map<String, String> descMap = map.get(failureAlarm.getSignalId());
@@ -161,6 +160,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setFailureAlarmName("");
                 vo.setGrade(null);
                 vo.setDeviceType(null);
+            }
+            
+            if (ObjectUtils.isNotEmpty(item.getBatterySn())) {
+                vo.setSn(item.getBatterySn());
             }
             
             resultList.add(vo);
@@ -460,6 +463,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     vo.setCellNo(null);
                 }
                 
+                if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
+                    vo.setSn(vo.getBatterySn());
+                }
             }
         }
         

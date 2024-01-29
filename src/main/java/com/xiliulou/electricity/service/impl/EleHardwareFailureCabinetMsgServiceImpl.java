@@ -2,11 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
-import com.xiliulou.electricity.handler.iot.impl.HardwareFailureWarnMsgHandler;
 import com.xiliulou.electricity.mapper.EleHardwareFailureCabinetMsgMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureCabinetMsgQueryModel;
@@ -324,22 +323,24 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                 if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE) && ObjectUtils.isNotEmpty(vo.getFailureCount())) {
                     // 故障率 故障次数 / 柜机出货量* 100
                     BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
-                    BigDecimal failureRate = failureCountBig.divide(usageDaysCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = failureCountBig.divide(usageDaysCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                     
                     CabinetOverviewFailureExportVo failureExportVo = new CabinetOverviewFailureExportVo();
                     BeanUtils.copyProperties(vo, failureExportVo);
+                    failureExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
                     failureExportVos.add(failureExportVo);
                 }
                 
                 if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) && ObjectUtils.isNotEmpty(vo.getWarnCount())) {
                     // 告警率 故障次数 / 柜机出货量* 100
                     BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
-                    BigDecimal failureRate = warnCountBig.divide(usageDaysCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = warnCountBig.divide(usageDaysCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                     
                     CabinetOverviewWarnExportVo warnExportVo = new CabinetOverviewWarnExportVo();
                     BeanUtils.copyProperties(vo, warnExportVo);
+                    warnExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
                     warnExportVoList.add(warnExportVo);
                 }
             }
@@ -368,14 +369,14 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                 if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE) && ObjectUtils.isNotEmpty(vo.getFailureCount())) {
                     // 故障率 故障次数 / 柜机出货量* 100
                     BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
-                    BigDecimal failureRate = failureCountBig.divide(usageDaysCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = failureCountBig.divide(usageDaysCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                 }
                 
                 if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.WARN) && ObjectUtils.isNotEmpty(vo.getWarnCount())) {
                     // 告警率 故障次数 / 柜机出货量* 100
                     BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
-                    BigDecimal failureRate = warnCountBig.divide(usageDaysCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = warnCountBig.divide(usageDaysCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                 }
             }
@@ -441,11 +442,12 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     // 故障率 故障次数 / 柜机出货量* 100
                     BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
-                    BigDecimal failureRate = failureCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = failureCountBig.divide(cabinetCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                     
                     TenantOverviewFailureExportVo failureExportVo = new TenantOverviewFailureExportVo();
                     BeanUtils.copyProperties(vo, failureExportVo);
+                    failureExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
                     failureExportVos.add(failureExportVo);
                 }
                 
@@ -454,11 +456,12 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     // 告警率 故障次数 / 柜机出货量* 100
                     BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
-                    BigDecimal warnRate = warnCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal warnRate = warnCountBig.divide(cabinetCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setWarnRate(warnRate);
                     
                     TenantOverviewWarnExportVo warnExportVo = new TenantOverviewWarnExportVo();
                     BeanUtils.copyProperties(vo, warnExportVo);
+                    warnExportVo.setWarnRate(warnRate.toString() + StringConstant.PERCENT);
                     warnExportVoList.add(warnExportVo);
                 }
             }
@@ -566,7 +569,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     // 故障率 故障次数 / 柜机出货量* 100
                     BigDecimal failureCountBig = new BigDecimal(String.valueOf(vo.getFailureCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
-                    BigDecimal failureRate = failureCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal failureRate = failureCountBig.divide(cabinetCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setFailureRate(failureRate);
                 }
                 
@@ -575,7 +578,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     // 告警率 故障次数 / 柜机出货量* 100
                     BigDecimal warnCountBig = new BigDecimal(String.valueOf(vo.getWarnCount()));
                     BigDecimal cabinetCount = new BigDecimal(String.valueOf(vo.getCabinetShipment()));
-                    BigDecimal warnRate = warnCountBig.divide(cabinetCount, 1, RoundingMode.HALF_UP);
+                    BigDecimal warnRate = warnCountBig.divide(cabinetCount, 3, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                     vo.setWarnRate(warnRate);
                 }
             }

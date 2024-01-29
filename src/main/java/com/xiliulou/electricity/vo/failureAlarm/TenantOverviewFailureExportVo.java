@@ -40,5 +40,5 @@ public class TenantOverviewFailureExportVo {
      * 故障率
      */
     @ExcelProperty("故障率")
-    private BigDecimal failureRate;
+    private String failureRate;
 }

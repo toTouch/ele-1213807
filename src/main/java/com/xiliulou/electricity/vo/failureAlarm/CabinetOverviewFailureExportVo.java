@@ -40,7 +40,7 @@ public class CabinetOverviewFailureExportVo {
      * 失败率
      */
     @ExcelProperty("失败率")
-    private BigDecimal failureRate;
+    private String failureRate;
     
     
     /**

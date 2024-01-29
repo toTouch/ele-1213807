@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.request.tenantNote;
 
-import com.xiliulou.electricity.constant.NumberConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

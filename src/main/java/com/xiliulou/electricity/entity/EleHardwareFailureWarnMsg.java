@@ -140,6 +140,11 @@ public class EleHardwareFailureWarnMsg {
     private String cabinetName;
     
     /**
+     * 电池sn
+     */
+    private String batterySn;
+    
+    /**
      * 类型
      */
     public static final Integer FAILURE = 1;

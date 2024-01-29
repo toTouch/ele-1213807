@@ -40,5 +40,5 @@ public class TenantOverviewWarnExportVo {
      * 告警频率
      */
     @ExcelProperty("告警率")
-    private BigDecimal warnRate;
+    private String warnRate;
 }
