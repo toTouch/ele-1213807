@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
@@ -328,7 +329,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     
                     CabinetOverviewFailureExportVo failureExportVo = new CabinetOverviewFailureExportVo();
                     BeanUtils.copyProperties(vo, failureExportVo);
-                    failureExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
+                    failureExportVo.setFailureRate(failureRate.stripTrailingZeros().toPlainString() + StringConstant.PERCENT);
                     failureExportVos.add(failureExportVo);
                 }
                 
@@ -340,7 +341,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     
                     CabinetOverviewWarnExportVo warnExportVo = new CabinetOverviewWarnExportVo();
                     BeanUtils.copyProperties(vo, warnExportVo);
-                    warnExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
+                    warnExportVo.setFailureRate(failureRate.stripTrailingZeros().toPlainString() + StringConstant.PERCENT);
                     warnExportVoList.add(warnExportVo);
                 }
             }
@@ -447,7 +448,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     
                     TenantOverviewFailureExportVo failureExportVo = new TenantOverviewFailureExportVo();
                     BeanUtils.copyProperties(vo, failureExportVo);
-                    failureExportVo.setFailureRate(failureRate.toString() + StringConstant.PERCENT);
+                    failureExportVo.setFailureRate(failureRate.stripTrailingZeros().toPlainString() + StringConstant.PERCENT);
                     failureExportVos.add(failureExportVo);
                 }
                 
@@ -461,7 +462,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
                     
                     TenantOverviewWarnExportVo warnExportVo = new TenantOverviewWarnExportVo();
                     BeanUtils.copyProperties(vo, warnExportVo);
-                    warnExportVo.setWarnRate(warnRate.toString() + StringConstant.PERCENT);
+                    warnExportVo.setWarnRate(warnRate.stripTrailingZeros().toPlainString() + StringConstant.PERCENT);
                     warnExportVoList.add(warnExportVo);
                 }
             }
