@@ -1,6 +1,5 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.query.asset;
 
-import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,14 +7,15 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 新增退库model
- * @date 2023/11/27 14:49:58
+ * @description 新增退库详情
+ * @date 2023/11/27 16:54:30
  */
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class AssetExitWarehouseSaveQueryModel {
+public class AssetExitWarehouseDetailSaveQueryModel {
     
     /**
      * 主键Id
@@ -28,31 +28,14 @@ public class AssetExitWarehouseSaveQueryModel {
     private String orderNo;
     
     /**
-     * 退库加盟商
-     */
-    private Long franchiseeId;
-    
-    /**
-     * 退库门店
-     */
-    private Long storeId;
-    
-    /**
      * 退库类型(1-电柜, 2-电池, 3-车辆)
-     *
-     * @see AssetTypeEnum
      */
     private Integer type;
     
     /**
-     * 退库仓库ID
+     * SN码
      */
-    private Long warehouseId;
-    
-    /**
-     * 备注
-     */
-    private String remark;
+    private String sn;
     
     /**
      * 租户ID
@@ -75,8 +58,9 @@ public class AssetExitWarehouseSaveQueryModel {
     private Long updateTime;
     
     /**
-     * 操作人
+     * 备注
      */
-    private Long operator;
+    private String remark;
+    
     
 }
