@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.query.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ElectricityCabinetBatchExitWarehouseBySnQueryModel {
+public class AssetBatchExitWarehouseQueryModel {
     
     private Integer tenantId;
     
@@ -25,6 +25,8 @@ public class ElectricityCabinetBatchExitWarehouseBySnQueryModel {
     
     private Long warehouseId;
     
-    private List<String> snList;
+    List<Long> idList;
+    
+    private Long updateTime;
 
 }

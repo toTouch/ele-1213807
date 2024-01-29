@@ -2,8 +2,8 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseDetailMapper;
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseDetailQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseDetailRequest;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
