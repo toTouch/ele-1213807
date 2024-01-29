@@ -69,7 +69,7 @@ public class FailureAlarmController {
         
         // 删除缓存
         FailureAlarm failureAlarm = (FailureAlarm) r.getRight();
-        failureAlarmService.refreshCache(failureAlarm);
+        failureAlarmService.deleteCache(failureAlarm);
         return R.ok();
     }
     
@@ -154,7 +154,7 @@ public class FailureAlarmController {
         
         // 更新缓存
         FailureAlarm failureAlarm = (FailureAlarm) r.getRight();
-        failureAlarmService.refreshCache(failureAlarm);
+        failureAlarmService.deleteCache(failureAlarm);
         
         return R.ok();
     }
