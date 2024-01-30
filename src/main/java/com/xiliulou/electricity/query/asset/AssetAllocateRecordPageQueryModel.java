@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.query.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,24 +7,28 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 查询电池sn
- * @date 2023/11/24 14:54:54
+ * @description 资产调拨分页model
+ * @date 2023/11/29 11:34:19
  */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ElectricityBatteryListSnByFranchiseeQueryModel {
+public class AssetAllocateRecordPageQueryModel {
     
     private Integer tenantId;
     
-    private Long franchiseeId;
+    private String orderNo;
     
-    private Integer stockStatus;
+    private Integer type;
     
-    private String sn;
+    private Long sourceFranchiseeId;
+    
+    private Long targetFranchiseeId;
     
     private Long size;
     
     private Long offset;
+
 }

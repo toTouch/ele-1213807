@@ -118,6 +118,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
         appTemplateQuery.setFormId(RandomUtil.randomString(20));
         appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
         appTemplateQuery.setPage("/pages/start/index");
+        appTemplateQuery.setUid(uid);
         Map<String, Object> data = new HashMap<>(3);
 
         data.put("character_string1", batteryPowerNotifyDto.getSoc() + "%");
