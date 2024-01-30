@@ -26,8 +26,32 @@
         
             <if test="sn != null and sn != ''">
                 and (
-                EXISTS (select 1 from t_electricity_cabinet a where a.id = t.cabinet_id and a.sn like concat('%', concat(concat(#{sn}, '%')))
-                or  EXISTS (select 1 from t_electricity_battery b where b.id = t.battery_id and b.sn like concat('%', concat(concat(#{sn}, '%')))
+                EXISTS (
+                SELECT
+                1
+                FROM
+                t_electricity_cabinet a
+                WHERE
+                a.id = t.cabinet_id
+                AND a.sn LIKE concat(
+                '%',
+                concat(
+                concat( #{sn}, '%' )))
+                )
+                OR
+    
+                EXISTS (
+                SELECT
+                1
+                FROM
+                t_electricity_battery b
+                WHERE
+                b.id = t.battery_id
+                AND b.sn LIKE concat(
+                '%',
+                concat(
+                concat( #{sn}, '%' )))
+                )
                 )
             </if>
         
