@@ -448,7 +448,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         
         //操作后可用天数
         double newCardDay = 0.0;
-        newTime = Objects.isNull(newTime) ? now : oldTime;
+        newTime = Objects.isNull(newTime) ? now : newTime;
         if (newTime > now) {
             newCardDay = Math.ceil((double) (newTime - now) / 3600000 / 24.0);
         }
@@ -459,7 +459,18 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 .newValidDays((int) newCardDay).oldMaxUseCount(memberTermEntity.getResidue()).newMaxUseCount(newMemberTermEntity.getResidue())
                 .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
+        
+        //如果修改前套餐为不限次套餐，则修改最大使用次数。
+        if (Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
+            record.setOldMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
+        }
     
+        //如果修改后的套餐次数为不限次套餐，则修改最大使用次数。
+        CarRentalPackageMemberTermPo memberTermEntityUpdated = carRentalPackageMemberTermService.selectByTenantIdAndUid(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+        if (Objects.equals(memberTermEntityUpdated.getRentalPackageConfine(), RenalPackageConfineEnum.NO.getCode())) {
+            record.setNewMaxUseCount(UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER);
+        }
+        
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         
         return true;
