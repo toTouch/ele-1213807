@@ -393,11 +393,6 @@ public interface CacheConstant {
     String CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY = "cache_send_coupon_package_purchase_key:";
     
     /**
-     * 批量发放优惠券给用户缓存锁
-     */
-    String CACHE_BATCH_SEND_COUPON_TO_USER_PURCHASE_KEY = "cache_batch_send_coupon_to_user_purchase_key:";
-    
-    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
