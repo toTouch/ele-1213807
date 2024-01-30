@@ -145,6 +145,11 @@ public class EleHardwareFailureWarnMsg {
     private String batterySn;
     
     /**
+     * 电池id
+     */
+    private Long batteryId;
+    
+    /**
      * 类型
      */
     public static final Integer FAILURE = 1;

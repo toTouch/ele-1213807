@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
@@ -25,9 +26,9 @@ import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgTaskQueryM
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
 import com.xiliulou.electricity.service.EleHardwareFailureWarnMsgService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -60,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -81,6 +84,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Resource
     private ElectricityCabinetService cabinetService;
+    
+    @Resource
+    private ElectricityBatteryService batteryService;
     
     
     @Slave
@@ -119,9 +125,22 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
+    
+        Set<Long> batteryIdSet = list.stream().filter(item -> !Objects.equals(item.getBatteryId(), NumberConstant.ZERO_L)).map(EleHardwareFailureWarnMsg::getBatteryId)
+                .collect(Collectors.toSet());
+    
+        Map<Long, String> batterySnMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(batteryIdSet)) {
+            List<Long> idList = batteryIdSet.stream().collect(Collectors.toList());
+            List<ElectricityBattery> batteryList = batteryService.queryListByIdList(idList);
+            if (ObjectUtils.isNotEmpty(batteryList)) {
+                 batterySnMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getId, ElectricityBattery::getSn));
+            }
+        }
         
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
+        Map<Long, String> finalBatterySnMap = batterySnMap;
         list.forEach(item -> {
             EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
             BeanUtils.copyProperties(item, vo);
@@ -162,8 +181,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setDeviceType(null);
             }
             
-            if (ObjectUtils.isNotEmpty(item.getBatterySn())) {
-                vo.setSn(item.getBatterySn());
+            // 根据电池id重置电池编号
+            if (ObjectUtils.isNotEmpty(item.getBatteryId()) && ObjectUtils.isNotEmpty(finalBatterySnMap.get(item.getBatteryId()))) {
+                String batterySn = finalBatterySnMap.get(item.getBatteryId());
+                vo.setSn(batterySn);
             }
             
             resultList.add(vo);
@@ -402,6 +423,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         
         if (ObjectUtils.isNotEmpty(list)) {
+            
+    
+            Map<Long, String> batterySnMap = new HashMap<>();
+            setBatterySnMap(batterySnMap, list);
+            
+            
             Map<String, Map<String, String>> map = new HashMap<>();
             for (FailureWarnMsgExcelVo vo : list) {
                 // 查询柜机sn
@@ -466,10 +493,36 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
+                // 根据电池id重置电池编号
+                Long batteryId = vo.getBatteryId();
+                if (ObjectUtils.isNotEmpty(batteryId) && ObjectUtils.isNotEmpty(batterySnMap.get(batteryId))) {
+                    String batterySn = batterySnMap.get(batteryId);
+                    vo.setSn(batterySn);
+                }
             }
         }
         
         return R.ok(list);
+    }
+    
+    private void setBatterySnMap(Map<Long, String> batterySnMap, List<FailureWarnMsgExcelVo> list) {
+        Set<Long> batteryIdSet = list.stream().filter(item -> !Objects.equals(item.getBatteryId(), NumberConstant.ZERO_L)).map(FailureWarnMsgExcelVo::getBatteryId)
+                .collect(Collectors.toSet());
+    
+        if (ObjectUtils.isNotEmpty(batteryIdSet)) {
+            List<Long> collect = batteryIdSet.stream().collect(Collectors.toList());
+            List<List<Long>> partition = ListUtils.partition(collect, 500);
+            List<ElectricityBattery> batteryList = new ArrayList<>();
+            partition.stream().forEach(item -> {
+                List<ElectricityBattery> batteryList1 = batteryService.queryListByIdList(item);
+                if (ObjectUtils.isNotEmpty(batteryList1)) {
+                    batteryList.addAll(batteryList1);
+                }
+            });
+            if (ObjectUtils.isNotEmpty(batteryList)) {
+                batterySnMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getId, ElectricityBattery::getSn));
+            }
+        }
     }
     
     private Map<String, String> getDescMap(String eventDesc) {

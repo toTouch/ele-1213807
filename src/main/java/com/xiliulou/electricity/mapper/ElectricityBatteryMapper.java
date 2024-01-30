@@ -155,4 +155,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer updateFranchiseeId(ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel);
     
     List<ElectricityBatteryBO> selectListEnableExitWarehouseBattery(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    
+    List<ElectricityBattery> selectListByIdList(@Param("idList") List<Long> idList);
 }

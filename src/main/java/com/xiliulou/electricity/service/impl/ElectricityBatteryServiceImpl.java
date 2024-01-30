@@ -1644,4 +1644,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return rspList;
     }
     
+    @Slave
+    @Override
+    public List<ElectricityBattery> queryListByIdList(List<Long> idList) {
+        return electricitybatterymapper.selectListByIdList(idList);
+    }
+    
 }

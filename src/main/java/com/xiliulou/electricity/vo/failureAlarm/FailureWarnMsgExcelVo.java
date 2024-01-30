@@ -95,4 +95,9 @@ public class FailureWarnMsgExcelVo {
      */
     private String batterySn;
     
+    /**
+     * 电池id
+     */
+    private Long batteryId;
+    
 }

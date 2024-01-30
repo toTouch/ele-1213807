@@ -21,31 +21,34 @@
     <sql id="filter">
         <where>
             <if test="type != null">
-                type  = #{type}
+                t.type  = #{type}
             </if>
         
             <if test="sn != null and sn != ''">
-                and EXISTS (select 1 from t_electricity_cabinet a where a.id = cabinet_id and a.sn like concat('%', concat(#{sn}, '%')))
+                and (
+                EXISTS (select 1 from t_electricity_cabinet a where a.id = t.cabinet_id and a.sn like concat('%', concat(concat(#{sn}, '%')))
+                or  EXISTS (select 1 from t_electricity_battery b where b.id = t.battery_id and b.sn like concat('%', concat(concat(#{sn}, '%')))
+                )
             </if>
         
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and t.tenant_id = #{tenantId}
             </if>
     
             <if test="signalId != null">
-                and signal_id = #{signalId}
+                and t.signal_id = #{signalId}
             </if>
         
             <if test="alarmStartTime != null and alarmEndTime != null">
-                and alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
+                and t.alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
             </if>
         
             <if test="alarmFlag != null">
-                and alarm_flag  = #{alarmFlag}
+                and t.alarm_flag  = #{alarmFlag}
             </if>
             
             <if test="signalIdList != null and signalIdList.size() > 0">
-                and signal_id in
+                and t.signal_id in
                 <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
                     #{signalId}
                 </foreach>
@@ -54,71 +57,73 @@
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg">
         SELECT
-            id,
-            cabinet_id,
-            tenant_id,
-            msg_type,
-            txn_no,
-            signal_id,
-            alarm_desc,
-            alarm_flag,
-            alarm_id,
-            cell_no,
-            sn,
-            type,
-            occur_num,
-            grade,
-            device_type,
-            failure_alarm_name,
-            tenant_name,
-            dev_id,
-            recover_time,
-            report_time,
-            alarm_time,
-            create_time,
-            battery_sn
+            t.id,
+            t.cabinet_id,
+            t.tenant_id,
+            t.msg_type,
+            t.txn_no,
+            t.signal_id,
+            t.alarm_desc,
+            t.alarm_flag,
+            t.alarm_id,
+            t.cell_no,
+            t.sn,
+            t.type,
+            t.occur_num,
+            t.grade,
+            t.device_type,
+            t.failure_alarm_name,
+            t.tenant_name,
+            t.dev_id,
+            t.recover_time,
+            t.report_time,
+            t.alarm_time,
+            t.create_time,
+            t.battery_sn,
+            t.battery_id
         FROM
-        t_ele_hardware_failure_warn_msg
+        t_ele_hardware_failure_warn_msg t
         <include refid="filter"/>
-        order by alarm_time desc
+        order by t.alarm_time desc
         limit #{offset}, #{size}
     </select>
     <select id="countTotal" resultType="java.lang.Integer">
         SELECT
           count(1)
         FROM
-        t_ele_hardware_failure_warn_msg
+        t_ele_hardware_failure_warn_msg t
         <include refid="filter"/>
     </select>
     <select id="selectListExport" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo">
         SELECT
-        id,
-        cabinet_id,
-        tenant_id,
-        msg_type,
-        txn_no,
-        signal_id,
-        alarm_desc,
-        alarm_flag,
-        alarm_id,
-        cell_no,
-        sn,
-        type,
-        occur_num,
-        grade,
-        device_type,
-        failure_alarm_name,
-        tenant_name,
-        dev_id,
-        recover_time,
-        report_time,
-        alarm_time,
-        create_time,
-        battery_sn
+        t.id,
+        t.cabinet_id,
+        t.tenant_id,
+        t.msg_type,
+        t.txn_no,
+        t.signal_id,
+        t.alarm_desc,
+        t.alarm_flag,
+        t.alarm_id,
+        t.cell_no,
+        t.sn,
+        t.type,
+        t.occur_num,
+        t.grade,
+        t.device_type,
+        t.failure_alarm_name,
+        t.tenant_name,
+        t.dev_id,
+        t.recover_time,
+        t.report_time,
+        t.alarm_time,
+        t.create_time,
+        t.battery_sn,
+        t.battery_id
         FROM
-        t_ele_hardware_failure_warn_msg
+        t_ele_hardware_failure_warn_msg t
         <include refid="filter"/>
-        order by alarm_time desc
+        order by t.alarm_time desc
         limit #{offset}, #{size}
     </select>
     <select id="countFailureWarnNum" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
