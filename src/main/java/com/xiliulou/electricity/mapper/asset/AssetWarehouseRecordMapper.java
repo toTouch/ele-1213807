@@ -2,7 +2,7 @@ package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetWarehouseRecordBO;
 import com.xiliulou.electricity.entity.asset.AssetWarehouseRecord;
-import com.xiliulou.electricity.queryModel.asset.AssetWarehouseRecordQueryModel;
+import com.xiliulou.electricity.query.asset.AssetWarehouseRecordQueryModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

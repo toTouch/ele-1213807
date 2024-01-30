@@ -459,6 +459,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 .newValidDays((int) newCardDay).oldMaxUseCount(memberTermEntity.getResidue()).newMaxUseCount(newMemberTermEntity.getResidue())
                 .operateType(UserOperateRecordConstant.OPERATE_TYPE_CAR).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
+    
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         
         return true;

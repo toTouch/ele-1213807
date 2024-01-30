@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import com.xiliulou.electricity.query.asset.AssetInventoryQueryModel;
+import com.xiliulou.electricity.query.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.request.asset.AssetInventoryRequest;
 import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;

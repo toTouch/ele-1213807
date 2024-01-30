@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.asset;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
 import com.xiliulou.electricity.vo.asset.AssetExitWarehouseVO;
