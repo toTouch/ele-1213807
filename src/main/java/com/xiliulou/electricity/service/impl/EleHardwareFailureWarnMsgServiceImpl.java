@@ -180,6 +180,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setGrade(null);
                 vo.setDeviceType(null);
             }
+    
+            if (ObjectUtils.isNotEmpty(item.getBatterySn())) {
+                vo.setSn(item.getBatterySn());
+            }
             
             // 根据电池id重置电池编号
             if (ObjectUtils.isNotEmpty(item.getBatteryId()) && ObjectUtils.isNotEmpty(finalBatterySnMap.get(item.getBatteryId()))) {
@@ -493,6 +497,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
+    
+                if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
+                    vo.setSn(vo.getBatterySn());
+                }
+                
                 // 根据电池id重置电池编号
                 Long batteryId = vo.getBatteryId();
                 if (ObjectUtils.isNotEmpty(batteryId) && ObjectUtils.isNotEmpty(batterySnMap.get(batteryId))) {
