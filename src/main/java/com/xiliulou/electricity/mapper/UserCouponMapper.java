@@ -67,6 +67,4 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     Integer updateUserCouponStatus(UserCoupon userCoupon);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
-    
-    Integer batchInsert(@Param("userCouponList") List<UserCoupon> userCouponList);
 }

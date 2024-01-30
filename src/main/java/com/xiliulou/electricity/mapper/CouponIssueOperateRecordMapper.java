@@ -34,6 +34,4 @@ public interface CouponIssueOperateRecordMapper extends BaseMapper<CouponIssueOp
      * @return 影响行数
      */
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
-    
-    Integer batchInsert(@Param("recordCouponList") List<CouponIssueOperateRecord> recordCouponList);
 }

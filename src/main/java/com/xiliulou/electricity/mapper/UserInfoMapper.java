@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoDataEntity;
 import com.xiliulou.electricity.query.UserInfoDataQuery;
@@ -165,6 +164,4 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserInfo> selectListByUidList(@Param("uidList") List<Long> uidList);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone,@Param("updateTime") Long updateTime);
-    
-    List<UserInfoSearchVo> userInfoSearchForCoupon(@Param("query") UserInfoQuery userInfoQuery);
 }

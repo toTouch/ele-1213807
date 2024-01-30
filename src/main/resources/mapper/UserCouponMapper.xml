@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserCouponMapper">
-    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_coupon(source, coupon_id, name, discount_type, status, uid, phone, deadline, create_time, update_time, tenant_id) values
-        <foreach collection="userCouponList" index="index" separator="," item="item">
-            (#{item.source}, #{item.couponId}, #{item.name}, #{item.discountType}, #{item.status}, #{item.uid}, #{item.phone}, #{item.deadline}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
-        </foreach>
-    </insert>
-    
+
     <!-- 根据来源订单编码作废掉未使用的优惠券 -->
     <update id="cancelBySourceOrderIdAndUnUse">
         UPDATE `t_user_coupon`

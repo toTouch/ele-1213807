@@ -2423,18 +2423,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(qeury);
     }
     
-    @Slave
-    @Override
-    public List<UserInfoSearchVo> userInfoSearchForCoupon(UserInfoQuery userInfoQuery) {
-        List<UserInfoSearchVo> list = userInfoMapper.userInfoSearchForCoupon(userInfoQuery);
-        if (CollectionUtils.isNotEmpty(list)) {
-            return list.stream().peek(item -> item.setNameAndPhone(item.getName() + "/" + item.getPhone())).collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
-    
-    }
-    
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             return;

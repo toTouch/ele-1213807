@@ -613,47 +613,6 @@ public class JsonAdminUserInfoController extends BaseController {
         }
         return userInfoService.userInfoSearch(size, offset, name);
     }
-    
-    /**
-     * 发放优惠券的下拉列表
-     */
-    @GetMapping(value = "/admin/userInfo/searchForCoupon")
-    public R userInfoSearchForCoupon(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone) {
-        if (Objects.isNull(size) || size < 0 || size > 50) {
-            size = 50L;
-        }
-    
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
-    
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-    
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder().size(size).offset(offset).name(name).phone(phone).franchiseeIds(franchiseeIds).storeIds(storeIds)
-                .tenantId(TenantContextHolder.getTenantId()).build();
-    
-        return R.ok(userInfoService.userInfoSearchForCoupon(userInfoQuery));
-    }
 
     @GetMapping("/admin/userInfo/exportCarRentalExcel")
     public void exportCarRentalExcel(@RequestParam(value = "uid", required = false) Long uid,

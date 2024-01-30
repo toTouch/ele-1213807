@@ -5,8 +5,6 @@ import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.query.CouponIssueOperateRecordQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 
-import java.util.List;
-
 /**
  * 优惠券规则表(t_coupon_issue_operate_record)表服务接口
  *
@@ -33,6 +31,4 @@ public interface CouponIssueOperateRecordService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
-    
-    Integer batchInsert(List<CouponIssueOperateRecord> recordCouponList);
 }

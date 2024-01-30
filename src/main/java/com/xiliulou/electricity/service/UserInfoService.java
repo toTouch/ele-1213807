@@ -10,7 +10,6 @@ import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
-import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -182,6 +181,4 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
-    
-    List<UserInfoSearchVo> userInfoSearchForCoupon(UserInfoQuery userInfoQuery);
 }
