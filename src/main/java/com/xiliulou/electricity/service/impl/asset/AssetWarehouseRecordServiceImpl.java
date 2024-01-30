@@ -10,7 +10,7 @@ import com.xiliulou.electricity.entity.asset.AssetWarehouseDetail;
 import com.xiliulou.electricity.entity.asset.AssetWarehouseRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseRecordMapper;
-import com.xiliulou.electricity.queryModel.asset.AssetWarehouseRecordQueryModel;
+import com.xiliulou.electricity.query.asset.AssetWarehouseRecordQueryModel;
 import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetWarehouseRecordRequest;
 import com.xiliulou.electricity.service.UserService;

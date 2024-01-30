@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.query.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 退库查询model
- * @date 2023/11/28 08:58:18
+ * @description 资产盘点model
+ * @date 2023/11/20 16:40:54
  */
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-public class AssetExitWarehouseQueryModel {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class AssetInventoryQueryModel {
     
     /**
      * 盘点订单号
@@ -27,17 +27,17 @@ public class AssetExitWarehouseQueryModel {
     private Long franchiseeId;
     
     /**
-     * 资产类型(1-电柜, 2-电池, 3-车辆)
+     * 盘点状态(0-进行中,1-完成)
      */
-    private Integer type;
-    
-    private Long size;
-    
-    private Long offset;
+    private Integer status;
     
     /**
      * 租户ID
      */
     private Integer tenantId;
+    
+    private Long size;
+    
+    private Long offset;
     
 }

@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.queryModel.asset;
+package com.xiliulou.electricity.query.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,16 +7,17 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author HeYafeng
- * @description 资产调拨：柜机调拨model
+ * @description 资产调拨：电池调拨model
  * @date 2023/11/29 20:17:32
  */
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
-public class ElectricityCabinetUpdateFranchiseeAndStoreQueryModel {
+public class ElectricityBatteryBatchUpdateFranchiseeQueryModel {
+    
     /**
-     * 柜机id
+     * 电池id
      */
     private Long id;
     
@@ -31,22 +32,12 @@ public class ElectricityCabinetUpdateFranchiseeAndStoreQueryModel {
     private Long sourceFranchiseeId;
     
     /**
-     * 调出门店id
-     */
-    private Long sourceStoreId;
-    
-    /**
      * 调入加盟商id
      */
     private Long targetFranchiseeId;
     
-    /**
-     * 调入门店id
-     */
-    private Long targetStoreId;
+    private String sn;
     
-    /**
-     * 更新时间
-     */
     private Long updateTime;
+    
 }

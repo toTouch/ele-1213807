@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetAllocateDetailBO;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetAllocateDetailSaveQueryModel;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl.asset;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.AssetAllocateDetailBO;
 import com.xiliulou.electricity.mapper.asset.AssetAllocateDetailMapper;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateDetailSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetAllocateDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetAllocateDetailSaveRequest;
 import com.xiliulou.electricity.service.asset.AssetAllocateDetailService;
 import com.xiliulou.electricity.vo.asset.AssetAllocateDetailVO;
