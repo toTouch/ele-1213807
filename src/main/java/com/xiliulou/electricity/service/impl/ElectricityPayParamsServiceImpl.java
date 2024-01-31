@@ -41,6 +41,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	
 	@Autowired
 	private WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
+
+	@Autowired
+	WechatV3MerchantLoadAndUpdateCertificateService wechatV3MerchantLoadAndUpdateCertificateService;
 	
 	/**
 	 * 新增或修改
@@ -167,4 +170,21 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		baseMapper.updateById(electricityPayParams);
 		redisService.delete(CacheConstant.CACHE_PAY_PARAMS + electricityPayParams.getTenantId());
 	}
+
+	/**
+	 * 刷新商户信息
+	 *
+	 * @return
+	 */
+	@Override
+	public R refreshMerchant() {
+		Integer tenantId = TenantContextHolder.getTenantId();
+		ElectricityPayParams electricityPayParams = queryFromCache(tenantId);
+		if (Objects.isNull(electricityPayParams)) {
+			return R.fail("找不到支付配置，无法刷新");
+		}
+		wechatV3MerchantLoadAndUpdateCertificateService.refreshMerchantInfo(tenantId);
+		return R.ok();
+	}
+
 }
