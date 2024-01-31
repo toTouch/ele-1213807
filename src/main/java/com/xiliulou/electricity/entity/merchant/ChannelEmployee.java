@@ -23,4 +23,18 @@ public class ChannelEmployee {
     
     private Long uid;
     
+    private Long franchiseeId;
+    
+    private Integer status;
+    
+    private Integer delFlag;
+    
+    private Integer tenantId;
+    
+    private String remark;
+    
+    private Long createTime;
+    
+    private Long updateTime;
+    
 }

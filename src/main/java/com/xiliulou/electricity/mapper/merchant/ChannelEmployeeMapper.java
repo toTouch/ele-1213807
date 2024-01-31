@@ -14,7 +14,15 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     ChannelEmployee selectById(Long id);
     
-    List<ChannelEmployee> listByCondition(ChannelEmployee channelEmployee);
+    List<ChannelEmployee> selectListByCondition(ChannelEmployee channelEmployee);
+    
+    Integer countByCondition(ChannelEmployee channelEmployee);
+    
+    Integer insertOne(ChannelEmployee channelEmployee);
+    
+    Integer updateOne(ChannelEmployee channelEmployee);
+    
+    Integer removeById(ChannelEmployee channelEmployee);
     
     
 }
