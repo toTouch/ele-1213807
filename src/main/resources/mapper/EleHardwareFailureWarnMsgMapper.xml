@@ -32,7 +32,7 @@
                 FROM
                 t_electricity_cabinet a
                 WHERE
-                a.id = t.cabinet_id
+                a.id = t.equipment_id
                 AND a.sn LIKE concat(
                 '%',
                 concat(
@@ -46,7 +46,7 @@
                 FROM
                 t_electricity_battery b
                 WHERE
-                b.id = t.battery_id
+                b.id = t.equipment_id
                 AND b.sn LIKE concat(
                 '%',
                 concat(
