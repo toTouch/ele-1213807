@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantAttrMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.MerchantAttr" id="MerchantAttrMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="upgradeCondition" column="upgrade_condition" jdbcType="INTEGER"/>
+        <result property="invitationValidTime" column="invitation_valid_time" jdbcType="INTEGER"/>
+        <result property="validTimeUnit" column="valid_time_unit" jdbcType="INTEGER"/>
+        <result property="invitationProtectionTime" column="invitation_protection_time" jdbcType="INTEGER"/>
+        <result property="protectionTimeUnit" column="protection_time_unit" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="merchantId" column="merchant_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="selectById" resultMap="MerchantAttrMap">
+        select
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, merchant_id, tenant_id, create_time, update_time
+        from t_merchant_attr
+        where id = #{id}
+    </select>
+    
+    <select id="selectByMerchantId" resultMap="MerchantAttrMap">
+        select
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, merchant_id, tenant_id, create_time, update_time
+        from t_merchant_attr
+        where merchant_id = #{merchantId}
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_attr(upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, merchant_id, tenant_id, create_time, update_time)
+        values (#{upgradeCondition}, #{invitationValidTime}, #{validTimeUnit}, #{invitationProtectionTime}, #{protectionTimeUnit}, #{delFlag}, #{merchantId}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="updateByMerchantId">
+        update t_merchant_attr
+        <set>
+            <if test="upgradeCondition != null">
+                upgrade_condition = #{upgradeCondition},
+            </if>
+            <if test="invitationValidTime != null">
+                invitation_valid_time = #{invitationValidTime},
+            </if>
+            <if test="validTimeUnit != null">
+                valid_time_unit = #{validTimeUnit},
+            </if>
+            <if test="invitationProtectionTime != null">
+                invitation_protection_time = #{invitationProtectionTime},
+            </if>
+            <if test="protectionTimeUnit != null">
+                protection_time_unit = #{protectionTimeUnit},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="merchantId != null">
+                merchant_id = #{merchantId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteByMerchantId">
+        delete from t_merchant_attr where id = #{id}
+    </delete>
+
+</mapper>
