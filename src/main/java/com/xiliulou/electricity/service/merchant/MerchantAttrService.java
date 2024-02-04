@@ -27,4 +27,11 @@ public interface MerchantAttrService {
     Triple<Boolean, String, Object> updateUpgradeCondition(Long merchantId, Integer condition);
     
     Triple<Boolean, String, Object> updateInvitationCondition(MerchantAttrRequest request);
+    
+    /**
+     * 初始化商户升级配置
+     * @param tenantId
+     * @return
+     */
+    Integer initMerchantAttr(Long merchantId, Integer tenantId);
 }

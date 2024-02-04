@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.mapper.merchant.MerchantAttrMapper;
 import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
@@ -112,5 +113,21 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
         this.updateByMerchantId(merchantAttrUpdate);
         return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Integer initMerchantAttr(Long merchantId, Integer tenantId) {
+        MerchantAttr merchantAttr = new MerchantAttr();
+        merchantAttr.setUpgradeCondition(null);
+        merchantAttr.setInvitationValidTime(24);
+        merchantAttr.setValidTimeUnit(CommonConstant.TIME_UNIT_HOURS);
+        merchantAttr.setInvitationProtectionTime(1);
+        merchantAttr.setProtectionTimeUnit(CommonConstant.TIME_UNIT_HOURS);
+        merchantAttr.setDelFlag(CommonConstant.DEL_N);
+        merchantAttr.setMerchantId(merchantId);
+        merchantAttr.setTenantId(tenantId);
+        merchantAttr.setCreateTime(System.currentTimeMillis());
+        merchantAttr.setUpdateTime(System.currentTimeMillis());
+        return this.insert(merchantAttr);
     }
 }
