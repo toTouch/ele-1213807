@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -134,7 +135,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             }
 
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && BigDecimal.valueOf(0).compareTo(eleBatteryServiceFeeOrderVo.getBatteryServiceFee()) != 0) {
-                eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
+                eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee(),2,
+                        RoundingMode.DOWN)).intValue());
             }
 
             if(StringUtils.isNotBlank(eleBatteryServiceFeeOrderVo.getBatteryType())){
