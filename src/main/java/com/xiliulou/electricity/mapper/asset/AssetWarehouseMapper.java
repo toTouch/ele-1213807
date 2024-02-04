@@ -2,8 +2,8 @@ package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetWarehouseBO;
 import com.xiliulou.electricity.bo.asset.AssetWarehouseNameBO;
-import com.xiliulou.electricity.queryModel.asset.AssetWarehouseQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetWarehouseSaveOrUpdateQueryModel;
+import com.xiliulou.electricity.query.asset.AssetWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

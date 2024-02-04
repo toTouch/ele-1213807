@@ -225,11 +225,11 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
                 electricityPayParams.getMerchantMinProAppSecert(), jsCode);
         
         String bodyStr = restTemplateService.getForString(codeUrl, null);
-        log.info("check open id failed, call wx pro auth for query open id message={}", bodyStr);
+        log.info("check open id from wx, call wx pro auth for query open id message={}", bodyStr);
         
         WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
         if (Objects.isNull(result) || StrUtil.isEmpty(result.getOpenid()) || StrUtil.isEmpty(result.getSession_key())) {
-            log.error("check open id failed, wxResult has error! uid = {}, tenantId = {}", uid, tenantId);
+            log.error("check open id failed, wxResult has error! bodyStr = {}, uid = {}, tenantId = {}", bodyStr, uid, tenantId);
             //throw new AuthenticationServiceException("微信返回异常！");
             return Boolean.FALSE;
         }

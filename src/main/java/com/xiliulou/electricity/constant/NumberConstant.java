@@ -19,13 +19,19 @@ public class NumberConstant {
     
     public static final Integer THREE = 3;
     
-    public static final Integer SIX = 6;
-    
     public static final Integer TWENTY_FIVE = 25;
     
     public static final Integer SEVENTY_FIVE = 75;
     
     public static final Integer TWO_HUNDRED = 200;
+    
+    public static final Integer FOUR = 4;
+    
+    public static final Integer FIVE = 5;
+    
+    public static final Integer SIX = 6;
+    
+    public static final Integer SEVEN = 7;
     
     public static final Long ZERO_L = 0L;
     

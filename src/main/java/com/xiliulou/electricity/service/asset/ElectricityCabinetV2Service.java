@@ -35,4 +35,6 @@ public interface ElectricityCabinetV2Service {
     List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
     
     List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
+    
+    Integer reloadEleCabinetGeo();
 }

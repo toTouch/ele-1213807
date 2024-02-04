@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -84,4 +85,17 @@ public interface InvitationActivityRecordService {
     List<InvitationActivityRecord> selectByActivityIdAndUid(List<Long> activityIds, Long uid);
     
     List<InvitationActivityRecord> selectByUid(Long uid);
+    
+    Triple<Boolean, String, Object> countByStatics();
+    
+    Triple<Boolean, String, Object> listInvitationLineData();
+    
+    Triple<Boolean, String, Object> queryInvitationAnalysis(Integer timeType);
+    
+    Triple<Boolean, String, Object> queryInvitationDetail(InvitationActivityAnalysisRequest request);
+    
+    Triple<Boolean, String, Object> queryInvitationIncomeAnalysis(Integer timeType);
+    
+    Triple<Boolean, String, Object> queryInvitationIncomeDetail(InvitationActivityAnalysisRequest request);
+    
 }

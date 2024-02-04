@@ -576,6 +576,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> modify(BatteryMemberCardQuery query) {
+        // 套餐名称长度最大为14
+        if (Objects.nonNull(query.getName()) && query.getName().length() > 14) {
+            return Triple.of(false, "100377", "参数校验错误");
+        }
+        
         BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(batteryMemberCard) || !Objects.equals(batteryMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
@@ -617,6 +622,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(BatteryMemberCardQuery query) {
+        // 套餐名称长度最大为14
+        if (Objects.nonNull(query.getName()) && query.getName().length() > 14) {
+            return Triple.of(false, "100377", "参数校验错误");
+        }
+        
         if (Objects.nonNull(this.batteryMemberCardMapper.checkMembercardExist(query.getName(), TenantContextHolder.getTenantId()))) {
             return Triple.of(false, "100104", "套餐名称已存在");
         }

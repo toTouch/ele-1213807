@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetAllocateRecordBO;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordPageQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetAllocateRecordSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetAllocateRecordPageQueryModel;
+import com.xiliulou.electricity.query.asset.AssetAllocateRecordSaveQueryModel;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

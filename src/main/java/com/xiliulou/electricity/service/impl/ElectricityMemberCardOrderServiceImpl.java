@@ -21,6 +21,7 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -1037,25 +1038,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             BeanUtils.copyProperties(item, vo);
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
-            vo.setLimitCount(batteryMemberCard.getLimitCount());
-            vo.setRentType(batteryMemberCard.getRentType());
-            vo.setRentUnit(batteryMemberCard.getRentUnit());
-            vo.setValidDays(batteryMemberCard.getValidDays());
-            vo.setUseCount(batteryMemberCard.getUseCount());
-            if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
-                    + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
-                vo.setIsRefund(BatteryMemberCard.YES);
-            } else {
-                vo.setIsRefund(BatteryMemberCard.NO);
-            }
-            vo.setRefundLimit(batteryMemberCard.getRefundLimit());
-            vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
-            
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
-            if (Objects.nonNull(batteryMembercardRefundOrder)) {
-                vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
-                vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
-            }
+            Optional.ofNullable(batteryMemberCard).ifPresent(memCard ->{
+                vo.setLimitCount(batteryMemberCard.getLimitCount());
+                vo.setRentType(batteryMemberCard.getRentType());
+                vo.setRentUnit(batteryMemberCard.getRentUnit());
+                vo.setValidDays(batteryMemberCard.getValidDays());
+                vo.setUseCount(batteryMemberCard.getUseCount());
+                if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
+                        + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
+                    vo.setIsRefund(BatteryMemberCard.YES);
+                } else {
+                    vo.setIsRefund(BatteryMemberCard.NO);
+                }
+                vo.setRefundLimit(batteryMemberCard.getRefundLimit());
+                vo.setSimpleBatteryType(acquireBatteryMembercardOrderSimpleBatteryType(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getMemberCardId())));
+    
+                BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(item.getOrderId());
+                if (Objects.nonNull(batteryMembercardRefundOrder)) {
+                    vo.setRentRefundStatus(batteryMembercardRefundOrder.getStatus());
+                    vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
+                }
+            });
             
             return vo;
         }).collect(Collectors.toList());
@@ -1596,16 +1599,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         enableMemberCardRecordService.insert(enableMemberCardRecord);
         
         UserBatteryMemberCard userBatteryMemberCardUdpate = new UserBatteryMemberCard();
-        Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+        
+        // 申请冻结的天数
+        Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+        // 实际的冻结时间
+        Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+        
+       // Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
         userBatteryMemberCardUdpate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUdpate.setOrderExpireTime(
+       /* userBatteryMemberCardUdpate.setOrderExpireTime(
                 System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
-        userBatteryMemberCardUdpate.setMemberCardExpireTime(memberCardExpireTime);
+        userBatteryMemberCardUdpate.setMemberCardExpireTime(memberCardExpireTime);*/
+        userBatteryMemberCardUdpate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime));
+        userBatteryMemberCardUdpate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime));
         userBatteryMemberCardUdpate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUdpate.setUpdateTime(System.currentTimeMillis());
         
-        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
-                .serviceFeeGenerateTime(memberCardExpireTime).franchiseeId(userInfo.getFranchiseeId()).tenantId(eleDisableMemberCardRecord.getTenantId()).uid(user.getUid())
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("")
+                .serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime)).franchiseeId(userInfo.getFranchiseeId()).tenantId(eleDisableMemberCardRecord.getTenantId()).uid(user.getUid())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
@@ -1839,6 +1850,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE);
         userBatteryMemberCardUpdate.setDisableMemberCardTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        // 套餐过期时间需要加上冻结的时间
+        Long frozenTime = days * TimeConstant.DAY_MILLISECOND;
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + frozenTime);
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + frozenTime);
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
@@ -2041,17 +2057,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //更新用户套餐过期时间
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUpdate.setOrderExpireTime(
+        
+        // 申请冻结的天数
+        Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+        // 实际的冻结时间
+        Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+  
+       /* userBatteryMemberCardUpdate.setOrderExpireTime(
                 userBatteryMemberCard.getOrderExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));
         userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                userBatteryMemberCard.getMemberCardExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));
+                userBatteryMemberCard.getMemberCardExpireTime() + (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()));*/
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime));
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime));
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
         //更新用户服务费产生时间 解绑用户停卡单号和滞纳金单号
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = ServiceFeeUserInfo.builder().disableMemberCardNo("").pauseOrderNo("").expireOrderNo("")
-                .franchiseeId(userInfo.getFranchiseeId()).serviceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime())
+                .franchiseeId(userInfo.getFranchiseeId()).serviceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime))
                 .tenantId(eleDisableMemberCardRecord.getTenantId()).uid(uid).updateTime(System.currentTimeMillis()).build();
         
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
@@ -2129,20 +2153,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         //2.如果套餐暂停，则提前启用
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-            orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-            serviceFeeGenerateTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-            
-            int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-            pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
-            log.info("ADMIN CLEAN BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
-            
             //更新停卡记录
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(),
                     user.getTenantId());
             if (Objects.isNull(eleDisableMemberCardRecord)) {
                 return R.fail("100370", "停卡记录不存在");
             }
+    
+            // 申请冻结的天数
+            Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
+            // 实际的冻结时间
+            Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
+            
+            //memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
+            //orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
+            serviceFeeGenerateTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
+            
+            int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+            pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+            log.info("ADMIN CLEAN BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             
             //生成启用记录
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -2991,25 +3022,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 }
                 
                 //套餐过期时间=停卡时间+暂停天数+套餐余量
-                Long memberCardExpireTime = userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * 24 * 60 * 60 * 1000L + (
+             /*   Long memberCardExpireTime = userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * 24 * 60 * 60 * 1000L + (
                         userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 Long orderExpireTime = userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * 24 * 60 * 60 * 1000L + (
-                        userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                        userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());*/
                 
                 //更新用户套餐到期时间，启用用户套餐
                 UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
                 userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
                 userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
                 userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
+              //  userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+              //  userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
                 userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
                 
                 //更新电池服务费产生时间
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
                 
@@ -3806,13 +3837,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserDepositOperateRecord);
         
-        Integer oldValidDays = null;
-        Integer newValidDays = null;
+        double oldValidDays = 0.0;
+        double newValidDays = 0.0;
         Long oldMaxUseCount = null;
         Long newMaxUseCount = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                //oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                oldValidDays =  Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             
             //设置限次 不限次
@@ -3823,7 +3855,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
         
-        newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+        //newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+        newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
         
         //设置限次 不限次
         if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
@@ -3835,7 +3868,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
                 .uid(electricityMemberCardOrder.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername())
-                .oldValidDays(oldValidDays).newValidDays(newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
+                .oldValidDays((int) oldValidDays).newValidDays((int) newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
         
@@ -3940,11 +3973,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     }
                 }
                 
-                if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
-                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-                    Long tempTime = Math.abs(userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
-                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
-                }
+//                if (Objects.nonNull(query.getUseCount()) && query.getUseCount() == 0) {
+//                    userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+//                    Long tempTime = Math.abs(userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis());
+//                    userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - tempTime);
+//                }
             }
         }
         
@@ -3958,15 +3991,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         
         if (Objects.nonNull(query.getMemberCardExpireTime()) || Objects.nonNull(query.getValidDays()) || Objects.nonNull(query.getUseCount())) {
-            Integer oldValidDays = 0;
-            Integer newValidDays = 0;
+            double oldValidDays = 0.0;
+            double newValidDays = 0.0;
             Long oldMaxUseCount = 0L;
             Long newMaxUseCount = 0L;
             
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCardUpdate.getMemberCardExpireTime()) && !Objects.equals(
                     userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                //oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                //newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                oldValidDays = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
+                newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             
             oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
@@ -3974,8 +4009,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             
             EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                     .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
-                    .uid(userInfo.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername()).oldValidDays(oldValidDays)
-                    .newValidDays(newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
+                    .uid(userInfo.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername()).oldValidDays((int) oldValidDays)
+                    .newValidDays((int) newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
         }
@@ -4189,11 +4224,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         //赠送优惠券
         sendUserCoupon(batteryMemberCard, memberCardOrder);
+    
+        double newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
         
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
                 .uid(userInfo.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername()).oldValidDays(0)
-                .newValidDays(Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000))).oldMaxUseCount(0L)
+                .newValidDays((int) newValidDays).oldMaxUseCount(0L)
                 .newMaxUseCount(userBatteryMemberCardUpdate.getRemainingNumber()).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
@@ -4306,14 +4343,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         this.insert(memberCardOrder);
         
-        Integer oldValidDays = 0;
-        Integer newValidDays = 0;
+        double oldValidDays = 0.0;
+        double newValidDays = 0.0;
         Long oldMaxUseCount = 0L;
         Long newMaxUseCount = 0L;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                //oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                //newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
+                oldValidDays = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
+                newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
             }
             oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
             newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
@@ -4321,8 +4360,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         EleUserOperateRecord eleUserMembercardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
-                .uid(userInfo.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername()).oldValidDays(oldValidDays)
-                .newValidDays(newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
+                .uid(userInfo.getUid()).name(Objects.isNull(SecurityUtils.getUserInfo()) ? "" : SecurityUtils.getUserInfo().getUsername()).oldValidDays((int) oldValidDays)
+                .newValidDays((int) newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
         

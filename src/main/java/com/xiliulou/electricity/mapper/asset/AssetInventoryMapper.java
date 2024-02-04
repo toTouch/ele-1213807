@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetInventoryBO;
-import com.xiliulou.electricity.queryModel.asset.AssetInventoryQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetInventorySaveOrUpdateQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetInventoryUpdateDataQueryModel;
+import com.xiliulou.electricity.query.asset.AssetInventoryQueryModel;
+import com.xiliulou.electricity.query.asset.AssetInventorySaveOrUpdateQueryModel;
+import com.xiliulou.electricity.query.asset.AssetInventoryUpdateDataQueryModel;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

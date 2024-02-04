@@ -120,8 +120,9 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 查询电池车辆免押是否成功
+     * 查询电池车辆免押是否成功（和时孟杨确定改接口已废弃）
      */
+    @Deprecated
     @GetMapping("/user/free/carBatteryDeposit/order/status")
     public R freeCarBatteryDepositOrderStatus() {
         return returnTripleResult(freeDepositOrderService.acquireFreeCarBatteryDepositStatus());

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -55,5 +56,16 @@ public class InvitationActivityJoinHistoryVO {
     private Long createTime;
 
     private String activityName;
+    
+    /**
+     * 套餐ID (20241209 加该字段)
+     */
+    private Long packageId;
+    
+    /**
+     * 套餐类型 (1 - 换电， 2 - 租车, 3 - 车电一体)  (20241209 加该字段)
+     * @see PackageTypeEnum
+     */
+    private Integer packageType;
 
 }

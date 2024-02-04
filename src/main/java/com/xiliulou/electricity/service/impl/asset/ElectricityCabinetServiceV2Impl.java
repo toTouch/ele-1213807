@@ -2,6 +2,9 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -16,10 +19,10 @@ import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.queryModel.asset.AssetBatchExitWarehouseQueryModel;
-import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetEnableAllocateQueryModel;
-import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
-import com.xiliulou.electricity.queryModel.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
+import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.ElectricityCabinetEnableAllocateQueryModel;
+import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
+import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.AssetSnWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
@@ -44,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +65,8 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetV2Service")
 @Slf4j
 public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Service {
+    
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("RELOAD_ELECTRICITY_CABINET_GEO", 3, "reload_electricity_cabinet_geo_thread");
     
     @Resource
     private ElectricityCabinetModelService electricityCabinetModelService;
@@ -218,7 +224,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             //修改柜机服务时间信息
             electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
-    
+            //缓存柜机GEO信息
+            electricityCabinetService.addElectricityCabinetLocToGeo(electricityCabinet);
+            
             // 异步记录
             List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(List.of(outWarehouseRequest.getId()));
             if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
@@ -301,6 +309,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         electricityCabinetList.forEach(item -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
+            //缓存柜机GEO信息
+            redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + TenantContextHolder.getTenantId(), item.getId().toString(), new Point(batchOutWarehouseRequest.getLongitude(), batchOutWarehouseRequest.getLatitude()));
         });
     
         // 异步记录
@@ -454,6 +464,37 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         }
         
         return rspList;
+    }
+    
+    @Override
+    public Integer reloadEleCabinetGeo() {
+        if (!redisService.setNx(CacheConstant.CACHE_RELOAD_ELECTRICITY_CABINET_GEO, "1", 120 * 1000L, false)) {
+            return 0;
+        }
+    
+        executorService.execute(() -> {
+            Long offset = 0L;
+            Long size = 200L;
+            while (true) {
+                List<ElectricityCabinetVO> eleCabinets = electricityCabinetMapper.selectListByPage(size, offset);
+                if (!DataUtil.collectionIsUsable(eleCabinets)) {
+                    break;
+                }
+        
+                eleCabinets.forEach(e -> {
+                    if (Objects.isNull(e.getLatitude()) || Objects.isNull(e.getLongitude())) {
+                        return;
+                    }
+                    //缓存柜机GEO信息
+                    redisService.addGeo(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + e.getTenantId(), e.getId().toString(), new Point(e.getLongitude(), e.getLatitude()));
+                });
+                offset += size;
+            }
+    
+            redisService.delete(CacheConstant.CACHE_RELOAD_ELECTRICITY_CABINET_GEO);
+        });
+        
+        return 1;
     }
     
 }
