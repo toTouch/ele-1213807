@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author zgw
  * @date 2023/2/21 9:35
@@ -34,4 +36,12 @@ public class UserNotifyQuery {
      * 内容
      */
     private String content;
+    
+    /**
+     * 0：文字 1：图片
+     */
+    private Integer type;
+    
+    private List<NotifyPictureInfo> pictureInfoList;
+    
 }

@@ -31,4 +31,6 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
             "        update_time, uid,user_name\n" +
             "        from t_share_activity where end_time < #{currentTime} and status = 1 and del_flg = 0 ")
     List<ShareActivity> getExpiredActivity(long currentTimeMillis);
+    
+    Integer existShareActivity(@Param("tenantId") Integer tenantId);
 }

@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseDetailSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseDetailSaveQueryModel;
 import com.xiliulou.electricity.request.asset.AssetExitWarehouseDetailRequest;
 
 import java.util.List;

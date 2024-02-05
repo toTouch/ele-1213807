@@ -69,5 +69,7 @@ public interface UserNotifyService {
     
     R editOne(UserNotifyQuery userNotifyQuery);
     
-    R queryOne();
+    R queryOne(Integer newVersion);
+    
+    R queryOneForAdmin();
 }

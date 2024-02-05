@@ -286,6 +286,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
         Integer tenantId = optModel.getTenantId();
         String name = optModel.getName();
+        
+        // 套餐名称长度最大为14
+        if (name.length() > 14) {
+            throw new BizException("100377", "参数校验错误");
+        }
 
         // 检测唯一
         if (carRentalPackageService.uqByTenantIdAndName(tenantId, name)) {

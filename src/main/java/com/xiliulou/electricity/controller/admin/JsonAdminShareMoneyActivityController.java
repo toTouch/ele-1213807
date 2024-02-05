@@ -214,5 +214,4 @@ public class JsonAdminShareMoneyActivityController {
 			return R.ok(carRentalPackageService.count(qryModel));
 		}
 	}
-
 }

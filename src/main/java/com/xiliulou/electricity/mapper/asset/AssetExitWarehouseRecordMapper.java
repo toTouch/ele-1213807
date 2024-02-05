@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.mapper.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetExitWarehouseBO;
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseQueryModel;
-import com.xiliulou.electricity.queryModel.asset.AssetExitWarehouseSaveQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetExitWarehouseSaveQueryModel;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

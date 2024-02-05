@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.UserNotify;
 import com.xiliulou.electricity.service.UserNotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -20,7 +21,7 @@ public class JsonUserUserNotifyController {
     
     //查看用户状态
     @GetMapping(value = "/user/userNotify")
-    public R queryUserInfo() {
-        return userNotifyService.queryOne();
+    public R queryUserInfo(@RequestParam(value = "newVersion", required = false) Integer newVersion) {
+        return userNotifyService.queryOne(newVersion);
     }
 }

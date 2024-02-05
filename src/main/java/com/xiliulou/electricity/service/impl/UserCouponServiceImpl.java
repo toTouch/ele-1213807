@@ -692,7 +692,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userCouponMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
-
+    
     @Override
     public Integer updateUserCouponStatus(UserCoupon userCoupon) {
         return userCouponMapper.updateUserCouponStatus(userCoupon);
