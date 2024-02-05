@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -41,7 +42,7 @@ public class JsonAdminMerchantLevelController extends BaseController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
         
         return R.ok(merchantLevelService.list(TenantContextHolder.getTenantId()));

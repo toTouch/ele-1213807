@@ -9,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class MerchantLevelVO {
+    
     private Long id;
     
     /**
