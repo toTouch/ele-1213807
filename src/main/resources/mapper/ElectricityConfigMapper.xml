@@ -116,6 +116,9 @@
             <if test="fullChargeRate != null">
                 full_charge_rate = #{fullChargeRate},
             </if>
+            <if test="channelTimeLimit != null">
+                channel_time_limit = #{channelTimeLimit},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}

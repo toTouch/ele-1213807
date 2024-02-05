@@ -162,7 +162,11 @@ public class ElectricityConfig {
      *  柜机多电比例
      */
     private BigDecimal fullChargeRate;
-
+    
+    /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
 
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
 

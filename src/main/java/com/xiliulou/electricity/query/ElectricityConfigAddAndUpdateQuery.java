@@ -144,6 +144,12 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  柜机多电比例
      */
     private Integer fullChargeRate;
+    
+    /**
+     * 渠道时限
+     */
+    private Integer channelTimeLimit;
+
 }
 
 

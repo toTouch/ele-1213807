@@ -28,6 +28,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
@@ -96,6 +97,7 @@ import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -118,6 +120,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -226,6 +230,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Autowired
     private PxzDepositService pxzDepositService;
     
+    @Resource
+    private BatteryMemberCardService memberCardService;
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -328,6 +335,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Collections.EMPTY_LIST;
         }
         
+        Set<Long> enterpriseIdList = list.stream().map(EnterpriseInfoPackageVO::getId).collect(Collectors.toSet());
+        List<EnterpriseChannelUser> enterpriseChannelUserList = enterpriseChannelUserService.listByEnterpriseId(enterpriseIdList);
+        Map<Long, Integer> userMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(enterpriseChannelUserList)) {
+            userMap = enterpriseChannelUserList.stream().collect(Collectors.groupingBy(EnterpriseChannelUser::getEnterpriseId, Collectors.collectingAndThen(Collectors.toList(), e -> e.size())));
+        }
+    
+        Map<Long, Integer> finalUserMap = userMap;
         return list.stream().map(item -> {
             EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
             BeanUtils.copyProperties(item, enterpriseInfoVO);
@@ -343,6 +358,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseInfoVO.setMemcardName(listPair.getRight());
             enterpriseInfoVO.setPackageIds(listPair.getLeft());
             
+            Optional.ofNullable(finalUserMap.get(item.getId())).ifPresent(integer -> {
+                enterpriseInfoVO.setChannelUserCount(integer);
+            });
             return enterpriseInfoVO;
         }).collect(Collectors.toList());
     }
@@ -787,44 +805,111 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         enterpriseChannelUserService.update(enterpriseChannelUserUpdate);
         
-        //解绑用户绑定信息
-        UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(userInfo.getUid());
-        updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-        userInfoService.updateByUid(updateUserInfo);
+        // 因为再回收押金之前已经做过为空判断，无需再次进行判断
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        boolean isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
         
-        //更新用户套餐订单为已失效
-        electricityMemberCardOrderService
-                .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
-        
-        userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-        
-        userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-        
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
-        if (Objects.nonNull(insuranceUserInfo)) {
-            insuranceUserInfoService.deleteById(insuranceUserInfo);
-            //更新用户保险订单为已失效
-            insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+        // 企业渠道用户
+        if (!isMember) {
+            //解绑用户绑定信息
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+    
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
+                    ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+    
+            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+    
+            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+    
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+            if (Objects.nonNull(insuranceUserInfo)) {
+                insuranceUserInfoService.deleteById(insuranceUserInfo);
+                //更新用户保险订单为已失效
+                insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+            }
+    
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+    
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService
+                    .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+    
+            //删除用户电池套餐资源包
+            userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+    
+            //删除用户电池型号
+            userBatteryTypeService.deleteByUid(userInfo.getUid());
+    
+            //删除用户电池服务费
+            serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+        } else {
+            //更新用户套餐订单为已失效
+            electricityMemberCardOrderService.batchUpdateChannelOrderStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
+                    ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+            
+            // 如果会员的当前的电池套餐为企业套餐则删除
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                Long memberCardId = userBatteryMemberCard.getMemberCardId();
+                BatteryMemberCard batteryMemberCard = memberCardService.queryByIdFromCache(memberCardId);
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    //删除用户电池型号
+                    userBatteryTypeService.deleteByUid(userInfo.getUid());
+    
+                    //删除用户电池服务费
+                    serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+                }
+                
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode())) {
+                    // 当前套餐未换电套餐并且存在企业套餐则需将：t_user_battery_member_card的总的到期时间和次数减去未使用的企业套餐的总的时间和次数
+                    List<UserBatteryMemberCardPackage> packages = userBatteryMemberCardPackageService.queryChannelListByUid(userInfo.getUid());
+                    Long expireTimeSum = 0L;
+                    Integer remainingNumber = 0;
+                    if (ObjectUtils.isNotEmpty(packages)) {
+                        for (UserBatteryMemberCardPackage memberCardPackage : packages) {
+                            BatteryMemberCard batteryMemberCard1 = memberCardService.queryByIdFromCache(memberCardPackage.getMemberCardId());
+                            if (Objects.isNull(batteryMemberCard1)) {
+                                log.error("recycle cloud bean batter member card is null, memberCardId={}", memberCardPackage.getMemberCardId());
+                                continue;
+                            }
+                            String orderId = memberCardPackage.getOrderId();
+                            ElectricityMemberCardOrder memberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderId);
+                            if (Objects.isNull(memberCardOrder)) {
+                                log.error("recycle cloud bean batter member card order is null, orderId={}", orderId);
+                                continue;
+                            }
+                            Long expireTime = batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard1, memberCardOrder);
+                            expireTimeSum += expireTime;
+                            if (Objects.nonNull(memberCardOrder.getValidDays())) {
+                                remainingNumber += memberCardOrder.getValidDays();
+                            }
+                        }
+                        
+                        // 修改用户套餐信息
+                        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+                        userBatteryMemberCardUpdate.setId(userBatteryMemberCard.getId());
+                        userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+                        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCardUpdate.getMemberCardExpireTime() - expireTimeSum);
+                        userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCardUpdate.getRemainingNumber() - remainingNumber);
+                        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+                    }
+                    
+                }
+            }
+            //删除用户电池套餐资源包
+            userBatteryMemberCardPackageService.deleteChannelMemberCardByUid(userInfo.getUid());
         }
-        
-        //退押金解绑用户所属加盟商
-        userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-        
-        //更新用户套餐订单为已失效
-        electricityMemberCardOrderService
-                .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
-        
-        //删除用户电池套餐资源包
-        userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
-        
-        //删除用户电池型号
-        userBatteryTypeService.deleteByUid(userInfo.getUid());
-        
-        //删除用户电池服务费
-        serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
     }
+    
     
     @Override
     public Triple<Boolean, String, Object> recycleBatteryMembercard(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard userBatteryMemberCard) {

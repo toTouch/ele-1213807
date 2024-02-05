@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -32,6 +31,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -43,6 +43,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
+import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseFreeDepositQuery;
@@ -50,6 +51,7 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePackageOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseRentBatteryOrderQuery;
+import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -114,6 +116,7 @@ import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -129,8 +132,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -269,6 +274,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
+    @Resource
+    private EnterpriseChannelUserExitMapper channelUserExitMapper;
     
     @Deprecated
     @Override
@@ -449,6 +457,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 query.setDeposit(userBatteryDeposit.getBatteryDeposit());
             }
             
+            // 判断用户是否为换电套餐的流失用户
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(query.getUid(), null, null, null);
+            if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getOrderType(), EleDepositOrder.ORDER_TYPE_COMMON)) {
+                query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT, BatteryMemberCard.RENT_TYPE_NEW));
+                query.setDeposit(null);
+            }
+            
         } else {
             //续费
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -456,9 +471,20 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.error("Not found battery member card for query package by battery V, uid = {}, mid = {}", enterpriseUserId, userBatteryMemberCard.getMemberCardId());
                 return Triple.of(true, "", Collections.emptyList());
             }
+    
+            boolean isMember = false;
             
-            query.setDeposit(batteryMemberCard.getDeposit());
-            query.setLimitCount(batteryMemberCard.getLimitCount());
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
+            if (Objects.nonNull(userBatteryDeposit)) {
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
+            
+            // 企业用户并且用户押金为企业代付
+            if (!isMember) {
+                query.setDeposit(batteryMemberCard.getDeposit());
+                query.setLimitCount(batteryMemberCard.getLimitCount());
+            }
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(enterpriseUserId) : null);
         }
@@ -2241,6 +2267,27 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterprisePackageOrderVOList = enterpriseBatteryPackageMapper.queryUnpaidPackageOrder(query);
         }
         
+        if (ObjectUtils.isNotEmpty(enterprisePackageOrderVOList)) {
+            List<Long> uidList = enterprisePackageOrderVOList.stream().map(EnterprisePackageOrderVO::getUid).collect(Collectors.toList());
+            List<Integer> typeList = new ArrayList<>();
+            typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
+            typeList.add(EnterpriseChannelUserExit.TYPE_FAIL);
+            EnterpriseChannelUserExitQueryModel queryModel = EnterpriseChannelUserExitQueryModel.builder().uidList(uidList).typeList(typeList).build();
+            List<EnterpriseChannelUserExit> channelUserList = channelUserExitMapper.list(queryModel);
+            Map<Long, EnterpriseChannelUserExit> exitMap = new HashMap<>();
+            if (ObjectUtils.isNotEmpty(channelUserList)) {
+                exitMap = channelUserList.stream()
+                        .collect(Collectors.groupingBy(EnterpriseChannelUserExit::getUid, Collectors.collectingAndThen(Collectors.toList(), e -> e.get(0))));
+            }
+            
+            for (EnterprisePackageOrderVO item : enterprisePackageOrderVOList) {
+                if (ObjectUtils.isNotEmpty(exitMap.get(item.getUid()))) {
+                    item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_YES);
+                } else {
+                    item.setRenewalStatusExit(EnterprisePackageOrderVO.RENEWAL_STATUS_EXIT_NO);
+                }
+            }
+        }
         return Triple.of(true, null, enterprisePackageOrderVOList);
     }
     

@@ -255,6 +255,9 @@
     <select id="selectExpireList" resultMap="UserBatteryMemberCardMap">
         <include refid="selectUserBatteryMemberCard"/>
         where member_card_expire_time &lt;= #{memberCardExpireTime}
+        and not EXISTS (
+        select 1 from t_enterprise_channel_user_exit b where b.uid = uid and b.type != 2
+        )
         limit #{offset},#{size}
     </select>
 
@@ -297,6 +300,34 @@
             </foreach>
         </if>
         limit #{offset},#{size}
+    </select>
+    <select id="selectExpireExitList"
+            resultType="com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo">
+        SELECT
+            b.id,
+            b.uid,
+            b.member_card_id,
+            b.order_id,
+            b.member_card_expire_time,
+            b.order_expire_time,
+            b.order_effective_time,
+            b.remaining_number,
+            b.order_remaining_number,
+            b.member_card_status,
+            b.disable_member_card_time,
+            b.del_flag,
+            b.create_time,
+            b.update_time,
+            b.card_pay_count,
+            a.id as 'channelUserExitId',
+            a.channel_user_id as 'channelUserId'
+        FROM
+            t_enterprise_channel_user_exit a
+                INNER JOIN t_user_battery_member_card b on b.uid = a.uid
+        where
+            a.del_flag = 0
+          and a.type = 0
+          limit #{offset},#{size}
     </select>
 
 </mapper>

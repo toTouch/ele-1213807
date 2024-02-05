@@ -113,4 +113,9 @@ public class EnterpriseChannelUserQuery {
     
     private List<Long> franchiseeIds;
     private List<Long> storeIds;
+    
+    /**
+     * 站点名称
+     */
+    private String enterpriseName;
 }
