@@ -18,11 +18,18 @@
         select id, uid, franchisee_id, status, del_flag, remark, create_time, update_time from t_channel_employee
     </sql>
     
-    <!--查询单个-->
+    <!--查根据id查询单条记录-->
     <select id="selectById" resultMap="ChannelEmployeeMap">
         <include refid="selectChannelEmployee"/>
 
         where id = #{id} and del_flag=0
+    </select>
+    
+    <!--根据uid查询单条记录-->
+    <select id="selectByUid" resultMap="ChannelEmployeeMap">
+        <include refid="selectChannelEmployee"/>
+        
+        where uid = #{uid} and del_flag=0
     </select>
     
     <!--查询渠道员工-->

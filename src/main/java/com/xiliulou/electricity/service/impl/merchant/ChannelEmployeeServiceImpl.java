@@ -1,12 +1,31 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.core.i18n.MessageUtils;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserRole;
+import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
+import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
+import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
+import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserRoleService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
+import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author BaoYu
@@ -18,24 +37,105 @@ import java.util.List;
 @Service("channelEmployeeService")
 public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
+    @Resource
+    CustomPasswordEncoder customPasswordEncoder;
+    @Resource
+    UserService userService;
+    @Resource
+    UserRoleService userRoleService;
+    
+    @Resource
+    FranchiseeService franchiseeService;
+    @Resource
+    ChannelEmployeeMapper channelEmployeeMapper;
+    @Resource
+    ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
+    
+    @Slave
     @Override
     public ChannelEmployeeVO queryById(Long id) {
-        return null;
+        ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
+        ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
+        BeanUtils.copyProperties(channelEmployee, channelEmployeeVO);
+        
+        return channelEmployeeVO;
     }
     
+    @Slave
     @Override
     public List<ChannelEmployeeVO> listChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
-        return null;
+    
+        List<ChannelEmployee> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
+    
+        List<ChannelEmployeeVO> channelEmployeeVOList = channelEmployees.parallelStream().map(item -> {
+            ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
+            BeanUtils.copyProperties(item, channelEmployeeVO);
+    
+            //设置加盟商名称
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            channelEmployeeVO.setFranchiseeName(franchisee.getName());
+            
+            //TODO 设置区域名称
+            
+            //TODO 设置商户数
+            
+            return channelEmployeeVO;
+        }).collect(Collectors.toList());
+        
+        return channelEmployeeVOList;
     }
     
+    @Slave
     @Override
     public Integer countChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
-        return null;
+        
+        return channelEmployeeMapper.countByCondition(channelEmployeeRequest);
     }
     
     @Override
     public Integer saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
-        return null;
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        //创建渠道员工账户
+        User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
+                .phone(channelEmployeeRequest.getPhone()).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
+                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_WX_PRO).name("").salt("").avatar("")
+                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL)
+                .build();
+        User userResult = userService.insert(user);
+    
+        Long roleId = 0L;
+        
+        //设置角色
+        UserRole userRole = new UserRole();
+        userRole.setRoleId(roleId);
+        userRole.setUid(userResult.getUid());
+        userRoleService.insert(userRole);
+        
+        //创建渠道员工账户
+        ChannelEmployeeAmount channelEmployeeAmount = new ChannelEmployeeAmount();
+        channelEmployeeAmount.setUid(userResult.getUid());
+        channelEmployeeAmount.setTotalIncome(BigDecimal.ZERO);
+        channelEmployeeAmount.setBalance(BigDecimal.ZERO);
+        channelEmployeeAmount.setWithdrawAmount(BigDecimal.ZERO);
+        channelEmployeeAmount.setCreateTime(System.currentTimeMillis());
+        channelEmployeeAmount.setUpdateTime(System.currentTimeMillis());
+    
+        channelEmployeeAmountMapper.insertOne(channelEmployeeAmount);
+    
+        //创建渠道员工
+        ChannelEmployee channelEmployee = new ChannelEmployee();
+        channelEmployee.setUid(userResult.getUid());
+        channelEmployee.setTenantId(tenantId);
+        channelEmployee.setStatus(channelEmployeeRequest.getStatus());
+        channelEmployee.setDelFlag(CommonConstant.DEL_N);
+        channelEmployee.setCreateTime(System.currentTimeMillis());
+        channelEmployee.setUpdateTime(System.currentTimeMillis());
+    
+        Integer result = channelEmployeeMapper.insertOne(channelEmployee);
+        
+        return result;
     }
     
     @Override
