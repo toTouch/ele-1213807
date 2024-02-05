@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
@@ -896,12 +897,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
     /**
      * 根据经纬度获取柜机列表
+     * @param status 0-全部、1-少电、2-多电、3-锁仓、4-离线
      *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id,
-                                                        @RequestParam(value = "name", required = false) String name) {
+                                                        @RequestParam(value = "name", required = false) String name,
+                                                        @RequestParam(value = "status", required = false) Integer status) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -926,6 +929,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)
+                .status(Objects.isNull(status) ? NumberConstant.ONE : status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .eleIdList(eleIdList)
                 .build();

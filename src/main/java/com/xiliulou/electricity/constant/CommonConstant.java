@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.constant;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author : eclair
  * @date : 2022/7/29 15:55
@@ -51,7 +53,14 @@ public interface CommonConstant {
     Integer DEL_N = 0;
 
     Integer DEL_Y = 1;
-
+    
+    /**
+     * 时间单位 0：分钟，1：小时
+     */
+    Integer TIME_UNIT_MINUTES = 0;
+    Integer TIME_UNIT_HOURS = 1;
+    
+    
     /**
      * 版本
      */
@@ -70,5 +79,7 @@ public interface CommonConstant {
      * 最大导入数据不能超过2000
      */
     Integer EXCEL_MAX_COUNT_TWO_THOUSAND = 2000;
+    
+    
     
 }
