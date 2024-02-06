@@ -7,5 +7,6 @@ package com.xiliulou.electricity.mapper.merchant;
  */
 
 public interface MerchantMapper {
-
+    
+    Integer existsByAreaId(Long areaId);
 }
