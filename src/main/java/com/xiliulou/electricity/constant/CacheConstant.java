@@ -548,4 +548,6 @@ public interface CacheConstant {
     
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
     
+    String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
+    
 }
