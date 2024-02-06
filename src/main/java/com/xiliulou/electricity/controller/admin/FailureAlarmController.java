@@ -67,9 +67,6 @@ public class FailureAlarmController {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
         
-        // 删除缓存
-        FailureAlarm failureAlarm = (FailureAlarm) r.getRight();
-        failureAlarmService.deleteCache(failureAlarm);
         return R.ok();
     }
     
