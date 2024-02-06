@@ -6,5 +6,6 @@ package com.xiliulou.electricity.service.merchant;
  * @desc
  */
 public interface MerchantPlaceService {
-
+    
+    Integer existsByAreaId(Long areaId);
 }

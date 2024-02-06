@@ -7,11 +7,13 @@ import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
+import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
+import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantAreaVO;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,6 +45,9 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     @Resource
     private ElectricityCabinetService electricityCabinetService;
     
+    @Resource
+    private MerchantPlaceService merchantPlaceService;
+    
     @Override
     public R save(MerchantAreaSaveOrUpdateRequest saveRequest, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_MERCHANT_AREA_SAVE_LOCK + operator, "1", 3 * 1000L, false);
@@ -69,14 +74,18 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Override
     public R deleteById(Long id) {
-        //该区域有电柜/商户/渠道员正在使用，请先解绑后操作
         Integer cabinetExist = electricityCabinetService.existsByAreaId(id);
         if (Objects.nonNull(cabinetExist)) {
             return R.fail("300900", "该区域有电柜正在使用，请先解绑后操作");
         }
-        
-        // TODO:该区域有场地正在使用，请先解绑后操作
-        
+    
+        Integer placeExist = merchantPlaceService.existsByAreaId(id);
+        if (Objects.nonNull(placeExist)) {
+            return R.fail("300901", "该区域有场地正在使用，请先解绑后操作");
+        }
+    
+        // 商户?渠道员?
+    
         return R.ok(merchantAreaMapper.deleteById(id));
     }
     
