@@ -275,6 +275,25 @@
 			</if>
 		</where>
 	</select>
+	<select id="checkMerchantExist" resultType="com.xiliulou.electricity.entity.User">
+		SELECT
+			name,
+			phone,
+			uid
+		FROM
+			t_user
+		WHERE
+			   (
+				`name` = #{name}
+				 or phone = #{phone}
+				)
+		  
+		  AND user_type = #{userType}
+		  AND tenant_id = #{tenantId}
+		  <if test="uid != null">
+			  and uid != #{uid}
+		  </if>
+	</select>
 	
 	<update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
