@@ -1235,4 +1235,23 @@
             </if>
         </where>
     </select>
+    
+    <select id="existsByAreaId" resultType="java.lang.Integer">
+        select count(1) from t_electricity_cabinet where del_flag=0 and area_id = #{areaId}
+    </select>
+    
+    <select id="countByAreaGroup" resultType="com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO">
+        select area_id, count(*) as cabinetNum from cabinetNum
+        <where>
+            <if test="areaIdList != null and areaIdList.size() > 0">
+                and area_id in
+                <foreach collection="areaIdList" item="areaId" open="(" close=")" separator=",">
+                    #{areaId}
+                </foreach>
+            </if>
+        </where>
+        group by area_id
+    </select>
+
+
 </mapper>

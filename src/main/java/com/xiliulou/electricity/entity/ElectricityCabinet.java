@@ -118,6 +118,11 @@ public class ElectricityCabinet {
      * 换电方式 1：有屏，2：无屏，3：单片机  -1:电柜类型为空
      */
     private Integer exchangeType;
+    
+    /**
+     * 区域ID
+     */
+    private Long areaId;
 
     //换电方式 1：有屏，2：无屏，3：单片机
     public static final Integer EXCHANGE_TYPE_SCREEN = 1;
