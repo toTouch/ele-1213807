@@ -49,6 +49,13 @@
                 and franchisee_id = #{franchiseeId}
             </if>
     
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+    
         </where>
         order by id desc
         <if test="offset != null and limit != null">

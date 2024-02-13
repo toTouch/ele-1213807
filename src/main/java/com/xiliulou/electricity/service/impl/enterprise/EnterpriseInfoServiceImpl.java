@@ -478,6 +478,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         enterpriseInfo.setCreateTime(System.currentTimeMillis());
         enterpriseInfo.setUpdateTime(System.currentTimeMillis());
         this.enterpriseInfoMapper.insert(enterpriseInfo);
+    
+        enterpriseInfoQuery.setId(enterpriseInfo.getId());
         
         List<EnterprisePackage> packageList = enterpriseInfoQuery.getPackageIds().stream().map(item -> {
             EnterprisePackage enterprisePackage = new EnterprisePackage();

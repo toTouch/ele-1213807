@@ -52,4 +52,7 @@ public class MerchantPlaceMap {
      * 修改时间
      */
     private Long updateTime;
+    
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 }

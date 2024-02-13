@@ -25,6 +25,7 @@ import java.util.List;
 public class MerchantSaveRequest {
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
+    
     /**
      * 商户名称
      */

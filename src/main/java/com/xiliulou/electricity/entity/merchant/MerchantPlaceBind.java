@@ -60,4 +60,14 @@ public class MerchantPlaceBind {
      */
     private Long updateTime;
     
+    /**
+     * 商户结算标记，0-否，1-是)
+     */
+    private Integer merchantMonthSettlement;
+    
+    public final static Integer MONTH_SETTLEMENT_YES = 1;
+    public final static Integer MONTH_SETTLEMENT_NO = 0;
+    
+    public final static Integer BIND = 1;
+    public final static Integer UN_BIND = 0;
 }
