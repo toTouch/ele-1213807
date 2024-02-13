@@ -1,0 +1,22 @@
+package com.xiliulou.electricity.mapper.merchant;
+
+import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
+import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @author maxiaodong
+ * @date 2024/2/6 17:00
+ * @desc
+ */
+public interface MerchantPlaceMapMapper {
+    
+    int batchInsert(@Param("list") List<MerchantPlaceMap> merchantPlaceMapList);
+    
+    List<MerchantPlaceMap> list(MerchantPlaceMapQueryModel queryModel);
+    
+    int batchDeleteByMerchantId(@Param("merchantId") Long merchantId, @Param("placeIdList") Set<Long> placeIdList);
+}

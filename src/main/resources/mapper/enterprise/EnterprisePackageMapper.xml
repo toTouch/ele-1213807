@@ -31,7 +31,12 @@
         from t_enterprise_package
         where package_id = #{packageId}
     </select>
-
+    <select id="listByIdList" resultType="com.xiliulou.electricity.entity.enterprise.EnterprisePackage">
+        select  package_id
+        from t_enterprise_package
+        where package_id = #{packageId}
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_enterprise_package

@@ -441,6 +441,22 @@ public class UserServiceImpl implements UserService {
         return userMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Slave
+    @Override
+    public User checkMerchantExist(String name, String phone, Integer userType, Integer tenantId, Long uid) {
+        return userMapper.checkMerchantExist(name, phone, userType, tenantId, uid);
+    }
+    
+    @Override
+    public Integer updateMerchantUser(User updateUser) {
+        return userMapper.updateMerchantUser(updateUser);
+    }
+    
+    @Override
+    public Integer deleteLogicalById(Long uid, Long updateTime) {
+        return userMapper.deleteLogicalById(uid, updateTime);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {

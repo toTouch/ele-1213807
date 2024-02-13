@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author BaoYu
  * @description:
@@ -40,5 +42,7 @@ public class ChannelEmployeeRequest {
      * 取值数量
      */
     private Integer size;
+    
+    private List<Long> idList;
     
 }

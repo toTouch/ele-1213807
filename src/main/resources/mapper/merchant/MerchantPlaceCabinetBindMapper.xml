@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceCabinetBindMapper">
+    <insert id="batchInsert">
+        insert into t_merchant_place_cabinet_bind (place_id , cabinet_id , bind_time ,un_bind_time ,status ,place_daily_settlement ,month_settlement ,month_settlement_detail
+        ,place_month_settlement ,place_month_settlement_detail ,tenant_id ,
+        del_flag, create_time, update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.placeId}, #{item.cabinetId}, #{item.bindTime},
+            #{item.unBindTime},#{item.status},#{item.placeDailySettlement},#{item.monthSettlement},#{item.monthSettlementDetail},
+            #{item.placeMonthSettlement},#{item.placeMonthSettlementDetail},#{item.tenantId},#{item.delFlag}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <select id="list" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind">
+        select place_id,
+               cabinet_id,
+               bind_time,
+               un_bind_time,
+               status,
+               place_daily_settlement,
+               month_settlement,
+               month_settlement_detail ,
+               place_month_settlement,
+               place_month_settlement_detail,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time
+        from t_merchant_place_cabinet_bind
+        <where>
+            del_flag = 0
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="placeIdList != null">
+                and place_id in
+                <foreach collection="placeIdList" item="placeId" close=")" open="(" separator=",">
+                    #{placeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="listByMerchantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVo">
+        SELECT
+            b.merchant_id,
+            a.cabinet_id
+        FROM
+            t_merchant_place_map b
+            inner join t_merchant_place_cabinet_bind a on b.place_id = a.place_id
+        <where>
+            a.del_flag = 0
+            AND a.`status` = #{status}
+            and b.merchant_id in
+            <foreach collection="merchantIdList" separator="," open="(" close=")" item="merchantId">
+                #{merchantId}
+            </foreach>
+        </where>
+        
+    </select>
+</mapper>

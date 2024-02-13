@@ -79,4 +79,8 @@ public class MerchantPlaceCabinetBind {
      * 修改时间
      */
     private Long updateTime;
+    
+    
+    public final static Integer UN_BIND = 1;
+    public final static Integer BIND = 1;
 }

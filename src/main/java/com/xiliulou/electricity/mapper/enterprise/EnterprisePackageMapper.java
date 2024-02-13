@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.enterprise;
 import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -45,4 +46,5 @@ public interface EnterprisePackageMapper extends BaseMapper<EnterprisePackage> {
     EnterprisePackage selectByPackageId(Long packageId);
     
     int deleteByEnterpriseId(Long id);
+    List<EnterprisePackage> listByIdList(@Param("idList") List<Long> enterprisePackageIdList);
 }
