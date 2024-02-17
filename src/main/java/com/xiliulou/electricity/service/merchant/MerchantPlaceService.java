@@ -16,6 +16,8 @@ import java.util.List;
  * @desc
  */
 public interface MerchantPlaceService {
+    
+    Integer existsByAreaId(Long areaId);
     List<MerchantPlace> queryList(MerchantPlaceQueryModel placeQueryModel);
     
     Triple<Boolean, String, Object> save(MerchantPlaceSaveRequest merchantPlaceSaveRequest);

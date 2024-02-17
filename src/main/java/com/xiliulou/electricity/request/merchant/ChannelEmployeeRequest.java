@@ -29,6 +29,8 @@ public class ChannelEmployeeRequest {
     
     private Long franchiseeId;
     
+    private Long areaId;
+    
     private Integer status;
     
     /**

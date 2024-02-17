@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -7,6 +8,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
+import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
@@ -49,6 +51,13 @@ import java.util.stream.Collectors;
 public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Resource
+    private MerchantMapper merchantMapper;
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long areaId) {
+        return merchantMapper.existsByAreaId(areaId);
+    }
     private MerchantPlaceMapper merchantPlaceMapper;
     
     @Resource

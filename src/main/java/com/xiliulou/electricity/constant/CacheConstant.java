@@ -546,6 +546,8 @@ public interface CacheConstant {
     String CACHE_ASSET_ALLOCATE_LOCK = "cache_asset_allocate_lock:";
     String CACHE_ASSET_BATCH_INVENTORY_LOCK = "cache_asset_batch_inventory_lock:";
     
+    String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+    
     String CACHE_MERCHANT = "cache_merchant:";
     // 商家修改
     String MERCHANT_SAVE_UID = "merchant_save_uid:";

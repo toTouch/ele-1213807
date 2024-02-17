@@ -15,6 +15,8 @@ import java.util.List;
 
 public interface MerchantMapper {
     
+    Integer existsByAreaId(Long areaId);
+    
     int insert(Merchant merchant);
     
     Merchant select(@Param("id") Long id);

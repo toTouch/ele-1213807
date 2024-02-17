@@ -22,6 +22,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -5706,5 +5707,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, electricityCabinet.getFullyCharged()))
                 .collect(Collectors.toList());
         return R.ok(assignExchangeableVoltageAndCapacityV2(exchangeableList));
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByAreaId(Long areaId) {
+        return electricityCabinetMapper.existsByAreaId(areaId);
+    }
+    
+    @Slave
+    @Override
+    public List<AreaCabinetNumBO> countByAreaGroup(List<Long> areaIdList) {
+        return electricityCabinetMapper.countByAreaGroup(areaIdList);
     }
 }
