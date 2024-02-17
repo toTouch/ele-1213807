@@ -367,6 +367,12 @@
             <if test="warehouseId != null">
                 warehouse_id = #{warehouseId},
             </if>
+		    <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="placeFee != null">
+                place_fee  = #{placeFee},
+            </if>
         </set>
 		where id = #{id} and tenant_id = #{tenantId}
 	</update>

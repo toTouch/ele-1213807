@@ -1,27 +1,20 @@
-package com.xiliulou.electricity.query.merchant;
+package com.xiliulou.electricity.request.merchant;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * @author maxiaodong
- * @date 2024/2/9 15:19
+ * @date 2024/2/11 22:28
  * @desc
  */
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class MerchantPlaceQueryModel {
-    
-    private List<Long> idList;
-    
-    private Long nqId;
-    
+@Builder
+public class MerchantPlacePageRequest {
     private Long size;
     
     private Long offset;

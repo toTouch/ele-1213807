@@ -18,7 +18,40 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 public class MerchantPlaceCabinetBindQueryModel {
+    
+    /**
+     * 场地id
+     */
     private List<Long> placeIdList;
+    
+    /**
+     * 状态
+     */
     private Integer status;
+    
+    /**
+     * 商户id
+     */
     private Set<Long> merchantIdList;
+    
+    /**
+     * 柜机id
+     */
+    private Integer cabinetId;
+    
+    /**
+     * 判断绑定时间是否有重叠
+     */
+    private Long overlapTime;
+    public final static Integer QUERY_CABINET_FLAG = 1;
+    
+    private Long size;
+    
+    private Long offset;
+    
+    private String sn;
+    
+    private Integer tenantId;
+    
+    private Long placeId;
 }

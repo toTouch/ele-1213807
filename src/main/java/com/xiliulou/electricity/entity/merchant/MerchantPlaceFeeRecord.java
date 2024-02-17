@@ -27,7 +27,7 @@ public class MerchantPlaceFeeRecord {
     /**
      * 柜机id
      */
-    private Long cabinetId;
+    private Integer cabinetId;
     /**
      *修改前场地费用（元）
      */

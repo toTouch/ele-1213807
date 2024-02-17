@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
+import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -13,4 +16,18 @@ import java.util.List;
  */
 public interface MerchantPlaceMapper {
     List<MerchantPlace> list(MerchantPlaceQueryModel placeQueryModel);
+    
+    Integer checkIsExists(MerchantPlaceQueryModel queryModel);
+    
+    Integer insert(MerchantPlace merchantPlace);
+    
+    Integer update(MerchantPlace merchantPlace);
+    MerchantPlace selectById(@Param("id") Long id);
+    Integer delete(MerchantPlace merchantPlaceDel);
+    
+    Integer countTotal(MerchantPlaceQueryModel merchantQueryModel);
+    
+    List<MerchantPlace> selectListByPage(MerchantPlaceQueryModel merchantQueryModel);
+    
+    List<MerchantPlaceCabinetVO> selectCabinetList(MerchantPlaceQueryModel queryModel);
 }

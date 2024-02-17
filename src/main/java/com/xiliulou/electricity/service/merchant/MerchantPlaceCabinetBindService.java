@@ -2,7 +2,10 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVo;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetBindSaveRequest;
+import com.xiliulou.electricity.request.merchant.MerchantPlaceCabinetPageRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -15,5 +18,17 @@ public interface MerchantPlaceCabinetBindService {
     
     List<MerchantPlaceCabinetBind> queryList(MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel);
     
-    List<MerchantPlaceCabinetBindVo> queryListByMerchantId(MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel);
+    List<MerchantPlaceCabinetBindVO> queryListByMerchantId(MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel);
+    
+    List<MerchantPlaceCabinetBindVO> queryBindCabinetName(MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel);
+    
+    Triple<Boolean, String, Object> bind(MerchantPlaceCabinetBindSaveRequest placeCabinetBindSaveRequest);
+    
+    Triple<Boolean, String, Object> unBind(MerchantPlaceCabinetBindSaveRequest placeCabinetBindSaveRequest);
+    
+    Triple<Boolean, String, Object> delete(Long id);
+    
+    Integer countTotal(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
+    
+    List<MerchantPlaceCabinetBindVO> listByPage(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
 }

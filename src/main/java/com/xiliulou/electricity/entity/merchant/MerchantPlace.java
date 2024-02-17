@@ -38,6 +38,14 @@ public class MerchantPlace {
      */
     private Long merchantAreaId;
     /**
+     * 地址经度
+     */
+    private Double longitude;
+    /**
+     * 地址纬度
+     */
+    private Double latitude;
+    /**
      * 场地地址
      */
     private String address;
@@ -64,4 +72,7 @@ public class MerchantPlace {
      * 修改时间
      */
     private Long updateTime;
+    
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 }

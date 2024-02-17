@@ -8,6 +8,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * 换电柜表(TElectricityCabinet)实体类
@@ -122,6 +123,16 @@ public class ElectricityCabinetAddAndUpdate {
      */
     @NotNull(message = "换电方式不能为空!", groups = {CreateGroup.class})
     private Integer exchangeType;
+    
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
+    /**
+     * 场地费
+     */
+    private BigDecimal placeFee;
 
     //全天
     public static final String ALL_DAY = "-1";

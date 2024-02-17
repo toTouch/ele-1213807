@@ -38,8 +38,10 @@ import com.xiliulou.electricity.service.merchant.MerchantPlaceMapService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVo;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -119,6 +121,12 @@ public class MerchantServiceImpl implements MerchantService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> save(MerchantSaveRequest merchantSaveRequest) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+    
+        if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 检测商户名称是否存在
@@ -271,6 +279,12 @@ public class MerchantServiceImpl implements MerchantService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> update(MerchantSaveRequest merchantSaveRequest) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+    
+        if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Merchant merchant = this.merchantMapper.select(merchantSaveRequest.getId());
@@ -627,11 +641,11 @@ public class MerchantServiceImpl implements MerchantService {
         CompletableFuture<Void> cabinetInfo = CompletableFuture.runAsync(() -> {
             MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().merchantIdList(merchantIdList)
                     .status(MerchantPlaceCabinetBind.BIND).build();
-            List<MerchantPlaceCabinetBindVo> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryListByMerchantId(placeCabinetBindQueryModel);
+            List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryListByMerchantId(placeCabinetBindQueryModel);
             if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
                 Map<Long, List<Long>> cabinetMap = merchantPlaceCabinetBinds.stream()
-                        .collect(Collectors.groupingBy(MerchantPlaceCabinetBindVo::getMerchantId, Collectors.collectingAndThen(Collectors.toList(), e -> {
-                            return e.stream().map(MerchantPlaceCabinetBindVo::getCabinetId).collect(Collectors.toList());
+                        .collect(Collectors.groupingBy(MerchantPlaceCabinetBindVO::getMerchantId, Collectors.collectingAndThen(Collectors.toList(), e -> {
+                            return e.stream().map(MerchantPlaceCabinetBindVO::getCabinetId).collect(Collectors.toList());
                         })));
                 
                 resList.forEach(item -> {

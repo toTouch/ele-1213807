@@ -26,6 +26,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
@@ -71,6 +72,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
@@ -233,6 +235,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Resource
     private BatteryMemberCardService memberCardService;
     
+    @Resource
+    private UserService userService;
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -373,9 +378,10 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Override
     public Triple<Boolean, String, Object> rechargeForUser(UserCloudBeanRechargeQuery query, HttpServletRequest request) {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("CLOUD BEAN RECHARGE ERROR! not found user,uid={}", SecurityUtils.getUid());
+        Long uid = SecurityUtils.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("CLOUD BEAN RECHARGE ERROR! not found user,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
@@ -384,44 +390,39 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         try {
-            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.warn("CLOUD BEAN RECHARGE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            if (Objects.equals(user.getLockFlag(), User.USER_LOCK)) {
+                log.warn("CLOUD BEAN RECHARGE ERROR! user is unUsable,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
             }
             
-            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("CLOUD BEAN RECHARGE ERROR! user not auth,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
-            }
-            
-            EnterpriseInfo enterpriseInfo = this.selectByUid(userInfo.getUid());
+            EnterpriseInfo enterpriseInfo = this.selectByUid(uid);
             if (Objects.isNull(enterpriseInfo)) {
-                log.error("CLOUD BEAN RECHARGE ERROR!not found enterpriseInfo,uid={}", userInfo.getUid());
+                log.error("CLOUD BEAN RECHARGE ERROR!not found enterpriseInfo,uid={}", uid);
                 return Triple.of(false, "100315", "企业配置信息不存在");
             }
             
             if (query.getTotalBeanAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-                log.error("CLOUD BEAN RECHARGE ERROR!illegal totalBeanAmount,uid={},totalBeanAmount={}", userInfo.getUid(), query.getTotalBeanAmount());
+                log.error("CLOUD BEAN RECHARGE ERROR!illegal totalBeanAmount,uid={},totalBeanAmount={}", uid, query.getTotalBeanAmount());
                 return Triple.of(false, "100314", "支付金额不合法");
             }
             
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(electricityPayParams)) {
-                log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", userInfo.getUid());
+                log.error("CLOUD BEAN RECHARGE ERROR!not found pay params,uid={}", uid);
                 return Triple.of(false, "100314", "未配置支付参数!");
             }
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), TenantContextHolder.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", userInfo.getUid());
+                log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100314", "未找到用户的第三方授权信息!");
             }
             
             //生成充值订单
             EnterpriseCloudBeanOrder enterpriseCloudBeanOrder = new EnterpriseCloudBeanOrder();
             enterpriseCloudBeanOrder.setEnterpriseId(enterpriseInfo.getId());
-            enterpriseCloudBeanOrder.setUid(userInfo.getUid());
-            enterpriseCloudBeanOrder.setOperateUid(userInfo.getUid());
+            enterpriseCloudBeanOrder.setUid(uid);
+            enterpriseCloudBeanOrder.setOperateUid(uid);
             enterpriseCloudBeanOrder.setPayAmount(query.getTotalBeanAmount());
             enterpriseCloudBeanOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.CLOUD_BEAN, enterpriseInfo.getUid()));
             enterpriseCloudBeanOrder.setStatus(EnterpriseCloudBeanOrder.STATUS_INIT);
@@ -430,12 +431,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             enterpriseCloudBeanOrder.setRemark("");
             enterpriseCloudBeanOrder.setBeanAmount(query.getTotalBeanAmount());
             enterpriseCloudBeanOrder.setFranchiseeId(enterpriseInfo.getFranchiseeId());
-            enterpriseCloudBeanOrder.setTenantId(userInfo.getTenantId());
+            enterpriseCloudBeanOrder.setTenantId(user.getTenantId());
             enterpriseCloudBeanOrder.setCreateTime(System.currentTimeMillis());
             enterpriseCloudBeanOrder.setUpdateTime(System.currentTimeMillis());
             enterpriseCloudBeanOrderService.insert(enterpriseCloudBeanOrder);
             
-            CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(enterpriseCloudBeanOrder.getOrderId()).uid(userInfo.getUid()).payAmount(query.getTotalBeanAmount())
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(enterpriseCloudBeanOrder.getOrderId()).uid(uid).payAmount(query.getTotalBeanAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_CLOUD_BEAN_RECHARGE).attach(ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE).description("云豆充值")
                     .tenantId(TenantContextHolder.getTenantId()).build();
             
@@ -443,7 +444,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                     .commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return Triple.of(true, null, resultDTO);
         } catch (Exception e) {
-            log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", userInfo.getUid(), e);
+            log.error("CLOUD BEAN RECHARGE ERROR! recharge fail,uid={}", uid, e);
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid());
         }
@@ -646,8 +647,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         EnterpriseInfoVO enterpriseInfoVO = new EnterpriseInfoVO();
         BeanUtils.copyProperties(enterpriseInfo, enterpriseInfoVO);
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(enterpriseInfo.getUid());
+    
+        User userInfo = userService.queryByUidFromCache(enterpriseInfo.getUid());
         enterpriseInfoVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
         
         return enterpriseInfoVO;
@@ -1422,7 +1423,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Override
     public Boolean checkUserType() {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        User userInfo = userService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ENTERPRISE ERROR! not found user info,uid={} ", SecurityUtils.getUid());
             return Boolean.FALSE;

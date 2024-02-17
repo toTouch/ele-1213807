@@ -1,28 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into t_merchant_place (name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
+        ,tenant_id ,status , del_flag, create_time, update_time)
+        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenant_id},#{status}, #{delFlag},
+                #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        update t_merchant_place
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="merchantAreaId != null">
+                merchant_area_id = #{merchantAreaId},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    
+    <update id="delete">
+        update t_merchant_place set del_flag = #{delFlag},update_time = #{updateTime} where id = #{id}
+    </update>
+    
     <select id="list" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
         SELECT
         id,
         `name`
         FROM
         t_merchant_place
-        WHERE
-        del_flag = 0
-        <if test="tenantId != null">
-            and tenant_id = #{tenantId}
-        </if>
-        
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
-        </if>
-        
-        <if test="idList != null and idList.size() > 0">
-            AND id IN
-            <foreach collection="idList" separator="," open="(" close=")" item="id">
-                #{id}
-            </foreach>
-        </if>
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
     
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="checkIsExists" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_merchant_place
+        <where>
+            del_flag = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="nqId != null">
+                and id != #{nqId}
+            </if>
+        </where>
+        
+    </select>
+    
+    <sql id="column">
+        id, name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
+        ,tenant_id , del_flag, create_time, update_time
+    </sql>
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        select <include refid="column"/>
+        from t_merchant_place
+        where
+          del_flag = 0
+          and id = #{id}
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="name != null">
+                and name like concat('%', concat(#{name}, '%'))
+            </if>
+            <if test="merchantAreaId != null">
+                and merchant_area_id = #{merchantAreaId}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_place
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_merchant_place
+        <include refid="pageFilter"/>
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectCabinetList" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO">
+        SELECT
+            c.id,
+            c.`name`,
+            b.place_id
+        FROM
+            t_electricity_cabinet c
+            LEFT JOIN t_merchant_place_cabinet_bind b on b.cabinet_id = c.id
+        <where>
+            c.del_flag = 0
+            and b.del_flag = 0
+            and b.`status` = 1
+            and c.franchisee_id = #{franchiseeId}
+            and c.tenant_id = #{tenantId}
+            <if test="cabinetName != null">
+                and c.`name` like concat('%', concat(#{cabinetName}, '%'))
+            </if>
+        </where>
+        ORDER BY c.id desc
+        limit #{offset}, #{size}
     </select>
 </mapper>
