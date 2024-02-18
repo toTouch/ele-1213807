@@ -322,7 +322,16 @@ public class JsonAdminElectricityCabinetOrderController {
                 throw new CustomBusinessException("查不到订单");
             }
         }
-
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .source(source)
                 .paymentMethod(paymentMethod)
@@ -333,6 +342,8 @@ public class JsonAdminElectricityCabinetOrderController {
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .eleIdList(eleIdList).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);

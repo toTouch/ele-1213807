@@ -265,6 +265,15 @@ public class JsonAdminRentBatteryOrderController {
             }
         }
         
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .name(name)
@@ -275,6 +284,8 @@ public class JsonAdminRentBatteryOrderController {
                 .orderId(orderId)
                 .type(type)
                 .eleIdList(eleIdList)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
