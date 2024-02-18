@@ -431,7 +431,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
 
-    private Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
+    public Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
         List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid,
                 UserOauthBind.SOURCE_WX_PRO, tenantId);
         return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);

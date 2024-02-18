@@ -548,6 +548,7 @@ public interface CacheConstant {
     
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
     
+    String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     String CACHE_MERCHANT = "cache_merchant:";
     // 商家修改
     String MERCHANT_SAVE_UID = "merchant_save_uid:";
@@ -562,7 +563,5 @@ public interface CacheConstant {
     String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
     
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
-    
-    
     
 }
