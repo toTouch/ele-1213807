@@ -1,10 +1,15 @@
 package com.xiliulou.electricity.entity.merchant;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author maxiaodong
@@ -71,6 +76,11 @@ public class Merchant {
      * 会员代付权限 0：关，1：开
      */
     private Integer purchaseAuthority;
+    
+    /**
+     * 邀请权限：1-开启，0-关闭
+     */
+    private Integer inviteAuth;
     
     /**
      * 管理员id

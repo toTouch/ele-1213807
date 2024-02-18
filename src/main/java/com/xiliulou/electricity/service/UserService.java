@@ -126,5 +126,5 @@ public interface UserService {
     
     Integer updateMerchantUser(User updateUser);
     
-    Integer deleteLogicalById(Long uid, Long updateTime);
+    Integer removeById(Long uid, Long updateTime);
 }

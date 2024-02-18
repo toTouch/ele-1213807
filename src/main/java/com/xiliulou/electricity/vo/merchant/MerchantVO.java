@@ -55,4 +55,9 @@ public class MerchantVO {
      * 企业套餐id
      */
     private List<Long> packageIdList;
+    
+    /**
+     * 邀请权限：1-开启，0-关闭
+     */
+    private Integer inviteAuth;
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
@@ -21,7 +22,7 @@ public interface MerchantService {
     
     void deleteCache(MerchantDeleteCacheDTO merchantDeleteCacheDTO);
     
-    Triple<Boolean, String, Object> delete(Long id);
+    Triple<Boolean, String, Object> remove(Long id);
     
     Integer countTotal(MerchantPageRequest merchantPageRequest);
     
@@ -29,7 +30,12 @@ public interface MerchantService {
     
     Triple<Boolean, String, Object> queryById(Long id);
     
+    Merchant queryFromCacheById(Long id);
+    
     Triple<Boolean, String, Object> queryByIdList(List<Long> idList);
     
     List<MerchantVO> getDict(MerchantPageRequest merchantPageRequest);
+    
+    Merchant queryByUid(Long uid);
+    
 }

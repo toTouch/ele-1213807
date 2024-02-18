@@ -137,7 +137,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "id", required = false) Integer id) {
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "areaId", required = false) Long areaId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -182,6 +183,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .onlineStatus(onlineStatus)
                 .stockStatus(stockStatus)
                 .warehouseId(warehouseId)
+                .areaId(areaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
@@ -189,6 +191,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -206,6 +209,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "areaId", required = false) Long areaId,
                         @RequestParam(value = "modelId", required = false) Integer modelId) {
 
         // 数据权校验
@@ -249,6 +253,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);

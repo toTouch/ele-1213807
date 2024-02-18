@@ -13,7 +13,7 @@
             update_time  = #{updateTime}
         where id = #{id}
     </update>
-    <update id="delete">
+    <update id="remove">
         update t_merchant_place_cabinet_bind
         set del_flag    = #{delFlag},
             update_time = #{updateTime}

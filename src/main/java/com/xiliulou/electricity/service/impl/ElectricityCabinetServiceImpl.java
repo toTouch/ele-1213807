@@ -64,6 +64,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -85,6 +86,7 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -132,6 +134,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -408,6 +411,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
+    @Resource
+    private MerchantAreaService merchantAreaService;
+    
     /**
      * 根据主键ID集获取柜机基本信息
      *
@@ -582,33 +588,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
     
-        BigDecimal oldFee = BigDecimal.ZERO;
-        BigDecimal newFee = BigDecimal.ZERO;
-        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
-        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
-            oldFee = oldElectricityCabinet.getPlaceFee();
-        }
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(oldElectricityCabinet, electricityCabinetAddAndUpdate, user);
     
-        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
-            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
-        }
-    
-        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
-        // 场地费有变化则进行记录
-        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
-            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
-            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
-            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
-            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
-            if (Objects.nonNull(user)) {
-                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
-                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
-                long currentTimeMillis = System.currentTimeMillis();
-                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
-                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
-            }
-        }
-        
         //判断参数
         if (Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())) {
             if (Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
@@ -660,7 +641,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
         
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
-        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = merchantPlaceFeeRecord;
         DbUtils.dbOperateSuccessThen(update, () -> {
             
             //更新缓存
@@ -690,10 +670,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 this.updateFullyChargedByCloud(electricityCabinet);
             }
             
-            // 增加场地费变更记录
             return null;
         });
         return R.ok();
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet oldElectricityCabinet, ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
+            oldFee = oldElectricityCabinet.getPlaceFee();
+        }
+    
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
+        }
+    
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
+            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(oldElectricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override
@@ -763,7 +773,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
             }
             
+            // 查询区域
+            List<Long> areaIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getAreaId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+            MerchantAreaQuery areaQuery = MerchantAreaQuery.builder().idList(areaIdList).build();
+            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            Map<Long, String> areaNameMap = Maps.newHashMap();
+            if (!CollectionUtils.isEmpty(merchantAreaList)) {
+                areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (item1, item2) -> item2));
+            }
+            
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+            Map<Long, String> finalAreaNameMap = areaNameMap;
             electricityCabinetList.parallelStream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
@@ -891,6 +911,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //设置仓库名称
                 if (finalWarehouseNameVOMap.containsKey(e.getWarehouseId())) {
                     e.setWarehouseName(finalWarehouseNameVOMap.get(e.getWarehouseId()));
+                }
+                
+                // 设置区域名称
+                if (finalAreaNameMap.containsKey(e.getAreaId())) {
+                    e.setAreaName(finalAreaNameMap.get(e.getAreaId()));
                 }
             });
         }

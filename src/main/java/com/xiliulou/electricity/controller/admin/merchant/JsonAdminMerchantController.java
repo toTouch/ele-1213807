@@ -150,7 +150,7 @@ public class JsonAdminMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Triple<Boolean, String, Object> r = merchantService.delete(id);
+        Triple<Boolean, String, Object> r = merchantService.remove(id);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }

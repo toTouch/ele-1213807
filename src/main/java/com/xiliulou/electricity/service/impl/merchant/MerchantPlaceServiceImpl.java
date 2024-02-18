@@ -163,7 +163,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
     
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Triple<Boolean, String, Object> delete(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id) {
         // 检测场地是否存在
         TokenUser user = SecurityUtils.getUserInfo();
         
@@ -191,7 +191,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         // 删除场地
         MerchantPlace merchantPlaceDel = MerchantPlace.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(MerchantPlace.DEL_DEL).build();
-        merchantPlaceMapper.delete(merchantPlaceDel);
+        merchantPlaceMapper.remove(merchantPlaceDel);
         
         return Triple.of(true, "", merchantPlace);
     }

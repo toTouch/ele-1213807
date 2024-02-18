@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 区域查询
@@ -26,5 +28,7 @@ public class MerchantAreaQuery {
     private String name;
     
     private Integer tenantId;
+    
+    private List<Long> idList;
     
 }
