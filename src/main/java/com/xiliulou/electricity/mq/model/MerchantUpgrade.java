@@ -12,5 +12,7 @@ public class MerchantUpgrade {
     
     private String msgId;
     
+    private String orderId;
+    
     private Long uid;
 }
