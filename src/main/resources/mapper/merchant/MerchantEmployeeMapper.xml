@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper">
+    
+    
+    <resultMap type="com.xiliulou.electricity.entity.merchant.MerchantEmployee" id="MerchantEmployeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="merchantUid" column="merchant_uid" jdbcType="INTEGER"/>
+        <result property="placeId" column="place_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <select id="selectById" resultMap="MerchantEmployeeMap">
+        select
+          id, uid, status, merchant_uid, place_id, tenant_id, del_flag, remark, create_time, update_time
+        from t_merchant_employee
+        where id = #{id}
+    </select>
+    
+    <select id="selectByUid" resultMap="MerchantEmployeeMap">
+        select
+          id, uid, status, merchant_uid, place_id, tenant_id, del_flag, remark, create_time, update_time
+        from t_merchant_employee
+        where uid = #{uid}
+    </select>
+    
+    <select id="selectListByCondition" resultMap="MerchantEmployeeMap">
+        select
+          id, uid, status, merchant_uid, place_id, tenant_id, del_flag, remark, create_time, update_time
+        from t_merchant_employee
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            
+            <if test="merchantUid != null">
+                and merchant_uid = #{merchantUid}
+            </if>
+            
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            
+    
+        </where>
+        order by id desc
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+        
+    </select>
+    
+    <select id="countByCondition" resultType="int">
+        select count(1) from t_merchant_employee
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            
+            <if test="merchantUid != null">
+                and merchant_uid = #{merchantUid}
+            </if>
+            
+            <if test="placeId != null">
+                and place_id = #{placeId}
+            </if>
+            
+        </where>
+    </select>
+    
+
+</mapper>

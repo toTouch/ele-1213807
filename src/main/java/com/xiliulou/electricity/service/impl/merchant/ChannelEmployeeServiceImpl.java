@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -20,7 +22,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +61,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
+    
+    @Resource
+    private RedisService redisService;
     
     @Slave
     @Override
@@ -139,7 +146,12 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Integer saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    public Triple<Boolean, String, Object> saveChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    
+        if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 5000L, false)) {
+            return Triple.of(false, null, "操作频繁,请稍后再试");
+        }
+        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -179,11 +191,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         
         Integer result = channelEmployeeMapper.insertOne(channelEmployee);
         
-        return result;
+        return Triple.of(true, null, result);
     }
     
     @Override
-    public Integer updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+    public Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
         
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
         if (Objects.isNull(channelEmployee)) {
@@ -202,7 +214,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         ChannelEmployee channelEmployeeUpdate = new ChannelEmployee();
         BeanUtils.copyProperties(channelEmployeeRequest, channelEmployeeUpdate);
     
-        return  channelEmployeeMapper.updateOne(channelEmployeeUpdate);
+        Integer result = channelEmployeeMapper.updateOne(channelEmployeeUpdate);
+        
+        return Triple.of(true, null, result);
     }
     
     @Override

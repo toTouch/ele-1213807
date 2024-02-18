@@ -79,16 +79,24 @@ public class JsonAdminChannelEmployeeController {
     
     @PostMapping("/admin/merchant/addChannelEmployee")
     public R addChannelEmployee(@RequestBody @Validated(value = CreateGroup.class) ChannelEmployeeRequest channelEmployeeRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         
-        
-        return null;
+        return R.ok(channelEmployeeService.saveChannelEmployee(channelEmployeeRequest));
     }
     
     
     @PostMapping("/admin/merchant/updateChannelEmployee")
     public R updateChannelEmployee(@RequestBody @Validated(value = UpdateGroup.class) ChannelEmployeeRequest channelEmployeeRequest) {
-        
-        return null;
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(channelEmployeeService.updateChannelEmployee(channelEmployeeRequest));
     }
     
     @GetMapping("/admin/merchant/queryChannelEmployeeById")
