@@ -588,33 +588,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
     
-        BigDecimal oldFee = BigDecimal.ZERO;
-        BigDecimal newFee = BigDecimal.ZERO;
-        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
-        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
-            oldFee = oldElectricityCabinet.getPlaceFee();
-        }
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(oldElectricityCabinet, electricityCabinetAddAndUpdate, user);
     
-        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
-            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
-        }
-    
-        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
-        // 场地费有变化则进行记录
-        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
-            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
-            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
-            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
-            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
-            if (Objects.nonNull(user)) {
-                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
-                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
-                long currentTimeMillis = System.currentTimeMillis();
-                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
-                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
-            }
-        }
-        
         //判断参数
         if (Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())) {
             if (Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
@@ -666,7 +641,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
         
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
-        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = merchantPlaceFeeRecord;
         DbUtils.dbOperateSuccessThen(update, () -> {
             
             //更新缓存
@@ -696,10 +670,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 this.updateFullyChargedByCloud(electricityCabinet);
             }
             
-            // 增加场地费变更记录
             return null;
         });
         return R.ok();
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet oldElectricityCabinet, ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(oldElectricityCabinet.getPlaceFee())) {
+            oldFee = oldElectricityCabinet.getPlaceFee();
+        }
+    
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getPlaceFee())) {
+            newFee = electricityCabinetAddAndUpdate.getPlaceFee();
+        }
+    
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(electricityCabinetAddAndUpdate.getId());
+            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(oldElectricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        
+        return merchantPlaceFeeRecord;
     }
     
     @Override

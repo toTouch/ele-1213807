@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeRecordQueryModel;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface MerchantPlaceFeeRecordMapper {
     List<MerchantPlaceFeeRecord> selectListByPage(MerchantPlaceFeeRecordQueryModel merchantPlaceFeeQueryModel);
     
     Integer insert(MerchantPlaceFeeRecord merchantPlaceFeeRecord);
+    
+    Integer batchInsert(@Param("list") List<MerchantPlaceFeeRecord> placeFeeRecords);
 }

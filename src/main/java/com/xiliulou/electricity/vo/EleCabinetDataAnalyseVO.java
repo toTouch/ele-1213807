@@ -140,5 +140,12 @@ public class EleCabinetDataAnalyseVO {
      * 今日活跃度
      */
     private Integer todayActivity = 0 ;
+    
+    /**
+     * 区域名称
+     */
+    private String areaName;
+    
+    private Long areaId;
 
 }
