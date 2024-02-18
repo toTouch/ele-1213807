@@ -191,6 +191,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);

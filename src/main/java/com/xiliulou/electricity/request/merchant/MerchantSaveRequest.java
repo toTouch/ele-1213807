@@ -25,6 +25,7 @@ import java.util.List;
 public class MerchantSaveRequest {
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
+    
     /**
      * 商户名称
      */
@@ -80,6 +81,13 @@ public class MerchantSaveRequest {
     @Range(min = 0, max = 1, message = "站点代付权限不存在")
     @NotNull(message = "站点代付权限不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer enterprisePackageAuth;
+    
+    /**
+     * 邀请权限：1-开启，0-关闭
+     */
+    @Range(min = 0, max = 1, message = "邀请权限不存在")
+    @NotNull(message = "邀请权限不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer inviteAuth;
     
     /**
      * 会员代付权限 0：关，1：开

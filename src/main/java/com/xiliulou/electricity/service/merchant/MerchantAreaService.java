@@ -26,4 +26,6 @@ public interface MerchantAreaService {
     Integer countTotal(MerchantAreaQuery query);
     
     List<MerchantArea> listByTenantId(Integer tenantId);
+    
+    List<MerchantArea> queryList(MerchantAreaQuery areaQuery);
 }

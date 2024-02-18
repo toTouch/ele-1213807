@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,9 +14,9 @@ import java.util.List;
  */
 public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
-    ChannelEmployee selectById(Long id);
+    ChannelEmployee selectById(@Param("id") Long id);
     
-    ChannelEmployee selectByUid(Long uid);
+    ChannelEmployee selectByUid(@Param("uid") Long uid);
     
     List<ChannelEmployee> selectListByCondition(ChannelEmployeeRequest channelEmployeeRequest);
     
@@ -25,7 +26,7 @@ public interface ChannelEmployeeMapper extends BaseMapper<ChannelEmployee> {
     
     Integer updateOne(ChannelEmployee channelEmployee);
     
-    Integer removeById(ChannelEmployee channelEmployee);
+    Integer removeById(@Param("id") Long id);
     
     
 }

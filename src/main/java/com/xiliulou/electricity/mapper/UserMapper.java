@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
@@ -41,4 +39,8 @@ public interface UserMapper extends BaseMapper<User> {
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone, @Param("updateTime") Long updateTime);
     
     User checkMerchantExist(@Param("name") String name,@Param("phone") String phone,@Param("userType") Integer userType,@Param("tenantId") Integer tenantId,@Param("uid") Long uid);
+    
+    Integer updateMerchantUser(User updateUser);
+    
+    Integer removeById(@Param("uid") Long uid,@Param("updateTime") Long updateTime);
 }

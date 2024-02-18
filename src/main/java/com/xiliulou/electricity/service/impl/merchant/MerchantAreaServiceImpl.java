@@ -155,4 +155,10 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         return merchantAreaList;
     }
     
+    @Slave
+    @Override
+    public List<MerchantArea> queryList(MerchantAreaQuery areaQuery) {
+        return merchantAreaMapper.queryList(areaQuery);
+    }
+    
 }
