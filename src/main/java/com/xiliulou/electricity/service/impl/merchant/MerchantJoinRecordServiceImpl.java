@@ -145,6 +145,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.error("MERCHANT JOIN ERROR! not found inviterUserInfo, inviterUid={}", inviterUid);
                 return R.fail(false, "ELECTRICITY.0024", "用户已被禁用");
             }
+            
+            // TODO 判断邀请人是否禁用
     
             // 扫自己码
             if (Objects.equals(userInfo.getUid(), inviterUid)) {
