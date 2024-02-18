@@ -4,12 +4,9 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
-import org.checkerframework.checker.regex.qual.Regex;
-import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -144,14 +141,12 @@ public class ElectricityConfigAddAndUpdateQuery {
      *  柜机少电比例
      */
     @Pattern(regexp = "^([1-9][0-9]?|100|0)$", message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
-    @Size(min = 1, max = 3, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer lowChargeRate;
     
     /**
      *  柜机多电比例
      */
     @Pattern(regexp = "^([1-9][0-9]?|100|0)$", message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
-    @Size(min = 1, max = 3, message = "请输入0-100的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer fullChargeRate;
 }
 
