@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -286,6 +287,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.updateStatus(merchantId, joinUid, status);
     }
     
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status) {
+        return merchantJoinRecordMapper.selectListByMerchantIdAndStatus(merchantId, status);
+    }
     @Override
     public void handelProtectionAndStartExpired() {
         MerchantJoinRecord protectionJoinRecord =  new MerchantJoinRecord();
