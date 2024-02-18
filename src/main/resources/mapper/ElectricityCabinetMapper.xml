@@ -32,6 +32,9 @@
         <if test="query.warehouseId != null">
             and warehouse_id = #{query.warehouseId}
         </if>
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
+        </if>
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
         </if>
