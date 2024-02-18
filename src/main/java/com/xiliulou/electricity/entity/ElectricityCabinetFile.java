@@ -72,5 +72,9 @@ public class ElectricityCabinetFile {
 
     //门店图片
     public static final Integer TYPE_STORE = 4;
+    
+    // 场地图片
+    public static final Integer TYPE_MERCHANT_PLACE = 5;
+    
 
 }

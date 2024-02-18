@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
@@ -136,7 +137,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "id", required = false) Integer id) {
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "areaId", required = false) Long areaId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -181,6 +183,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .onlineStatus(onlineStatus)
                 .stockStatus(stockStatus)
                 .warehouseId(warehouseId)
+                .areaId(areaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
@@ -188,6 +191,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -205,6 +209,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "areaId", required = false) Long areaId,
                         @RequestParam(value = "modelId", required = false) Integer modelId) {
 
         // 数据权校验
@@ -248,6 +253,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIdList(permissionTriple.getLeft())
                 .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -896,12 +902,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
 
     /**
      * 根据经纬度获取柜机列表
+     * @param status 0-全部、1-少电、2-多电、3-锁仓、4-离线
      *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id,
-                                                        @RequestParam(value = "name", required = false) String name) {
+                                                        @RequestParam(value = "name", required = false) String name,
+                                                        @RequestParam(value = "status", required = false) Integer status) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -926,6 +934,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)
+                .status(Objects.isNull(status) ? NumberConstant.ONE : status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .eleIdList(eleIdList)
                 .build();

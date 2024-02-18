@@ -1,12 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.api.client.util.Maps;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -17,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
@@ -63,6 +68,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     private StoreService storeService;
     @Autowired
     private EleWarnMsgService eleWarnMsgService;
+    
+    @Resource
+    private MerchantAreaService merchantAreaService;
     
 
     @Override
@@ -218,8 +226,27 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
             return null;
         });
+    
+        // 查询区域
+        List<Long> areaIdList = electricityCabinetList.stream().map(EleCabinetDataAnalyseVO::getAreaId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        MerchantAreaQuery areaQuery = MerchantAreaQuery.builder().idList(areaIdList).build();
+        List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+        Map<Long, String> areaNameMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(merchantAreaList)) {
+            areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (item1, item2) -> item2));
+        }
+        
+        Map<Long, String> finalAreaNameMap = areaNameMap;
+        CompletableFuture<Void> areaInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
+            if (finalAreaNameMap.containsKey(item.getAreaId())) {
+                item.setAreaName(finalAreaNameMap.get(item.getAreaId()));
+            }
+        }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
+            log.error("ELE ERROR! acquire eleCabinet cell info fail", e);
+            return null;
+        });
 
-        CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
+        CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, areaInfo);
 
         try {
             future.get(10, TimeUnit.SECONDS);

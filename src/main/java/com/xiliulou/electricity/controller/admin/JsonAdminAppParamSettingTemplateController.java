@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.AppParamSettingTemplateQuery;
 import com.xiliulou.electricity.service.AppParamSettingTemplateService;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,7 @@ public class JsonAdminAppParamSettingTemplateController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
+        
         
         return appParamSettingTemplateService.queryList(size, offset);
     }

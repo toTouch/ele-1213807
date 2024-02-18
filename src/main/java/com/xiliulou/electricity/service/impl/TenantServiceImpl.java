@@ -105,7 +105,7 @@ public class TenantServiceImpl implements TenantService {
         //保存租户默认电池型号
         batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(tenant.getId()));
 
-        //3.构建三大角色，运营商，代理商，门店
+        //3.构建三大角色，运营商，代理商，门店，商户角色，渠道角色，商户员工
         Role operateRole = new Role();
         operateRole.setName(CommonConstant.OPERATE_NAME);
         operateRole.setCode(CommonConstant.OPERATE_CODE);
@@ -117,7 +117,20 @@ public class TenantServiceImpl implements TenantService {
         Role storeRole = new Role();
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
-
+        
+        // 商户角色，渠道角色，商户员工
+        Role merchantRole = new Role();
+        merchantRole.setName(CommonConstant.MERCHANT_NAME);
+        merchantRole.setCode(CommonConstant.MERCHANTL_CODE);
+        
+        Role channelRole = new Role();
+        channelRole.setName(CommonConstant.CHANNEL_NAME);
+        channelRole.setCode(CommonConstant.CHANNEL_CODE);
+        
+        Role merchantEmployeeRole = new Role();
+        merchantEmployeeRole.setName(CommonConstant.MERCHANT_EMPLOYEE_NAME);
+        merchantEmployeeRole.setCode(CommonConstant.MERCHANT_EMPLOYEE_CODE);
+        
         //运维
         Role maintainRole = new Role();
         maintainRole.setName(CommonConstant.MAINTAIN_NAME);
@@ -127,6 +140,9 @@ public class TenantServiceImpl implements TenantService {
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
         roleList.add(storeRole);
+        roleList.add(merchantRole);
+        roleList.add(channelRole);
+        roleList.add(merchantEmployeeRole);
         roleList.add(maintainRole);
 
         roleList.forEach(item -> {

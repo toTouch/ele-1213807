@@ -328,5 +328,11 @@
             </foreach>
         </where>
     </select>
+    <select id="queryLastByUid" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select * from t_ele_deposit_order
+        where
+            status=1 and uid= #{uid}
+        ORDER BY id DESC limit 1
+    </select>
 
 </mapper>

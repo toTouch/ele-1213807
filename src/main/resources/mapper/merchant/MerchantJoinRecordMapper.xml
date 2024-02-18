@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_merchant_join_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id}, #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime}, #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantTd}, #{remark}
+        </trim>
+    </insert>
+    
+    <update id="updateStatus">
+        update t_merchant_join_record
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            where merchant_id = #{merchantId} and join_uid = #{joinUid}
+        </set>
+    </update>
+    
+    <update id="updateProtectionExpired">
+        update t_merchant_join_record set protection_status = #{protectionStatus}, update_time=#{updateTime} where protection_time &lt;= #{updateTime}
+    </update>
+    
+    <update id="updateExpired">
+        update t_merchant_join_record set status = #{status}, update_time=#{updateTime} where expired_time &lt;= #{updateTime} and status =1
+    </update>
+    
+    <select id="existsInProtectionTimeByJoinUid" resultType="java.lang.Integer">
+        select count(1) from t_merchant_join_record where del_flag = 0 and protection_status = 0 and join_uid = #{joinUid}
+    </select>
+    
+     <select id="selectByMerchantIdAndJoinUid" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+         select <include refid="basic_field"/>
+         from t_merchant_join_record where del_flag = 0 and merchant_id = #{merchantId} and join_uid = #{joinUid}
+     </select>
+    
+    <select id="existsIfExpired" resultType="java.lang.Integer">
+        select count(1) from t_merchant_join_record where del_flag = 0 and status = 3 and merchant_id = #{merchantId} and join_uid = #{joinUid}
+    </select>
+
+</mapper>
+
+
+
+

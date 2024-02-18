@@ -153,4 +153,6 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrderVO> selectElectricityMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
 
     void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
+    
+    Integer batchUpdateChannelOrderStatusByOrderNo(List<String> selectUserBatteryMemberCardOrder, Integer useStatusExpire);
 }

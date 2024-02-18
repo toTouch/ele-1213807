@@ -68,6 +68,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
         return returnTripleResult(enterpriseBatteryPackageService.queryPackagesByBatteryV(query));
     }
     
+    
     /**
      * 根据电池型号查询保险信息
      *
