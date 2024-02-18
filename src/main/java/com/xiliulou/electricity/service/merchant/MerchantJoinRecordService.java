@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 参与记录
@@ -34,6 +36,11 @@ public interface MerchantJoinRecordService {
      * 根据商户id和参与人uid查询记录
      */
     MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid);
+    
+    /**
+     * 根据商户id和参与状态查询记录
+     */
+    List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status);
     
     /**
      * 定时任务：保护期状态和有效期状态

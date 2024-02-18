@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper.merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 参与记录
@@ -23,4 +25,6 @@ public interface MerchantJoinRecordMapper {
     Integer updateProtectionExpired(@Param("protectionJoinRecord") MerchantJoinRecord protectionJoinRecord);
     
     Integer updateExpired(@Param("merchantJoinRecord")MerchantJoinRecord merchantJoinRecord);
+    
+    List<MerchantJoinRecord> selectListByMerchantIdAndStatus(@Param("merchantId")Long merchantId, @Param("status")Integer status);
 }
