@@ -735,6 +735,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         BatchSendCouponVO batchSendCouponVO = new BatchSendCouponVO();
         batchSendCouponVO.setSessionId(sessionId);
         batchSendCouponVO.setNotExistPhones(notExistsPhone);
+        if (existsPhone.isEmpty()) {
+            return R.ok(batchSendCouponVO);
+        }
 
         executorService.execute(() -> {
             handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
@@ -797,7 +800,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             couponIssueOperateRecords.add(record);
             size++;
         }
-        redisService.set(CacheConstant.CACHE_BATCH_SEND_COUPON + sessionId, "1", 60 * 1000L, TimeUnit.SECONDS);
+        redisService.set(CacheConstant.CACHE_BATCH_SEND_COUPON + sessionId, "1", 60L, TimeUnit.SECONDS);
     }
 
     @Override
