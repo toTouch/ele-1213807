@@ -4,7 +4,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPlacePageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceSaveRequest;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -26,7 +25,7 @@ public interface MerchantPlaceService {
     
     void deleteCache(MerchantPlace merchantPlace);
     
-    Triple<Boolean, String, Object> delete(Long id);
+    Triple<Boolean, String, Object> remove(Long id);
     
     Integer countTotal(MerchantPlacePageRequest merchantPlacePageRequest);
     

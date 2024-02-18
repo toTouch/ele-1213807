@@ -26,7 +26,7 @@ public interface MerchantPlaceCabinetBindService {
     
     Triple<Boolean, String, Object> unBind(MerchantPlaceCabinetBindSaveRequest placeCabinetBindSaveRequest);
     
-    Triple<Boolean, String, Object> delete(Long id);
+    Triple<Boolean, String, Object> remove(Long id);
     
     Integer countTotal(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     

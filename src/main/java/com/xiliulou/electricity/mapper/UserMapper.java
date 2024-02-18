@@ -42,5 +42,5 @@ public interface UserMapper extends BaseMapper<User> {
     
     Integer updateMerchantUser(User updateUser);
     
-    Integer deleteLogicalById(@Param("uid") Long uid,@Param("updateTime") Long updateTime);
+    Integer removeById(@Param("uid") Long uid,@Param("updateTime") Long updateTime);
 }

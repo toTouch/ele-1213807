@@ -25,7 +25,7 @@ public interface MerchantPlaceCabinetBindMapper {
     
     Integer unBind(MerchantPlaceCabinetBind unBind);
     
-    Integer delete(MerchantPlaceCabinetBind update);
+    Integer remove(MerchantPlaceCabinetBind update);
     
     Integer countTotal(MerchantPlaceCabinetBindQueryModel merchantQueryModel);
     

@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
-import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,7 +21,7 @@ public interface MerchantPlaceMapper {
     
     Integer update(MerchantPlace merchantPlace);
     MerchantPlace selectById(@Param("id") Long id);
-    Integer delete(MerchantPlace merchantPlaceDel);
+    Integer remove(MerchantPlace merchantPlaceDel);
     
     Integer countTotal(MerchantPlaceQueryModel merchantQueryModel);
     

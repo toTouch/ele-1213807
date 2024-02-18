@@ -3,13 +3,10 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
-import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlacePageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPlaceSaveRequest;
-import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -113,7 +110,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Triple<Boolean, String, Object> r = merchantPlaceService.delete(id);
+        Triple<Boolean, String, Object> r = merchantPlaceService.remove(id);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }

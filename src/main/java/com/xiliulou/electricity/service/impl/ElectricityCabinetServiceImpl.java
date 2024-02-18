@@ -64,6 +64,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -85,6 +86,7 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -132,6 +134,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -407,6 +410,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
+    
+    @Resource
+    private MerchantAreaService merchantAreaService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -763,7 +769,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
             }
             
+            // 查询区域
+            List<Long> areaIdList = electricityCabinetList.stream().map(ElectricityCabinetVO::getAreaId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+            MerchantAreaQuery areaQuery = MerchantAreaQuery.builder().idList(areaIdList).build();
+            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            Map<Long, String> areaNameMap = Maps.newHashMap();
+            if (!CollectionUtils.isEmpty(merchantAreaList)) {
+                areaNameMap = merchantAreaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (item1, item2) -> item2));
+            }
+            
             Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
+            Map<Long, String> finalAreaNameMap = areaNameMap;
             electricityCabinetList.parallelStream().forEach(e -> {
                 
                 if (Objects.nonNull(e.getStoreId())) {
@@ -891,6 +907,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 //设置仓库名称
                 if (finalWarehouseNameVOMap.containsKey(e.getWarehouseId())) {
                     e.setWarehouseName(finalWarehouseNameVOMap.get(e.getWarehouseId()));
+                }
+                
+                // 设置区域名称
+                if (finalAreaNameMap.containsKey(e.getAreaId())) {
+                    e.setAreaName(finalAreaNameMap.get(e.getAreaId()));
                 }
             });
         }

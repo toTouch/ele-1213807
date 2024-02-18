@@ -104,7 +104,7 @@ public class JsonAdminMerchantPlaceCabinetBindController extends BaseController 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.delete(id);
+        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.remove(id);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }

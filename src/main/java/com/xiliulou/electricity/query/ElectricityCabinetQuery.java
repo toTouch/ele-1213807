@@ -123,4 +123,9 @@ public class ElectricityCabinetQuery {
      */
     private Integer status;
     
+    /**
+     * 区域id
+     */
+    private Long areaId;
+    
 }

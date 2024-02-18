@@ -453,8 +453,8 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public Integer deleteLogicalById(Long uid, Long updateTime) {
-        return userMapper.deleteLogicalById(uid, updateTime);
+    public Integer removeById(Long uid, Long updateTime) {
+        return userMapper.removeById(uid, updateTime);
     }
     
     @Override

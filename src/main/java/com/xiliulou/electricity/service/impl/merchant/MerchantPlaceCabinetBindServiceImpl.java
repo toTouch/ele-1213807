@@ -229,7 +229,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
     }
     
     @Override
-    public Triple<Boolean, String, Object> delete(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         
         if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_CABINET_DELETE_UID + user.getUid(), "1", 3 * 1000L, false)) {
@@ -249,7 +249,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         update.setId(id);
         update.setDelFlag(MerchantPlaceCabinetBind.DEL_DEL);
         update.setUpdateTime(System.currentTimeMillis());
-        merchantPlaceCabinetBindMapper.delete(update);
+        merchantPlaceCabinetBindMapper.remove(update);
         
         return Triple.of(true, null, null);
     }

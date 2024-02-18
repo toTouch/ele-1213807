@@ -16,7 +16,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
-import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
@@ -103,9 +102,6 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     
-    @Resource
-    private ChannelEmployeeMapper channelEmployeeMapper;
-    
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-DATA-SCREEN-THREAD-POOL", 3, "merchantDataScreenThread:");
     
     @Resource
@@ -122,7 +118,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Triple<Boolean, String, Object> save(MerchantSaveRequest merchantSaveRequest) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
-    
+        
         if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -134,6 +130,13 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.nonNull(user) && Objects.equals(user.getName(), merchantSaveRequest.getName())) {
             log.error("merchant save error, name is exit name={}", merchantSaveRequest.getName());
             return Triple.of(false, "", "商户名称已经存在");
+        }
+        
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantSaveRequest.getInviteAuth(), Merchant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), Merchant.DISABLE)) {
+            log.error("merchant save error, invite auth and enterprise package auth select at least one, name={}, inviteAuth={}, enterprisePackageAuth={}",
+                    merchantSaveRequest.getName(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
+            return Triple.of(false, "", "推广权限，站点代付权限，必须选一个");
         }
         
         // 检测手机号
@@ -201,12 +204,11 @@ public class MerchantServiceImpl implements MerchantService {
                 return Triple.of(false, "", "场地已经被绑定");
             }
         }
-    
+        
         long timeMillis = System.currentTimeMillis();
         // 用户信息
-        User user1 = User.builder().avatar("").salt("").createTime(timeMillis).delFlag(User.DEL_NORMAL).name(merchantSaveRequest.getName())
-                .lockFlag(User.USER_UN_LOCK).phone(merchantSaveRequest.getPhone()).updateTime(timeMillis).userType(User.TYPE_USER_MERCHANT).salt("")
-                .tenantId(tenantId).build();
+        User user1 = User.builder().avatar("").salt("").createTime(timeMillis).delFlag(User.DEL_NORMAL).name(merchantSaveRequest.getName()).lockFlag(User.USER_UN_LOCK)
+                .phone(merchantSaveRequest.getPhone()).updateTime(timeMillis).userType(User.TYPE_USER_MERCHANT).salt("").tenantId(tenantId).build();
         
         // 如果是禁用则用户默认锁定
         if (Objects.equals(merchantSaveRequest.getStatus(), Merchant.DISABLE)) {
@@ -280,7 +282,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Triple<Boolean, String, Object> update(MerchantSaveRequest merchantSaveRequest) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
-    
+        
         if (!redisService.setNx(CacheConstant.MERCHANT_PLACE_SAVE_UID + tokenUser.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -291,6 +293,13 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             log.error("merchant update error, merchant is not exit id={}, tenantId", merchantSaveRequest.getId(), tenantId);
             return Triple.of(false, "", "商户不存在");
+        }
+        
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantSaveRequest.getInviteAuth(), Merchant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), Merchant.DISABLE)) {
+            log.error("merchant update error, invite auth and enterprise package auth select at least one, id={}, inviteAuth={}, enterprisePackageAuth={}",
+                    merchantSaveRequest.getId(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
+            return Triple.of(false, "", "推广权限，站点代付权限，必须选一个");
         }
         
         // 检测商户名称是否存在
@@ -506,7 +515,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Transactional
     @Override
-    public Triple<Boolean, String, Object> delete(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
         Merchant merchant = this.merchantMapper.select(id);
@@ -546,7 +555,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         long timeMillis = System.currentTimeMillis();
         // 删除用户
-        userService.deleteLogicalById(merchant.getUid(), timeMillis);
+        userService.removeById(merchant.getUid(), timeMillis);
         
         // todo 让商户登录状态失效
         
@@ -555,7 +564,7 @@ public class MerchantServiceImpl implements MerchantService {
         deleteMerchant.setUpdateTime(timeMillis);
         deleteMerchant.setId(id);
         deleteMerchant.setDelFlag(Merchant.DEL_DEL);
-        merchantMapper.deleteById(deleteMerchant);
+        merchantMapper.removeById(deleteMerchant);
         
         // 删除商户和场地的关联表
         merchantPlaceMapService.batchDeleteByMerchantId(id, null);
@@ -703,13 +712,27 @@ public class MerchantServiceImpl implements MerchantService {
         return Triple.of(true, "", vo);
     }
     
+    @Override
+    public Merchant queryFromCacheById(Long id) {
+        Merchant merchant = null;
+        merchant = redisService.getWithHash(CacheConstant.CACHE_MERCHANT + id, Merchant.class);
+        if (Objects.isNull(merchant)) {
+            merchant = merchantMapper.select(id);
+            if (Objects.nonNull(merchant)) {
+                redisService.saveWithHash(CacheConstant.CACHE_MERCHANT + id, merchant);
+            }
+        }
+        
+        return merchant;
+    }
+    
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryByIdList(List<Long> idList) {
         if (ObjectUtils.isEmpty(idList)) {
             return Triple.of(true, null, null);
         }
-    
+        
         MerchantQueryModel queryModel = new MerchantQueryModel();
         queryModel.setIdList(idList);
         List<Merchant> merchantList = this.merchantMapper.selectListByPage(queryModel);
@@ -728,7 +751,7 @@ public class MerchantServiceImpl implements MerchantService {
         if (ObjectUtils.isEmpty(merchantList)) {
             return Collections.EMPTY_LIST;
         }
-    
+        
         merchantList.stream().forEach(item -> {
             MerchantVO vo = new MerchantVO();
             BeanUtils.copyProperties(item, vo);
@@ -736,5 +759,12 @@ public class MerchantServiceImpl implements MerchantService {
         });
         
         return resList;
+    }
+    
+    @Slave
+    @Override
+    public Merchant queryByUid(Long uid) {
+        
+        return merchantMapper.selectByUid(uid);
     }
 }
