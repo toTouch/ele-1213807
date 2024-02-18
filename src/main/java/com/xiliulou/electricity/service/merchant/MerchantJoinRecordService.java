@@ -2,6 +2,9 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -36,4 +39,6 @@ public interface MerchantJoinRecordService {
     MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid);
     
     void handelProtectionAndStartExpired();
+    
+    List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }

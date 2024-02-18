@@ -183,7 +183,7 @@ public class JsonAdminMerchantController extends BaseController {
         Integer tenantId = TenantContextHolder.getTenantId();
     
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).tenantId(tenantId)
-                .merchantGradeId(merchantGradeId).channelUserId(channelUserId).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         return R.ok(merchantService.countTotal(merchantPageRequest));
     }
     
@@ -215,7 +215,7 @@ public class JsonAdminMerchantController extends BaseController {
     
         Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().name(name).size(size).offset(offset).tenantId(tenantId)
-                .merchantGradeId(merchantGradeId).channelUserId(channelUserId).franchiseeId(franchiseeId).build();
+                .merchantGradeId(merchantGradeId).channelEmployeeUid(channelUserId).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantService.listByPage(merchantPageRequest));
     }

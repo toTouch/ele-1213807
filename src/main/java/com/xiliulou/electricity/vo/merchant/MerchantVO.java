@@ -30,6 +30,7 @@ public class MerchantVO {
     private Integer cabinetCount;
     
     private Integer userCount;
+    private List<Long> userIdList;
     
     private BigDecimal balance;
     

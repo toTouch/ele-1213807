@@ -54,4 +54,16 @@
         </if>
         
     </select>
+    <select id="selectListByMerchant" resultType="com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO">
+        SELECT
+            place_id,
+            merchant_id,
+            p.`name` as 'placeName'
+        FROM
+            t_merchant_place_map m
+                left join t_merchant_place p on p.id = m.place_id
+        WHERE
+            del_flag = 0
+          and m.merchant_id = #{merchantId}
+    </select>
 </mapper>

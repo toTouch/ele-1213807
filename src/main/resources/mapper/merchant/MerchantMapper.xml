@@ -6,9 +6,9 @@
         select count(1) from t_merchant_place where del_flag = 0 and merchant_area_id = #{areaId}
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_user_id , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+        insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
                                purchase_authority ,uid ,enterprise_id ,invite_auth , del_flag, create_time, update_time)
-        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelUserId}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
+        values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
                 #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
@@ -30,8 +30,8 @@
                 <if test="merchantGradeId != null">
                     merchant_grade_id = #{merchantGradeId},
                 </if>
-                <if test="channelUserId != null">
-                    channel_user_id = #{channelUserId},
+                <if test="channelEmployeeUid != null">
+                    channel_employee_uid = #{channelEmployeeUid},
                 </if>
                 <if test="autoUpGrade != null">
                     auto_up_grade = #{autoUpGrade},
@@ -57,7 +57,7 @@
         update t_merchant set del_flag = #{delFlag}, update_time = #{updateTime} where id = #{id}
     </delete>
     <sql id="column">
-        id, name , franchisee_id , phone , merchant_grade_id , channel_user_id , tenant_id , auto_up_grade , status , enterprise_package_auth ,
+        id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,
                                purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time
     </sql>
     <select id="select" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
@@ -82,8 +82,8 @@
             <if test="merchantGradeId != null">
                 and merchant_grade_id = #{merchantGradeId}
             </if>
-            <if test="channelUserId != null">
-                and channel_user_id  = #{channelUserId}
+            <if test="channelEmployeeUid != null">
+                and channel_employee_uid  = #{channelEmployeeUid}
             </if>
             <if test="idList != null and idList.size() > 0">
                 and id in

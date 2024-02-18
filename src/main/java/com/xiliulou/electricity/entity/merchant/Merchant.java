@@ -50,7 +50,7 @@ public class Merchant {
     /**
      * 渠道员Id
      */
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     /**
      * 租户Id

@@ -4,7 +4,7 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into t_merchant_place (name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
         ,tenant_id ,status , del_flag, create_time, update_time)
-        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenant_id},#{status}, #{delFlag},
+        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenantId},#{status}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     <update id="update">

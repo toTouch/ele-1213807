@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
+import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -297,6 +299,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         merchantJoinRecord.setStatus(MerchantJoinRecord.STATUS_INIT);
         merchantJoinRecord.setUpdateTime(System.currentTimeMillis());
         merchantJoinRecordMapper.updateExpired(merchantJoinRecord);
+    }
+    
+    @Slave
+    @Override
+    public List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode) {
+        return merchantJoinRecordMapper.selectList(joinRecordQueryMode);
     }
     
     
