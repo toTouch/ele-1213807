@@ -4,6 +4,8 @@ import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.CouponBatchSendWithPhonesRequest;
+import com.xiliulou.electricity.query.CouponBatchSendWithUidsRequest;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -11,10 +13,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -153,9 +153,21 @@ public class JsonAdminUserCouponController {
     //批量发放优惠券
     @PostMapping(value = "/admin/userCoupon/batchRelease")
     @Log(title = "批量发放优惠券")
-    public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
-        Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
-        return userCouponService.adminBatchRelease(id, uids);
+    public R batchRelease(@RequestBody @Validated CouponBatchSendWithUidsRequest request) {
+        Long[] uids = (Long[]) JSONUtil.parseArray(request.getJsonUids()).toArray(Long[].class);
+        return userCouponService.adminBatchRelease(request.getCouponId(), uids);
+    }
+
+    //批量发放优惠券V2
+    @PostMapping(value = "/admin/userCoupon/batchReleaseV2")
+    @Log(title = "批量发放优惠券V2")
+    public R batchReleaseV2(@RequestBody @Validated CouponBatchSendWithPhonesRequest request) {
+        return userCouponService.adminBatchReleaseV2(request);
+    }
+
+    @GetMapping(value = "/admin/userCoupon/check/send/finish")
+    public R checkFinish(@RequestParam("sessionId") String sessionId) {
+        return userCouponService.checkSendFinish(sessionId);
     }
 
     //核销优惠券

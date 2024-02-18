@@ -535,7 +535,7 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
-    
+
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
@@ -545,23 +545,25 @@ public interface CacheConstant {
     String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
     String CACHE_ASSET_ALLOCATE_LOCK = "cache_asset_allocate_lock:";
     String CACHE_ASSET_BATCH_INVENTORY_LOCK = "cache_asset_batch_inventory_lock:";
-    
+
+    String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
+
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
-    
+
     String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     String CACHE_MERCHANT = "cache_merchant:";
     // 商家修改
     String MERCHANT_SAVE_UID = "merchant_save_uid:";
     String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
-    
+
     String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
-    
-    
+
+
     String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
-    
+
     String MERCHANT_PLACE_CABINET_BIND_UID = "merchant_place_cabinet_bind_uid:";
     String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
-    
+
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
-    
+
 }
