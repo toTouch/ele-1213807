@@ -331,6 +331,10 @@ public interface CacheConstant {
      */
     String CACHE_CITY_CODE = "city_code:";
     
+    /**
+     * 用户扩展信息缓存
+     */
+    String CACHE_USER_INFO_EXTRA = "user_info_extra:";
     
     /**
      * 加盟商缓存
