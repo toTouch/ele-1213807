@@ -8,7 +8,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
@@ -157,11 +156,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (Objects.isNull(lowChargeRate) || Objects.isNull(fullChargeRate) || lowChargeRate < NumberConstant.ZERO || fullChargeRate < NumberConstant.ZERO
                 || fullChargeRate <= lowChargeRate) {
             return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
-        }
-    
-        // 检查输入的是否为纯数字
-        if (!String.valueOf(lowChargeRate).matches(StringConstant.REGEX_0_100) || !String.valueOf(fullChargeRate).matches(StringConstant.REGEX_0_100)) {
-            return R.fail("100317", "请输入0-100的整数");
         }
     
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
