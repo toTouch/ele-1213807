@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
@@ -27,6 +29,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatchSendCouponVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -42,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 优惠券表(TCoupon)表服务实现类
@@ -53,7 +57,7 @@ import java.util.*;
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
 
-    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 4, "send_coupon_to_user_thread");
+    protected XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("SEND_COUPON_TO_USER_THREAD_POOL", 7, "send_coupon_to_user_thread");
 
     @Resource
     private UserCouponMapper userCouponMapper;
@@ -699,6 +703,12 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.0007", "手机号不可以为空");
         }
 
+        User operateUser = userService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(operateUser)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         Integer tenantId = TenantContextHolder.getTenantId();
 
         Coupon coupon = couponService.queryByIdFromCache(request.getCouponId());
@@ -707,11 +717,87 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
 
+        ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
+        ConcurrentHashSet<User> existsPhone = new ConcurrentHashSet<>();
 
+        phones.parallelStream().forEach(e -> {
+            User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+            if (Objects.isNull(user)) {
+                notExistsPhone.add(e);
+            } else {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+                user.setName(userInfo.getName());
+                existsPhone.add(user);
+            }
+        });
 
+        String sessionId = UUID.fastUUID().toString(true);
+        BatchSendCouponVO batchSendCouponVO = new BatchSendCouponVO();
+        batchSendCouponVO.setSessionId(sessionId);
+        batchSendCouponVO.setNotExistPhones(notExistsPhone);
 
+        executorService.execute(() -> {
+            handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
+        });
 
-        return null;
+        return R.ok(batchSendCouponVO);
+    }
+
+    @Override
+    public R checkSendFinish(String sessionId) {
+        if (!redisService.hasKey(CacheConstant.CACHE_BATCH_SEND_COUPON + sessionId)) {
+            return R.fail("300066", "正在发送中，请稍后再试");
+        }
+        return R.ok();
+    }
+
+    private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name) {
+        Iterator<User> iterator = existsPhone.iterator();
+        List<UserCoupon> userCouponList = new ArrayList<>();
+        List<CouponIssueOperateRecord> couponIssueOperateRecords = new ArrayList<>();
+        int maxSize = 300;
+        int size = 0;
+        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+
+        while (iterator.hasNext()) {
+            if (size >= 300) {
+                userCouponMapper.batchInsert(userCouponList);
+                couponIssueOperateRecordService.batchInsert(couponIssueOperateRecords);
+                userCouponList.clear();
+                couponIssueOperateRecords.clear();
+                size = 0;
+                continue;
+            }
+
+            User user = iterator.next();
+            UserCoupon saveCoupon = new UserCoupon();
+            saveCoupon.setSource(UserCoupon.TYPE_SOURCE_ADMIN_SEND);
+            saveCoupon.setCouponId(coupon.getId());
+            saveCoupon.setName(coupon.getName());
+            saveCoupon.setDiscountType(coupon.getDiscountType());
+            saveCoupon.setUid(user.getUid());
+            saveCoupon.setPhone(user.getPhone());
+            saveCoupon.setDeadline(TimeUtils.convertTimeStamp(now));
+            saveCoupon.setCreateTime(System.currentTimeMillis());
+            saveCoupon.setUpdateTime(System.currentTimeMillis());
+            saveCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+            saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
+            saveCoupon.setTenantId(user.getTenantId());
+            userCouponList.add(saveCoupon);
+
+            CouponIssueOperateRecord record = CouponIssueOperateRecord.builder()
+                    .couponId(coupon.getId())
+                    .tenantId(user.getTenantId())
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .uid(user.getUid())
+                    .name(user.getName())
+                    .operateName(name)
+                    .phone(user.getPhone()).build();
+            couponIssueOperateRecords.add(record);
+            size++;
+        }
+        redisService.set(CacheConstant.CACHE_BATCH_SEND_COUPON + sessionId, "1", 60 * 1000L, TimeUnit.SECONDS);
     }
 
     @Override

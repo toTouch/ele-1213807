@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.json.JSONUtil;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
@@ -164,6 +163,11 @@ public class JsonAdminUserCouponController {
     @Log(title = "批量发放优惠券V2")
     public R batchReleaseV2(@RequestBody @Validated CouponBatchSendWithPhonesRequest request) {
         return userCouponService.adminBatchReleaseV2(request);
+    }
+
+    @GetMapping(value = "/admin/userCoupon/check/send/finish")
+    public R checkFinish(@RequestParam("sessionId") String sessionId) {
+        return userCouponService.checkSendFinish(sessionId);
     }
 
     //核销优惠券

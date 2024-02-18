@@ -97,4 +97,7 @@ public interface UserCouponService {
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
 
     R adminBatchReleaseV2(CouponBatchSendWithPhonesRequest request);
+
+    R checkSendFinish(String sessionId);
+
 }
