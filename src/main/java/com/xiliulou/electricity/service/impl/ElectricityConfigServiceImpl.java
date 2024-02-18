@@ -158,6 +158,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return R.fail("100317", "请输入0-100的整数;多电比例需大于少电比例");
         }
     
+        // 检查输入的是否为纯数字
+        if (!String.valueOf(lowChargeRate).matches("\\d+") || !String.valueOf(fullChargeRate).matches("\\d+")) {
+            return R.fail("100317", "请输入0-100的整数");
+        }
+    
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();

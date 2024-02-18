@@ -98,7 +98,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
         Double lowChargeRate = NumberConstant.ZERO_D;
         if (Objects.nonNull(electricityConfig)) {
-            lowChargeRate = electricityConfig.getLowChargeRate().doubleValue();
+            BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
+            lowChargeRate = NumberUtil.round(lowChargeRateBd.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
         }
     
         cabinetQuery.setLowChargeRate(lowChargeRate);
@@ -126,7 +127,8 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
         Double fullChargeRate = NumberConstant.ZERO_D;
         if (Objects.nonNull(electricityConfig)) {
-            fullChargeRate = electricityConfig.getFullChargeRate().doubleValue();
+            BigDecimal fullChargeRateDb = electricityConfig.getFullChargeRate();
+            fullChargeRate = NumberUtil.round(fullChargeRateDb.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
         }
     
         cabinetQuery.setFullChargeRate(fullChargeRate);
