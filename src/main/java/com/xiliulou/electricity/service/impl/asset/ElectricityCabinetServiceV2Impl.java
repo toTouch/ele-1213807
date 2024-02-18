@@ -222,40 +222,13 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             }
         }
     
-        BigDecimal oldFee = BigDecimal.ZERO;
-        BigDecimal newFee = BigDecimal.ZERO;
-        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
-        if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
-            oldFee = electricityCabinet.getPlaceFee();
-        }
-    
-        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
-            newFee = outWarehouseRequest.getPlaceFee();
-        }
-    
-        TokenUser user = SecurityUtils.getUserInfo();
-    
-        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
-        // 场地费有变化则进行记录
-        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
-            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
-            merchantPlaceFeeRecord.setCabinetId(outWarehouseRequest.getId());
-            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
-            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
-            if (Objects.nonNull(user)) {
-                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
-                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
-                long currentTimeMillis = System.currentTimeMillis();
-                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
-                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
-            }
-        }
+        // 获取场地费变更记录
+        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = getPlaceFeeRecord(electricityCabinet, outWarehouseRequest, SecurityUtils.getUserInfo());
         
         BeanUtil.copyProperties(outWarehouseRequest, electricityCabinet);
         electricityCabinet.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
     
-        MerchantPlaceFeeRecord finalMerchantPlaceFeeRecord = merchantPlaceFeeRecord;
         DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinet), i -> {
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
@@ -283,9 +256,41 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
                 merchantPlaceFeeRecordService.save(finalMerchantPlaceFeeRecord);
             }
+    
         });
         
         return Triple.of(true, null, null);
+    }
+    
+    private MerchantPlaceFeeRecord getPlaceFeeRecord(ElectricityCabinet electricityCabinet, ElectricityCabinetOutWarehouseRequest outWarehouseRequest, TokenUser user) {
+        BigDecimal oldFee = BigDecimal.ZERO;
+        BigDecimal newFee = BigDecimal.ZERO;
+        // 判断新的场地费用和就的场地费用是否存在变化如果存在变化则将变换存入到历史表
+        if (Objects.nonNull(electricityCabinet.getPlaceFee())) {
+            oldFee = electricityCabinet.getPlaceFee();
+        }
+    
+        if (Objects.nonNull(outWarehouseRequest.getPlaceFee())) {
+            newFee = outWarehouseRequest.getPlaceFee();
+        }
+    
+    
+        MerchantPlaceFeeRecord merchantPlaceFeeRecord = null;
+        // 场地费有变化则进行记录
+        if (!Objects.equals(newFee.compareTo(oldFee), NumberConstant.ZERO)) {
+            merchantPlaceFeeRecord = new MerchantPlaceFeeRecord();
+            merchantPlaceFeeRecord.setCabinetId(outWarehouseRequest.getId());
+            merchantPlaceFeeRecord.setNewPlaceFee(newFee);
+            merchantPlaceFeeRecord.setOldPlaceFee(oldFee);
+            if (Objects.nonNull(user)) {
+                merchantPlaceFeeRecord.setModifyUserId(user.getUid());
+                merchantPlaceFeeRecord.setTenantId(electricityCabinet.getTenantId());
+                long currentTimeMillis = System.currentTimeMillis();
+                merchantPlaceFeeRecord.setCreateTime(currentTimeMillis);
+                merchantPlaceFeeRecord.setUpdateTime(currentTimeMillis);
+            }
+        }
+        return merchantPlaceFeeRecord;
     }
     
     @Override
@@ -302,6 +307,8 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         if (!CollectionUtils.isEmpty(unStockList)) {
             return Triple.of(false, "100559", "已选择项中有已出库电柜，请重新选择后操作");
         }
+        
+        // 检测场地费是否发生过变更
         
         // 设置营业时间参数
         String businessTime = null;
@@ -367,6 +374,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         
             assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
+            
+            // 保存场地费变更记录
+            merchantPlaceFeeRecordService.asyncRecords(electricityCabinetList, batchOutWarehouseRequest, SecurityUtils.getUserInfo());
         }
         
         return Triple.of(true, null, null);
