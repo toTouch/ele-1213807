@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 
@@ -13,11 +14,18 @@ import java.util.List;
 public interface ChannelEmployeeService {
     
     /**
-     * 根据ID查询渠道员工信息
+     * 根据ID查询渠道员工信息，用于页面展示
      * @param id
      * @return
      */
     ChannelEmployeeVO queryById(Long id);
+    
+    /**
+     * 根据uid查询渠道员工信息
+     * @param uid
+     * @return
+     */
+    ChannelEmployeeVO queryByUid(Long uid);
     
     /**
      * 查询渠道员工列表
@@ -46,5 +54,7 @@ public interface ChannelEmployeeService {
      * @return
      */
     Integer updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
+    
+    Integer removeById(Long id);
 
 }
