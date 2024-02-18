@@ -449,7 +449,12 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Integer updateMerchantUser(User updateUser) {
-        return userMapper.updateMerchantUser(updateUser);
+        Integer update = userMapper.updateMerchantUser(updateUser);
+        if (update > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + updateUser.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + updateUser.getTenantId() + ":" + updateUser.getPhone() + ":" + updateUser.getUserType());
+        }
+        return update;
     }
     
     @Override
