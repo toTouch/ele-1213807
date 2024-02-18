@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
+import com.xiliulou.electricity.query.CouponBatchSendWithPhonesRequest;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -39,9 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 优惠券表(TCoupon)表服务实现类
@@ -214,7 +214,6 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R adminBatchRelease(Integer id, Long[] uids) {
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();
@@ -692,7 +691,29 @@ public class UserCouponServiceImpl implements UserCouponService {
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return userCouponMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
-    
+
+    @Override
+    public R adminBatchReleaseV2(CouponBatchSendWithPhonesRequest request) {
+        Set<String> phones = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
+        if (CollectionUtils.isEmpty(phones)) {
+            return R.fail("ELECTRICITY.0007", "手机号不可以为空");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Coupon coupon = couponService.queryByIdFromCache(request.getCouponId());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
+            log.error("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
+            return R.fail("ELECTRICITY.0085", "未找到优惠券");
+        }
+
+
+
+
+
+        return null;
+    }
+
     @Override
     public Integer updateUserCouponStatus(UserCoupon userCoupon) {
         return userCouponMapper.updateUserCouponStatus(userCoupon);
