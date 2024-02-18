@@ -220,7 +220,7 @@
         del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
         from t_electricity_cabinet_box
         <where>
-            del_flag = 0 and tenant_id = #{tenantId}
+            tenant_id = #{tenantId}
             <if test="electricityCabinetIdS != null and electricityCabinetIdS.size() > 0">
                 and electricity_cabinet_id in
                 <foreach collection="electricityCabinetIdS" item="item" index="index" separator="," open="(" close=")">
