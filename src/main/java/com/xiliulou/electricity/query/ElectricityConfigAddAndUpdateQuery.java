@@ -5,6 +5,8 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -138,11 +140,13 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      *  柜机少电比例
      */
+    @Size(max = 100, message = "请输入0-100的正整数")
     private Integer lowChargeRate;
     
     /**
      *  柜机多电比例
      */
+    @Size(max = 100, message = "请输入0-100的正整数")
     private Integer fullChargeRate;
 }
 
