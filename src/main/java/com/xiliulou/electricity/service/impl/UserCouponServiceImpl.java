@@ -736,9 +736,11 @@ public class UserCouponServiceImpl implements UserCouponService {
         batchSendCouponVO.setSessionId(sessionId);
         batchSendCouponVO.setNotExistPhones(notExistsPhone);
         if (existsPhone.isEmpty()) {
+            batchSendCouponVO.setIsSend(false);
             return R.ok(batchSendCouponVO);
         }
 
+        batchSendCouponVO.setIsSend(true);
         executorService.execute(() -> {
             handleBatchSaveCoupon(existsPhone, coupon, sessionId, operateUser.getName());
         });
