@@ -142,6 +142,11 @@ public class User {
 	 */
 	public static final Integer TYPE_USER_CHANNEL = 13;
 	
+	/**
+	 * 商户员工
+	 */
+	public static final Integer TYPE_USER_MERCHANT_EMPLOYEE = 14;
+	
 	public static final Integer TYPE_USER_NORMAL_ADMIN = 1;
 
 

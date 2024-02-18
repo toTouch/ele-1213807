@@ -42,6 +42,13 @@ public interface ChannelEmployeeService {
     Integer countChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
     /**
+     * 根据条件，查询渠道员工信息
+     * @param channelEmployeeRequest
+     * @return
+     */
+    List<ChannelEmployeeVO> queryChannelEmployees(ChannelEmployeeRequest channelEmployeeRequest);
+    
+    /**
      * 保存渠道员工信息
      * @param channelEmployeeRequest
      * @return
