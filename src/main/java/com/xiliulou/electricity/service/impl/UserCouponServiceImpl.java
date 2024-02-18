@@ -802,6 +802,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             couponIssueOperateRecords.add(record);
             size++;
         }
+
+        if(!userCouponList.isEmpty()){
+            userCouponMapper.batchInsert(userCouponList);
+            couponIssueOperateRecordService.batchInsert(couponIssueOperateRecords);
+        }
+
+        log.info("coupon batch send success! sessionId:{} size={}", sessionId, existsPhone.size());
         redisService.set(CacheConstant.CACHE_BATCH_SEND_COUPON + sessionId, "1", 60L, TimeUnit.SECONDS);
     }
 
