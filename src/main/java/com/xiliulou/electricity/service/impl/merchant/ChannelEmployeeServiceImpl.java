@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployee;
 import com.xiliulou.electricity.entity.merchant.ChannelEmployeeAmount;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeAmountMapper;
 import com.xiliulou.electricity.mapper.merchant.ChannelEmployeeMapper;
 import com.xiliulou.electricity.request.merchant.ChannelEmployeeRequest;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -39,15 +41,19 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Resource
     CustomPasswordEncoder customPasswordEncoder;
+    
     @Resource
     UserService userService;
+    
     @Resource
     UserRoleService userRoleService;
     
     @Resource
     FranchiseeService franchiseeService;
+    
     @Resource
     ChannelEmployeeMapper channelEmployeeMapper;
+    
     @Resource
     ChannelEmployeeAmountMapper channelEmployeeAmountMapper;
     
@@ -55,22 +61,46 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     @Override
     public ChannelEmployeeVO queryById(Long id) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
+        if (Objects.isNull(channelEmployee)) {
+            return null;
+        }
         ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
         BeanUtils.copyProperties(channelEmployee, channelEmployeeVO);
-        
+        if (Objects.nonNull(channelEmployeeVO.getUid())) {
+            User user = userService.queryByUidFromCache(channelEmployeeVO.getUid());
+            channelEmployeeVO.setName(user.getName());
+            channelEmployeeVO.setPhone(user.getPhone());
+        }
+        return channelEmployeeVO;
+    }
+    
+    @Slave
+    @Override
+    public ChannelEmployeeVO queryByUid(Long uid) {
+        ChannelEmployee channelEmployee = channelEmployeeMapper.selectByUid(uid);
+        if (Objects.isNull(channelEmployee)) {
+            return null;
+        }
+        ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
+        BeanUtils.copyProperties(channelEmployee, channelEmployeeVO);
+        if (Objects.nonNull(channelEmployeeVO.getUid())) {
+            User user = userService.queryByUidFromCache(channelEmployeeVO.getUid());
+            channelEmployeeVO.setName(user.getName());
+            channelEmployeeVO.setPhone(user.getPhone());
+        }
         return channelEmployeeVO;
     }
     
     @Slave
     @Override
     public List<ChannelEmployeeVO> listChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
-    
+        
         List<ChannelEmployee> channelEmployees = channelEmployeeMapper.selectListByCondition(channelEmployeeRequest);
-    
+        
         List<ChannelEmployeeVO> channelEmployeeVOList = channelEmployees.parallelStream().map(item -> {
             ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
             BeanUtils.copyProperties(item, channelEmployeeVO);
-    
+            
             //设置加盟商名称
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             channelEmployeeVO.setFranchiseeName(franchisee.getName());
@@ -98,13 +128,11 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         //创建渠道员工账户
-        User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
-                .phone(channelEmployeeRequest.getPhone()).lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE)
-                .lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_WX_PRO).name("").salt("").avatar("")
-                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL)
-                .build();
+        User user = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(channelEmployeeRequest.getPhone())
+                .lockFlag(User.USER_UN_LOCK).gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_WX_PRO).name("").salt("").avatar("")
+                .tenantId(tenantId).loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL).build();
         User userResult = userService.insert(user);
-    
+        
         Long roleId = 0L;
         
         //设置角色
@@ -121,9 +149,9 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployeeAmount.setWithdrawAmount(BigDecimal.ZERO);
         channelEmployeeAmount.setCreateTime(System.currentTimeMillis());
         channelEmployeeAmount.setUpdateTime(System.currentTimeMillis());
-    
+        
         channelEmployeeAmountMapper.insertOne(channelEmployeeAmount);
-    
+        
         //创建渠道员工
         ChannelEmployee channelEmployee = new ChannelEmployee();
         channelEmployee.setUid(userResult.getUid());
@@ -132,7 +160,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         channelEmployee.setDelFlag(CommonConstant.DEL_N);
         channelEmployee.setCreateTime(System.currentTimeMillis());
         channelEmployee.setUpdateTime(System.currentTimeMillis());
-    
+        
         Integer result = channelEmployeeMapper.insertOne(channelEmployee);
         
         return result;
@@ -140,6 +168,19 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Override
     public Integer updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest) {
+        
+        ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(channelEmployeeRequest.getId());
+        if (Objects.isNull(channelEmployee)) {
+            log.error("");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
         return null;
+    }
+    
+    @Override
+    public Integer removeById(Long id) {
+        
+        return channelEmployeeMapper.removeById(id);
     }
 }

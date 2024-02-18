@@ -23,4 +23,16 @@ public class ChannelEmployeeVO {
     
     private String franchiseeName;
     
+    private Integer status;
+    
+    private Integer delFlag;
+    
+    private Integer tenantId;
+    
+    private String remark;
+    
+    private Long createTime;
+    
+    private Long updateTime;
+    
 }
