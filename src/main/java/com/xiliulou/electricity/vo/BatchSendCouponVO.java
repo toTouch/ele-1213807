@@ -12,4 +12,5 @@ import java.util.Set;
 public class BatchSendCouponVO {
     private Set<String> notExistPhones;
     private String sessionId;
+    private Boolean isSend;
 }
