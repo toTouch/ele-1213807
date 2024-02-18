@@ -103,6 +103,9 @@
         <if test="query.modelId != null">
             and model_id = #{query.modelId}
         </if>
+        <if test="areaId != null">
+            and area_id = #{areaId}
+        </if>
 		<if test="query.eleIdList!=null and query.eleIdList!=''">
 			and id in
 			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -230,7 +233,7 @@
         select
         id, name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
         online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time,
-        del_flag,stock_status
+        del_flag,stock_status,area_id ,place_fee
         from t_electricity_cabinet
         where del_flag=0
         <if test="eleIdList!=null and eleIdList!=''">
@@ -478,6 +481,8 @@
         tec.update_time,
         tec.tenant_id,
         tec.store_id,
+        tec.area_id,
+        tec.place_fee,
         tecs.average_number,
         tecs.average_activity,
         tecs.today_number,
@@ -514,6 +519,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -588,6 +596,7 @@
         tec.update_time,
         tec.tenant_id,
         tec.store_id,
+        tec.area_id,
         any_value(tecs.average_number) AS average_number,
         any_value(tecs.average_activity) AS average_activity,
         any_value(tecs.today_number) AS today_number,
@@ -628,6 +637,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -704,6 +716,7 @@
         any_value(tec.update_time) AS update_time,
         any_value(tec.tenant_id) AS tenant_id,
         any_value(tec.store_id) AS store_id,
+        any_value(tec.area_id) AS area_id,
         any_value(tec.del_flag) AS del_flag,
         any_value(ecb.power) AS power,
         any_value(tecs.average_number) AS average_number,
@@ -744,6 +757,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -850,6 +866,9 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        <if test="areaId != null">
+            tec.area_id = #{areaId}
+        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -954,6 +973,9 @@
         </if>
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
+        </if>
+        <if test="areaId != null">
+            tec.area_id = #{areaId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -1181,6 +1203,12 @@
             </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="placeFee  != null">
+                place_fee = #{placeFee},
             </if>
             stock_status = 1
         </set>
