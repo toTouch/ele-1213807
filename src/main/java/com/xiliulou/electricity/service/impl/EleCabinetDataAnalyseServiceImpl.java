@@ -4,6 +4,7 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.ElectricityCabinetDataAnalyseConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -90,20 +91,65 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
         return buildEleCabinetDataAnalyseVOs(electricityCabinetList, cabinetQuery);
     }
-
+    
+    @Slave
     @Override
-    public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
+    public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
         Double lowChargeRate = NumberConstant.ZERO_D;
-        Double fullChargeRate = NumberConstant.ZERO_D;
         if (Objects.nonNull(electricityConfig)) {
             lowChargeRate = electricityConfig.getLowChargeRate().doubleValue();
-            fullChargeRate = electricityConfig.getFullChargeRate().doubleValue();
         }
     
         cabinetQuery.setLowChargeRate(lowChargeRate);
-        cabinetQuery.setFullChargeRate(fullChargeRate);
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
     
+    @Slave
+    @Override
+    public Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        Double lowChargeRate = NumberConstant.ZERO_D;
+        if (Objects.nonNull(electricityConfig)) {
+            lowChargeRate = electricityConfig.getLowChargeRate().doubleValue();
+        }
+    
+        cabinetQuery.setLowChargeRate(lowChargeRate);
+        
+        return this.selectPowerPageCount(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        Double fullChargeRate = NumberConstant.ZERO_D;
+        if (Objects.nonNull(electricityConfig)) {
+            fullChargeRate = electricityConfig.getFullChargeRate().doubleValue();
+        }
+    
+        cabinetQuery.setFullChargeRate(fullChargeRate);
+        
+        return this.selectPowerPage(cabinetQuery);
+    }
+    
+    @Slave
+    @Override
+    public Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
+        Double fullChargeRate = NumberConstant.ZERO_D;
+        if (Objects.nonNull(electricityConfig)) {
+            fullChargeRate = electricityConfig.getFullChargeRate().doubleValue();
+        }
+    
+        cabinetQuery.setFullChargeRate(fullChargeRate);
+        
+        return this.selectPowerPageCount(cabinetQuery);
+    }
+    
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selectPowerPage(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
             return Collections.emptyList();
@@ -124,17 +170,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
     @Override
     public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        Double lowChargeRate = NumberConstant.ZERO_D;
-        Double fullChargeRate = NumberConstant.ZERO_D;
-        if (Objects.nonNull(electricityConfig)) {
-            lowChargeRate = electricityConfig.getLowChargeRate().doubleValue();
-            fullChargeRate = electricityConfig.getFullChargeRate().doubleValue();
-        }
-    
-        cabinetQuery.setLowChargeRate(lowChargeRate);
-        cabinetQuery.setFullChargeRate(fullChargeRate);
-        
         return eleCabinetService.selectPowerPageCount(cabinetQuery);
     }
 
@@ -188,7 +223,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         
         return result;
     }
-
+    
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList, ElectricityCabinetQuery cabinetQuery) {
         CompletableFuture<Void> acquireBasicInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
 

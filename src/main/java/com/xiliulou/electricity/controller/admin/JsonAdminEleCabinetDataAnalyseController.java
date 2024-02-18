@@ -461,7 +461,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
                 .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectLowPowerPage(cabinetQuery));
     }
 
     @GetMapping(value = "/admin/eleCabinet/lowPower/count")
@@ -498,7 +498,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectLowPowerPageCount(cabinetQuery));
     }
 
     /**
@@ -552,7 +552,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
                 .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectFullPowerPage(cabinetQuery));
     }
 
     @GetMapping(value = "/admin/eleCabinet/fullPower/count")
@@ -589,7 +589,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
     
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectFullPowerPageCount(cabinetQuery));
     }
 
     /**
