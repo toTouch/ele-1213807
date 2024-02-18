@@ -14,7 +14,7 @@ public class MerchantCodeVO {
     
     /**
      * code规则：merchantId;inviterUid;inviterType
-     * 邀请人类型：1-商户本人 2-场地员工
+     * inviterType：1-商户本人 2-场地员工
      */
     private String code;
 }

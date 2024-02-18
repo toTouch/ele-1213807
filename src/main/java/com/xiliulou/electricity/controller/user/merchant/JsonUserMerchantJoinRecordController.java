@@ -25,6 +25,9 @@ public class JsonUserMerchantJoinRecordController extends BaseController {
     
     /**
      * 扫码二维码参与，生成记录
+     * @param code
+     * code规则：merchantId;inviterUid;inviterType
+     * inviterType：1-商户本人 2-场地员工
      */
     @PostMapping("/user/merchant/joinRecord/joinScanCode")
     public R joinScanCode(@RequestParam String code) {
