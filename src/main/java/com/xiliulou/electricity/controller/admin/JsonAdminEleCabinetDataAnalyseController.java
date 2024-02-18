@@ -52,7 +52,8 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                      @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                      @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                      @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
-                     @RequestParam(value = "storeId", required = false) Long storeId) {
+                     @RequestParam(value = "storeId", required = false) Long storeId,
+                     @RequestParam(value = "areaId", required = false) Long areaId) {
 
         if (size < 0 || size > 50) {
             size = 10;
@@ -86,7 +87,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).areaId(areaId)
                 .name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
                 .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
@@ -101,6 +102,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                           @RequestParam(value = "sn", required = false) String sn,
                           @RequestParam(value = "address", required = false) String address,
                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                          @RequestParam(value = "areaId", required = false) Long areaId,
                           @RequestParam(value = "storeId", required = false) Long storeId) {
 
         //用户区分
@@ -127,7 +129,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).areaId(areaId)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
@@ -146,6 +148,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                          @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                          @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                          @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                         @RequestParam(value = "areaId", required = false) Long areaId,
                          @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -180,7 +183,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS).areaId(areaId)
                 .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList)
                 .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
                 .orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
@@ -193,6 +196,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                               @RequestParam(value = "sn", required = false) String sn,
                               @RequestParam(value = "address", required = false) String address,
                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                              @RequestParam(value = "areaId", required = false) Long areaId,
                               @RequestParam(value = "storeId", required = false) Long storeId) {
 
         //用户区分
@@ -219,7 +223,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().onlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS).areaId(areaId)
                 .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
@@ -238,6 +242,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                          @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                          @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                          @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                         @RequestParam(value = "areaId", required = false) Long areaId,
                          @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -273,7 +278,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
-                .sn(sn).address(address).name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList)
+                .sn(sn).address(address).name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).eleIdList(eleIdList).areaId(areaId)
                 .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber)
                 .orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
@@ -285,6 +290,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                               @RequestParam(value = "sn", required = false) String sn,
                               @RequestParam(value = "address", required = false) String address,
                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                              @RequestParam(value = "areaId", required = false) Long areaId,
                               @RequestParam(value = "storeId", required = false) Long storeId) {
 
         //用户区分
@@ -311,7 +317,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).name(name)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).name(name).areaId(areaId)
                 .usableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)
                 .tenantId(TenantContextHolder.getTenantId()).storeId(storeId).franchiseeId(franchiseeId).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
@@ -331,6 +337,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                       @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                       @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                       @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                      @RequestParam(value = "areaId", required = false) Long areaId,
                       @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -364,7 +371,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).storeId(storeId)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).storeId(storeId).areaId(areaId)
                 .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address).franchiseeId(franchiseeId).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity)
                 .orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
@@ -378,6 +385,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                            @RequestParam(value = "sn", required = false) String sn,
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                           @RequestParam(value = "areaId", required = false) Long areaId,
                            @RequestParam(value = "storeId", required = false) Long storeId) {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -403,7 +411,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).storeId(storeId)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).storeId(storeId).areaId(areaId)
                 .usableStatusCell(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE).address(address)
                 .franchiseeId(franchiseeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
@@ -424,6 +432,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                           @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                           @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                           @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                          @RequestParam(value = "areaId", required = false) Long areaId,
                           @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -458,7 +467,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).lowChargeRate(lowChargeRate)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).lowChargeRate(lowChargeRate).areaId(areaId)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
                 .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
@@ -471,6 +480,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                                @RequestParam(value = "address", required = false) String address,
                                @RequestParam(value = "lowChargeRate") Double lowChargeRate,
                                @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                               @RequestParam(value = "areaId", required = false) Long areaId,
                                @RequestParam(value = "storeId", required = false) Long storeId) {
 
         //用户区分
@@ -497,7 +507,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate).areaId(areaId)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
@@ -517,6 +527,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                            @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
                            @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                            @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                           @RequestParam(value = "areaId", required = false) Long areaId,
                            @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
@@ -551,7 +562,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
         
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).fullChargeRate(fullChargeRate)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address).fullChargeRate(fullChargeRate).areaId(areaId)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).orderByAverageNumber(orderByAverageNumber)
                 .orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
 
@@ -564,6 +575,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                                 @RequestParam(value = "address", required = false) String address,
                                 @RequestParam(value = "fullChargeRate") Double fullChargeRate,
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                @RequestParam(value = "areaId", required = false) Long areaId,
                                 @RequestParam(value = "storeId", required = false) Long storeId) {
 
         //用户区分
@@ -590,7 +602,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).areaId(areaId)
                 .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
