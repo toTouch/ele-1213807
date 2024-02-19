@@ -112,6 +112,12 @@
             <if test="merchantAreaId != null">
                 and merchant_area_id = #{merchantAreaId}
             </if>
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </sql>
     

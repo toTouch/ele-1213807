@@ -6,6 +6,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MerchantConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -153,7 +154,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 判断邀请权限和站点代付权限是否都没有选中
-        if (Objects.equals(merchantSaveRequest.getInviteAuth(), Merchant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), Merchant.DISABLE)) {
+        if (Objects.equals(merchantSaveRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), MerchantConstant.DISABLE)) {
             log.error("merchant save error, invite auth and enterprise package auth select at least one, name={}, inviteAuth={}, enterprisePackageAuth={}",
                     merchantSaveRequest.getName(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
             return Triple.of(false, "", "推广权限，站点代付权限，必须选一个");
@@ -242,7 +243,7 @@ public class MerchantServiceImpl implements MerchantService {
                 .phone(merchantSaveRequest.getPhone()).updateTime(timeMillis).userType(User.TYPE_USER_MERCHANT).salt("").tenantId(tenantId).build();
         
         // 如果是禁用则用户默认锁定
-        if (Objects.equals(merchantSaveRequest.getStatus(), Merchant.DISABLE)) {
+        if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.DISABLE)) {
             user1.setLockFlag(User.USER_LOCK);
         }
         
@@ -336,7 +337,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 判断邀请权限和站点代付权限是否都没有选中
-        if (Objects.equals(merchantSaveRequest.getInviteAuth(), Merchant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), Merchant.DISABLE)) {
+        if (Objects.equals(merchantSaveRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(), MerchantConstant.DISABLE)) {
             log.error("merchant update error, invite auth and enterprise package auth select at least one, id={}, inviteAuth={}, enterprisePackageAuth={}",
                     merchantSaveRequest.getId(), merchantSaveRequest.getInviteAuth(), merchantSaveRequest.getEnterprisePackageAuth());
             return Triple.of(false, "", "推广权限，站点代付权限，必须选一个");
@@ -447,7 +448,7 @@ public class MerchantServiceImpl implements MerchantService {
         
         // 判断是否为禁用
         if (!Objects.equals(merchant.getStatus(), merchantSaveRequest.getStatus())) {
-            if (Objects.equals(merchantSaveRequest.getStatus(), Merchant.ENABLE)) {
+            if (Objects.equals(merchantSaveRequest.getStatus(), MerchantConstant.ENABLE)) {
                 updateUser.setLockFlag(User.USER_UN_LOCK);
             } else {
                 updateUser.setLockFlag(User.USER_LOCK);
@@ -605,7 +606,7 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant deleteMerchant = new Merchant();
         deleteMerchant.setUpdateTime(timeMillis);
         deleteMerchant.setId(id);
-        deleteMerchant.setDelFlag(Merchant.DEL_DEL);
+        deleteMerchant.setDelFlag(MerchantConstant.DEL_DEL);
         merchantMapper.removeById(deleteMerchant);
         
         // 删除商户和场地的关联表
@@ -850,4 +851,5 @@ public class MerchantServiceImpl implements MerchantService {
         
         return merchantPlaceUserVOS;
     }
+    
 }

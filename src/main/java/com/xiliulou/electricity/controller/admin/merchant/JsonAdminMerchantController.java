@@ -248,7 +248,7 @@ public class JsonAdminMerchantController extends BaseController {
      * @date 2023/11/21 13:15:54
      * @author maxiaodong
      */
-    @GetMapping("/admin/merchant/page")
+    @GetMapping("/admin/merchant/queryList")
     public R getDict(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
