@@ -344,7 +344,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .endTime(endTime)
                 .franchiseeIds(franchiseeIds)
                 .storeIds(storeIds)
-                .eleIdList(eleIdList).uid(uid)
+                .uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }

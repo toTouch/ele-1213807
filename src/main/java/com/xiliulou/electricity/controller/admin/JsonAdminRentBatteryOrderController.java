@@ -283,7 +283,6 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
