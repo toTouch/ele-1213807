@@ -331,6 +331,10 @@ public interface CacheConstant {
      */
     String CACHE_CITY_CODE = "city_code:";
     
+    /**
+     * 用户扩展信息缓存
+     */
+    String CACHE_USER_INFO_EXTRA = "user_info_extra:";
     
     /**
      * 加盟商缓存
@@ -535,6 +539,10 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    /**
+     * 返利配置
+     */
+    String CACHE_REBATE_CONFIG = "rebateConfig:";
 
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
@@ -555,6 +563,9 @@ public interface CacheConstant {
     // 商家修改
     String MERCHANT_SAVE_UID = "merchant_save_uid:";
     String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
+    
+    String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
+    
 
     String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
 
@@ -565,5 +576,7 @@ public interface CacheConstant {
     String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
 
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
+    
+    String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
 
 }

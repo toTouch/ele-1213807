@@ -79,16 +79,24 @@ public class JsonAdminChannelEmployeeController {
     
     @PostMapping("/admin/merchant/addChannelEmployee")
     public R addChannelEmployee(@RequestBody @Validated(value = CreateGroup.class) ChannelEmployeeRequest channelEmployeeRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         
-        
-        return null;
+        return R.ok(channelEmployeeService.saveChannelEmployee(channelEmployeeRequest));
     }
     
     
     @PostMapping("/admin/merchant/updateChannelEmployee")
     public R updateChannelEmployee(@RequestBody @Validated(value = UpdateGroup.class) ChannelEmployeeRequest channelEmployeeRequest) {
-        
-        return null;
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(channelEmployeeService.updateChannelEmployee(channelEmployeeRequest));
     }
     
     @GetMapping("/admin/merchant/queryChannelEmployeeById")
@@ -110,6 +118,39 @@ public class JsonAdminChannelEmployeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(channelEmployeeService.removeById(id));
+    }
+    
+    /**
+     * 渠道员下拉框选择
+     * @param size
+     * @param offset
+     * @param franchiseeId
+     * @param name
+     * @return
+     */
+    @GetMapping("/admin/merchant/queryChannelEmployees")
+    public R queryChannelEmployees(@RequestParam("size") Integer size,
+            @RequestParam("offset") Integer offset,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "name", required = false) String name) {
+        
+        if (size < 0 || size > 50) {
+            size = 10;
+        }
+        
+        if (offset < 0) {
+            offset = 0;
+        }
+        
+        ChannelEmployeeRequest channelEmployeeRequest = ChannelEmployeeRequest.builder()
+                .size(size)
+                .offset(offset)
+                .name(name)
+                .franchiseeId(franchiseeId)
+                .build();
+        
+        return R.ok(channelEmployeeService.queryChannelEmployees(channelEmployeeRequest));
+        
     }
 
 

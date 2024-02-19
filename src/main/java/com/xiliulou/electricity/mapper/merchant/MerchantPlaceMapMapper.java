@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface MerchantPlaceMapMapper {
     List<MerchantPlaceMap> list(MerchantPlaceMapQueryModel queryModel);
     
     int batchDeleteByMerchantId(@Param("merchantId") Long merchantId, @Param("placeIdList") Set<Long> placeIdList);
+    
+    List<MerchantPlaceUserVO> selectListByMerchant(@Param("merchantId")Long merchantId);
 }

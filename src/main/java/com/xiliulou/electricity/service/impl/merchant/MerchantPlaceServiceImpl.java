@@ -4,6 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetBindVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceCabinetVO;
+import com.xiliulou.electricity.vo.merchant.MerchantPlaceUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPlaceVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -107,7 +109,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         long timeMillis = System.currentTimeMillis();
         merchantPlace.setCreateTime(timeMillis);
         merchantPlace.setUpdateTime(timeMillis);
-        merchantPlace.setDelFlag(MerchantPlace.DEL_NORMAL);
+        merchantPlace.setDelFlag(MerchantPlaceConstant.DEL_NORMAL);
         merchantPlaceMapper.insert(merchantPlace);
         
         return Triple.of(true, null, merchantPlace);
@@ -182,7 +184,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 检测场地是否存在绑定的换电柜
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(id);
-        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().status(MerchantPlaceCabinetBind.BIND).placeIdList(placeIdList).build();
+        MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().status(MerchantPlaceConstant.BIND).placeIdList(placeIdList).build();
         List<MerchantPlaceCabinetBind> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryList(queryModel);
         
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
@@ -190,7 +192,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         }
         
         // 删除场地
-        MerchantPlace merchantPlaceDel = MerchantPlace.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(MerchantPlace.DEL_DEL).build();
+        MerchantPlace merchantPlaceDel = MerchantPlace.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(MerchantPlaceConstant.DEL_DEL).build();
         merchantPlaceMapper.remove(merchantPlaceDel);
         
         return Triple.of(true, "", merchantPlace);
@@ -229,7 +231,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         // 批量查询区域
         
         // 查询场地绑定的柜机
-        MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceCabinetBind.BIND).build();
+        MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(idList).status(MerchantPlaceConstant.BIND).build();
         List<MerchantPlaceCabinetBindVO> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryBindCabinetName(placeCabinetBindQueryModel);
         Map<Long, List<MerchantPlaceCabinetBindVO>> bindCabinetMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
@@ -304,4 +306,5 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         return Triple.of(true, null , merchantPlaceCabinetVOS);
     }
+    
 }

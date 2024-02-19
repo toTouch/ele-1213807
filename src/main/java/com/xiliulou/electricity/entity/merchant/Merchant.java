@@ -50,7 +50,7 @@ public class Merchant {
     /**
      * 渠道员Id
      */
-    private Long channelUserId;
+    private Long channelEmployeeUid;
     
     /**
      * 租户Id
@@ -58,7 +58,7 @@ public class Merchant {
     private Long tenantId;
     
     /**
-     * 等级自动升级(0-关闭， 1-开启)
+     * 等级自动升级(1-关闭， 0-开启)
      */
     private Integer autoUpGrade;
     
@@ -78,7 +78,7 @@ public class Merchant {
     private Integer purchaseAuthority;
     
     /**
-     * 邀请权限：1-开启，0-关闭
+     * 邀请权限：0-开启，1-关闭
      */
     private Integer inviteAuth;
     
@@ -106,11 +106,4 @@ public class Merchant {
      * 修改时间
      */
     private Long updateTime;
-    
-    public final static Integer ENABLE = 1;
-    public final static Integer DISABLE = 0;
-    
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-    
 }

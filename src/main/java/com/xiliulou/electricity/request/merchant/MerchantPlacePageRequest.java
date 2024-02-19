@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author maxiaodong
  * @date 2024/2/11 22:28
@@ -48,4 +50,14 @@ public class MerchantPlacePageRequest {
      * 加盟商id
      */
     private Long franchiseeId;
+    
+    /**
+     *  场地id集合
+     */
+    private List<Long> idList;
+    
+    /**
+     * 商户id
+     */
+    private Long merchantId;
 }

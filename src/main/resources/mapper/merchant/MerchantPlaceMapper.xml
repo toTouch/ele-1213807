@@ -3,8 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper">
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into t_merchant_place (name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
-        ,tenant_id ,status , del_flag, create_time, update_time)
-        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenant_id},#{status}, #{delFlag},
+        ,tenant_id  , del_flag, create_time, update_time)
+        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenantId}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     <update id="update">
@@ -28,9 +28,7 @@
             <if test="latitude != null">
                 latitude = #{latitude},
             </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
+           
             <if test="address != null">
                 address = #{address},
             </if>
@@ -105,12 +103,30 @@
     
     <sql id="pageFilter">
         <where>
-            del_flag = 0
+            t.del_flag = 0
             <if test="name != null">
-                and name like concat('%', concat(#{name}, '%'))
+                and t.name like concat('%', concat(#{name}, '%'))
+            </if>
+            <if test="tenantId != null">
+                and t.tenant_id = #{tenantId}
             </if>
             <if test="merchantAreaId != null">
-                and merchant_area_id = #{merchantAreaId}
+                and t.merchant_area_id = #{merchantAreaId}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and t.id in
+                <foreach collection="idList" separator="," open="(" close=")" item="id">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="merchantId != null">
+                and EXISTS (
+                SELECT
+                1
+                FROM
+                t_merchant_place_map m
+                WHERE
+                m.place_id = t.id
             </if>
         </where>
     </sql>
@@ -119,15 +135,26 @@
         SELECT
         count(1)
         FROM
-        t_merchant_place
+        t_merchant_place t
         <include refid="pageFilter"/>
     </select>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
         SELECT
-        <include refid="column"/>
+        t.id,
+        t.NAME,
+        t.franchisee_id,
+        t.phone,
+        t.merchant_area_id,
+        t.longitude,
+        t.latitude,
+        t.address,
+        t.tenant_id,
+        t.del_flag,
+        t.create_time,
+        t.update_time
         FROM
-        t_merchant_place
+        t_merchant_place t
         <include refid="pageFilter"/>
         limit #{offset}, #{size}
     </select>
@@ -143,7 +170,7 @@
         <where>
             c.del_flag = 0
             and b.del_flag = 0
-            and b.`status` = 1
+            and b.`status` = 0
             and c.franchisee_id = #{franchiseeId}
             and c.tenant_id = #{tenantId}
             <if test="cabinetName != null">

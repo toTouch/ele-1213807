@@ -22,7 +22,7 @@ public interface MerchantAttrService {
     
     Integer insert(MerchantAttr merchantAttr);
 
-    Integer deleteByMerchantId(Long id);
+    Integer deleteByMerchantId(Long merchantId);
     
     Triple<Boolean, String, Object> updateUpgradeCondition(Long merchantId, Integer condition);
     
