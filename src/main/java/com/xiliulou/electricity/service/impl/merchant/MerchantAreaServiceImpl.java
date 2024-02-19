@@ -7,7 +7,6 @@ import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
-import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAreaQuery;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
@@ -142,12 +141,8 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Slave
     @Override
-    public List<MerchantArea> listByTenantId(Integer tenantId) {
-        if (Objects.isNull(tenantId) || !Objects.equals(tenantId, TenantContextHolder.getTenantId())) {
-            return Collections.emptyList();
-        }
-    
-        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectListByTenantId(tenantId);
+    public List<MerchantArea> listAll(MerchantAreaQuery query) {
+        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(query);
         if (CollectionUtils.isEmpty(merchantAreaList)) {
             return Collections.emptyList();
         }
@@ -159,6 +154,11 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     @Override
     public List<MerchantArea> queryList(MerchantAreaQuery areaQuery) {
         return merchantAreaMapper.queryList(areaQuery);
+    }
+    
+    @Override
+    public MerchantArea queryById(Long id) {
+        return merchantAreaMapper.selectById(id);
     }
     
 }

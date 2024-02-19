@@ -38,7 +38,7 @@ public class MerchantPlaceBind {
      */
     private Long unBindTime;
     /**
-     * 类型(0-解绑，1-绑定)
+     * 类型(1-解绑，0-绑定)
      */
     private Integer type;
     /**
@@ -64,10 +64,4 @@ public class MerchantPlaceBind {
      * 商户结算标记，0-否，1-是)
      */
     private Integer merchantMonthSettlement;
-    
-    public final static Integer MONTH_SETTLEMENT_YES = 1;
-    public final static Integer MONTH_SETTLEMENT_NO = 0;
-    
-    public final static Integer BIND = 1;
-    public final static Integer UN_BIND = 0;
 }

@@ -58,7 +58,7 @@ public class Merchant {
     private Long tenantId;
     
     /**
-     * 等级自动升级(0-关闭， 1-开启)
+     * 等级自动升级(1-关闭， 0-开启)
      */
     private Integer autoUpGrade;
     
@@ -78,7 +78,7 @@ public class Merchant {
     private Integer purchaseAuthority;
     
     /**
-     * 邀请权限：1-开启，0-关闭
+     * 邀请权限：0-开启，1-关闭
      */
     private Integer inviteAuth;
     

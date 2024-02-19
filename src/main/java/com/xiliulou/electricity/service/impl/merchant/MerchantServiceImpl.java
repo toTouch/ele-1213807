@@ -7,6 +7,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MerchantConstant;
+import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -291,7 +292,7 @@ public class MerchantServiceImpl implements MerchantService {
                 
                 // 商户场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
-                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceBind.BIND).merchantMonthSettlement(MerchantPlaceBind.MONTH_SETTLEMENT_NO).tenantId(tenantId)
+                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO).tenantId(tenantId)
                         .createTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
@@ -521,7 +522,7 @@ public class MerchantServiceImpl implements MerchantService {
                 
                 // 场地绑定历史
                 MerchantPlaceBind merchantPlaceBind = MerchantPlaceBind.builder().merchantId(merchant.getId()).placeId(placeId).bindTime(timeMillis)
-                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceBind.BIND).merchantMonthSettlement(MerchantPlaceBind.MONTH_SETTLEMENT_NO).tenantId(tenantId)
+                        .delFlag(MerchantPlaceMap.DEL_NORMAL).type(MerchantPlaceConstant.BIND).merchantMonthSettlement(MerchantPlaceConstant.MONTH_SETTLEMENT_NO).tenantId(tenantId)
                         .createTime(timeMillis).updateTime(timeMillis).build();
                 merchantPlaceBindList.add(merchantPlaceBind);
             });
@@ -575,7 +576,7 @@ public class MerchantServiceImpl implements MerchantService {
         if (ObjectUtils.isNotEmpty(merchantPlaceMaps)) {
             List<Long> placeIdList = merchantPlaceMaps.stream().map(MerchantPlaceMap::getPlaceId).collect(Collectors.toList());
             MerchantPlaceCabinetBindQueryModel placeCabinetBindQueryModel = MerchantPlaceCabinetBindQueryModel.builder().placeIdList(placeIdList)
-                    .status(MerchantPlaceCabinetBind.BIND).build();
+                    .status(MerchantPlaceConstant.BIND).build();
             
             List<MerchantPlaceCabinetBind> merchantPlaceCabinetBinds = merchantPlaceCabinetBindService.queryList(placeCabinetBindQueryModel);
             if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {

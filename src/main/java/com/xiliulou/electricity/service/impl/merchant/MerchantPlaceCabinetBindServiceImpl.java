@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MerchantPlaceConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
@@ -119,7 +120,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         
         // 检测柜机是否被绑定
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().cabinetId(placeCabinetBindSaveRequest.getCabinetId())
-                .status(MerchantPlaceCabinetBind.BIND).build();
+                .status(MerchantPlaceConstant.BIND).build();
         List<MerchantPlaceCabinetBind> merchantPlaceCabinetBinds = this.queryList(queryModel);
         
         if (ObjectUtils.isNotEmpty(merchantPlaceCabinetBinds)) {
@@ -139,7 +140,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         }
         
         // 判断绑定的时间是否与解绑的历史数据存在重叠
-        queryModel.setStatus(MerchantPlaceCabinetBind.UN_BIND);
+        queryModel.setStatus(MerchantPlaceConstant.UN_BIND);
         queryModel.setOverlapTime(placeCabinetBindSaveRequest.getBindTime());
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
@@ -151,7 +152,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 新增绑定数据
         MerchantPlaceCabinetBind placeCabinetBind = new MerchantPlaceCabinetBind();
         BeanUtils.copyProperties(placeCabinetBindSaveRequest, placeCabinetBind);
-        placeCabinetBind.setStatus(MerchantPlaceCabinetBind.BIND);
+        placeCabinetBind.setStatus(MerchantPlaceConstant.BIND);
         placeCabinetBind.setCreateTime(System.currentTimeMillis());
         placeCabinetBind.setUpdateTime(System.currentTimeMillis());
         placeCabinetBind.setTenantId(tenantId);
@@ -178,7 +179,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
             return Triple.of(false, "", "绑定记录不存在");
         }
         
-        if (Objects.equals(cabinetBind.getStatus(), MerchantPlaceCabinetBind.UN_BIND)) {
+        if (Objects.equals(cabinetBind.getStatus(), MerchantPlaceConstant.UN_BIND)) {
             log.error("place un bind error, cabinet already un bind, id ={}", placeCabinetBindSaveRequest.getId());
             return Triple.of(false, "", "柜机已经解绑了，不能重复解绑");
         }
@@ -210,7 +211,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         List<Long> placeIdList = new ArrayList<>();
         placeIdList.add(cabinetBind.getPlaceId());
         MerchantPlaceCabinetBindQueryModel queryModel = MerchantPlaceCabinetBindQueryModel.builder().overlapTime(placeCabinetBindSaveRequest.getUnBindTime())
-                .placeIdList(placeIdList).status(MerchantPlaceCabinetBind.UN_BIND).build();
+                .placeIdList(placeIdList).status(MerchantPlaceConstant.UN_BIND).build();
         List<MerchantPlaceCabinetBind> unBindList = this.queryList(queryModel);
         if (ObjectUtils.isNotEmpty(unBindList)) {
             List<Long> ids = unBindList.stream().map(MerchantPlaceCabinetBind::getId).collect(Collectors.toList());
@@ -221,7 +222,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 修改记录的状态为解绑，维护解绑时间
         MerchantPlaceCabinetBind unBind = new MerchantPlaceCabinetBind();
         BeanUtils.copyProperties(placeCabinetBindSaveRequest, unBind);
-        unBind.setStatus(MerchantPlaceCabinetBind.UN_BIND);
+        unBind.setStatus(MerchantPlaceConstant.UN_BIND);
         unBind.setUpdateTime(currentTimeMillis);
         merchantPlaceCabinetBindMapper.unBind(unBind);
         
@@ -247,7 +248,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         
         MerchantPlaceCabinetBind update = new MerchantPlaceCabinetBind();
         update.setId(id);
-        update.setDelFlag(MerchantPlaceCabinetBind.DEL_DEL);
+        update.setDelFlag(MerchantPlaceConstant.DEL_DEL);
         update.setUpdateTime(System.currentTimeMillis());
         merchantPlaceCabinetBindMapper.remove(update);
         

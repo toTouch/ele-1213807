@@ -62,4 +62,10 @@ public interface MqProducerConstant {
     
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
     
+    /**
+     * 商户升级topic
+     */
+    String MERCHANT_UPGRADE_TOPIC = "merchant_upgrade_topic";
+    
+    
 }

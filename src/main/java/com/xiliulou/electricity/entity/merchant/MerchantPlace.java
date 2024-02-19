@@ -49,10 +49,7 @@ public class MerchantPlace {
      * 场地地址
      */
     private String address;
-    /**
-     * 状态：1-启用，0-禁用
-     */
-    private Integer status;
+   
     /**
      * 租户Id
      */
@@ -72,7 +69,4 @@ public class MerchantPlace {
      * 修改时间
      */
     private Long updateTime;
-    
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 }

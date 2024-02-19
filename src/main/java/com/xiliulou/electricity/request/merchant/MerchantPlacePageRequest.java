@@ -55,4 +55,9 @@ public class MerchantPlacePageRequest {
      *  场地id集合
      */
     private List<Long> idList;
+    
+    /**
+     * 商户id
+     */
+    private Long merchantId;
 }

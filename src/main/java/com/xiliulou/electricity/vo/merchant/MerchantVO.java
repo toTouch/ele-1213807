@@ -36,6 +36,9 @@ public class MerchantVO {
     
     private BigDecimal withdrawAmount;
     
+    /**
+     * 0-启用，1-禁用
+     */
     private String status;
     
     private List<Long> placeIdList;
@@ -58,7 +61,7 @@ public class MerchantVO {
     private List<Long> packageIdList;
     
     /**
-     * 邀请权限：1-开启，0-关闭
+     * 邀请权限：邀请权限：0-开启，1-关闭
      */
     private Integer inviteAuth;
 }

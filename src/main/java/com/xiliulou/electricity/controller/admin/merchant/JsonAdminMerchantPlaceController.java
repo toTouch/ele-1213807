@@ -130,7 +130,9 @@ public class JsonAdminMerchantPlaceController extends BaseController {
      * @author maxiaodong
      */
     @GetMapping("/admin/merchant/place/pageCount")
-    public R pageCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+    public R pageCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+            @RequestParam(value = "merchantId", required = false) Long merchantId,
             @RequestParam(value = "idList", required = false) List<Long> idList) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -143,7 +145,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         
         Integer tenantId = TenantContextHolder.getTenantId();
     
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).tenantId(tenantId).idList(idList)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).name(name).tenantId(tenantId).idList(idList)
                 .merchantAreaId(merchantAreaId).build();
         
         return R.ok(merchantPlaceService.countTotal(merchantPlacePageRequest));
@@ -158,6 +160,7 @@ public class JsonAdminMerchantPlaceController extends BaseController {
     @GetMapping("/admin/merchant/place/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "merchantAreaId", required = false) Long merchantAreaId,
+            @RequestParam(value = "merchantId", required = false) Long merchantId,
             @RequestParam(value = "idList", required = false) List<Long> idList) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -177,7 +180,8 @@ public class JsonAdminMerchantPlaceController extends BaseController {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().name(name).idList(idList).size(size).offset(offset).tenantId(tenantId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId)
+                .name(name).idList(idList).size(size).offset(offset).tenantId(tenantId)
                 .merchantAreaId(merchantAreaId).name(name).build();
         
         return R.ok(merchantPlaceService.listByPage(merchantPlacePageRequest));
