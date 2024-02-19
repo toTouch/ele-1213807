@@ -6,8 +6,6 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 
 import java.util.List;
 
-import java.util.List;
-
 /**
  * @author HeYafeng
  * @description 参与记录
@@ -50,5 +48,6 @@ public interface MerchantJoinRecordService {
      */
     void handelProtectionAndStartExpired();
     
+    Integer updateById(MerchantJoinRecord record);
     List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode);
 }
