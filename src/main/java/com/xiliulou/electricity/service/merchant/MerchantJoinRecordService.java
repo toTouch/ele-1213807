@@ -6,6 +6,8 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
 
 import java.util.List;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 参与记录
@@ -38,6 +40,14 @@ public interface MerchantJoinRecordService {
      */
     MerchantJoinRecord queryByMerchantIdAndJoinUid(Long merchantId, Long joinUid);
     
+    /**
+     * 根据商户id和参与状态查询记录
+     */
+    List<MerchantJoinRecord> listByMerchantIdAndStatus(Long merchantId, Integer status);
+    
+    /**
+     * 定时任务：保护期状态和有效期状态
+     */
     void handelProtectionAndStartExpired();
     
     List<MerchantJoinRecord> queryList(MerchantJoinRecordQueryMode joinRecordQueryMode);
