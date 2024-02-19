@@ -1235,4 +1235,19 @@
             </if>
         </where>
     </select>
+    <select id="selectCabinetCount" resultType="com.xiliulou.electricity.vo.ElectricityCabinetCountVO">
+        SELECT
+            tenant_id,
+            count( 1 ) as 'cabinetCount'
+        FROM
+            t_electricity_cabinet
+        WHERE
+            del_flag = 0
+            AND tenant_id IN
+            <foreach collection="tenantIdList" close=")" open="(" separator="," item="tenantId">
+                #{tenantId}
+            </foreach>
+        GROUP BY
+            tenant_id
+    </select>
 </mapper>

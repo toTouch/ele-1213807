@@ -56,6 +56,8 @@ public class ElectricityCabinetQuery {
     private Long endTime;
 
     private Integer tenantId;
+    
+    private List<Integer> tenantIdList;
 
     private List<Integer> eleIdList;
 

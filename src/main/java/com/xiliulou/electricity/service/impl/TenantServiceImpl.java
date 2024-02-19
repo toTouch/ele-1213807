@@ -64,6 +64,9 @@ public class TenantServiceImpl implements TenantService {
     private BatteryModelService batteryModelService;
     @Autowired
     private ChannelActivityService channelActivityService;
+    
+    @Resource
+    private TenantNoteService noteService;
 
     /**
      * 新增数据
@@ -291,6 +294,11 @@ public class TenantServiceImpl implements TenantService {
             if(Objects.nonNull(freeDepositData)){
                 item.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity());
             }
+            
+            // 查询短信次数
+            Optional.ofNullable(noteService.queryFromCacheByTenantId(item.getId())).ifPresent(tenantNote -> {
+                item.setNoteNum(tenantNote.getNoteNum());
+            });
         }).collect(Collectors.toList());
 
 
