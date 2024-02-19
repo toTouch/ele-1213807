@@ -55,4 +55,9 @@ public class MerchantPlaceQueryModel {
      * 加盟商id
      */
     private Long franchiseeId;
+    
+    /**
+     * 商户id
+     */
+    private Long merchantId;
 }

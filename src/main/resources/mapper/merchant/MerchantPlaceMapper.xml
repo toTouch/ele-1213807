@@ -105,18 +105,30 @@
     
     <sql id="pageFilter">
         <where>
-            del_flag = 0
+            t.del_flag = 0
             <if test="name != null">
-                and name like concat('%', concat(#{name}, '%'))
+                and t.name like concat('%', concat(#{name}, '%'))
+            </if>
+            <if test="tenantId != null">
+                and t.tenant_id = #{tenantId}
             </if>
             <if test="merchantAreaId != null">
-                and merchant_area_id = #{merchantAreaId}
+                and t.merchant_area_id = #{merchantAreaId}
             </if>
             <if test="idList != null and idList.size() > 0">
-                and id in
+                and t.id in
                 <foreach collection="idList" separator="," open="(" close=")" item="id">
                     #{id}
                 </foreach>
+            </if>
+            <if test="merchantId != null">
+                and EXISTS (
+                SELECT
+                1
+                FROM
+                t_merchant_place_map m
+                WHERE
+                m.place_id = t.id
             </if>
         </where>
     </sql>
@@ -125,15 +137,26 @@
         SELECT
         count(1)
         FROM
-        t_merchant_place
+        t_merchant_place t
         <include refid="pageFilter"/>
     </select>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPlace">
         SELECT
-        <include refid="column"/>
+        t.id,
+        t.NAME,
+        t.franchisee_id,
+        t.phone,
+        t.merchant_area_id,
+        t.longitude,
+        t.latitude,
+        t.address,
+        t.tenant_id,
+        t.del_flag,
+        t.create_time,
+        t.update_time
         FROM
-        t_merchant_place
+        t_merchant_place t
         <include refid="pageFilter"/>
         limit #{offset}, #{size}
     </select>

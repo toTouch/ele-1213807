@@ -63,13 +63,13 @@ public class MerchantSaveRequest {
     private Long channelEmployeeUid;
     
     /**
-     * 等级自动升级(0-关闭， 1-开启)
+     * 等级自动升级(1-关闭， 0-开启)
      */
     @NotNull(message = "等级自动升级不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer autoUpGrade;
     
     /**
-     * 状态：1-启用，0-禁用
+     * 状态：0-启用，1-禁用
      */
     @Range(min = 0, max = 1, message = "状态不存在")
     @NotNull(message = "状态不能为空", groups = {CreateGroup.class, UpdateGroup.class})
@@ -83,7 +83,7 @@ public class MerchantSaveRequest {
     private Integer enterprisePackageAuth;
     
     /**
-     * 邀请权限：1-开启，0-关闭
+     * 邀请权限：0-开启，1-关闭
      */
     @Range(min = 0, max = 1, message = "邀请权限不存在")
     @NotNull(message = "邀请权限不能为空", groups = {CreateGroup.class, UpdateGroup.class})

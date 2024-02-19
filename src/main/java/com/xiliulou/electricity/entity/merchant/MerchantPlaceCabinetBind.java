@@ -89,11 +89,4 @@ public class MerchantPlaceCabinetBind {
      * 电柜名称
      */
     private String cabinetName;
-    
-    
-    public final static Integer UN_BIND = 0;
-    public final static Integer BIND = 1;
-    
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 }
