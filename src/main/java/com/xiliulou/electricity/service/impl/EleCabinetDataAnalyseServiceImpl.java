@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -25,13 +24,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -96,13 +93,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public List<EleCabinetDataAnalyseVO> selectLowPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        Double lowChargeRate = NumberConstant.ZERO_D;
-        if (Objects.nonNull(electricityConfig)) {
-            BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
-            lowChargeRate = NumberUtil.round(lowChargeRateBd.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
-        }
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
     
-        cabinetQuery.setLowChargeRate(lowChargeRate);
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
         
         return this.selectPowerPage(cabinetQuery);
     }
@@ -111,13 +104,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public Integer selectLowPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        Double lowChargeRate = NumberConstant.ZERO_D;
-        if (Objects.nonNull(electricityConfig)) {
-            BigDecimal lowChargeRateBd = electricityConfig.getLowChargeRate();
-            lowChargeRate = NumberUtil.round(lowChargeRateBd.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
-        }
+        BigDecimal lowChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getLowChargeRate).orElse(NumberConstant.ZERO_BD);
     
-        cabinetQuery.setLowChargeRate(lowChargeRate);
+        cabinetQuery.setLowChargeRate(lowChargeRate.doubleValue());
         
         return this.selectPowerPageCount(cabinetQuery);
     }
@@ -126,14 +115,10 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public List<EleCabinetDataAnalyseVO> selectFullPowerPage(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        Double fullChargeRate = NumberConstant.ZERO_D;
-        if (Objects.nonNull(electricityConfig)) {
-            BigDecimal fullChargeRateDb = electricityConfig.getFullChargeRate();
-            fullChargeRate = NumberUtil.round(fullChargeRateDb.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
-        }
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
     
-        cabinetQuery.setFullChargeRate(fullChargeRate);
-        
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
+    
         return this.selectPowerPage(cabinetQuery);
     }
     
@@ -141,13 +126,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     @Override
     public Integer selectFullPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetQuery.getTenantId());
-        Double fullChargeRate = NumberConstant.ZERO_D;
-        if (Objects.nonNull(electricityConfig)) {
-            BigDecimal fullChargeRateDb = electricityConfig.getFullChargeRate();
-            fullChargeRate = NumberUtil.round(fullChargeRateDb.divide(NumberConstant.ONE_HUNDRED_BD, NumberConstant.TWO, RoundingMode.FLOOR), NumberConstant.TWO).doubleValue();
-        }
+        BigDecimal fullChargeRate = Optional.ofNullable(electricityConfig).map(ElectricityConfig::getFullChargeRate).orElse(NumberConstant.ZERO_BD);
     
-        cabinetQuery.setFullChargeRate(fullChargeRate);
+        cabinetQuery.setFullChargeRate(fullChargeRate.doubleValue());
         
         return this.selectPowerPageCount(cabinetQuery);
     }
