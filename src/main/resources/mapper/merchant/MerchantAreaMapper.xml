@@ -73,9 +73,6 @@
         </where>
     </select>
     
-    <select id="selectListByTenantId" resultType="com.xiliulou.electricity.entity.merchant.MerchantArea">
-        select id, name from t_merchant_area where del_flag = 0 and tenant_id = #{tenantId}
-    </select>
     <select id="queryList" resultType="com.xiliulou.electricity.entity.merchant.MerchantArea">
         select
         <include refid="basic_field"/>

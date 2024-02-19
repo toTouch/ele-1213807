@@ -141,12 +141,8 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Slave
     @Override
-    public List<MerchantArea> listByTenantId(Integer tenantId) {
-        if (Objects.isNull(tenantId) || !Objects.equals(tenantId, TenantContextHolder.getTenantId())) {
-            return Collections.emptyList();
-        }
-    
-        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectListByTenantId(tenantId);
+    public List<MerchantArea> listAll(MerchantAreaQuery query) {
+        List<MerchantArea> merchantAreaList = merchantAreaMapper.selectPage(query);
         if (CollectionUtils.isEmpty(merchantAreaList)) {
             return Collections.emptyList();
         }
