@@ -28,4 +28,6 @@ public interface MerchantAreaService {
     List<MerchantArea> listByTenantId(Integer tenantId);
     
     List<MerchantArea> queryList(MerchantAreaQuery areaQuery);
+    
+    MerchantArea queryById(Long id);
 }
