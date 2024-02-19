@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -250,6 +251,8 @@ public interface ElectricityCabinetService {
     R showBatteryVAndCapacity(Integer electricityCabinetId);
     
     R homeOneV2();
+    
+    List<ElectricityCabinetCountVO> queryCabinetCount(ElectricityCabinetQuery cabinetQuery);
     
     void addElectricityCabinetLocToGeo(ElectricityCabinet electricityCabinet);
 }

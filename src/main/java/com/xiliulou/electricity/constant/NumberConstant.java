@@ -31,5 +31,7 @@ public class NumberConstant {
     
     public static final Double ONE_HUNDRED_D = 100D;
     
+    public static final Long NOTE_MAX_NUM = 999999999L;
+    
     public static final BigDecimal ZERO_BD = BigDecimal.valueOf(0);
 }
