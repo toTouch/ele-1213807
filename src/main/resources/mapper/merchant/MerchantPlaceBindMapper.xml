@@ -11,11 +11,11 @@
     </insert>
     <update id="batchUnBind">
         update t_merchant_place_bind
-           set type = 0,
+           set type = 1,
             un_bind_time = #{updateTime}
          <where>
              merchant_id = #{merchantId}
-             and type = 1
+             and type = 0
              <if test="placeIdList != null and placeIdList.size() > 0">
                  and place_id in
                  <foreach collection="placeIdList" separator="," open="(" close=")" item="placeId">

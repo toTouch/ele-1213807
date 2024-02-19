@@ -49,10 +49,7 @@ public class MerchantPlace {
      * 场地地址
      */
     private String address;
-    /**
-     * 状态：1-启用，0-禁用
-     */
-    private Integer status;
+   
     /**
      * 租户Id
      */

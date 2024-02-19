@@ -3,8 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPlaceMapper">
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into t_merchant_place (name , franchisee_id , phone , merchant_area_id  , longitude  , latitude  , address
-        ,tenant_id ,status , del_flag, create_time, update_time)
-        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenantId},#{status}, #{delFlag},
+        ,tenant_id  , del_flag, create_time, update_time)
+        values (#{name}, #{franchiseeId}, #{phone}, #{merchantAreaId}, #{longitude}, #{latitude},#{address}, #{tenantId}, #{delFlag},
                 #{createTime}, #{updateTime})
     </insert>
     <update id="update">
@@ -28,9 +28,7 @@
             <if test="latitude != null">
                 latitude = #{latitude},
             </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
+           
             <if test="address != null">
                 address = #{address},
             </if>
@@ -172,7 +170,7 @@
         <where>
             c.del_flag = 0
             and b.del_flag = 0
-            and b.`status` = 1
+            and b.`status` = 0
             and c.franchisee_id = #{franchiseeId}
             and c.tenant_id = #{tenantId}
             <if test="cabinetName != null">

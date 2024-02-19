@@ -65,9 +65,4 @@ public class MerchantPlaceSaveRequest {
      * 地址纬度
      */
     private Double latitude;
-    
-    /**
-     * 状态：0-启用，1-禁用
-     */
-    private Integer status;
 }
