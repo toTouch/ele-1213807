@@ -29,4 +29,8 @@ public interface MqConsumerConstant {
      */
     String USER_COUPON_COMMON_CONSUMER_GROUP = "user_coupon_common_consumer_group";
     
+    /**
+     * 商户升级 consumer group
+     */
+    String MERCHANT_UPGRADE_CONSUMER_GROUP = "merchant_upgrade_consumer_group";
 }
