@@ -23,19 +23,38 @@ import java.util.List;
 @Data
 public class ChannelEmployeeRequest {
     
+    /**
+     * 渠道员ID
+     */
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
     
+    /**
+     * 渠道员UID
+     */
     private Long uid;
     
+    /**
+     * 渠道员姓名
+     */
     @NotEmpty(message = "姓名不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
     
+    /**
+     * 渠道员电话
+     */
     @NotNull(message = "联系方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String phone;
     
+    /**
+     * 加盟商ID
+     */
     @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Long franchiseeId;
     
+    /**
+     * 区域ID
+     */
     private Long areaId;
     
     /**

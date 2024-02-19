@@ -5,11 +5,11 @@ import lombok.Data;
 /**
  * @author BaoYu
  * @description:
- * @date 2024/1/31 16:05
+ * @date 2024/2/19 8:48
  */
 
 @Data
-public class ChannelEmployeeVO {
+public class MerchantEmployeeVO {
     
     private Long id;
     
@@ -19,17 +19,19 @@ public class ChannelEmployeeVO {
     
     private String phone;
     
-    private Long franchiseeId;
-    
-    private String franchiseeName;
-    
     private Integer status;
     
-    private Integer merchantTotal;
+    private Long merchantUid;
+    
+    private String merchantName;
+    
+    private Long placeId;
+    
+    private String placeName;
+    
+    private Long tenantId;
     
     private Integer delFlag;
-    
-    private Integer tenantId;
     
     private String remark;
     
