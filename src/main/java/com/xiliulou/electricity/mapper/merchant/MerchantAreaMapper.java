@@ -25,8 +25,6 @@ public interface MerchantAreaMapper {
     
     Integer countTotal(MerchantAreaQuery query);
     
-    List<MerchantArea> selectListByTenantId(Integer tenantId);
-    
     List<MerchantArea> queryList(MerchantAreaQuery areaQuery);
     
     MerchantArea selectById(Long id);
